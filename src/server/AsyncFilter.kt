@@ -1,0 +1,16 @@
+package server
+
+import com.sun.net.httpserver.Filter
+import com.sun.net.httpserver.HttpExchange
+
+abstract class AsyncFilter: Filter() {
+  override fun description() = javaClass.simpleName
+
+  open fun before(exchange: HttpExchange) {}
+  open fun after(exchange: HttpExchange) {}
+
+  override fun doFilter(exchange: HttpExchange, chain: Chain) {
+    before(exchange)
+    chain.doFilter(exchange)
+  }
+}
