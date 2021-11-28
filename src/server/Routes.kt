@@ -1,6 +1,7 @@
 package server
 
 import com.sun.net.httpserver.HttpExchange
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
 annotation class Path(val value: String)
@@ -14,11 +15,18 @@ annotation class AttributeParam
 
 fun toHandler(instance: Any, method: Method): Handler {
   val params = method.parameters
-  return { exchange -> method.invoke(instance, *params.map { p ->
-    if (p.type == HttpExchange::class.java) exchange
-    else if (p.isAnnotationPresent(HeaderParam::class.java)) exchange.requestHeaders[p.name]
-    else if (p.isAnnotationPresent(AttributeParam::class.java)) exchange.getAttribute(p.name)
-    else null
-    // TODO: convert to correct type
-  }.toTypedArray())}
+  return { exchange ->
+    try {
+      // TODO: performance: pre-create parameter setters in a fixed-sized array
+      method.invoke(instance, *params.map { p ->
+        if (p.type == HttpExchange::class.java) exchange
+        else if (p.isAnnotationPresent(HeaderParam::class.java)) exchange.requestHeaders[p.name]
+        else if (p.isAnnotationPresent(AttributeParam::class.java)) exchange.getAttribute(p.name)
+        else null
+        // TODO: convert to correct type
+      }.toTypedArray())
+    } catch (e: InvocationTargetException) {
+      throw e.targetException
+    }
+  }
 }
