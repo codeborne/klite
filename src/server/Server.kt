@@ -1,5 +1,6 @@
 package server
 
+import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -35,21 +36,30 @@ class Server(
 
   fun route(prefix: String, handler: Handler) = http.createContext(prefix) { exchange ->
     requestScope.launch {
-      exchange.responseHeaders["Content-Type"] = listOf(defaultContentType)
-      try {
-        val result = handler().toString()
-        exchange.send(200, result)
-      } catch (e: Throwable) {
-        log.log(Level.SEVERE, "Unhandled throwable", e)
-        exchange.send(500, e)
-      } finally {
-        exchange.httpContext.filters.forEach { (it as? AsyncFilter)?.after(exchange) }
-        exchange.close()
-      }
+      runHandler(exchange, handler)
     }
   }.apply {
     log.info("Route: $prefix")
     filters.addAll(defaultFilters)
+  }
+
+  private suspend fun runHandler(exchange: HttpExchange, handler: Handler) {
+    exchange.responseHeaders["Content-Type"] = listOf(defaultContentType)
+    try {
+      val result = handler()
+      exchange.forEachFilter { after(exchange, null) }
+      exchange.send(200, result)
+    } catch (e: Throwable) {
+      exchange.forEachFilter { after(exchange, e) }
+      log.log(Level.SEVERE, "Unhandled throwable", e)
+      exchange.send(500, e)
+    } finally {
+      exchange.close()
+    }
+  }
+
+  private fun HttpExchange.forEachFilter(callback: AsyncFilter.() -> Unit) = httpContext.filters.forEach {
+    (it as? AsyncFilter)?.callback()
   }
 }
 

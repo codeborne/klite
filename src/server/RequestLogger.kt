@@ -10,7 +10,7 @@ class RequestLogger: AsyncFilter() {
     exchange["start"] = System.nanoTime()
   }
 
-  override fun after(exchange: HttpExchange) {
+  override fun after(exchange: HttpExchange, e: Throwable?) {
     exchange.apply {
       val ms = (System.nanoTime() - get("start") as Long) / 1000_000
       log.info("$requestMethod $requestPath: $responseCode in $ms ms")
