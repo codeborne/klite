@@ -9,8 +9,9 @@ repositories {
 }
 
 dependencies {
-  testImplementation(kotlin("test"))
+  implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.2")
+  testImplementation(kotlin("test"))
 }
 
 sourceSets {

@@ -3,6 +3,7 @@ import kotlinx.coroutines.delay
 import server.AssetsHandler
 import server.GET
 import server.Server
+import server.routesFrom
 import java.nio.file.Path
 
 // run with --illegal-access=permit to allow accessing Java built-in Mime types
