@@ -43,8 +43,8 @@ class Server(
   fun routesFrom(routes: Any) {
     val path = routes::class.java.getAnnotation(Path::class.java)
     routes::class.java.methods.forEach { method ->
-      val get = method.getAnnotation(GET::class.java)
-      route(path.value + get?.value, toHandler(routes, method))
+      val get: GET? = method.getAnnotation(GET::class.java)
+      if (get != null) route(path.value + get.value, toHandler(routes, method))
     }
   }
 
