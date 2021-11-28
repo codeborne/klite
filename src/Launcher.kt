@@ -29,4 +29,10 @@ class Routes {
 
   @GET("/hello2")
   fun withExchange(exchange: HttpExchange) = "Hello ${exchange.requestMethod} ${exchange.requestURI}"
+
+  @GET("/suspend")
+  suspend fun suspend(exchange: HttpExchange) {
+    delay(100)
+    "Suspend ${exchange.requestMethod} ${exchange.requestURI}"
+  }
 }
