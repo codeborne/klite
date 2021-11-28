@@ -10,12 +10,13 @@ operator fun Headers.set(attr: String, value: String) = put(attr, listOf(value))
 
 val HttpExchange.requestPath: String get() = requestURI.path
 
-fun HttpExchange.send(resCode: Int, content: Any?) {
+fun HttpExchange.send(resCode: Int, content: Any? = null, contentType: String? = null) {
   val bytes = when (content) {
-    null -> null
+    null, Unit -> null
     is ByteArray -> content
     else -> content.toString().toByteArray()
   }
-  sendResponseHeaders(resCode, bytes?.size?.toLong() ?: 0)
-  if (bytes != null) responseBody.write(bytes)
+  contentType?.let { responseHeaders["Content-Type"] = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
+  if (responseCode < 0) sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
+  bytes?.let { responseBody.write(it) }
 }

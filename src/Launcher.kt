@@ -1,3 +1,4 @@
+import com.sun.net.httpserver.HttpExchange
 import kotlinx.coroutines.delay
 import server.AssetsHandler
 import server.GET
@@ -25,4 +26,7 @@ fun main() {
 class Routes {
   @GET("/hello")
   fun sayHello() = "Hello"
+
+  @GET("/hello2")
+  fun withExchange(exchange: HttpExchange) = "Hello ${exchange.requestMethod} ${exchange.requestURI}"
 }

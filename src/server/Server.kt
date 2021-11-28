@@ -42,25 +42,23 @@ class Server(
 
   fun routesFrom(routes: Any) {
     val path = routes::class.java.getAnnotation(Path::class.java)
-    val method = routes::class.java.methods.first()
-    val get = method.getAnnotation(GET::class.java)
-    route(path.value + get?.value, toHandler(routes, method))
+    routes::class.java.methods.forEach { method ->
+      val get = method.getAnnotation(GET::class.java)
+      route(path.value + get?.value, toHandler(routes, method))
+    }
   }
 
-  fun assets(prefix: String, handler: AssetsHandler) {
-    http.createContext(prefix) { exchange ->
-      requestScope.launch(Dispatchers.IO) {
-        handler.handle(exchange)
-      }
+  fun assets(prefix: String, handler: AssetsHandler) = http.createContext(prefix) { exchange ->
+    requestScope.launch(Dispatchers.IO) {
+      handler(exchange)
     }
   }
 
   private suspend fun runHandler(exchange: HttpExchange, handler: Handler) {
-    exchange.responseHeaders["content-type"] = defaultContentType
     try {
-      val result = handler()
+      val result = handler(exchange)
       exchange.forEachFilter { after(exchange, null) }
-      exchange.send(200, result)
+      exchange.send(200, result, defaultContentType)
     } catch (e: Throwable) {
       exchange.forEachFilter { after(exchange, e) }
       log.log(Level.SEVERE, "Unhandled throwable", e)
@@ -75,4 +73,4 @@ class Server(
   }
 }
 
-typealias Handler = suspend () -> Any?
+typealias Handler = suspend (exchange: HttpExchange) -> Any?
