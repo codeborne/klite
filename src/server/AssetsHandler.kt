@@ -1,10 +1,11 @@
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 package server
 
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import sun.net.www.MimeTable
 import java.nio.file.Path
-import java.time.ZoneOffset
+import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import kotlin.io.path.div
 import kotlin.io.path.getLastModifiedTime
@@ -19,10 +20,11 @@ class AssetsHandler(val path: Path, val indexFile: String = "index.html", val ca
     try {
       val file = path / exchange.requestPath.substring(1)
       if (!file.startsWith(path)) return exchange.send(403, file)
-      exchange.responseHeaders["content-type"] = mimeTypes.getContentTypeFor(file.name)
+      val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
+      if (lastModified == exchange.requestHeaders.getFirst("if-modified-since")) return exchange.send(304, null)
+      exchange.responseHeaders["last-modified"] = lastModified
       exchange.responseHeaders["cache-control"] = cacheControl
-      exchange.responseHeaders["last-modified"] = RFC_1123_DATE_TIME.format(
-        file.getLastModifiedTime().toInstant().atOffset(ZoneOffset.UTC))
+      exchange.responseHeaders["content-type"] = mimeTypes.getContentTypeFor(file.name)
       exchange.send(200, file.readBytes())
     } catch (e: Exception) {
       exchange.send(404, e.message)

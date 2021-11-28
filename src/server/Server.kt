@@ -1,4 +1,3 @@
-@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 package server
 
 import com.sun.net.httpserver.HttpExchange

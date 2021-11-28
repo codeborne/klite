@@ -7,7 +7,7 @@ import java.nio.file.Path
 fun main() {
   Server(8080).apply {
     assets("/", AssetsHandler(Path.of("public")))
-    route("/hello") { "Hello World" }
+    route("/") { "Hello World" }
     route("/delay") {
       delay(1000)
       "Waited for 1 sec"

@@ -12,10 +12,10 @@ val HttpExchange.requestPath: String get() = requestURI.path
 
 fun HttpExchange.send(resCode: Int, content: Any?) {
   val bytes = when (content) {
-    null -> ByteArray(0)
+    null -> null
     is ByteArray -> content
     else -> content.toString().toByteArray()
   }
-  sendResponseHeaders(resCode, bytes.size.toLong())
-  responseBody.write(bytes)
+  sendResponseHeaders(resCode, bytes?.size?.toLong() ?: 0)
+  if (bytes != null) responseBody.write(bytes)
 }
