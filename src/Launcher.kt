@@ -8,6 +8,9 @@ fun main() {
       delay(1000)
       "Waited for 1 sec"
     }
+    route("/failure") {
+      error("Failure")
+    }
     start()
   }
 }

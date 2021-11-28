@@ -34,9 +34,9 @@ class Server(
     http.stop(delaySec)
   }
 
-  fun route(path: String, handler: Handler) {
-    log.info("Route: $path")
-    http.createContext(path) { exchange ->
+  fun route(prefix: String, handler: Handler) {
+    log.info("Route: $prefix")
+    http.createContext(prefix) { exchange ->
       requestScope.launch {
         exchange.responseHeaders["Content-Type"] = listOf(defaultContentType)
         try {
