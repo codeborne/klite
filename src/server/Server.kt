@@ -40,6 +40,13 @@ class Server(
     filters.addAll(defaultFilters)
   }
 
+  fun routesFrom(routes: Any) {
+    val path = routes::class.java.getAnnotation(Path::class.java)
+    val method = routes::class.java.methods.first()
+    val get = method.getAnnotation(GET::class.java)
+    route(path.value + get?.value, toHandler(routes, method))
+  }
+
   fun assets(prefix: String, handler: AssetsHandler) {
     http.createContext(prefix) { exchange ->
       requestScope.launch(Dispatchers.IO) {

@@ -1,5 +1,6 @@
 import kotlinx.coroutines.delay
 import server.AssetsHandler
+import server.GET
 import server.Server
 import java.nio.file.Path
 
@@ -15,6 +16,13 @@ fun main() {
     route("/failure") {
       error("Failure")
     }
+    routesFrom(Routes())
     start()
   }
+}
+
+@server.Path("/api")
+class Routes {
+  @GET("/hello")
+  fun sayHello() = "Hello"
 }
