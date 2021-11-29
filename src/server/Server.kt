@@ -14,7 +14,8 @@ class Server(
   val port: Int = 8080,
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
-  val defaultFilters: List<AsyncFilter> = listOf(RequestLogger())
+  val defaultFilters: List<AsyncFilter> = listOf(RequestLogger()),
+  val pathParamRegexer: PathParamRegexer = PathParamRegexer()
 ) {
   private val log = Logger.getLogger(javaClass.name)
   val workerPool = Executors.newFixedThreadPool(numWorkers)
@@ -31,7 +32,7 @@ class Server(
     http.stop(delaySec)
   }
 
-  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix).apply {
+  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer).apply {
     val context = http.createContext(prefix) { exchange ->
       requestScope.launch {
         process(exchange, route(exchange))

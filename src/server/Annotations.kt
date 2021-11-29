@@ -1,6 +1,5 @@
 package server
 
-import server.Route.Companion.withParams
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KClass
@@ -28,8 +27,8 @@ fun Server.routesFrom(routes: Any) {
     routes::class.memberFunctions.forEach { f ->
       val annotation = f.annotations.firstOrNull() ?: return@forEach
       val method = RequestMethod.valueOf(annotation.annotationClass.simpleName!!)
-      val path = annotation.annotationClass.members.first().call(annotation) as String
-      add(Route(method, withParams(path), toHandler(routes, f)))
+      val subPath = annotation.annotationClass.members.first().call(annotation) as String
+      add(Route(method, paramRegexer.from(subPath), toHandler(routes, f)))
     }
   }
 }
