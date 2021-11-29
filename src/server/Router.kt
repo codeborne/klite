@@ -33,8 +33,8 @@ enum class RequestMethod {
 
 data class Route(val method: RequestMethod, val path: Regex, val handler: Handler) {
   companion object {
-    private val pathParamsRegex = "/:(.+)(/|$)".toRegex()
-    fun withParams(path: String) = pathParamsRegex.replace(path, "/(?<$1>.+$2").toRegex()
+    private val pathParamsRegex = "/:([^/]+)".toRegex()
+    fun withParams(path: String) = pathParamsRegex.replace(path, "/(?<$1>[^/]+)").toRegex()
   }
 }
 
