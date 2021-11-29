@@ -10,13 +10,15 @@ import java.nio.file.Path
 fun main() {
   Server(8080).apply {
     assets("/", AssetsHandler(Path.of("public")))
-    route("/") { "Hello World" }
-    route("/delay") {
-      delay(1000)
-      "Waited for 1 sec"
+    context("/hello") {
+      get { "Hello World" }
+      get("/delay") {
+        delay(1000)
+        "Waited for 1 sec"
+      }
     }
-    route("/failure") {
-      error("Failure")
+    context("/failure") {
+      get { error("Failure") }
     }
     routesFrom(Routes())
     start()

@@ -1,7 +1,6 @@
 @file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 package server
 
-import com.sun.net.httpserver.HttpExchange
 import sun.net.www.MimeTable
 import java.io.IOException
 import java.nio.file.Path
@@ -13,7 +12,7 @@ import kotlin.io.path.name
 import kotlin.io.path.readBytes
 
 class AssetsHandler(val path: Path, val indexFile: String = "index.html", val cacheControl: String = "max-age=86400"): Handler {
-  val mimeTypes = MimeTable.getDefaultTable()
+  private val mimeTypes = MimeTable.getDefaultTable()
 
   override suspend fun invoke(exchange: HttpExchange) {
     // TODO AsynchronousFileChannel.open(path.resolve(exchange.requestPath), READ).read().await()

@@ -1,6 +1,5 @@
 package server
 
-import com.sun.net.httpserver.HttpExchange
 import java.util.logging.Logger
 
 class RequestLogger: AsyncFilter() {

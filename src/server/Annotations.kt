@@ -1,7 +1,8 @@
 package server
 
-import com.sun.net.httpserver.HttpExchange
+import server.Route.Companion.withParams
 import java.lang.reflect.InvocationTargetException
+import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
@@ -9,20 +10,27 @@ import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.jvm.javaMethod
 
-annotation class Path(val value: String)
-annotation class GET(val value: String = "")
-// TODO annotation class POST(val value: String = "")
+@Target(CLASS) annotation class Path(val value: String)
+@Target(FUNCTION) annotation class GET(val value: String = "")
+@Target(FUNCTION) annotation class POST(val value: String = "")
+@Target(FUNCTION) annotation class PUT(val value: String = "")
+@Target(FUNCTION) annotation class DELETE(val value: String = "")
+@Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
 // TODO annotation class QueryParam
 // TODO annotation class PathParam
-annotation class HeaderParam
-annotation class AttributeParam
+@Target(VALUE_PARAMETER) annotation class HeaderParam
+@Target(VALUE_PARAMETER) annotation class AttributeParam
 
 fun Server.routesFrom(routes: Any) {
-  val path = routes::class.annotation<Path>()?.value ?: ""
-  routes::class.memberFunctions.forEach { f ->
-    val get = f.annotation<GET>()
-    if (get != null) route(path + get.value, toHandler(routes, f))
+  val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
+  context(path) {
+    routes::class.memberFunctions.forEach { f ->
+      val annotation = f.annotations.firstOrNull() ?: return@forEach
+      val method = RequestMethod.valueOf(annotation.annotationClass.simpleName!!)
+      val path = annotation.annotationClass.members.first().call(annotation) as String
+      add(Route(method, withParams(path), toHandler(routes, f)))
+    }
   }
 }
 

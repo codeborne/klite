@@ -1,8 +1,8 @@
 package server
 
-import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.*
+import server.RequestMethod.GET
 import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
@@ -31,30 +31,35 @@ class Server(
     http.stop(delaySec)
   }
 
-  fun route(prefix: String, handler: Handler) = http.createContext(prefix) { exchange ->
-    requestScope.launch {
-      runHandler(exchange, handler)
+  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix).apply {
+    val context = http.createContext(prefix) { exchange ->
+      requestScope.launch {
+        process(exchange, route(exchange))
+      }
     }
-  }.apply {
     log.info("Route: $prefix")
-    filters.addAll(defaultFilters)
+    context.filters.addAll(defaultFilters)
+    block()
   }
 
   fun assets(prefix: String, handler: AssetsHandler) = http.createContext(prefix) { exchange ->
     requestScope.launch(Dispatchers.IO) {
-      handler(exchange)
+      process(exchange, handler.takeIf { exchange.requestMethod == GET.name })
     }
   }
 
-  private suspend fun runHandler(exchange: HttpExchange, handler: Handler) {
+  private suspend fun process(exchange: HttpExchange, handler: Handler?) {
     try {
-      val result = handler(exchange)
+      val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.requestPath)
       exchange.forEachFilter { after(exchange, null) }
       exchange.send(200, result, defaultContentType)
     } catch (e: Throwable) {
       exchange.forEachFilter { after(exchange, e) }
-      log.log(Level.SEVERE, "Unhandled throwable", e)
-      exchange.send(500, e)
+      if (e is StatusCodeException) exchange.send(e.statusCode, e.message)
+      else {
+        log.log(Level.SEVERE, "Unhandled throwable", e)
+        exchange.send(500, e)
+      }
     } finally {
       exchange.close()
     }
@@ -64,5 +69,3 @@ class Server(
     (it as? AsyncFilter)?.callback()
   }
 }
-
-typealias Handler = suspend (exchange: HttpExchange) -> Any?

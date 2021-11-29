@@ -1,7 +1,7 @@
 package server
 
-import com.sun.net.httpserver.Headers
-import com.sun.net.httpserver.HttpExchange
+typealias HttpExchange = com.sun.net.httpserver.HttpExchange
+typealias Headers = com.sun.net.httpserver.Headers
 
 operator fun HttpExchange.get(attr: String): Any? = getAttribute(attr)
 operator fun HttpExchange.set(attr: String, value: Any?) = setAttribute(attr, value)

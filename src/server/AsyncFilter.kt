@@ -1,7 +1,6 @@
 package server
 
 import com.sun.net.httpserver.Filter
-import com.sun.net.httpserver.HttpExchange
 
 abstract class AsyncFilter: Filter() {
   override fun description() = javaClass.simpleName
