@@ -3,7 +3,7 @@ package server
 import server.RequestMethod.*
 import server.RequestMethod.GET
 
-class Router(val prefix: String, val paramRegexer: PathParamRegexer) {
+class Router(val prefix: String, private val regexer: PathParamRegexer) {
   private val routes = mutableListOf<Route>()
 
   internal fun route(exchange: HttpExchange): Handler? {
@@ -14,16 +14,16 @@ class Router(val prefix: String, val paramRegexer: PathParamRegexer) {
   fun add(route: Route) { routes += route }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
-  fun get(path: String = "", handler: Handler) = get(paramRegexer.from(path), handler)
+  fun get(path: String = "", handler: Handler) = get(regexer.from(path), handler)
 
   fun post(path: Regex, handler: Handler) = add(Route(POST, path, handler))
-  fun post(path: String = "", handler: Handler) = post(paramRegexer.from(path), handler)
+  fun post(path: String = "", handler: Handler) = post(regexer.from(path), handler)
 
   fun put(path: Regex, handler: Handler) = add(Route(PUT, path, handler))
-  fun put(path: String = "", handler: Handler) = put(paramRegexer.from(path), handler)
+  fun put(path: String = "", handler: Handler) = put(regexer.from(path), handler)
 
   fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler))
-  fun delete(path: String = "", handler: Handler) = delete(paramRegexer.from(path), handler)
+  fun delete(path: String = "", handler: Handler) = delete(regexer.from(path), handler)
 }
 
 enum class RequestMethod {
