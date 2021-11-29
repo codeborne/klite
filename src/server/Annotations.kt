@@ -28,22 +28,22 @@ fun Server.routesFrom(routes: Any) {
       val annotation = f.annotations.firstOrNull() ?: return@forEach
       val method = RequestMethod.valueOf(annotation.annotationClass.simpleName!!)
       val subPath = annotation.annotationClass.members.first().call(annotation) as String
-      add(Route(method, paramRegexer.from(subPath), toHandler(routes, f)))
+      add(Route(method, pathParamRegexer.from(subPath), toHandler(routes, f)))
     }
   }
 }
 
 fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
-  return { exchange ->
+  return {
     try {
       val args = Array(params.size) { i ->
         val p = params[i]
         val a = p.annotations.firstOrNull()
         if (p.kind == INSTANCE) instance
-        else if (p.type.classifier == HttpExchange::class) exchange
-        else if (a is HeaderParam) exchange.requestHeaders[p.name]
-        else if (a is AttributeParam) exchange.getAttribute(p.name)
+        else if (p.type.classifier == HttpExchange::class) this
+        else if (a is HeaderParam) requestHeaders[p.name]
+        else if (a is AttributeParam) getAttribute(p.name)
         else null
         // TODO: convert to correct type
       }

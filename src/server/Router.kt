@@ -8,7 +8,18 @@ class Router(val prefix: String, private val regexer: PathParamRegexer) {
 
   internal fun route(exchange: HttpExchange): Handler? {
     val suffix = exchange.requestPath.removePrefix(prefix)
-    return routes.find { exchange.requestMethod == it.method.name && it.path.matches(suffix) }?.handler
+    return match(exchange.requestMethod, suffix)?.let { m ->
+      exchange.pathParams = m.second.groups
+      m.first
+    }
+  }
+
+  private fun match(method: String, path: String): Pair<Handler, MatchResult>? {
+    for (route in routes) {
+      if (method != route.method.name) continue
+      route.path.matchEntire(path)?.let { return route.handler to it }
+    }
+    return null
   }
 
   fun add(route: Route) { routes += route }
@@ -37,4 +48,4 @@ open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRe
   open fun from(path: String) = paramConverter.replace(path, "/(?<$1>[^/]+)").toRegex()
 }
 
-typealias Handler = suspend (exchange: HttpExchange) -> Any?
+typealias Handler = suspend HttpExchange.() -> Any?

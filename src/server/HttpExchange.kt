@@ -6,6 +6,12 @@ typealias Headers = com.sun.net.httpserver.Headers
 operator fun HttpExchange.get(attr: String): Any? = getAttribute(attr)
 operator fun HttpExchange.set(attr: String, value: Any?) = setAttribute(attr, value)
 
+var HttpExchange.pathParams
+  get() = get("pathParams") as MatchGroupCollection
+  set(value) = set("pathParams", value)
+
+fun HttpExchange.path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
+
 operator fun Headers.set(attr: String, value: String) = put(attr, listOf(value))
 
 val HttpExchange.requestPath: String get() = requestURI.path

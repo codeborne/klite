@@ -1,9 +1,6 @@
 import com.sun.net.httpserver.HttpExchange
 import kotlinx.coroutines.delay
-import server.AssetsHandler
-import server.GET
-import server.Server
-import server.routesFrom
+import server.*
 import java.nio.file.Path
 
 // run with --illegal-access=permit to allow accessing Java built-in Mime types
@@ -15,6 +12,9 @@ fun main() {
       get("/delay") {
         delay(1000)
         "Waited for 1 sec"
+      }
+      get("/:param") {
+        path("param")
       }
     }
     context("/failure") {
