@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
 
 @Target(CLASS) annotation class Path(val value: String)
@@ -25,7 +25,7 @@ import kotlin.reflect.jvm.javaMethod
 fun Server.routesFrom(routes: Any) {
   val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
   context(path) {
-    routes::class.memberFunctions.forEach { f ->
+    routes::class.functions.forEach { f ->
       val annotation = f.annotations.firstOrNull() ?: return@forEach
       val method = RequestMethod.valueOf(annotation.annotationClass.simpleName!!)
       val subPath = annotation.annotationClass.members.first().call(annotation) as String

@@ -1,4 +1,3 @@
-import com.sun.net.httpserver.HttpExchange
 import kotlinx.coroutines.delay
 import server.*
 import java.nio.file.Path
@@ -31,7 +30,10 @@ class Routes {
   fun sayHello() = "Hello"
 
   @GET("/hello2")
-  fun withExchange(exchange: HttpExchange) = "Hello ${exchange.requestMethod} ${exchange.requestURI}"
+  fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.requestMethod} ${exchange.requestURI}"
+
+  @GET("/hello3")
+  fun HttpExchange.asContext() = "Hello3 $requestMethod $requestURI"
 
   @GET("/suspend")
   suspend fun suspend(exchange: HttpExchange) {
