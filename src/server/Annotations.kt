@@ -16,9 +16,9 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
-// TODO annotation class QueryParam
 // TODO annotation class Body
 @Target(VALUE_PARAMETER) annotation class PathParam
+@Target(VALUE_PARAMETER) annotation class QueryParam
 @Target(VALUE_PARAMETER) annotation class HeaderParam
 @Target(VALUE_PARAMETER) annotation class AttributeParam
 
@@ -44,6 +44,7 @@ fun toHandler(instance: Any, f: KFunction<*>): Handler {
         if (p.kind == INSTANCE) instance
         else if (p.type.classifier == HttpExchange::class) this
         else if (a is PathParam) path(p.name!!)
+        else if (a is QueryParam) query(p.name!!)
         else if (a is HeaderParam) requestHeaders[p.name]
         else if (a is AttributeParam) getAttribute(p.name)
         else null

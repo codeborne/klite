@@ -1,16 +1,29 @@
 package server
 
+import java.net.URI
+
 typealias HttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
-operator fun HttpExchange.get(attr: String): Any? = getAttribute(attr)
+@Suppress("UNCHECKED_CAST")
+operator fun <T: Any?> HttpExchange.get(attr: String): T = getAttribute(attr) as T
 operator fun HttpExchange.set(attr: String, value: Any?) = setAttribute(attr, value)
 
-var HttpExchange.pathParams
-  get() = get("pathParams") as MatchGroupCollection
+var HttpExchange.pathParams: MatchGroupCollection
+  get() = get("pathParams")
   set(value) = set("pathParams", value)
 
 fun HttpExchange.path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
+
+var HttpExchange.queryParams: Map<String, String?>
+  get() = get("queryParams") ?: requestURI.queryParams.also { queryParams = it }
+  set(value) = set("queryParams", value)
+
+fun HttpExchange.query(param: String) = queryParams[param]
+
+val URI.queryParams: Map<String, String?> get() = rawQuery?.split('&')?.associate {
+  it.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
+} ?: emptyMap()
 
 operator fun Headers.set(attr: String, value: String) = put(attr, listOf(value))
 

@@ -16,7 +16,7 @@ fun main() {
         "Waited for 1 sec"
       }
       get("/:param") {
-        path("param")
+        "Path: ${path("param")}, Query: $queryParams"
       }
     }
     context("/failure") {
