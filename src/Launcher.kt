@@ -1,9 +1,12 @@
 import kotlinx.coroutines.delay
 import server.*
+import java.lang.Thread.currentThread
 import java.nio.file.Path
 
 // run with --illegal-access=permit to allow accessing Java built-in Mime types
 fun main() {
+  System.setProperty("java.util.logging.config.file", currentThread().contextClassLoader.getResource("logging.properties").file)
+
   Server(8080).apply {
     assets("/", AssetsHandler(Path.of("public")))
     context("/hello") {
