@@ -25,8 +25,7 @@ class Router(val prefix: String, private val regexer: PathParamRegexer) {
   }
 
   fun add(route: Route) {
-    routes += route
-    log.info("${route.method} ${route.path}")
+    routes += route.apply { log.info("$method $prefix$path") }
   }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
