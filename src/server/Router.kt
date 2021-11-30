@@ -2,8 +2,10 @@ package server
 
 import server.RequestMethod.*
 import server.RequestMethod.GET
+import java.util.logging.Logger
 
 class Router(val prefix: String, private val regexer: PathParamRegexer) {
+  private val log = Logger.getLogger(javaClass.name)
   private val routes = mutableListOf<Route>()
 
   internal fun route(exchange: HttpExchange): Handler? {
@@ -22,7 +24,10 @@ class Router(val prefix: String, private val regexer: PathParamRegexer) {
     return null
   }
 
-  fun add(route: Route) { routes += route }
+  fun add(route: Route) {
+    routes += route
+    log.info("${route.method} ${route.path}")
+  }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
   fun get(path: String = "", handler: Handler) = get(regexer.from(path), handler)

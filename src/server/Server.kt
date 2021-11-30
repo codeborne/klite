@@ -38,7 +38,6 @@ class Server(
         process(exchange, route(exchange))
       }
     }
-    log.info("Route: $prefix")
     context.filters.addAll(defaultFilters)
     block()
   }
