@@ -13,6 +13,8 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
 
   // TODO: defaultContentType or look into Accept header
   // TODO: getRequestURL (full)
+  // TODO: cookies
+  // TODO: session
 
   val path get() = original.requestURI.path
   lateinit var pathParams: MatchGroupCollection internal set
@@ -32,7 +34,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   val responseHeaders: Headers get() = original.responseHeaders
   fun header(key: String, value: String) { responseHeaders[key] = value }
 
-  val responseCode: Int get() = original.responseCode
+  val statusCode: Int get() = original.responseCode
   val responseStream: OutputStream get() = original.responseBody!!
 
   fun send(resCode: Int, content: Any? = null, contentType: String? = null) {
@@ -42,7 +44,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
       else -> content.toString().toByteArray()
     }
     contentType?.let { responseHeaders["Content-Type"] = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
-    if (responseCode < 0) original.sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
+    if (statusCode < 0) original.sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
     bytes?.let { responseStream.write(it) }
   }
 

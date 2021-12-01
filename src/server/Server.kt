@@ -14,7 +14,7 @@ class Server(
   val port: Int = 8080,
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
-  val globalFilters: List<AsyncFilter> = listOf(RequestLogger()),
+  val globalDecorators: List<Decorator> = listOf(RequestLogger()),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer()
 ) {
   private val log = Logger.getLogger(javaClass.name)
@@ -32,7 +32,7 @@ class Server(
     http.stop(delaySec)
   }
 
-  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer).apply {
+  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators).apply {
     http.createContext(prefix) { ex ->
       requestScope.launch {
         val exchange = HttpExchange(ex)
@@ -51,13 +51,10 @@ class Server(
 
   private suspend fun process(exchange: HttpExchange, handler: Handler?) {
     try {
-      globalFilters.forEach { it.before(exchange) }
       val result = handler?.invoke(exchange)
-      globalFilters.forEach { it.after(exchange, null) }
       if (result == null) return exchange.send(404, exchange.path)
       exchange.send(200, result, defaultContentType)
     } catch (e: Throwable) {
-      globalFilters.forEach { it.after(exchange, e) }
       if (e is StatusCodeException) exchange.send(e.statusCode, e.message)
       else {
         log.log(Level.SEVERE, "Unhandled throwable", e)

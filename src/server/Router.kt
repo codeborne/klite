@@ -1,12 +1,12 @@
 package server
 
 import server.RequestMethod.*
-import server.RequestMethod.GET
 import java.util.logging.Logger
 
-class Router(val prefix: String, private val regexer: PathParamRegexer) {
+class Router(val prefix: String, private val regexer: PathParamRegexer, decorators: List<Decorator>) {
   private val log = Logger.getLogger(javaClass.name)
   private val routes = mutableListOf<Route>()
+  private val decorators = decorators.toMutableList()
 
   internal fun route(exchange: HttpExchange): Handler? {
     val suffix = exchange.path.removePrefix(prefix)
@@ -25,7 +25,7 @@ class Router(val prefix: String, private val regexer: PathParamRegexer) {
   }
 
   fun add(route: Route) {
-    routes += route.apply { log.info("$method $prefix$path") }
+    routes += route.copy(handler = decorators.wrap(route.handler)).apply { log.info("$method $prefix$path") }
   }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
@@ -39,6 +39,10 @@ class Router(val prefix: String, private val regexer: PathParamRegexer) {
 
   fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler))
   fun delete(path: String = "", handler: Handler) = delete(regexer.from(path), handler)
+
+  fun decorator(decorator: Decorator) { decorators += decorator }
+  fun before(before: Before) = decorator(before.toDecorator())
+  fun after(after: After) = decorator(after.toDecorator())
 }
 
 enum class RequestMethod {
@@ -51,5 +55,3 @@ data class Route(val method: RequestMethod, val path: Regex, val handler: Handle
 open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRegex()) {
   open fun from(path: String) = paramConverter.replace(path, "/(?<$1>[^/]+)").toRegex()
 }
-
-typealias Handler = suspend HttpExchange.() -> Any?
