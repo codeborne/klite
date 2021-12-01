@@ -12,7 +12,7 @@ class Server(
   val port: Int = 8080,
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
-  val globalDecorators: List<Decorator> = listOf(RequestLogger()),
+  val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
   val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
 ) {

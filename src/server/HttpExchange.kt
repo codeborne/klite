@@ -48,7 +48,13 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
     bytes?.let { responseStream.write(it) }
   }
 
-  override fun close() = original.close()
+  private val onCompleteHandlers = mutableListOf<Runnable>()
+  fun onComplete(handler: Runnable) { onCompleteHandlers += handler }
+
+  override fun close() {
+    original.close()
+    onCompleteHandlers.forEach { it.run() }
+  }
 
   override fun toString() = "$method ${original.requestURI}"
 }
