@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.*
 import server.RequestMethod.GET
 import java.lang.Runtime.getRuntime
-import java.lang.System.Logger.Level.ERROR
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
@@ -14,6 +13,7 @@ class Server(
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
   val globalDecorators: List<Decorator> = listOf(RequestLogger()),
+  val exceptionHandler: ExceptionHandler = ExceptionHandler(),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
 ) {
   private val logger = System.getLogger(javaClass.name)
@@ -52,13 +52,9 @@ class Server(
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
       val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
-      exchange.send(200, result, defaultContentType)
-    } catch (e: Throwable) {
-      if (e is StatusCodeException) exchange.send(e.statusCode, e.message)
-      else {
-        logger.log(ERROR, "Unhandled throwable", e)
-        exchange.send(500, e)
-      }
+      if (!exchange.isResponseStarted) exchange.send(200, result, defaultContentType)
+    } catch (e: Exception) {
+      exceptionHandler.handle(exchange, e)
     } finally {
       exchange.close()
     }

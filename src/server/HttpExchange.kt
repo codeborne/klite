@@ -34,6 +34,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   fun header(key: String, value: String) { responseHeaders[key] = value }
 
   val statusCode: Int get() = original.responseCode
+  val isResponseStarted get() = statusCode >= 0
   val responseStream: OutputStream get() = original.responseBody!!
 
   fun send(resCode: Int, content: Any? = null, contentType: String? = null) {
