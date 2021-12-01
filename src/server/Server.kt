@@ -8,8 +8,6 @@ import java.lang.System.Logger.Level.ERROR
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 class Server(
   val port: Int = 8080,
@@ -17,7 +15,6 @@ class Server(
   val defaultContentType: String = "text/plain",
   val globalDecorators: List<Decorator> = listOf(RequestLogger()),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
-  val launchContext: HttpExchange.() -> CoroutineContext = { EmptyCoroutineContext }
 ) {
   private val logger = System.getLogger(javaClass.name)
   val workerPool = Executors.newFixedThreadPool(numWorkers)
@@ -36,9 +33,8 @@ class Server(
 
   fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators).apply {
     http.createContext(prefix) { ex ->
-      val exchange = HttpExchange(ex)
-      requestScope.launch(launchContext(exchange)) {
-        handle(exchange, route(exchange))
+      requestScope.launch {
+        HttpExchange(ex).let { handle(it, route(it)) }
       }
     }
     block()
