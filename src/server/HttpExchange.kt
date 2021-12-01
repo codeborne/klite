@@ -1,7 +1,6 @@
 package server
 
 import java.io.OutputStream
-import java.net.InetAddress
 import java.net.URI
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
@@ -9,7 +8,7 @@ typealias Headers = com.sun.net.httpserver.Headers
 
 class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
-  val remoteAddress: InetAddress get() = original.remoteAddress.address // TODO: x-forwarded-for support
+  val remoteAddress: String get() = original.remoteAddress.address.hostAddress // TODO: x-forwarded-for support
 
   // TODO: defaultContentType or look into Accept header
   // TODO: getRequestURL (full)
