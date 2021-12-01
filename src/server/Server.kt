@@ -36,23 +36,24 @@ class Server(
     http.createContext(prefix) { ex ->
       requestScope.launch {
         val exchange = HttpExchange(ex)
-        process(exchange, route(exchange))
+        handle(exchange, route(exchange))
       }
     }
     block()
   }
 
-  fun assets(prefix: String, handler: AssetsHandler) = http.createContext(prefix) { ex ->
-    requestScope.launch(Dispatchers.IO) {
-      val exchange = HttpExchange(ex)
-      process(exchange, handler.takeIf { exchange.method == GET })
+  fun assets(prefix: String, handler: AssetsHandler) {
+    http.createContext(prefix) { ex ->
+      requestScope.launch(Dispatchers.IO) {
+        val exchange = HttpExchange(ex)
+        handle(exchange, handler.takeIf { exchange.method == GET })
+      }
     }
   }
 
-  private suspend fun process(exchange: HttpExchange, handler: Handler?) {
+  private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
-      val result = handler?.invoke(exchange)
-      if (result == null) return exchange.send(404, exchange.path)
+      val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
       exchange.send(200, result, defaultContentType)
     } catch (e: Throwable) {
       if (e is StatusCodeException) exchange.send(e.statusCode, e.message)
