@@ -16,7 +16,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   // TODO: cookies
   // TODO: session
 
-  val path get() = original.requestURI.path
+  val path: String get() = original.requestURI.path
   lateinit var pathParams: MatchGroupCollection internal set
   fun path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
 
