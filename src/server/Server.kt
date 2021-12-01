@@ -13,7 +13,7 @@ class Server(
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
   val globalDecorators: List<Decorator> = listOf(RequestLogger()),
-  val exceptionHandler: ExceptionHandler = ExceptionHandler(),
+  val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
 ) {
   private val logger = System.getLogger(javaClass.name)
@@ -54,7 +54,7 @@ class Server(
       val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
       if (!exchange.isResponseStarted) exchange.send(200, result, defaultContentType)
     } catch (e: Exception) {
-      exceptionHandler.handle(exchange, e)
+      exceptionHandler(exchange, e)
     } finally {
       exchange.close()
     }
