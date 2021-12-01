@@ -1,41 +1,58 @@
 package server
 
+import java.io.OutputStream
+import java.net.InetAddress
 import java.net.URI
 
-typealias HttpExchange = com.sun.net.httpserver.HttpExchange
+typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
-@Suppress("UNCHECKED_CAST")
-operator fun <T: Any?> HttpExchange.get(attr: String): T = getAttribute(attr) as T
-operator fun HttpExchange.set(attr: String, value: Any?) = setAttribute(attr, value)
+class HttpExchange(
+  private val original: OriginalHttpExchange,
+  val pathParams: MatchGroupCollection,
+  val attrs: MutableMap<Any, Any?> = mutableMapOf()
+): AutoCloseable {
+  val method = RequestMethod.valueOf(original.requestMethod)
+  val remoteAddress: InetAddress get() = original.remoteAddress.address // TODO: x-forwarded-for support
 
-var HttpExchange.pathParams: MatchGroupCollection
-  get() = get("pathParams")
-  set(value) = set("pathParams", value)
+  // TODO: defaultContentType or look into Accept header
+  // TODO: getRequestURL (full)
 
-fun HttpExchange.path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
+  val path get() = original.requestURI.path
+  fun path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
 
-var HttpExchange.queryParams: Map<String, String?>
-  get() = get("queryParams") ?: requestURI.queryParams.also { queryParams = it }
-  set(value) = set("queryParams", value)
+  val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
+  val queryParams: Map<String, String?> by lazy { original.requestURI.queryParams }
+  fun query(param: String) = queryParams[param]
 
-fun HttpExchange.query(param: String) = queryParams[param]
+  fun <T> attr(key: Any): T = attrs[key] as T
+  fun attr(key: Any, value: Any?) = attrs.put(key, value)
+
+  val headers: Headers get() = original.requestHeaders
+  fun header(key: String): String? = headers[key]?.firstOrNull()
+
+  val responseHeaders: Headers get() = original.responseHeaders
+  fun header(key: String, value: String) { responseHeaders[key] = value }
+
+  val responseCode: Int get() = original.responseCode
+  val responseStream: OutputStream get() = original.responseBody!!
+
+  fun send(resCode: Int, content: Any? = null, contentType: String? = null) {
+    val bytes = when (content) {
+      null, Unit -> null
+      is ByteArray -> content
+      else -> content.toString().toByteArray()
+    }
+    contentType?.let { responseHeaders["Content-Type"] = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
+    if (responseCode < 0) original.sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
+    bytes?.let { responseStream.write(it) }
+  }
+
+  override fun close() = original.close()
+
+  override fun toString() = "$method ${original.requestURI}"
+}
 
 val URI.queryParams: Map<String, String?> get() = rawQuery?.split('&')?.associate {
   it.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
 } ?: emptyMap()
-
-operator fun Headers.set(attr: String, value: String) = put(attr, listOf(value))
-
-val HttpExchange.requestPath: String get() = requestURI.path
-
-fun HttpExchange.send(resCode: Int, content: Any? = null, contentType: String? = null) {
-  val bytes = when (content) {
-    null, Unit -> null
-    is ByteArray -> content
-    else -> content.toString().toByteArray()
-  }
-  contentType?.let { responseHeaders["Content-Type"] = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
-  if (responseCode < 0) sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
-  bytes?.let { responseBody.write(it) }
-}

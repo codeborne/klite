@@ -33,14 +33,14 @@ class Routes {
   fun sayHello() = "Hello"
 
   @GET("/hello2")
-  fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.requestMethod} ${exchange.requestURI}"
+  fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
 
   @GET("/hello3")
-  fun HttpExchange.asContext() = "Hello3 $requestMethod $requestURI"
+  fun HttpExchange.asContext() = "Hello3 $method $path"
 
   @GET("/suspend")
   suspend fun suspend(exchange: HttpExchange) {
     delay(100)
-    "Suspend ${exchange.requestMethod} ${exchange.requestURI}"
+    "Suspend ${exchange.method} ${exchange.path}"
   }
 }

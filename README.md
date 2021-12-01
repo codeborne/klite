@@ -14,3 +14,8 @@ At attempt of very light-weight non-blocking http app template with support for 
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
   `@GET fun route() = provider.fetchData()` 
+
+## TODO 
+* authorization checks with Forbidden/Unauthorized by default
+* api key support?
+* session as signed cookie (works with multiple nodes by default)
