@@ -40,14 +40,14 @@ fun toHandler(instance: Any, f: KFunction<*>): Handler {
     try {
       val args = Array(params.size) { i ->
         val p = params[i]
-        val a = p.annotations.firstOrNull()
+        val name = p.name!!
         if (p.kind == INSTANCE) instance
         else if (p.type.classifier == HttpExchange::class) this
-        else when (a) {
-          is PathParam -> path(p.name!!)
-          is QueryParam -> query(p.name!!)
-          is HeaderParam -> requestHeaders[p.name]
-          is AttributeParam -> getAttribute(p.name)
+        else when (p.annotations.firstOrNull()) {
+          is PathParam -> path(name)
+          is QueryParam -> query(name)
+          is HeaderParam -> header(name)
+          is AttributeParam -> attr(name)
           else -> null
         }
         // TODO: convert to correct type
