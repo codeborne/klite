@@ -15,7 +15,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   // TODO: getRequestURL (full)
 
   val path get() = original.requestURI.path
-  lateinit var pathParams: MatchGroupCollection
+  lateinit var pathParams: MatchGroupCollection internal set
   fun path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
