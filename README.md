@@ -22,3 +22,8 @@ Inspired by SparkJava, Jooby, etc, but simpler and better.
 * authorization checks with Forbidden/Unauthorized by default
 * api key support?
 * session as signed cookie (works with multiple nodes by default)
+
+## Dependencies
+
+* Java 6+ built-in non-blocking jdk.httpserver
+* Reroutable Java 9+ System.Logger

@@ -1,10 +1,9 @@
 package server
 
 import server.RequestMethod.*
-import java.util.logging.Logger
 
 class Router(val prefix: String, private val regexer: PathParamRegexer, decorators: List<Decorator>) {
-  private val log = Logger.getLogger(javaClass.name)
+  private val logger = System.getLogger(javaClass.name)
   private val routes = mutableListOf<Route>()
   private val decorators = decorators.toMutableList()
 
@@ -25,7 +24,7 @@ class Router(val prefix: String, private val regexer: PathParamRegexer, decorato
   }
 
   fun add(route: Route) {
-    routes += route.copy(handler = decorators.wrap(route.handler)).apply { log.info("$method $prefix$path") }
+    routes += route.copy(handler = decorators.wrap(route.handler)).apply { logger.info("$method $prefix$path") }
   }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
