@@ -9,16 +9,16 @@ class Router(val prefix: String, private val regexer: PathParamRegexer) {
   private val routes = mutableListOf<Route>()
 
   internal fun route(exchange: HttpExchange): Handler? {
-    val suffix = exchange.requestPath.removePrefix(prefix)
-    return match(exchange.requestMethod, suffix)?.let { m ->
+    val suffix = exchange.path.removePrefix(prefix)
+    return match(exchange.method, suffix)?.let { m ->
       exchange.pathParams = m.second.groups
       m.first
     }
   }
 
-  private fun match(method: String, path: String): Pair<Handler, MatchResult>? {
+  private fun match(method: RequestMethod, path: String): Pair<Handler, MatchResult>? {
     for (route in routes) {
-      if (method != route.method.name) continue
+      if (method != route.method) continue
       route.path.matchEntire(path)?.let { return route.handler to it }
     }
     return null

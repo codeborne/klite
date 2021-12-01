@@ -2,7 +2,7 @@ package server
 
 import java.util.logging.Logger
 
-class RequestLogger: AsyncFilter() {
+class RequestLogger: AsyncFilter {
   private val log = Logger.getLogger(javaClass.name)
 
   override fun before(exchange: HttpExchange) {

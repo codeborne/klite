@@ -7,11 +7,7 @@ import java.net.URI
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
-class HttpExchange(
-  private val original: OriginalHttpExchange,
-  val pathParams: MatchGroupCollection,
-  val attrs: MutableMap<Any, Any?> = mutableMapOf()
-): AutoCloseable {
+class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
   val remoteAddress: InetAddress get() = original.remoteAddress.address // TODO: x-forwarded-for support
 
@@ -19,12 +15,14 @@ class HttpExchange(
   // TODO: getRequestURL (full)
 
   val path get() = original.requestURI.path
+  lateinit var pathParams: MatchGroupCollection
   fun path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Map<String, String?> by lazy { original.requestURI.queryParams }
   fun query(param: String) = queryParams[param]
 
+  val attrs: MutableMap<Any, Any?> = mutableMapOf()
   fun <T> attr(key: Any): T = attrs[key] as T
   fun attr(key: Any, value: Any?) = attrs.put(key, value)
 

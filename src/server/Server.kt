@@ -14,7 +14,7 @@ class Server(
   val port: Int = 8080,
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
-  val defaultFilters: List<AsyncFilter> = listOf(RequestLogger()),
+  val globalFilters: List<AsyncFilter> = listOf(RequestLogger()),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer()
 ) {
   private val log = Logger.getLogger(javaClass.name)
@@ -33,28 +33,31 @@ class Server(
   }
 
   fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer).apply {
-    val context = http.createContext(prefix) { exchange ->
+    http.createContext(prefix) { ex ->
       requestScope.launch {
+        val exchange = HttpExchange(ex)
         process(exchange, route(exchange))
       }
     }
-    context.filters.addAll(defaultFilters)
     block()
   }
 
-  fun assets(prefix: String, handler: AssetsHandler) = http.createContext(prefix) { exchange ->
+  fun assets(prefix: String, handler: AssetsHandler) = http.createContext(prefix) { ex ->
     requestScope.launch(Dispatchers.IO) {
-      process(exchange, handler.takeIf { exchange.requestMethod == GET.name })
+      val exchange = HttpExchange(ex)
+      process(exchange, handler.takeIf { exchange.method == GET })
     }
   }
 
   private suspend fun process(exchange: HttpExchange, handler: Handler?) {
     try {
-      val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.requestPath)
-      exchange.forEachFilter { after(exchange, null) }
+      globalFilters.forEach { it.before(exchange) }
+      val result = handler?.invoke(exchange)
+      globalFilters.forEach { it.after(exchange, null) }
+      if (result == null) return exchange.send(404, exchange.path)
       exchange.send(200, result, defaultContentType)
     } catch (e: Throwable) {
-      exchange.forEachFilter { after(exchange, e) }
+      globalFilters.forEach { it.after(exchange, e) }
       if (e is StatusCodeException) exchange.send(e.statusCode, e.message)
       else {
         log.log(Level.SEVERE, "Unhandled throwable", e)
@@ -63,9 +66,5 @@ class Server(
     } finally {
       exchange.close()
     }
-  }
-
-  private fun HttpExchange.forEachFilter(callback: AsyncFilter.() -> Unit) = httpContext.filters.forEach {
-    (it as? AsyncFilter)?.callback()
   }
 }
