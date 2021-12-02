@@ -13,7 +13,7 @@ class Server(
   val numWorkers: Int = getRuntime().availableProcessors(),
   val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
   val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
-  val contentRenderer: ContentRenderer = TextContentRenderer(),
+  val bodyRenderer: BodyRenderer = TextBodyRenderer(),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
 ) {
   private val logger = System.getLogger(javaClass.name)
@@ -52,7 +52,7 @@ class Server(
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
       val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
-      if (!exchange.isResponseStarted) contentRenderer.invoke(exchange, result)
+      if (!exchange.isResponseStarted) bodyRenderer.render(exchange, result)
     } catch (e: Exception) {
       exceptionHandler(exchange, e)
     } finally {
