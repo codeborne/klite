@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="sample/Launcher" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="LauncherKt" />
-    <module name="kotlin-server.sample.main" />
+    <module name="klite.sample.main" />
     <shortenClasspath name="NONE" />
     <option name="VM_PARAMETERS" value="--add-exports=java.base/sun.net.www=ALL-UNNAMED" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/sample" />
