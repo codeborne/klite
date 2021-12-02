@@ -1,4 +1,4 @@
-package server
+package klite
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

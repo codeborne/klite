@@ -1,7 +1,7 @@
 import kotlinx.coroutines.delay
-import server.HttpExchange
-import server.annotations.GET
-import server.annotations.Path
+import klite.HttpExchange
+import klite.annotations.GET
+import klite.annotations.Path
 
 @Path("/api")
 class Routes {

@@ -1,5 +1,5 @@
 @file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
-package server
+package klite
 
 import sun.net.www.MimeTable
 import java.io.IOException

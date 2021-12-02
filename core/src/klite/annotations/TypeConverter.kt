@@ -1,4 +1,4 @@
-package server.annotations
+package klite.annotations
 
 import java.lang.reflect.InvocationTargetException
 import java.util.*

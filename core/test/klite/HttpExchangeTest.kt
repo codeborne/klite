@@ -1,4 +1,4 @@
-package server
+package klite
 
 import io.mockk.every
 import io.mockk.mockk

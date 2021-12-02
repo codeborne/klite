@@ -1,4 +1,4 @@
-package server
+package klite
 
 typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String
 

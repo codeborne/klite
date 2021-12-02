@@ -1,6 +1,6 @@
-package server
+package klite
 
-import server.RequestMethod.*
+import klite.RequestMethod.*
 
 class Router(val prefix: String, private val regexer: PathParamRegexer, decorators: List<Decorator>) {
   private val logger = System.getLogger(javaClass.name)

@@ -1,8 +1,8 @@
-package server
+package klite
 
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.*
-import server.RequestMethod.GET
+import klite.RequestMethod.GET
 import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors

@@ -1,7 +1,7 @@
 import kotlinx.coroutines.delay
-import server.AssetsHandler
-import server.Server
-import server.annotations.annotated
+import klite.AssetsHandler
+import klite.Server
+import klite.annotations.annotated
 import java.nio.file.Path
 
 fun main() {

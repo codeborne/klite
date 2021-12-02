@@ -1,4 +1,4 @@
-package server
+package klite
 
 typealias Handler = suspend HttpExchange.() -> Any?
 typealias Decorator = suspend (exchange: HttpExchange, handler: Handler) -> Any?

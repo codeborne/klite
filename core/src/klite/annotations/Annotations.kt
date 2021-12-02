@@ -1,6 +1,6 @@
-package server.annotations
+package klite.annotations
 
-import server.*
+import klite.*
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KClass

@@ -1,4 +1,4 @@
-package server
+package klite
 
 import java.io.OutputStream
 import java.net.URI
