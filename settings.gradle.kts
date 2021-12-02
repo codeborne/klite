@@ -1,2 +1,2 @@
-rootProject.name = "kotlin-server"
+rootProject.name = "klite"
 include("core", "sample")

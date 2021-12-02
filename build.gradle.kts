@@ -4,6 +4,11 @@ plugins {
   kotlin("jvm") version "1.6.0"
 }
 
+allprojects {
+  group = rootProject.name
+  version = "0.1"
+}
+
 subprojects {
   apply(plugin = "kotlin")
 
@@ -32,14 +37,24 @@ subprojects {
     }
   }
 
-  tasks.test {
-    useJUnitPlatform()
-  }
-
   tasks.withType<KotlinCompile> {
     kotlinOptions {
       jvmTarget = "11"
       javaParameters = true
     }
+  }
+
+  tasks.jar {
+    archiveBaseName.set("${rootProject.name}-${project.name}")
+    manifest {
+      attributes(mapOf(
+        "Implementation-Title" to archiveBaseName,
+        "Implementation-Version" to project.version
+      ))
+    }
+  }
+
+  tasks.test {
+    useJUnitPlatform()
   }
 }
