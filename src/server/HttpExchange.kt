@@ -43,7 +43,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
       is ByteArray -> content
       else -> content.toString().toByteArray()
     }
-    contentType?.let { responseHeaders["Content-Type"] = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
+    contentType?.let { header("Content-Type", if (contentType.startsWith("text")) "$it; charset=UTF-8" else it) }
     if (statusCode < 0) original.sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
     bytes?.let { responseStream.write(it) }
   }
