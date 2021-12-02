@@ -1,5 +1,6 @@
 package klite
 
+import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 
@@ -32,11 +33,19 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   fun header(key: String): String? = headers[key]?.firstOrNull()
 
   val responseHeaders: Headers get() = original.responseHeaders
-  fun header(key: String, value: String) { responseHeaders[key] = value }
+  fun header(key: String, value: String?) { responseHeaders[key] = value }
 
   val statusCode: Int get() = original.responseCode
   val isResponseStarted get() = statusCode >= 0
+
+  val requestStream: InputStream get() = original.requestBody
   val responseStream: OutputStream get() = original.responseBody
+
+  var responseType: String?
+    get() = responseHeaders["Content-Type"]?.firstOrNull()
+    set(value) = header("Content-Type", value)
+
+  fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
 
   fun send(resCode: Int, content: Any? = null, contentType: String? = null) {
     val bytes = when (content) {
@@ -44,7 +53,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
       is ByteArray -> content
       else -> content.toString().toByteArray()
     }
-    contentType?.let { header("Content-Type", if (contentType.startsWith("text")) "$it; charset=UTF-8" else it) }
+    contentType?.let { responseType = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
     if (statusCode < 0) original.sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
     bytes?.let { responseStream.write(it) }
   }
