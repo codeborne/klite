@@ -24,6 +24,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   fun query(param: String) = queryParams[param]
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
+  @Suppress("UNCHECKED_CAST")
   fun <T> attr(key: Any): T = attrs[key] as T
   fun attr(key: Any, value: Any?) = attrs.put(key, value)
 
@@ -35,7 +36,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
 
   val statusCode: Int get() = original.responseCode
   val isResponseStarted get() = statusCode >= 0
-  val responseStream: OutputStream get() = original.responseBody!!
+  val responseStream: OutputStream get() = original.responseBody
 
   fun send(resCode: Int, content: Any? = null, contentType: String? = null) {
     val bytes = when (content) {
@@ -58,7 +59,3 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
 
   override fun toString() = "$method ${original.requestURI}"
 }
-
-val URI.queryParams: Map<String, String?> get() = rawQuery?.split('&')?.associate {
-  it.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
-} ?: emptyMap()
