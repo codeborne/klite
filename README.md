@@ -13,6 +13,7 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 * Zero dependencies - Java built-in jdk.httpserver is used under the hood
   * Perfect for microservices
   * But still possible to replace with something else
+* 12-factor apps by default
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
