@@ -1,4 +1,4 @@
-package server
+package server.annotations
 
 import java.lang.reflect.InvocationTargetException
 import java.util.*

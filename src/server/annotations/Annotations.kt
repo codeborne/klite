@@ -1,5 +1,6 @@
-package server
+package server.annotations
 
+import server.*
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KClass
@@ -22,7 +23,7 @@ import kotlin.reflect.jvm.javaMethod
 @Target(VALUE_PARAMETER) annotation class HeaderParam
 @Target(VALUE_PARAMETER) annotation class AttributeParam
 
-fun Server.routesFrom(routes: Any) {
+fun Server.annotated(routes: Any) {
   val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
   context(path) {
     routes::class.functions.forEach { f ->
@@ -50,7 +51,7 @@ fun toHandler(instance: Any, f: KFunction<*>): Handler {
           is AttributeParam -> attr(name)
           else -> null
         }
-        // TODO: convert to correct type
+        // TODO: use TypeConverter
       }
       f.callSuspend(*args)
     } catch (e: InvocationTargetException) {

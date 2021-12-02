@@ -1,5 +1,9 @@
 import kotlinx.coroutines.delay
-import server.*
+import server.AssetsHandler
+import server.HttpExchange
+import server.Server
+import server.annotations.GET
+import server.annotations.annotated
 import java.lang.Thread.currentThread
 import java.nio.file.Path
 
@@ -22,12 +26,12 @@ fun main() {
     context("/failure") {
       get { error("Failure") }
     }
-    routesFrom(Routes())
+    annotated(Routes())
     start()
   }
 }
 
-@server.Path("/api")
+@server.annotations.Path("/api")
 class Routes {
   @GET("/hello")
   fun sayHello() = "Hello"
