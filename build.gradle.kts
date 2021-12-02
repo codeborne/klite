@@ -4,38 +4,42 @@ plugins {
   kotlin("jvm") version "1.6.0"
 }
 
-repositories {
-  mavenCentral()
-}
+subprojects {
+  apply(plugin = "kotlin")
 
-dependencies {
-  implementation("org.jetbrains.kotlin:kotlin-reflect")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.2")
-
-  testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-  testImplementation("org.assertj:assertj-core:3.21.0")
-  testImplementation("io.mockk:mockk:1.12.0")
-}
-
-sourceSets {
-  named("main") {
-    java.srcDirs("src")
-    resources.srcDirs("src").exclude("**/*.kt")
+  repositories {
+    mavenCentral()
   }
-  named("test") {
-    java.srcDirs("test")
-    resources.srcDirs("test").exclude("**/*.kt")
+
+  dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.2")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    testImplementation("org.assertj:assertj-core:3.21.0")
+    testImplementation("io.mockk:mockk:1.12.1")
   }
-}
 
-tasks.test {
-  useJUnitPlatform()
-}
+  sourceSets {
+    named("main") {
+      java.srcDirs("src")
+      resources.srcDirs("src").exclude("**/*.kt")
+    }
+    named("test") {
+      java.srcDirs("test")
+      resources.srcDirs("test").exclude("**/*.kt")
+    }
+  }
 
-tasks.withType<KotlinCompile> {
-  kotlinOptions {
-    jvmTarget = "16"
-    javaParameters = true
+  tasks.test {
+    useJUnitPlatform()
+  }
+
+  tasks.withType<KotlinCompile> {
+    kotlinOptions {
+      jvmTarget = "11"
+      javaParameters = true
+    }
   }
 }
