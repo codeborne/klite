@@ -10,6 +10,7 @@ import kotlin.concurrent.thread
 
 class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
+  // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
   val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
   val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
