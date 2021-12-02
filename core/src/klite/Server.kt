@@ -11,9 +11,9 @@ import kotlin.concurrent.thread
 class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
   val numWorkers: Int = getRuntime().availableProcessors(),
-  val defaultContentType: String = "text/plain",
   val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
   val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
+  val resultRenderer: ResultRenderer = TextResultRenderer(),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
 ) {
   private val logger = System.getLogger(javaClass.name)
@@ -52,7 +52,7 @@ class Server(
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
       val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
-      if (!exchange.isResponseStarted) exchange.send(200, result, defaultContentType)
+      if (!exchange.isResponseStarted) resultRenderer.invoke(exchange, result)
     } catch (e: Exception) {
       exceptionHandler(exchange, e)
     } finally {
