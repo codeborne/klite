@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
 class Server(
-  val port: Int = 8080,
+  val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
   val numWorkers: Int = getRuntime().availableProcessors(),
   val defaultContentType: String = "text/plain",
   val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
