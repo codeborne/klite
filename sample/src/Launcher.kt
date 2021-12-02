@@ -4,7 +4,6 @@ import server.Server
 import server.annotations.annotated
 import java.nio.file.Path
 
-// run with --add-exports java.base/sun.net.www=ALL-UNNAMED to allow accessing Java built-in Mime types
 fun main() {
   System.setProperty("java.util.logging.config.file", "logging.properties")
 
