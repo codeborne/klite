@@ -12,11 +12,14 @@ interface BodyRenderer: ContentTypeProvider {
   fun render(output: OutputStream, value: Any?)
 }
 
-class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
-  override fun render(output: OutputStream, value: Any?) =
-    output.write(value.toString().toByteArray())
-}
-
 interface BodyParser: ContentTypeProvider {
   fun <T: Any> parse(input: InputStream, type: KClass<T>): T
+}
+
+class TextBody(override val contentType: String = "text/plain"): BodyRenderer, BodyParser {
+  override fun render(output: OutputStream, value: Any?) = output.write(value.toString().toByteArray())
+
+  override fun <T: Any> parse(input: InputStream, type: KClass<T>): T =
+    if (type == String::class) input.readBytes().decodeToString() as T
+    else throw UnsupportedOperationException("Cannot create $type")
 }

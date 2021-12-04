@@ -12,6 +12,7 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer:
 
   // TODO: defaultContentType or look into Accept header
   // TODO: getRequestURL (full)
+  // TODO: formParams
   // TODO: cookies
   // TODO: session
 
