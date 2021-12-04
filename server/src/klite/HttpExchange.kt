@@ -66,12 +66,10 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
   fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
 
   fun render(resCode: Int, body: Any?) {
-    // TODO: use multiple renderers
-    bodyRenderers.first().let { bodyRenderer ->
-      responseType = bodyRenderer.contentType
-      original.sendResponseHeaders(resCode, 0)
-      bodyRenderer.render(responseStream, body)
-    }
+    val renderer = bodyRenderers.find { accept(it.contentType) } ?: throw NotAcceptableException(header("Accept"))
+    responseType = renderer.contentType
+    original.sendResponseHeaders(resCode, 0)
+    renderer.render(responseStream, body)
   }
 
   fun send(resCode: Int, body: ByteArray? = null, contentType: String? = null) {

@@ -8,6 +8,7 @@ class NotFoundException(content: String): StatusCodeException(404, content)
 class ForbiddenException(content: String): StatusCodeException(403, content)
 class UnauthorizedException(content: String): StatusCodeException(401, content)
 class UnsupportedMediaTypeException(contentType: String?): StatusCodeException(415, "Unsupported content-type: $contentType")
+class NotAcceptableException(contentType: String?): StatusCodeException(406, "Unsupported content-type: $contentType")
 
 typealias ExceptionHandler = (exchange: HttpExchange, e: Exception) -> Unit
 

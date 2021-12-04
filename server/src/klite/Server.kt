@@ -53,8 +53,10 @@ class Server(
 
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
-      val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
-      if (!exchange.isResponseStarted) bodyRenderers.first().render(exchange.responseStream, result)
+      handler ?: return exchange.send(404, exchange.path)
+      val result = handler.invoke(exchange).takeIf { it != Unit }
+      if (!exchange.isResponseStarted)
+        exchange.render(if (result == null) 204 else 200, result)
     } catch (e: Exception) {
       exceptionHandler(exchange, e)
     } finally {
