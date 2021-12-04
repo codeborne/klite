@@ -5,7 +5,7 @@ typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String
 class RequestLogger(
   val formatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode in $ms ms" }
 ): Before {
-  private val logger = System.getLogger(javaClass.name)
+  private val logger = logger()
 
   override suspend fun before(exchange: HttpExchange) {
     val start = System.nanoTime()

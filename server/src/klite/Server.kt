@@ -1,8 +1,8 @@
 package klite
 
 import com.sun.net.httpserver.HttpServer
-import kotlinx.coroutines.*
 import klite.RequestMethod.GET
+import kotlinx.coroutines.*
 import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
@@ -12,14 +12,18 @@ class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
   // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
-  val registry: MutableRegistry = SimpleRegistry(),
-  val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
-  val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
-  val bodyRenderers: List<BodyRenderer> = listOf(TextBodyRenderer()),
-  val bodyParsers: List<BodyParser> = listOf(TextBodyParser(), FormUrlEncodedParser()),
-  val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
+  val registry: MutableRegistry = SimpleRegistry().apply {
+    register(TextBodyRenderer())
+    register(TextBodyParser())
+    register(FormUrlEncodedParser())
+  },
+  val globalDecorators: List<Decorator> = listOf(registry.require<RequestLogger>().toDecorator()),
+  val exceptionHandler: ExceptionHandler = registry.require<DefaultExceptionHandler>(),
+  val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
+  val bodyParsers: List<BodyParser> = registry.requireAll(),
+  val pathParamRegexer: PathParamRegexer = registry.require(),
 ): Registry by registry {
-  private val logger = System.getLogger(javaClass.name)
+  private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val http = HttpServer.create(InetSocketAddress(port), 0)

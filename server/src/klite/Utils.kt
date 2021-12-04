@@ -5,6 +5,7 @@ import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
 
+fun Any.logger() = System.getLogger(javaClass.name)
 inline fun Logger.info(msg: String) = log(Logger.Level.INFO, msg)
 
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!

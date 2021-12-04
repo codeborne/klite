@@ -3,7 +3,7 @@ package klite
 import klite.RequestMethod.*
 
 class Router(val prefix: String, private val regexer: PathParamRegexer, decorators: List<Decorator>) {
-  private val logger = System.getLogger(javaClass.name)
+  private val logger = logger()
   private val routes = mutableListOf<Route>()
   private val decorators = decorators.toMutableList()
 

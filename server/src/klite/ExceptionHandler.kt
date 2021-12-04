@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 typealias ExceptionHandler = (exchange: HttpExchange, e: Exception) -> ErrorResponse?
 
 open class DefaultExceptionHandler: ExceptionHandler {
-  private val logger = System.getLogger(javaClass.name)
+  private val logger = logger()
   private val statusCodes = mutableMapOf<KClass<Exception>, StatusCode>()
   private val handlers = mutableMapOf<KClass<Exception>, ExceptionHandler>()
 

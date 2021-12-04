@@ -18,7 +18,7 @@ class AssetsHandler(
   val textCharset: Charset = UTF_8
 ): Handler {
   private val mimeTypes = MimeTable.getDefaultTable()
-  private val logger = System.getLogger(javaClass.name)
+  private val logger = logger()
 
   init {
     if (!path.isDirectory()) logger.log(WARNING, "Assets path ${path.toAbsolutePath()} is not a readable directory")
