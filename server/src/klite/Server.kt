@@ -12,7 +12,7 @@ class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
   // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
-  val registry: MutableRegistry = SimpleRegistry().apply {
+  val registry: MutableRegistry = AutoCreatingRegistry().apply {
     register(TextBodyRenderer())
     register(TextBodyParser())
     register(FormUrlEncodedParser())
