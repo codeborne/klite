@@ -6,10 +6,10 @@ typealias ExceptionHandler = (exchange: HttpExchange, e: Exception) -> ErrorResp
 
 open class DefaultExceptionHandler: ExceptionHandler {
   private val logger = System.getLogger(javaClass.name)
-  private val statusCodes = mutableMapOf<KClass<Exception>, Int>()
+  private val statusCodes = mutableMapOf<KClass<Exception>, StatusCode>()
   private val handlers = mutableMapOf<KClass<Exception>, ExceptionHandler>()
 
-  fun add(e: KClass<Exception>, statusCode: Int) { statusCodes[e] = statusCode }
+  fun add(e: KClass<Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
   fun add(e: KClass<Exception>, handler: ExceptionHandler) { handlers[e] = handler }
 
   override fun invoke(exchange: HttpExchange, e: Exception) =
@@ -30,11 +30,11 @@ open class DefaultExceptionHandler: ExceptionHandler {
 
   open fun fallback(e: Exception): ErrorResponse {
     logger.log(System.Logger.Level.ERROR, "Unhandled exception", e)
-    return ErrorResponse(500, e.message)
+    return ErrorResponse(StatusCode.InternalServerError, e.message)
   }
 }
 
-data class ErrorResponse(val statusCode: Int, val message: String?) {
-  val reason: String = "TODO"
-  override fun toString() = "$statusCode $reason\n${message ?: ""}"
+data class ErrorResponse(val statusCode: StatusCode, val message: String?) {
+  val reason: String = StatusCode.reasons[statusCode] ?: ""
+  override fun toString() = "${statusCode.value} $reason\n${message ?: ""}"
 }

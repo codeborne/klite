@@ -53,10 +53,10 @@ class Server(
 
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
-      handler ?: return exchange.send(404, exchange.path)
+      handler ?: return exchange.send(StatusCode.NotFound, exchange.path)
       val result = handler.invoke(exchange).takeIf { it != Unit }
       if (!exchange.isResponseStarted)
-        exchange.render(if (result == null) 204 else 200, result)
+        exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
     } catch (e: Exception) {
       exceptionHandler(exchange, e)
     } finally {

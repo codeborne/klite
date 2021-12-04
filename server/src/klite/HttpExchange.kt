@@ -65,22 +65,22 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
 
   fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
 
-  fun render(resCode: Int, body: Any?) {
+  fun render(code: StatusCode, body: Any?) {
     val renderer = bodyRenderers.find { accept(it.contentType) } ?:
-      if (resCode >= 300) bodyRenderers.first() else throw NotAcceptableException(header("Accept"))
+      if (code.value >= 300) bodyRenderers.first() else throw NotAcceptableException(header("Accept"))
     responseType = renderer.contentType
-    original.sendResponseHeaders(resCode, 0)
+    original.sendResponseHeaders(code.value, 0)
     renderer.render(responseStream, body)
   }
 
-  fun send(resCode: Int, body: ByteArray? = null, contentType: String? = null) {
+  fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
     responseType = contentType
-    original.sendResponseHeaders(resCode, body?.size?.toLong() ?: -1)
+    original.sendResponseHeaders(code.value, body?.size?.toLong() ?: -1)
     body?.let { responseStream.write(it) }
   }
 
-  fun send(resCode: Int, body: String?, contentType: String? = null) =
-    send(resCode, body?.toByteArray(), "$contentType; charset=UTF-8")
+  fun send(code: StatusCode, body: String?, contentType: String? = null) =
+    send(code, body?.toByteArray(), "$contentType; charset=UTF-8")
 
   private val onCompleteHandlers = mutableListOf<Runnable>()
   fun onComplete(handler: Runnable) { onCompleteHandlers += handler }

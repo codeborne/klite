@@ -76,7 +76,7 @@ class HttpExchangeTest {
 
   @Test
   fun `send text`() {
-    exchange.send(200, "Hello", "text/custom")
+    exchange.send(StatusCode.OK, "Hello", "text/custom")
     verify {
       original.responseHeaders["Content-Type"] = "text/custom; charset=UTF-8"
       original.sendResponseHeaders(200, 5)
@@ -86,7 +86,7 @@ class HttpExchangeTest {
 
   @Test
   fun `send binary`() {
-    exchange.send(201, "XXX".toByteArray(), "image/custom")
+    exchange.send(StatusCode.Created, "XXX".toByteArray(), "image/custom")
     verify {
       original.responseHeaders["Content-Type"] = "image/custom"
       original.sendResponseHeaders(201, 3)
