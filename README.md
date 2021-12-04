@@ -1,5 +1,7 @@
 # klite
 
+[![Build & Test](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml/badge.svg)](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml)
+
 At attempt of very light-weight non-blocking http framework for Kotlin coroutines.
 
 Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
