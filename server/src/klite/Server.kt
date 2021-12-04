@@ -45,7 +45,7 @@ class Server(
   fun assets(prefix: String, handler: AssetsHandler) {
     http.createContext(prefix) { ex ->
       requestScope.launch(Dispatchers.IO) {
-        val exchange = HttpExchange(ex, emptyList(), emptyList())
+        val exchange = HttpExchange(ex, bodyRenderers, emptyList())
         handle(exchange, handler.takeIf { exchange.method == GET })
       }
     }

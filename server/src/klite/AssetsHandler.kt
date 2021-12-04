@@ -30,20 +30,20 @@ class AssetsHandler(
       var file = path / exchange.path.substring(1)
       if (!file.startsWith(path)) return exchange.send(403, exchange.path)
       if (file.isDirectory()) file /= indexFile
-      if (!file.exists()) return exchange.send(404, exchange.path)
-      send(file, exchange)
+      if (!file.exists()) throw NotFoundException(exchange.path)
+      exchange.send(file)
     } catch (e: IOException) {
-      exchange.send(404, e.message)
+      throw NotFoundException(e.message)
     }
   }
 
-  private fun send(file: Path, exchange: HttpExchange) {
+  private fun HttpExchange.send(file: Path) {
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
-    if (lastModified == exchange.header("If-Modified-Since")) return exchange.send(304)
-    exchange.header("Last-Modified", lastModified)
-    exchange.header("Cache-Control", cacheControl)
+    if (lastModified == header("If-Modified-Since")) return send(304)
+    header("Last-Modified", lastModified)
+    header("Cache-Control", cacheControl)
     var contentType = mimeTypes.getContentTypeFor(file.name)
     if (contentType.startsWith("text/")) contentType += "; charset=$textCharset"
-    exchange.send(200, file.readBytes(), contentType)
+    send(200, file.readBytes(), contentType)
   }
 }

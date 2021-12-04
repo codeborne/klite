@@ -66,7 +66,8 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
   fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
 
   fun render(resCode: Int, body: Any?) {
-    val renderer = bodyRenderers.find { accept(it.contentType) } ?: throw NotAcceptableException(header("Accept"))
+    val renderer = bodyRenderers.find { accept(it.contentType) } ?:
+      if (resCode >= 300) bodyRenderers.first() else throw NotAcceptableException(header("Accept"))
     responseType = renderer.contentType
     original.sendResponseHeaders(resCode, 0)
     renderer.render(responseStream, body)
