@@ -12,7 +12,8 @@ import kotlin.io.path.*
 class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
-  val cacheControl: String = "max-age=86400"
+  val cacheControl: String = "max-age=86400",
+  val textCharset: String = "UTF-8"
 ): Handler {
   private val mimeTypes = MimeTable.getDefaultTable()
   private val logger = System.getLogger(javaClass.name)
@@ -40,7 +41,7 @@ class AssetsHandler(
     exchange.header("Last-Modified", lastModified)
     exchange.header("Cache-Control", cacheControl)
     var contentType = mimeTypes.getContentTypeFor(file.name)
-    if (contentType.startsWith("text/")) contentType += "; charset=UTF-8"
+    if (contentType.startsWith("text/")) contentType += "; charset=$textCharset"
     exchange.send(200, file.readBytes(), contentType)
   }
 }
