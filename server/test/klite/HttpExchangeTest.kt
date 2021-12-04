@@ -36,6 +36,13 @@ class HttpExchangeTest {
   }
 
   @Test
+  fun cookies() {
+    every { exchange.header("Cookie") } returns "Hello=World; Second=123%20456"
+    assertThat(exchange.cookies).isEqualTo(mapOf("Hello" to "World", "Second" to "123 456"))
+    assertThat(exchange.cookie("Hello")).isEqualTo("World")
+  }
+
+  @Test
   fun `body as text`() {
     every { exchange.requestType } returns null
     every { original.requestBody } answers { "123".byteInputStream() }

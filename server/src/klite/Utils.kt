@@ -10,8 +10,11 @@ inline fun Logger.info(msg: String) = log(Logger.Level.INFO, msg)
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!
 fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
 
-fun urlDecodeParams(params: String?) = params?.split('&')?.associate {
-  it.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
-} ?: emptyMap()
+typealias Params = Map<String, String?>
 
-val URI.queryParams: Map<String, String?> get() = urlDecodeParams(rawQuery)
+fun urlDecodeParams(params: String?): Params = params?.split('&')?.associate(::keyValue) ?: emptyMap()
+private fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
+
+val URI.queryParams: Params get() = urlDecodeParams(rawQuery)
+
+fun decodeCookies(cookies: String?): Params = cookies?.split(';')?.associate { keyValue(it.trim()) } ?: emptyMap()

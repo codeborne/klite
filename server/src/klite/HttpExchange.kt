@@ -6,7 +6,6 @@ import kotlin.reflect.KClass
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
-typealias Params = Map<String, String?>
 
 class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers: List<BodyRenderer>, val bodyParsers: List<BodyParser>): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
@@ -34,6 +33,9 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
 
   val bodyParams: Params by lazy { body() }
   fun body(param: String) = bodyParams[param]
+
+  val cookies: Params by lazy { decodeCookies(header("Cookie")) }
+  fun cookie(key: String) = cookies[key]
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
