@@ -4,16 +4,18 @@ package klite
 import sun.net.www.MimeTable
 import java.io.IOException
 import java.lang.System.Logger.Level.WARNING
+import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import kotlin.io.path.*
+import kotlin.text.Charsets.UTF_8
 
 class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
   val cacheControl: String = "max-age=86400",
-  val textCharset: String = "UTF-8"
+  val textCharset: Charset = UTF_8
 ): Handler {
   private val mimeTypes = MimeTable.getDefaultTable()
   private val logger = System.getLogger(javaClass.name)
