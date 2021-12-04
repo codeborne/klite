@@ -39,6 +39,8 @@ class AssetsHandler(
     if (lastModified == exchange.header("If-Modified-Since")) return exchange.send(304)
     exchange.header("Last-Modified", lastModified)
     exchange.header("Cache-Control", cacheControl)
-    exchange.send(200, file.readBytes(), mimeTypes.getContentTypeFor(file.name))
+    var contentType = mimeTypes.getContentTypeFor(file.name)
+    if (contentType.startsWith("text/")) contentType += "; charset=UTF-8"
+    exchange.send(200, file.readBytes(), contentType)
   }
 }
