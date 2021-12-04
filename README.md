@@ -1,8 +1,8 @@
-# klite
+# Klite
 
 [![Build & Test](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml/badge.svg)](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml)
 
-At attempt of very light-weight non-blocking http framework for Kotlin coroutines.
+A very light-weight (lite) non-blocking http framework for Kotlin coroutines.
 
 Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 
@@ -19,7 +19,7 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
-  `@GET fun route() = provider.fetchData()`
+  `@GET suspend fun route() = provider.fetchData()`
 
 ## TODO
 * authorization checks with Forbidden/Unauthorized by default
