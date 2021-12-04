@@ -1,5 +1,7 @@
 package klite
 
+import kotlin.reflect.KClass
+
 interface BodyRenderer {
   fun render(exchange: HttpExchange, value: Any?)
 }
@@ -11,5 +13,5 @@ class TextBodyRenderer(val contentType: String = "text/plain"): BodyRenderer {
 }
 
 interface BodyParser {
-  fun parse(exchange: HttpExchange, contentType: String)
+  fun <T: Any> parse(exchange: HttpExchange, type: KClass<T>): T
 }

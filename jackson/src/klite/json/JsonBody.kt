@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import klite.BodyParser
 import klite.BodyRenderer
 import klite.HttpExchange
+import kotlin.reflect.KClass
 
 fun buildMapper() = JsonMapper.builder()
   .addModule(JavaTimeModule())
@@ -20,13 +21,11 @@ fun buildMapper() = JsonMapper.builder()
   .build()
 
 class JsonBody(
-  val objectMapper: ObjectMapper = buildMapper()
+  val mapper: ObjectMapper = buildMapper()
 ): BodyParser, BodyRenderer {
-  override fun parse(exchange: HttpExchange, contentType: String) {
-    TODO("Not yet implemented")
-  }
+  override fun <T: Any> parse(exchange: HttpExchange, type: KClass<T>): T =
+    mapper.readValue(exchange.requestStream, type.java)
 
-  override fun render(exchange: HttpExchange, value: Any?) {
-    TODO("Not yet implemented")
-  }
+  override fun render(exchange: HttpExchange, value: Any?) =
+    mapper.writeValue(exchange.responseStream, value)
 }
