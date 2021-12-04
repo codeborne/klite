@@ -4,7 +4,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.io.ByteArrayInputStream
 import java.net.URI
 
 class HttpExchangeTest {
@@ -14,7 +17,11 @@ class HttpExchangeTest {
     every { requestURI } returns URI("/hello?hello=world")
     every { responseCode } returns -1
   }
-  val exchange = HttpExchange(original, mockk())
+  val bodyRenderer = mockk<BodyRenderer>()
+  val customParser = mockk<BodyParser> {
+    every { contentType } returns "application/specific"
+  }
+  val exchange = HttpExchange(original, listOf(bodyRenderer), listOf(TextBodyParser(), customParser))
 
   @Test
   fun path() {
@@ -26,6 +33,30 @@ class HttpExchangeTest {
   fun queryParams() {
     assertThat(exchange.query).isEqualTo("?hello=world")
     assertThat(exchange.queryParams).isEqualTo(mapOf("hello" to "world"))
+  }
+
+  @Test
+  fun `body as text`() {
+    every { exchange.requestType } returns null
+    every { original.requestBody } answers { "123".byteInputStream() }
+    assertThat(exchange.body<String>()).isEqualTo("123")
+    assertThat(exchange.body<Int>()).isEqualTo(123)
+  }
+
+  @Test
+  fun `body with specific content-type`() {
+    every { exchange.requestType } returns customParser.contentType
+    val input = "{PI}".byteInputStream()
+    every { original.requestBody } answers { input }
+    every { customParser.parse(input, Double::class) } returns Math.PI
+    assertThat(exchange.body<Double>()).isEqualTo(Math.PI)
+  }
+
+  @Test
+  fun `body with unsupported content-type`() {
+    every { exchange.requestType } returns "unsupported"
+    every { original.requestBody } returns "".byteInputStream()
+    assertThrows<UnsupportedMediaTypeException> { exchange.body<String>() }
   }
 
   @Test

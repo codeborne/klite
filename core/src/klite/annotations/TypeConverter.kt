@@ -5,7 +5,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
-private typealias Creator<T> = (s: String) -> T?
+private typealias Creator<T> = (s: String) -> T
 
 open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) {
   private val creatorCache = ConcurrentHashMap(mapOf(
@@ -14,7 +14,8 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
 
   inline fun <reified T: Any> fromString(s: String) = fromString(s, T::class)
 
-  fun <T: Any> fromString(s: String, type: KClass<T>): T? =
+  @Suppress("UNCHECKED_CAST")
+  fun <T: Any> fromString(s: String, type: KClass<T>): T =
     (creatorCache[type] as? Creator<T> ?: findCreator(type).also { creatorCache[type] = it }).invoke(s)
 
   private fun <T: Any> findCreator(type: KClass<T>): Creator<T> =

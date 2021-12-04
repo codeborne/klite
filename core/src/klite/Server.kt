@@ -14,7 +14,8 @@ class Server(
   val numWorkers: Int = getRuntime().availableProcessors(),
   val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
   val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
-  val defaultBodyRenderer: BodyRenderer = TextBodyRenderer(),
+  val bodyRenderers: List<BodyRenderer> = listOf(TextBodyRenderer()),
+  val bodyParsers: List<BodyParser> = listOf(TextBodyParser(), FormUrlEncodedParser()),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
 ) {
   private val logger = System.getLogger(javaClass.name)
@@ -35,7 +36,7 @@ class Server(
   fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators).apply {
     http.createContext(prefix) { ex ->
       requestScope.launch {
-        HttpExchange(ex, defaultBodyRenderer).let { handle(it, route(it)) }
+        HttpExchange(ex, bodyRenderers, bodyParsers).let { handle(it, route(it)) }
       }
     }
     block()
@@ -44,7 +45,7 @@ class Server(
   fun assets(prefix: String, handler: AssetsHandler) {
     http.createContext(prefix) { ex ->
       requestScope.launch(Dispatchers.IO) {
-        val exchange = HttpExchange(ex, defaultBodyRenderer)
+        val exchange = HttpExchange(ex, emptyList(), emptyList())
         handle(exchange, handler.takeIf { exchange.method == GET })
       }
     }
@@ -53,7 +54,7 @@ class Server(
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
       val result = handler?.invoke(exchange) ?: return exchange.send(404, exchange.path)
-      if (!exchange.isResponseStarted) defaultBodyRenderer.render(exchange.responseStream, result)
+      if (!exchange.isResponseStarted) bodyRenderers.first().render(exchange.responseStream, result)
     } catch (e: Exception) {
       exceptionHandler(exchange, e)
     } finally {

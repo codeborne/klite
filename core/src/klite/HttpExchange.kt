@@ -2,17 +2,18 @@ package klite
 
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.reflect.KClass
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
+typealias Params = Map<String, String?>
 
-class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer: BodyRenderer): AutoCloseable {
+class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers: List<BodyRenderer>, val bodyParsers: List<BodyParser>): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
   val remoteAddress: String get() = original.remoteAddress.address.hostAddress // TODO: x-forwarded-for support
 
   // TODO: defaultContentType or look into Accept header
   // TODO: getRequestURL (full)
-  // TODO: formParams
   // TODO: cookies
   // TODO: session
 
@@ -21,8 +22,18 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer:
   fun path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
-  val queryParams: Map<String, String?> by lazy { original.requestURI.queryParams }
+  val queryParams: Params by lazy { original.requestURI.queryParams }
   fun query(param: String) = queryParams[param]
+
+  inline fun <reified T: Any> body(): T = body(T::class)
+  fun <T: Any> body(type: KClass<T>): T {
+    val contentType = requestType ?: "text/plain"
+    return bodyParsers.find { contentType.startsWith(it.contentType) }?.parse(requestStream, type) ?:
+      throw UnsupportedMediaTypeException(requestType)
+  }
+
+  val bodyParams: Params by lazy { body() }
+  fun body(param: String) = bodyParams[param]
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
@@ -30,7 +41,7 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer:
   fun attr(key: Any, value: Any?) = attrs.put(key, value)
 
   val headers: Headers get() = original.requestHeaders
-  fun header(key: String): String? = headers[key]?.firstOrNull()
+  fun header(key: String): String? = headers.getFirst(key)
 
   val responseHeaders: Headers get() = original.responseHeaders
   fun header(key: String, value: String) { responseHeaders[key] = value }
@@ -38,9 +49,10 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer:
   val statusCode: Int get() = original.responseCode
   val isResponseStarted get() = statusCode >= 0
 
+  val requestType get() = header("Content-Type")
   val requestStream: InputStream get() = original.requestBody
-  val responseStream: OutputStream get() = original.responseBody
 
+  val responseStream: OutputStream get() = original.responseBody
   var responseType: String?
     get() = responseHeaders["Content-Type"]?.firstOrNull()
     set(value) { value?.let { header("Content-Type", it) } }
@@ -48,9 +60,12 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer:
   fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
 
   fun render(resCode: Int, body: Any?) {
-    responseType = bodyRenderer.contentType
-    original.sendResponseHeaders(resCode, 0)
-    bodyRenderer.render(responseStream, body)
+    // TODO: use multiple renderers
+    bodyRenderers.first().let { bodyRenderer ->
+      responseType = bodyRenderer.contentType
+      original.sendResponseHeaders(resCode, 0)
+      bodyRenderer.render(responseStream, body)
+    }
   }
 
   fun send(resCode: Int, body: ByteArray? = null, contentType: String? = null) {
