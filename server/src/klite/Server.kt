@@ -12,12 +12,13 @@ class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
   // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
+  val registry: MutableRegistry = SimpleRegistry(),
   val globalDecorators: List<Decorator> = listOf(RequestLogger().toDecorator()),
   val exceptionHandler: ExceptionHandler = DefaultExceptionHandler(),
   val bodyRenderers: List<BodyRenderer> = listOf(TextBodyRenderer()),
   val bodyParsers: List<BodyParser> = listOf(TextBodyParser(), FormUrlEncodedParser()),
   val pathParamRegexer: PathParamRegexer = PathParamRegexer(),
-) {
+): Registry by registry {
   private val logger = System.getLogger(javaClass.name)
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
