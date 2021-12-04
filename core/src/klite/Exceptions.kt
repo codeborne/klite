@@ -33,6 +33,6 @@ open class DefaultExceptionHandler: ExceptionHandler {
 
   open fun fallback(exchange: HttpExchange, e: Exception) {
     logger.log(ERROR, "Unhandled exception", e)
-    if (!exchange.isResponseStarted) exchange.send(500, e)
+    if (!exchange.isResponseStarted) exchange.send(500, e.message)
   }
 }

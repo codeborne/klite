@@ -14,7 +14,7 @@ class HttpExchangeTest {
     every { requestURI } returns URI("/hello?hello=world")
     every { responseCode } returns -1
   }
-  val exchange = HttpExchange(original)
+  val exchange = HttpExchange(original, mockk())
 
   @Test
   fun path() {

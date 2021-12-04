@@ -36,7 +36,7 @@ class AssetsHandler(
 
   private fun send(file: Path, exchange: HttpExchange) {
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
-    if (lastModified == exchange.header("If-Modified-Since")) return exchange.send(304, null)
+    if (lastModified == exchange.header("If-Modified-Since")) return exchange.send(304)
     exchange.header("Last-Modified", lastModified)
     exchange.header("Cache-Control", cacheControl)
     exchange.send(200, file.readBytes(), mimeTypes.getContentTypeFor(file.name))

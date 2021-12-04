@@ -1,17 +1,22 @@
 package klite
 
+import java.io.InputStream
+import java.io.OutputStream
 import kotlin.reflect.KClass
 
-interface BodyRenderer {
-  fun render(exchange: HttpExchange, value: Any?)
+interface ContentTypeProvider {
+  val contentType: String
 }
 
-class TextBodyRenderer(val contentType: String = "text/plain"): BodyRenderer {
-  override fun render(exchange: HttpExchange, value: Any?) {
-    exchange.send(200, value, contentType)
-  }
+interface BodyRenderer: ContentTypeProvider {
+  fun render(output: OutputStream, value: Any?)
 }
 
-interface BodyParser {
-  fun <T: Any> parse(exchange: HttpExchange, type: KClass<T>): T
+class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
+  override fun render(output: OutputStream, value: Any?) =
+    output.write(value.toString().toByteArray())
+}
+
+interface BodyParser: ContentTypeProvider {
+  fun <T: Any> parse(input: InputStream, type: KClass<T>): T
 }

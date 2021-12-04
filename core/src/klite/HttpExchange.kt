@@ -2,12 +2,11 @@ package klite
 
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.URI
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
-class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
+class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderer: BodyRenderer): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
   val remoteAddress: String get() = original.remoteAddress.address.hostAddress // TODO: x-forwarded-for support
 
@@ -33,7 +32,7 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
   fun header(key: String): String? = headers[key]?.firstOrNull()
 
   val responseHeaders: Headers get() = original.responseHeaders
-  fun header(key: String, value: String?) { responseHeaders[key] = value }
+  fun header(key: String, value: String) { responseHeaders[key] = value }
 
   val statusCode: Int get() = original.responseCode
   val isResponseStarted get() = statusCode >= 0
@@ -43,20 +42,24 @@ class HttpExchange(private val original: OriginalHttpExchange): AutoCloseable {
 
   var responseType: String?
     get() = responseHeaders["Content-Type"]?.firstOrNull()
-    set(value) = header("Content-Type", value)
+    set(value) { value?.let { header("Content-Type", it) } }
 
   fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
 
-  fun send(resCode: Int, content: Any? = null, contentType: String? = null) {
-    val bytes = when (content) {
-      null, Unit -> null
-      is ByteArray -> content
-      else -> content.toString().toByteArray()
-    }
-    contentType?.let { responseType = if (contentType.startsWith("text")) "$it; charset=UTF-8" else it }
-    if (statusCode < 0) original.sendResponseHeaders(resCode, bytes?.size?.toLong() ?: -1)
-    bytes?.let { responseStream.write(it) }
+  fun render(resCode: Int, body: Any?) {
+    responseType = bodyRenderer.contentType
+    original.sendResponseHeaders(resCode, 0)
+    bodyRenderer.render(responseStream, body)
   }
+
+  fun send(resCode: Int, body: ByteArray? = null, contentType: String? = null) {
+    responseType = contentType
+    original.sendResponseHeaders(resCode, body?.size?.toLong() ?: -1)
+    body?.let { responseStream.write(it) }
+  }
+
+  fun send(resCode: Int, body: String?, contentType: String? = null) =
+    send(resCode, body?.toByteArray(), "$contentType; charset=UTF-8")
 
   private val onCompleteHandlers = mutableListOf<Runnable>()
   fun onComplete(handler: Runnable) { onCompleteHandlers += handler }
