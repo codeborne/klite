@@ -3,11 +3,10 @@ package klite
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import klite.Cookie.SameSite.Strict
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.ByteArrayInputStream
 import java.net.URI
 
 class HttpExchangeTest {
@@ -36,10 +35,19 @@ class HttpExchangeTest {
   }
 
   @Test
-  fun cookies() {
+  fun `request cookies`() {
     every { exchange.header("Cookie") } returns "Hello=World; Second=123%20456"
     assertThat(exchange.cookies).isEqualTo(mapOf("Hello" to "World", "Second" to "123 456"))
     assertThat(exchange.cookie("Hello")).isEqualTo("World")
+  }
+
+  @Test
+  fun `response cookies`() {
+    exchange.cookie("Hello", "World")
+    verify { original.responseHeaders.add("Set-Cookie", "Hello=World") }
+
+    exchange += Cookie("LANG", "et", sameSite = Strict, domain = "angryip.org")
+    verify { original.responseHeaders.add("Set-Cookie", "LANG=et; Domain=angryip.org; SameSite=Strict") }
   }
 
   @Test

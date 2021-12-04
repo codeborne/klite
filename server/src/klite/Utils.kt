@@ -13,8 +13,6 @@ fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
 typealias Params = Map<String, String?>
 
 fun urlDecodeParams(params: String?): Params = params?.split('&')?.associate(::keyValue) ?: emptyMap()
-private fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
+internal fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
 
 val URI.queryParams: Params get() = urlDecodeParams(rawQuery)
-
-fun decodeCookies(cookies: String?): Params = cookies?.split(';')?.associate { keyValue(it.trim()) } ?: emptyMap()
