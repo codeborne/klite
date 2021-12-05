@@ -1,18 +1,24 @@
 package klite
 
+import klite.StatusCode.Companion.BadRequest
+import klite.StatusCode.Companion.NotFound
 import kotlin.reflect.KClass
 
 typealias ExceptionHandler = (exchange: HttpExchange, e: Exception) -> ErrorResponse?
 
-open class DefaultExceptionHandler: ExceptionHandler {
+open class ErrorHandler {
   private val logger = logger()
-  private val statusCodes = mutableMapOf<KClass<Exception>, StatusCode>()
-  private val handlers = mutableMapOf<KClass<Exception>, ExceptionHandler>()
+  private val handlers = mutableMapOf<KClass<out Exception>, ExceptionHandler>()
+  private val statusCodes = mutableMapOf<KClass<out Exception>, StatusCode>(
+    NoSuchElementException::class to NotFound,
+    IllegalArgumentException::class to BadRequest,
+    IllegalStateException::class to BadRequest
+  )
 
-  fun add(e: KClass<Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
-  fun add(e: KClass<Exception>, handler: ExceptionHandler) { handlers[e] = handler }
+  fun on(e: KClass<out Exception>, handler: ExceptionHandler) { handlers[e] = handler }
+  fun on(e: KClass<out Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
-  override fun invoke(exchange: HttpExchange, e: Exception) =
+  operator fun invoke(exchange: HttpExchange, e: Exception) =
     toResponse(exchange, e)?.also { exchange.render(it.statusCode, it) }
 
   open fun toResponse(exchange: HttpExchange, e: Exception): ErrorResponse? {

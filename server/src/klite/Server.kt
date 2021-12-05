@@ -20,7 +20,7 @@ class Server(
     register<FormUrlEncodedParser>()
   },
   val globalDecorators: List<Decorator> = registry.requireAllDecorators(),
-  val exceptionHandler: ExceptionHandler = registry.require<DefaultExceptionHandler>(),
+  val errorHandler: ErrorHandler = registry.require(),
   val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
   val bodyParsers: List<BodyParser> = registry.requireAll(),
   val pathParamRegexer: PathParamRegexer = registry.require(),
@@ -43,7 +43,7 @@ class Server(
     http.stop(delaySec)
   }
 
-  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators).apply {
+  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).apply {
     http.createContext(prefix) { ex ->
       requestScope.launch {
         httpExchangeImpl.primaryConstructor!!.call(ex, bodyRenderers, bodyParsers).let { handle(it, route(it)) }
@@ -68,7 +68,7 @@ class Server(
       if (!exchange.isResponseStarted)
         exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
     } catch (e: Exception) {
-      exceptionHandler(exchange, e)
+      errorHandler(exchange, e)
     } finally {
       exchange.close()
     }
