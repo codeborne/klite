@@ -24,19 +24,17 @@ import kotlin.reflect.jvm.javaMethod
 @Target(VALUE_PARAMETER) annotation class CookieParam
 @Target(VALUE_PARAMETER) annotation class AttrParam
 
-fun Server.annotated(routes: Any) {
-  val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
-  context(path) {
-    routes::class.functions.forEach { f ->
-      val a = f.annotations.firstOrNull() ?: return@forEach
-      val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
-      val subPath = a.annotationClass.members.first().call(a) as String
-      add(Route(method, pathParamRegexer.from(subPath), toHandler(routes, f)))
-    }
+fun Router.annotated(routes: Any) {
+  val path = routes::class.annotation<Path>()?.value ?: ""
+  routes::class.functions.forEach { f ->
+    val a = f.annotations.firstOrNull() ?: return@forEach
+    val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
+    val subPath = a.annotationClass.members.first().call(a) as String
+    add(Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f)))
   }
 }
 
-inline fun <reified T: Any> Server.annotated() = annotated(require<T>())
+inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
 
 internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
   val converter = require<TypeConverter>()

@@ -4,11 +4,12 @@ import klite.RequestMethod.*
 
 class Router(
   val prefix: String,
-  private val regexer: PathParamRegexer,
+  val registry: Registry,
+  val pathParamRegexer: PathParamRegexer,
   decorators: List<Decorator>,
   bodyRenderers: List<BodyRenderer>,
   bodyParsers: List<BodyParser>
-) {
+): Registry by registry {
   private val logger = logger()
   private val routes = mutableListOf<Route>()
   private val decorators = decorators.toMutableList()
@@ -36,16 +37,16 @@ class Router(
   }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
-  fun get(path: String = "", handler: Handler) = get(regexer.from(path), handler)
+  fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
 
   fun post(path: Regex, handler: Handler) = add(Route(POST, path, handler))
-  fun post(path: String = "", handler: Handler) = post(regexer.from(path), handler)
+  fun post(path: String = "", handler: Handler) = post(pathParamRegexer.from(path), handler)
 
   fun put(path: Regex, handler: Handler) = add(Route(PUT, path, handler))
-  fun put(path: String = "", handler: Handler) = put(regexer.from(path), handler)
+  fun put(path: String = "", handler: Handler) = put(pathParamRegexer.from(path), handler)
 
   fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler))
-  fun delete(path: String = "", handler: Handler) = delete(regexer.from(path), handler)
+  fun delete(path: String = "", handler: Handler) = delete(pathParamRegexer.from(path), handler)
 
   fun decorator(decorator: Decorator) { decorators += decorator }
   fun before(before: Before) = decorator(before.toDecorator())

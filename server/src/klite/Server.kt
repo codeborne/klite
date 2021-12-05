@@ -43,7 +43,7 @@ class Server(
     http.stop(delaySec)
   }
 
-  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).apply {
+  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).apply {
     http.createContext(prefix) { ex ->
       requestScope.launch {
         httpExchangeImpl.primaryConstructor!!.call(ex, bodyRenderers, bodyParsers).let { handle(it, route(it)) }

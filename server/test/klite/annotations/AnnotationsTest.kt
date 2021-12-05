@@ -2,8 +2,10 @@ package klite.annotations
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import klite.HttpExchange
-import klite.Server
+import klite.Router
+import klite.require
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -22,27 +24,32 @@ class AnnotationsTest {
                @HeaderParam header: Long, @CookieParam cookie: Locale, @AttrParam attr: BigInteger
     ) = "Hello $body $world $date $header $cookie $attr"
   }
-  val server = Server()
+  val router = mockk<Router>(relaxed = true) {
+    every { require<TypeConverter>() } returns TypeConverter()
+  }
 
   @Test
   fun `annotated instance`() {
-    server.annotated(Routes())
+    router.annotated(Routes())
+    verify(exactly = 2) { router.add(any()) }
   }
 
   @Test
   fun `annotated class`() {
-    server.annotated<Routes>()
+    every { router.require<Routes>() } returns Routes()
+    router.annotated<Routes>()
+    verify(exactly = 2) { router.add(any()) }
   }
 
   @Test
   fun `no parameter handler`() {
-    val handler = server.toHandler(Routes(), Routes::root)
+    val handler = router.toHandler(Routes(), Routes::root)
     runBlocking { assertThat(handler(exchange)).isEqualTo("Hello") }
   }
 
   @Test
   fun `exchange parameter handler`() {
-    val handler = server.toHandler(Routes(), Routes::params)
+    val handler = router.toHandler(Routes(), Routes::params)
     every { exchange.body<String>() } returns "TheBody"
     every { exchange.path("world") } returns "7.9e9"
     every { exchange.query("date") } returns "2021-10-21"
