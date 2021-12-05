@@ -1,20 +1,21 @@
 package klite
 
+import com.sun.net.httpserver.HttpsExchange
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.URI
 import java.time.Instant
 import kotlin.reflect.KClass
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
-class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers: List<BodyRenderer>, val bodyParsers: List<BodyParser>): AutoCloseable {
+// TODO: session, auth/principal
+open class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers: List<BodyRenderer>, val bodyParsers: List<BodyParser>): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
-  val remoteAddress: String get() = original.remoteAddress.address.hostAddress // TODO: x-forwarded-for support
-
-  // TODO: defaultContentType or look into Accept header
-  // TODO: getRequestURL (full)
-  // TODO: session
+  open val remoteAddress: String get() = original.remoteAddress.address.hostAddress
+  open val host: String get() = header("Host")!!
+  open val isSecure: Boolean get() = original is HttpsExchange
 
   val path: String get() = original.requestURI.path
   lateinit var pathParams: MatchGroupCollection internal set
@@ -23,6 +24,9 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Params by lazy { original.requestURI.queryParams }
   fun query(param: String) = queryParams[param]
+
+  val fullUrl get() = fullUrl(original.requestURI.toString())
+  fun fullUrl(suffix: String): URI = URI("http${if (isSecure) "s" else ""}://$host$suffix")
 
   inline fun <reified T: Any> body(): T = body(T::class)
   fun <T: Any> body(type: KClass<T>): T {
@@ -48,8 +52,7 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
   val cookies: Params by lazy { decodeCookies(header("Cookie")) }
   fun cookie(key: String) = cookies[key]
 
-  // TODO: default secure to true if using https
-  fun cookie(key: String, value: String, expires: Instant? = null) { this += Cookie(key, value, expires) }
+  fun cookie(key: String, value: String, expires: Instant? = null) { this += Cookie(key, value, expires, secure = isSecure) }
   operator fun plusAssign(cookie: Cookie) = responseHeaders.add("Set-Cookie", cookie.toString())
 
   val statusCode: Int get() = original.responseCode
@@ -91,4 +94,11 @@ class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers
   }
 
   override fun toString() = "$method ${original.requestURI}"
+}
+
+class XForwardedHttpExchange(original: OriginalHttpExchange, bodyRenderers: List<BodyRenderer>, bodyParsers: List<BodyParser>):
+  HttpExchange(original, bodyRenderers, bodyParsers) {
+  override val remoteAddress get() = header("X-Forwarded-For") ?: super.remoteAddress
+  override val host get() = header("X-Forwarded-Host") ?: super.host
+  override val isSecure get() = header("X-Forwarded-Proto") == "https"
 }

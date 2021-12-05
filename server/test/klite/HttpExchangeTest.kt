@@ -35,6 +35,15 @@ class HttpExchangeTest {
   }
 
   @Test
+  fun fullUrl() {
+    every { exchange.host } returns "localhost:8080"
+    assertThat(exchange.fullUrl).isEqualTo(URI("http://localhost:8080/hello?hello=world"))
+
+    every { exchange.host } returns "host.domain"
+    assertThat(exchange.fullUrl("/some/page")).isEqualTo(URI("http://host.domain/some/page"))
+  }
+
+  @Test
   fun `request cookies`() {
     every { exchange.header("Cookie") } returns "Hello=World; Second=123%20456"
     assertThat(exchange.cookies).isEqualTo(mapOf("Hello" to "World", "Second" to "123 456"))
