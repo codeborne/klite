@@ -25,10 +25,10 @@ open class DefaultExceptionHandler: ExceptionHandler {
     handlers[e::class]?.let { handler ->
       return handler(exchange, e)
     }
-    return fallback(e)
+    return unhandled(e)
   }
 
-  open fun fallback(e: Exception): ErrorResponse {
+  open fun unhandled(e: Exception): ErrorResponse {
     logger.log(System.Logger.Level.ERROR, "Unhandled exception", e)
     return ErrorResponse(StatusCode.InternalServerError, e.message)
   }
