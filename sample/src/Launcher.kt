@@ -1,7 +1,7 @@
-import kotlinx.coroutines.delay
 import klite.AssetsHandler
 import klite.Server
 import klite.annotations.annotated
+import kotlinx.coroutines.delay
 import java.nio.file.Path
 
 fun main() {
@@ -22,7 +22,7 @@ fun main() {
     context("/failure") {
       get { error("Failure") }
     }
-    annotated(Routes())
+    annotated<Routes>()
     start()
   }
 }

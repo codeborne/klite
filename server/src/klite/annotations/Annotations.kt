@@ -35,6 +35,8 @@ fun Server.annotated(routes: Any) {
   }
 }
 
+inline fun <reified T: Any> Server.annotated() = annotated(require<T>())
+
 fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
   return {
