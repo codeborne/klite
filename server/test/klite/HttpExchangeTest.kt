@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Cookie.SameSite.Strict
+import klite.annotations.TypeConverter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,7 +21,7 @@ class HttpExchangeTest {
   val customParser = mockk<BodyParser> {
     every { contentType } returns "application/specific"
   }
-  val exchange = HttpExchange(original, listOf(bodyRenderer), listOf(TextBodyParser(), customParser))
+  val exchange = HttpExchange(original, listOf(bodyRenderer), listOf(TextBodyParser(TypeConverter()), customParser))
 
   @Test
   fun path() {

@@ -28,12 +28,12 @@ class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRen
 }
 
 class TextBodyParser(
-  val typeConverter: TypeConverter = TypeConverter(),
+  val converter: TypeConverter,
   override val contentType: String = "text/plain"
 ): BodyParser {
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T {
     val s = input.readBytes().decodeToString()
-    return if (type == String::class) s as T else typeConverter.fromString(s, type)
+    return if (type == String::class) s as T else converter.fromString(s, type)
   }
 }
 

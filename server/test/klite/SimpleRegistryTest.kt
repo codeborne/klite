@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test
 
 class SimpleRegistryTest {
   val registry = SimpleRegistry().apply {
-    register(TextBodyParser())
-    register<FormUrlEncodedParser>()
+    register<TextBodyParser>()
+    register(FormUrlEncodedParser())
   }
 
   @Test
