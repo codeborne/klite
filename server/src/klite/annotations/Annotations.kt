@@ -27,9 +27,9 @@ fun Server.annotated(routes: Any) {
   val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
   context(path) {
     routes::class.functions.forEach { f ->
-      val annotation = f.annotations.firstOrNull() ?: return@forEach
-      val method = RequestMethod.valueOf(annotation.annotationClass.simpleName!!)
-      val subPath = annotation.annotationClass.members.first().call(annotation) as String
+      val a = f.annotations.firstOrNull() ?: return@forEach
+      val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
+      val subPath = a.annotationClass.members.first().call(a) as String
       add(Route(method, pathParamRegexer.from(subPath), toHandler(routes, f)))
     }
   }
@@ -43,15 +43,17 @@ fun toHandler(instance: Any, f: KFunction<*>): Handler {
     try {
       val args = Array(params.size) { i ->
         val p = params[i]
-        val name = p.name!!
         if (p.kind == INSTANCE) instance
         else if (p.type.classifier == HttpExchange::class) this
-        else when (p.annotations.firstOrNull()) {
-          is PathParam -> path(name)
-          is QueryParam -> query(name)
-          is HeaderParam -> header(name)
-          is AttributeParam -> attr(name)
-          else -> null
+        else {
+          val name = p.name!!
+          when (p.annotations.firstOrNull()) {
+            is PathParam -> path(name)
+            is QueryParam -> query(name)
+            is HeaderParam -> header(name)
+            is AttributeParam -> attr(name)
+            else -> null
+          }
         }
         // TODO: use TypeConverter
       }
