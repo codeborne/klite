@@ -10,15 +10,14 @@ import kotlin.concurrent.thread
 
 class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
-  // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
   val registry: MutableRegistry = DependencyInjectingRegistry().apply {
-    register(RequestLogger().toDecorator())
+    register<RequestLogger>()
     register<TextBodyRenderer>()
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
   },
-  val globalDecorators: List<Decorator> = registry.requireAll(),
+  val globalDecorators: List<Decorator> = registry.requireAllDecorators(),
   val exceptionHandler: ExceptionHandler = registry.require<DefaultExceptionHandler>(),
   val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
   val bodyParsers: List<BodyParser> = registry.requireAll(),

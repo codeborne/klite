@@ -45,8 +45,9 @@ open class DependencyInjectingRegistry: SimpleRegistry() {
   override fun <T: Any> create(type: KClass<T>): T {
     val constructor = chooseConstructor(type) ?: throw RegistryException("$type has no usable constructor")
     try {
-      return constructor.callBy(createArgs(constructor)).also {
-        logger.info("${type.simpleName}${createArgs(constructor).values.map { it::class.simpleName }}")
+      val args = createArgs(constructor)
+      return constructor.callBy(args).also {
+        logger.info("Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}")
       }
     } catch (e: Exception) {
       throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}: ${e.message}")

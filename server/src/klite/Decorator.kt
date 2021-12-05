@@ -22,3 +22,6 @@ internal fun After.toDecorator(): Decorator = { ex, next ->
   try { next(ex); after(ex, null) }
   catch (e: Exception) { after(ex, e) }
 }
+
+internal fun Registry.requireAllDecorators() =
+  requireAll<Before>().map { it.toDecorator() } + requireAll() + requireAll<After>().map { it.toDecorator() }
