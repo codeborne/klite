@@ -17,11 +17,12 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
-// TODO annotation class Body
 @Target(VALUE_PARAMETER) annotation class PathParam
 @Target(VALUE_PARAMETER) annotation class QueryParam
+@Target(VALUE_PARAMETER) annotation class BodyParam
 @Target(VALUE_PARAMETER) annotation class HeaderParam
-@Target(VALUE_PARAMETER) annotation class AttributeParam
+@Target(VALUE_PARAMETER) annotation class CookieParam
+@Target(VALUE_PARAMETER) annotation class AttrParam
 
 fun Server.annotated(routes: Any) {
   val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
@@ -48,13 +49,16 @@ internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
         else if (p.type.classifier == HttpExchange::class) this
         else {
           val name = p.name!!
-          fun String.toType() = converter.fromString(this, p.type.classifier as KClass<*>)
+          val type = p.type.classifier as KClass<*>
+          fun String.toType() = converter.fromString(this, type)
           when (p.annotations.firstOrNull()) {
             is PathParam -> path(name).toType()
             is QueryParam -> query(name)?.toType()
+            is BodyParam -> body(name)?.toType()
             is HeaderParam -> header(name)?.toType()
-            is AttributeParam -> attr(name)
-            else -> null
+            is CookieParam -> cookie(name)?.toType()
+            is AttrParam -> attr(name)
+            else -> body(type)
           }
         }
       }
