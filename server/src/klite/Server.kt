@@ -29,9 +29,11 @@ class Server(
   private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
-  private val http = HttpServer.create(InetSocketAddress(port), 0)
+  private val http = HttpServer.create()
 
-  fun start(stopOnShutdown: Boolean = true) = http.start().also {
+  fun start(stopOnShutdown: Boolean = true) {
+    http.bind(InetSocketAddress(port), 0)
+    http.start()
     logger.info("Listening on $port")
     if (stopOnShutdown) getRuntime().addShutdownHook(thread(start = false) { stop() })
   }
