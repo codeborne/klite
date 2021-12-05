@@ -1,7 +1,6 @@
 package klite
 
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
 interface Registry {
@@ -24,7 +23,7 @@ open class SimpleRegistry: MutableRegistry {
   override fun <T : Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
   override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: notFound(type)
   protected open fun <T: Any> notFound(type: KClass<T>): T = throw RegistryException("No registered instance of $type")
-  override fun <T : Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { it::class.isSubclassOf(type) } as List<T>
+  override fun <T : Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>
 }
 
 class RegistryException(message: String): Exception(message)

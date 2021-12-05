@@ -13,11 +13,12 @@ class Server(
   // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
   val registry: MutableRegistry = AutoCreatingRegistry().apply {
+    register(RequestLogger().toDecorator())
     register(TextBodyRenderer())
     register(TextBodyParser())
     register(FormUrlEncodedParser())
   },
-  val globalDecorators: List<Decorator> = listOf(registry.require<RequestLogger>().toDecorator()),
+  val globalDecorators: List<Decorator> = registry.requireAll(),
   val exceptionHandler: ExceptionHandler = registry.require<DefaultExceptionHandler>(),
   val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
   val bodyParsers: List<BodyParser> = registry.requireAll(),

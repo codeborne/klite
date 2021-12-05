@@ -2,7 +2,7 @@ package klite
 
 typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String
 
-class RequestLogger(
+open class RequestLogger(
   val formatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode in $ms ms" }
 ): Before {
   private val logger = logger()
