@@ -63,7 +63,7 @@ class Server(
 
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
-      handler ?: return exchange.send(StatusCode.NotFound, exchange.path)
+      handler ?: throw NotFoundException(exchange.path)
       val result = handler.invoke(exchange).takeIf { it != Unit }
       if (!exchange.isResponseStarted)
         exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
