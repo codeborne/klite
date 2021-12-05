@@ -19,6 +19,13 @@ class TypeConverterTest {
   @Test
   fun constructor() {
     assertThat(converter.fromString<URI>("http://hello/")).isEqualTo(URI("http://hello/"))
+    assertThat(converter.fromString<Int>("123")).isEqualTo(123)
+    assertThat(converter.fromString<Long>("123")).isEqualTo(123L)
+  }
+
+  @Test
+  fun javaPrimitive() {
+    assertThat(converter.fromString("456", Int::class)).isEqualTo(456)
   }
 
   @Test

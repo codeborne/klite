@@ -28,7 +28,7 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
     }
 
   private fun <T: Any> constructorCreator(type: KClass<T>): Creator<T> {
-    val constructor = type.java.getConstructor(String::class.java)
+    val constructor = type.javaObjectType.getConstructor(String::class.java)
     return { s: String ->
       try { constructor.newInstance(s) }
       catch (e: InvocationTargetException) { throw e.targetException }
