@@ -1,6 +1,7 @@
 package klite
 
 import com.sun.net.httpserver.HttpsExchange
+import klite.StatusCode.Companion.OK
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -66,11 +67,12 @@ open class HttpExchange(private val original: OriginalHttpExchange, val bodyRend
     get() = responseHeaders["Content-Type"]?.firstOrNull()
     set(value) { value?.let { header("Content-Type", it) } }
 
-  fun accept(contentType: String) = header("Accept")?.contains(contentType) ?: true
+  val accept get() = Accept(header("Accept"))
 
   fun render(code: StatusCode, body: Any?) {
-    val renderer = bodyRenderers.find { accept(it.contentType) } ?:
-      if (code.value >= 300) bodyRenderers.first() else throw NotAcceptableException(header("Accept"))
+    val accept = accept
+    val renderer = bodyRenderers.find { accept(it) } ?:
+      if (accept.isRelaxed || code != OK) bodyRenderers.first() else throw NotAcceptableException(accept.contentTypes)
     responseType = renderer.contentType
     original.sendResponseHeaders(code.value, 0)
     renderer.render(responseStream, body)

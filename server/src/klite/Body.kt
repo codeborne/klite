@@ -9,6 +9,12 @@ interface ContentTypeProvider {
   val contentType: String
 }
 
+class Accept(val contentTypes: String?) {
+  val isRelaxed get() = contentTypes?.startsWith("text/html,") ?: true
+  operator fun invoke(contentType: String) = contentTypes?.contains(contentType) ?: true
+  operator fun invoke(provider: ContentTypeProvider) = invoke(provider.contentType)
+}
+
 interface BodyRenderer: ContentTypeProvider {
   fun render(output: OutputStream, value: Any?)
 }
