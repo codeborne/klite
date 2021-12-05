@@ -1,5 +1,6 @@
 package klite
 
+import java.lang.System.Logger.Level.DEBUG
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.createInstance
@@ -47,7 +48,7 @@ open class DependencyInjectingRegistry: SimpleRegistry() {
     try {
       val args = createArgs(constructor)
       return constructor.callBy(args).also {
-        logger.info("Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}")
+        logger.log(DEBUG) { "Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}" }
       }
     } catch (e: Exception) {
       throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}: ${e.message}")
