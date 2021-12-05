@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 private typealias Creator<T> = (s: String) -> T
 
 open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) {
-  private val creatorCache = ConcurrentHashMap(mapOf(
+  private val creators = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString
   ) + moreCreators)
 
@@ -16,7 +16,7 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> fromString(s: String, type: KClass<T>): T =
-    (creatorCache[type] as? Creator<T> ?: findCreator(type).also { creatorCache[type] = it }).invoke(s)
+    (creators[type] as? Creator<T> ?: findCreator(type).also { creators[type] = it }).invoke(s)
 
   private fun <T: Any> findCreator(type: KClass<T>): Creator<T> =
     try { constructorCreator(type) }
