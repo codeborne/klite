@@ -17,26 +17,27 @@ class AnnotationsTest {
     @GET fun root() = "Hello"
     @GET("/hello/:world") fun params(e: HttpExchange, @PathParam world: BigDecimal, @QueryParam date: LocalDate) = "Hello $world $date"
   }
+  val server = Server()
 
   @Test
   fun `annotated instance`() {
-    Server().annotated(Routes())
+    server.annotated(Routes())
   }
 
   @Test
   fun `annotated class`() {
-    Server().annotated<Routes>()
+    server.annotated<Routes>()
   }
 
   @Test
   fun `no parameter handler`() {
-    val handler = toHandler(Routes(), Routes::root, converter)
+    val handler = server.toHandler(Routes(), Routes::root)
     runBlocking { assertThat(handler(exchange)).isEqualTo("Hello") }
   }
 
   @Test
   fun `exchange parameter handler`() {
-    val handler = toHandler(Routes(), Routes::params, converter)
+    val handler = server.toHandler(Routes(), Routes::params)
     every { exchange.path("world") } returns "7.9e9"
     every { exchange.query("date") } returns "2021-10-21"
     runBlocking { assertThat(handler(exchange)).isEqualTo("Hello 7.9E+9 2021-10-21") }

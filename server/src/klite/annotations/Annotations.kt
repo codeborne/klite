@@ -24,21 +24,21 @@ import kotlin.reflect.jvm.javaMethod
 @Target(VALUE_PARAMETER) annotation class AttributeParam
 
 fun Server.annotated(routes: Any) {
-  val converter = require<TypeConverter>()
   val path = routes::class.annotation<Path>()?.value ?: error("@Path is missing")
   context(path) {
     routes::class.functions.forEach { f ->
       val a = f.annotations.firstOrNull() ?: return@forEach
       val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
       val subPath = a.annotationClass.members.first().call(a) as String
-      add(Route(method, pathParamRegexer.from(subPath), toHandler(routes, f, converter)))
+      add(Route(method, pathParamRegexer.from(subPath), toHandler(routes, f)))
     }
   }
 }
 
 inline fun <reified T: Any> Server.annotated() = annotated(require<T>())
 
-internal fun toHandler(instance: Any, f: KFunction<*>, converter: TypeConverter): Handler {
+internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
+  val converter = require<TypeConverter>()
   val params = f.parameters
   return {
     try {
