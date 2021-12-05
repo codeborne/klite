@@ -12,11 +12,11 @@ class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
   // TODO: service registry
   val numWorkers: Int = getRuntime().availableProcessors(),
-  val registry: MutableRegistry = AutoCreatingRegistry().apply {
+  val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register(RequestLogger().toDecorator())
-    register(TextBodyRenderer())
-    register(TextBodyParser())
-    register(FormUrlEncodedParser())
+    register<TextBodyRenderer>()
+    register<TextBodyParser>()
+    register<FormUrlEncodedParser>()
   },
   val globalDecorators: List<Decorator> = registry.requireAll(),
   val exceptionHandler: ExceptionHandler = registry.require<DefaultExceptionHandler>(),

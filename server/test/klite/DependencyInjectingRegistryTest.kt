@@ -3,21 +3,21 @@ package klite
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class RegistryTest {
-  val registry = SimpleRegistry().apply {
-    register(TextBodyParser())
-    register(FormUrlEncodedParser())
-  }
+class DependencyInjectingRegistryTest {
+  val registry = DependencyInjectingRegistry()
 
   @Test
   fun require() {
-    assertThat(registry.require<Registry>()).isSameAs(registry)
     assertThat(registry.require<TextBodyParser>()).isInstanceOf(TextBodyParser::class.java)
   }
 
   @Test
   fun requireAll() {
-    assertThat(registry.requireAll<TextBodyParser>()).hasSize(1)
+    assertThat(registry.requireAll<TextBodyParser>()).isEmpty()
+
+    assertThat(registry.require<TextBodyParser>()).isInstanceOf(TextBodyParser::class.java)
+    registry.register<FormUrlEncodedParser>()
+
     assertThat(registry.requireAll<BodyParser>()).hasSize(2)
   }
 }

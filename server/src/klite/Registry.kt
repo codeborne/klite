@@ -1,6 +1,8 @@
 package klite
 
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
 
 interface Registry {
@@ -9,39 +11,51 @@ interface Registry {
 }
 
 interface MutableRegistry: Registry {
+  fun <T: Any> register(type: KClass<T>)
   fun <T: Any> register(type: KClass<T>, instance: T)
 }
 
 inline fun <reified T: Any> Registry.require() = require(T::class)
 inline fun <reified T: Any> Registry.requireAll() = requireAll(T::class)
 inline fun <reified T: Any> MutableRegistry.register(instance: T) = register(T::class, instance)
+inline fun <reified T: Any> MutableRegistry.register() = register(T::class)
+
+class RegistryException(message: String): Exception(message)
 
 @Suppress("UNCHECKED_CAST")
 open class SimpleRegistry: MutableRegistry {
   private val instances = mutableMapOf<KClass<*>, Any>(Registry::class to this)
 
   override fun <T : Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
-  override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: notFound(type)
-  protected open fun <T: Any> notFound(type: KClass<T>): T = throw RegistryException("No registered instance of $type")
+  override fun <T : Any> register(type: KClass<T>) = register(type, create(type))
+
+  override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: create(type).also { register(type, it) }
   override fun <T : Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>
+
+  protected open fun <T: Any> create(type: KClass<T>): T = type.createInstance()
 }
 
-class RegistryException(message: String): Exception(message)
-
-open class AutoCreatingRegistry: SimpleRegistry() {
+/**
+ * Implements simple constructor injection that can easily replace your more complex dependency injection framework.
+ * You may extend this class to override how exactly constructor parameters are created.
+ */
+open class DependencyInjectingRegistry: SimpleRegistry() {
   private val logger = logger()
 
-  override fun <T: Any> notFound(type: KClass<T>): T = create(type).also { register(type, it) }
-
-  open fun <T: Any> create(type: KClass<T>): T {
-    val constructor = type.primaryConstructor ?: type.constructors.minByOrNull { it.parameters.size } ?: throw RegistryException("$type has no usable constructor")
+  override fun <T: Any> create(type: KClass<T>): T {
+    val constructor = chooseConstructor(type) ?: throw RegistryException("$type has no usable constructor")
     try {
-      val args = constructor.parameters.filter { !it.isOptional }.associateWith { require(it.type.classifier as KClass<*>) }
-      return constructor.callBy(args).also {
-        logger.info("${type.simpleName}${args.values.map {it::class.simpleName}}")
+      return constructor.callBy(createArgs(constructor)).also {
+        logger.info("${type.simpleName}${createArgs(constructor).values.map { it::class.simpleName }}")
       }
     } catch (e: Exception) {
       throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}: ${e.message}")
     }
   }
+
+  protected open fun <T : Any> chooseConstructor(type: KClass<T>) =
+    type.primaryConstructor ?: type.constructors.minByOrNull { it.parameters.size }
+
+  protected open fun <T : Any> createArgs(constructor: KFunction<T>) =
+    constructor.parameters.filter { !it.isOptional }.associateWith { require(it.type.classifier as KClass<*>) }
 }
