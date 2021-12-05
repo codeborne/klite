@@ -1,6 +1,7 @@
 import klite.AssetsHandler
 import klite.Server
 import klite.annotations.annotated
+import klite.json.enableJson
 import kotlinx.coroutines.delay
 import java.nio.file.Path
 
@@ -9,6 +10,7 @@ fun main() {
 
   Server(8080).apply {
     assets("/", AssetsHandler(Path.of("public")))
+
     context("/hello") {
       get { "Hello World" }
       get("/delay") {
@@ -18,11 +20,14 @@ fun main() {
       get("/:param") {
         "Path: ${path("param")}, Query: $queryParams"
       }
+      get("/failure") { error("Failure") }
     }
-    context("/failure") {
-      get { error("Failure") }
+
+    context("/api") {
+      enableJson()
+      annotated<Routes>()
     }
-    annotated<Routes>()
+
     start()
   }
 }

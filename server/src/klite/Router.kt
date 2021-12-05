@@ -2,10 +2,18 @@ package klite
 
 import klite.RequestMethod.*
 
-class Router(val prefix: String, private val regexer: PathParamRegexer, decorators: List<Decorator>) {
+class Router(
+  val prefix: String,
+  private val regexer: PathParamRegexer,
+  decorators: List<Decorator>,
+  bodyRenderers: List<BodyRenderer>,
+  bodyParsers: List<BodyParser>
+) {
   private val logger = logger()
   private val routes = mutableListOf<Route>()
   private val decorators = decorators.toMutableList()
+  internal val bodyRenderers = bodyRenderers.toMutableList()
+  internal val bodyParsers = bodyParsers.toMutableList()
 
   internal fun route(exchange: HttpExchange): Handler? {
     val suffix = exchange.path.removePrefix(prefix)
@@ -42,6 +50,9 @@ class Router(val prefix: String, private val regexer: PathParamRegexer, decorato
   fun decorator(decorator: Decorator) { decorators += decorator }
   fun before(before: Before) = decorator(before.toDecorator())
   fun after(after: After) = decorator(after.toDecorator())
+
+  fun renderer(renderer: BodyRenderer) = bodyRenderers.add(0, renderer)
+  fun parser(parser: BodyParser) = bodyParsers.add(0, parser)
 }
 
 enum class RequestMethod {

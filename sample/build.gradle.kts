@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
   implementation(project(":server"))
+  implementation(project(":jackson"))
 }
 
 application {
