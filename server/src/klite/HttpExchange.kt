@@ -74,8 +74,9 @@ open class HttpExchange(private val original: OriginalHttpExchange, val bodyRend
     val renderer = bodyRenderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) bodyRenderers.first() else throw NotAcceptableException(accept.contentTypes)
     responseType = renderer.contentType
-    original.sendResponseHeaders(code.value, 0)
-    renderer.render(responseStream, body)
+    original.sendResponseHeaders(code.value, if (body == null) -1 else 0)
+    if (body != null) renderer.render(responseStream, body)
+    // TODO: maybe still render null (vs Unit, when no rendering is needed)
   }
 
   fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {

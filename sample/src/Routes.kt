@@ -15,8 +15,13 @@ class Routes {
   fun HttpExchange.asContext() = "Hello3 $method $path"
 
   @GET("/suspend")
-  suspend fun suspend(exchange: HttpExchange) {
+  suspend fun suspend(exchange: HttpExchange): String {
     delay(100)
-    "Suspend ${exchange.method} ${exchange.path}"
+    return "Suspend ${exchange.method} ${exchange.path}"
+  }
+
+  @GET("/suspend204")
+  suspend fun suspendNoContent() {
+    delay(1000)
   }
 }
