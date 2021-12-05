@@ -7,6 +7,8 @@ import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+import kotlin.reflect.KClass
+import kotlin.reflect.full.primaryConstructor
 
 class Server(
   val port: Int = System.getenv("PORT")?.toInt() ?: 8080,
@@ -22,6 +24,7 @@ class Server(
   val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
   val bodyParsers: List<BodyParser> = registry.requireAll(),
   val pathParamRegexer: PathParamRegexer = registry.require(),
+  val httpExchangeImpl: KClass<out HttpExchange> = XForwardedHttpExchange::class,
 ): Registry by registry {
   private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
@@ -41,7 +44,7 @@ class Server(
   fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, pathParamRegexer, globalDecorators).apply {
     http.createContext(prefix) { ex ->
       requestScope.launch {
-        HttpExchange(ex, bodyRenderers, bodyParsers).let { handle(it, route(it)) }
+        httpExchangeImpl.primaryConstructor!!.call(ex, bodyRenderers, bodyParsers).let { handle(it, route(it)) }
       }
     }
     block()
