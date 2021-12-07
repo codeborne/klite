@@ -1,2 +1,2 @@
 rootProject.name = "klite"
-include("server", "jackson", "sample")
+include("server", "jackson", "jdbc", "sample")

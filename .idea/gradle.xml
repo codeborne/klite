@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/jackson" />
+            <option value="$PROJECT_DIR$/jdbc" />
             <option value="$PROJECT_DIR$/sample" />
             <option value="$PROJECT_DIR$/server" />
           </set>

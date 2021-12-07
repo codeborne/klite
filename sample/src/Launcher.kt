@@ -1,14 +1,19 @@
 import klite.AssetsHandler
+import klite.Config
 import klite.Server
 import klite.annotations.annotated
+import klite.jdbc.DBModule
 import klite.json.enableJson
 import kotlinx.coroutines.delay
 import java.nio.file.Path
 
 fun main() {
   System.setProperty("java.util.logging.config.file", "logging.properties")
+  Config.fromEnvFile()
 
   Server(8080).apply {
+    use(DBModule())
+
     assets("/", AssetsHandler(Path.of("public")))
 
     context("/hello") {
