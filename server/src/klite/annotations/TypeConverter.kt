@@ -9,7 +9,8 @@ private typealias Creator<T> = (s: String) -> T
 
 open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) {
   private val creators = ConcurrentHashMap(mapOf(
-    UUID::class to UUID::fromString
+    UUID::class to UUID::fromString,
+    Currency::class to Currency::getInstance
   ) + moreCreators)
 
   inline fun <reified T: Any> fromString(s: String) = fromString(s, T::class)
