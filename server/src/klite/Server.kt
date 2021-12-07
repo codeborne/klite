@@ -32,16 +32,22 @@ class Server(
   private val http = HttpServer.create()
 
   fun start(stopOnShutdown: Boolean = true) {
+    logger.info("Listening on $port")
     http.bind(InetSocketAddress(port), 0)
     http.start()
-    logger.info("Listening on $port")
     if (stopOnShutdown) getRuntime().addShutdownHook(thread(start = false) { stop() })
   }
+
+  private val onStopHandlers = mutableListOf<Runnable>()
+  fun onStop(handler: Runnable) { onStopHandlers += handler }
 
   fun stop(delaySec: Int = 3) {
     logger.info("Stopping gracefully")
     http.stop(delaySec)
+    onStopHandlers.forEach { it.run() }
   }
+
+  fun use(extension: Extension) = extension.install(this)
 
   fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).apply {
     http.createContext(prefix) { ex ->
@@ -73,4 +79,8 @@ class Server(
       exchange.close()
     }
   }
+}
+
+interface Extension {
+  fun install(server: Server)
 }
