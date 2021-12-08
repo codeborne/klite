@@ -19,6 +19,6 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - run: ./gradlew jar testClasses
-      - run: docker-compose up -d db
+      - run: cd sample && docker-compose up -d db && cd -
       - run: ./gradlew test
-      - run: docker-compose stop db
+      - run: cd sample && docker-compose stop db && cd -
