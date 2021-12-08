@@ -17,6 +17,11 @@ class TypeConverterTest {
   }
 
   @Test
+  fun enum() {
+    assertThat(converter.fromString<AnnotationTarget>("FIELD")).isEqualTo(AnnotationTarget.FIELD)
+  }
+
+  @Test
   fun constructor() {
     assertThat(converter.fromString<URI>("http://hello/")).isEqualTo(URI("http://hello/"))
     assertThat(converter.fromString<Int>("123")).isEqualTo(123)

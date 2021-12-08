@@ -4,8 +4,9 @@ import java.lang.reflect.InvocationTargetException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
-private typealias Creator<T> = (s: String) -> T
+typealias Creator<T> = (s: String) -> T
 
 open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) {
   private val creators = ConcurrentHashMap(mapOf(
@@ -20,17 +21,23 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
     (creators[type] as? Creator<T> ?: findCreator(type).also { creators[type] = it }).invoke(s)
 
   private fun <T: Any> findCreator(type: KClass<T>): Creator<T> =
+    if (type.isSubclassOf(Enum::class)) enumCreator(type) else
     try { constructorCreator(type) }
     catch (e: NoSuchMethodException) {
       try { parseMethodCreator(type) }
       catch (e2: NoSuchMethodException) {
-        error("Cannot create instances of $type:\n$e\n$e2")
+        error("Don't know how to convert String to $type:\n$e\n$e2")
       }
     }
 
+  private fun <T: Any> enumCreator(type: KClass<T>): Creator<T> {
+    val enumConstants = type.java.enumConstants
+    return { s -> enumConstants.find { (it as Enum<*>).name == s } ?: error("No $type constant: $s") }
+  }
+
   private fun <T: Any> constructorCreator(type: KClass<T>): Creator<T> {
     val constructor = type.javaObjectType.getConstructor(String::class.java)
-    return { s: String ->
+    return { s ->
       try { constructor.newInstance(s) }
       catch (e: InvocationTargetException) { throw e.targetException }
     }
@@ -38,7 +45,7 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
 
   private fun <T: Any> parseMethodCreator(type: KClass<T>): Creator<T> {
     val parse = type.java.getMethod("parse", CharSequence::class.java)
-    return { s: String ->
+    return { s ->
       try { parse.invoke(null, s) as T }
       catch (e: InvocationTargetException) { throw e.targetException }
     }
