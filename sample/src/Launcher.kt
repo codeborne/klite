@@ -3,6 +3,7 @@ import klite.Config
 import klite.Server
 import klite.annotations.annotated
 import klite.jdbc.DBModule
+import klite.jdbc.RequestTransactionHandler
 import klite.json.enableJson
 import kotlinx.coroutines.delay
 import java.nio.file.Path
@@ -13,6 +14,7 @@ fun main() {
 
   Server(8080).apply {
     use(DBModule())
+    use(RequestTransactionHandler())
 
     assets("/", AssetsHandler(Path.of("public")))
 

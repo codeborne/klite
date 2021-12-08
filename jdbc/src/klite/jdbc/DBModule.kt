@@ -16,7 +16,7 @@ class DBModule(urlSuffix: String = "", configure: HikariConfig.() -> Unit = {}):
     logger.info("Connecting to $jdbcUrl")
   })
 
-  override fun install(server: Server) = with(server) {
+  override fun install(server: Server) = server.run {
     registry.register<DataSource>(dataSource)
     onStop { dataSource.close() }
   }

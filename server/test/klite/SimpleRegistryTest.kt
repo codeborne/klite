@@ -1,12 +1,11 @@
 package klite
 
-import klite.annotations.TypeConverter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class SimpleRegistryTest {
   val registry = SimpleRegistry().apply {
-    register(TextBodyParser(TypeConverter()))
+    register(TextBodyParser())
     register<FormUrlEncodedParser>()
   }
 

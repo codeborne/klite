@@ -37,7 +37,7 @@ fun Router.annotated(routes: Any) {
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
 
 internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
-  val converter = require<TypeConverter>()
+  val converter = require<Converter>()
   val params = f.parameters
   return {
     try {

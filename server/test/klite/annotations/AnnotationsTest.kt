@@ -24,9 +24,7 @@ class AnnotationsTest {
                @HeaderParam header: Long, @CookieParam cookie: Locale, @AttrParam attr: BigInteger
     ) = "Hello $body $world $date $header $cookie $attr"
   }
-  val router = mockk<Router>(relaxed = true) {
-    every { require<TypeConverter>() } returns TypeConverter()
-  }
+  val router = mockk<Router>(relaxed = true)
 
   @Test
   fun `annotated instance`() {

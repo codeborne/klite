@@ -1,6 +1,5 @@
 package klite
 
-import klite.annotations.TypeConverter
 import java.io.InputStream
 import java.io.OutputStream
 import kotlin.reflect.KClass
@@ -28,12 +27,11 @@ class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRen
 }
 
 class TextBodyParser(
-  val converter: TypeConverter,
   override val contentType: String = "text/plain"
 ): BodyParser {
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T {
     val s = input.readBytes().decodeToString()
-    return if (type == String::class) s as T else converter.fromString(s, type)
+    return if (type == String::class) s as T else Converter.fromString(s, type)
   }
 }
 

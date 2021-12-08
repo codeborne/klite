@@ -1,4 +1,4 @@
-package klite.annotations
+package klite
 
 import java.lang.reflect.InvocationTargetException
 import java.util.*
@@ -6,21 +6,22 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
-typealias Creator<T> = (s: String) -> T
+typealias StringConverter<T> = (s: String) -> T
 
-open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) {
-  private val creators = ConcurrentHashMap(mapOf(
+object Converter {
+  private val converters: MutableMap<KClass<*>, StringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
     Currency::class to Currency::getInstance
-  ) + moreCreators)
+  ))
+  operator fun <T: Any> set(type: KClass<T>, converter: StringConverter<T>) { converters[type] = converter }
 
   inline fun <reified T: Any> fromString(s: String) = fromString(s, T::class)
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> fromString(s: String, type: KClass<T>): T =
-    (creators[type] as? Creator<T> ?: findCreator(type).also { creators[type] = it }).invoke(s)
+    (converters[type] as? StringConverter<T> ?: findCreator(type).also { converters[type] = it }).invoke(s)
 
-  private fun <T: Any> findCreator(type: KClass<T>): Creator<T> =
+  private fun <T: Any> findCreator(type: KClass<T>): StringConverter<T> =
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
     try { constructorCreator(type) }
     catch (e: NoSuchMethodException) {
@@ -30,12 +31,12 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
       }
     }
 
-  private fun <T: Any> enumCreator(type: KClass<T>): Creator<T> {
+  private fun <T: Any> enumCreator(type: KClass<T>): StringConverter<T> {
     val enumConstants = type.java.enumConstants
     return { s -> enumConstants.find { (it as Enum<*>).name == s } ?: error("No $type constant: $s") }
   }
 
-  private fun <T: Any> constructorCreator(type: KClass<T>): Creator<T> {
+  private fun <T: Any> constructorCreator(type: KClass<T>): StringConverter<T> {
     val constructor = type.javaObjectType.getConstructor(String::class.java)
     return { s ->
       try { constructor.newInstance(s) }
@@ -43,7 +44,7 @@ open class TypeConverter(moreCreators: Map<KClass<*>, Creator<*>> = emptyMap()) 
     }
   }
 
-  private fun <T: Any> parseMethodCreator(type: KClass<T>): Creator<T> {
+  private fun <T: Any> parseMethodCreator(type: KClass<T>): StringConverter<T> {
     val parse = type.java.getMethod("parse", CharSequence::class.java)
     return { s ->
       try { parse.invoke(null, s) as T }
