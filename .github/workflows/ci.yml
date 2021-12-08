@@ -18,7 +18,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - run: ./gradlew build
+      - run: ./gradlew jar testClasses
       - run: docker-compose up -d db
       - run: ./gradlew test
       - run: docker-compose stop db
