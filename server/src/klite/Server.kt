@@ -19,7 +19,7 @@ class Server(
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
   },
-  val globalDecorators: List<Decorator> = registry.requireAllDecorators(),
+  val globalDecorators: MutableList<Decorator> = registry.requireAllDecorators().toMutableList(),
   val errorHandler: ErrorHandler = registry.require(),
   val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
   val bodyParsers: List<BodyParser> = registry.requireAll(),
@@ -48,6 +48,7 @@ class Server(
   }
 
   fun use(extension: Extension) = extension.install(this)
+  fun decorator(decorator: Decorator) { globalDecorators += decorator }
 
   fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).apply {
     http.createContext(prefix) { ex ->
