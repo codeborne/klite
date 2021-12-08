@@ -37,7 +37,6 @@ fun Router.annotated(routes: Any) {
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
 
 internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
-  val converter = require<Converter>()
   val params = f.parameters
   return {
     try {
@@ -48,7 +47,7 @@ internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
         else {
           val name = p.name!!
           val type = p.type.classifier as KClass<*>
-          fun String.toType() = converter.fromString(this, type)
+          fun String.toType() = Converter.fromString(this, type)
           when (p.annotations.firstOrNull()) {
             is PathParam -> path(name).toType()
             is QueryParam -> query(name)?.toType()
