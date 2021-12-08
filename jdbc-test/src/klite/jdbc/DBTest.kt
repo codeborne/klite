@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import com.zaxxer.hikari.pool.HikariPool
+import klite.Config
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -14,6 +15,7 @@ abstract class DBTest {
     val yesterday = today.minusDays(1)
 
     val db = try {
+      Config.fromEnvFile()
       DBModule("_test").dataSource.apply {
 //      TODO  migrate(listOf("test", "test-data"))
       }

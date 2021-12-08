@@ -1,23 +1,12 @@
 package klite.jdbc
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.*
 import java.util.UUID.randomUUID
 
-@TestInstance(PER_CLASS)
-class JdbcExtensionsTest: DBTest() {
-  val table = "temp"
-
-  @BeforeAll fun before() {
-    db.exec("create table $table(id uuid primary key, hello varchar, world int)")
-  }
-
-  @AfterAll fun after() {
-    db.exec("drop table $table")
-  }
-
+open class JdbcExtensionsTest: TempTableDBTest() {
   @Test
   fun `insert & query`() {
     val id = randomUUID()

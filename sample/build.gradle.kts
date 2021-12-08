@@ -7,6 +7,7 @@ dependencies {
   implementation(project(":jackson"))
   implementation(project(":jdbc"))
   implementation("org.postgresql:postgresql:42.3.1")
+  testImplementation(project(":jdbc-test"))
 }
 
 application {
