@@ -42,8 +42,8 @@ class AssetsHandler(
     if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
     header("Last-Modified", lastModified)
     header("Cache-Control", cacheControl)
-    var contentType = mimeTypes.getContentTypeFor(file.name)
-    if (contentType.startsWith("text/")) contentType += "; charset=$textCharset"
+    var contentType: String? = mimeTypes.getContentTypeFor(file.name)
+    if (contentType?.startsWith("text/") == true) contentType += "; charset=$textCharset"
     send(StatusCode.OK, file.readBytes(), contentType)
   }
 }
