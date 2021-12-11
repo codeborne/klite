@@ -36,7 +36,7 @@ fun Router.annotated(routes: Any) {
 
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
 
-internal fun Registry.toHandler(instance: Any, f: KFunction<*>): Handler {
+internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
   return {
     try {
