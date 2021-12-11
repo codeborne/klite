@@ -1,6 +1,4 @@
-plugins {
-  application
-}
+val mainClassName = "LauncherKt"
 
 dependencies {
   implementation(project(":server"))
@@ -10,7 +8,25 @@ dependencies {
   testImplementation(project(":jdbc-test"))
 }
 
-application {
-  applicationDefaultJvmArgs += "--add-exports=java.base/sun.net.www=ALL-UNNAMED"
-  mainClass.set("LauncherKt")
+tasks.register<Copy>("deps") {
+  into("$buildDir/libs/deps")
+  from(configurations.runtimeClasspath)
+}
+
+tasks.jar {
+  dependsOn("deps")
+  doFirst {
+    manifest {
+      attributes(
+        "Main-Class" to mainClassName,
+        "Class-Path" to File("$buildDir/libs/deps").listFiles()?.joinToString(" ") { "deps/${it.name}"}
+      )
+    }
+  }
+}
+
+tasks.register<JavaExec>("run") {
+  jvmArgs("--add-exports=java.base/sun.net.www=ALL-UNNAMED")
+  mainClass.set(mainClassName)
+  classpath = sourceSets.main.get().runtimeClasspath
 }
