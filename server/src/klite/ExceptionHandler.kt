@@ -25,7 +25,7 @@ open class ErrorHandler {
     if (e is StatusCodeException) return ErrorResponse(e.statusCode, e.message)
     // TODO: look for subclasses
     statusCodes[e::class]?.let {
-      logger.log(System.Logger.Level.ERROR, e.toString(), e)
+      logger.log(System.Logger.Level.ERROR, "", e)
       return ErrorResponse(it, e.message)
     }
     handlers[e::class]?.let { handler ->

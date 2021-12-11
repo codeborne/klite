@@ -23,10 +23,10 @@ fun main() {
         delay(1000)
         "Waited for 1 sec"
       }
+      get("/failure") { error("Failure") }
       get("/:param") {
         "Path: ${path("param")}, Query: $queryParams"
       }
-      get("/failure") { error("Failure") }
     }
 
     context("/api") {
