@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import java.nio.file.Path
 
 fun main() {
-  System.setProperty("java.util.logging.config.file", "logging.properties")
   Config.fromEnvFile()
 
   Server(8080).apply {

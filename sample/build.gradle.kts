@@ -4,6 +4,7 @@ dependencies {
   implementation(project(":server"))
   implementation(project(":jackson"))
   implementation(project(":jdbc"))
+  implementation(project(":slf4j"))
   implementation("org.postgresql:postgresql:42.3.1")
   testImplementation(project(":jdbc-test"))
 }
