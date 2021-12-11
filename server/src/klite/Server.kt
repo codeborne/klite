@@ -24,6 +24,7 @@ class Server(
   val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
   val bodyParsers: List<BodyParser> = registry.requireAll(),
   val pathParamRegexer: PathParamRegexer = registry.require(),
+  val notFoundHandler: Handler = globalDecorators.wrap { throw NotFoundException(path) },
   val httpExchangeImpl: KClass<out HttpExchange> = XForwardedHttpExchange::class,
 ): Registry by registry {
   private val logger = logger()
@@ -70,8 +71,7 @@ class Server(
 
   private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
     try {
-      handler ?: throw NotFoundException(exchange.path)
-      val result = handler.invoke(exchange).takeIf { it != Unit }
+      val result = (handler ?: notFoundHandler).invoke(exchange).takeIf { it != Unit }
       if (!exchange.isResponseStarted)
         exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
     } catch (e: Exception) {
