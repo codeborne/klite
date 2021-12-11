@@ -22,3 +22,4 @@ jobs:
       - run: cd sample && docker-compose up -d db && cd -
       - run: ./gradlew test
       - run: cd sample && docker-compose stop db && cd -
+      - run: cd sample && docker-compose build && cd -
