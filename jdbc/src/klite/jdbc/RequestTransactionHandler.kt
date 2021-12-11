@@ -14,8 +14,9 @@ class RequestTransactionHandler: Extension {
       val tx = Transaction(db)
       withContext(TransactionContext(tx)) {
         try {
-          handler(exchange)
-          tx.close(commit = true)
+          handler(exchange).also {
+            tx.close(commit = true)
+          }
         } catch (e: Exception) {
           tx.close(commit = false)
           throw e
