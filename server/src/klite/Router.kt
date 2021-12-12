@@ -32,8 +32,8 @@ class Router(
     return null
   }
 
-  fun add(route: Route) {
-    routes += route.copy(handler = decorators.wrap(route.handler)).apply { logger.info("$method $prefix$path") }
+  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler)).also {
+    routes += it.apply { logger.info("$method $prefix$path") }
   }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
