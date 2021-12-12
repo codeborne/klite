@@ -7,6 +7,8 @@ import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
@@ -53,25 +55,23 @@ class Server(
 
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).also { router ->
-      http.createContext(prefix) { ex ->
-        requestScope.launch {
-          val exchange = httpExchangeCreator.call(ex, bodyRenderers, bodyParsers)
-          handle(exchange, router.route(exchange))
-        }
-      }
+      addContext(prefix) { runHandler(this, router.route(this)) }
       router.block()
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
+    addContext(prefix, Dispatchers.IO) { runHandler(this, handler.takeIf { this.method == GET }) }
+  }
+
+  private fun addContext(prefix: String, coroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
     http.createContext(prefix) { ex ->
-      requestScope.launch(Dispatchers.IO) {
-        val exchange = HttpExchange(ex, bodyRenderers, emptyList())
-        handle(exchange, handler.takeIf { exchange.method == GET })
+      requestScope.launch(coroutineContext) {
+        httpExchangeCreator.call(ex, bodyRenderers, bodyParsers).handler()
       }
     }
   }
 
-  private suspend fun handle(exchange: HttpExchange, handler: Handler?) {
+  private suspend fun runHandler(exchange: HttpExchange, handler: Handler?) {
     try {
       val result = (handler ?: notFoundHandler).invoke(exchange).takeIf { it != Unit }
       if (!exchange.isResponseStarted)
