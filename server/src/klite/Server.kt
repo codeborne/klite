@@ -32,17 +32,17 @@ class Server(
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val http = HttpServer.create()
 
-  fun start(stopOnShutdown: Boolean = true) {
+  fun start(gracefulStopDelaySec: Int = 3) {
     logger.info("Listening on $port")
     http.bind(InetSocketAddress(port), 0)
     http.start()
-    if (stopOnShutdown) getRuntime().addShutdownHook(thread(start = false) { stop() })
+    if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
 
   private val onStopHandlers = mutableListOf<Runnable>()
   fun onStop(handler: Runnable) { onStopHandlers += handler }
 
-  fun stop(delaySec: Int = 3) {
+  fun stop(delaySec: Int = 1) {
     logger.info("Stopping gracefully")
     http.stop(delaySec)
     onStopHandlers.forEach { it.run() }
