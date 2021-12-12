@@ -33,6 +33,8 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 
 ## Usage
 
+[![Release](https://jitpack.io/v/angryziber/klite.svg)](https://jitpack.io/#angryziber/klite)
+
 Currently, you can request klite to be built and served by [jitpack](https://jitpack.org):
 
 ```kt
