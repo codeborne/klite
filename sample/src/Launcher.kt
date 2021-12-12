@@ -11,7 +11,7 @@ import java.nio.file.Path
 fun main() {
   Config.fromEnvFile()
 
-  Server(8080).apply {
+  Server().apply {
     use(DBModule())
     use(RequestTransactionHandler())
 
