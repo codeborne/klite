@@ -5,9 +5,9 @@ import klite.annotations.annotated
 import klite.jdbc.DBModule
 import klite.jdbc.RequestTransactionHandler
 import klite.json.enableJson
+import klite.require
 import kotlinx.coroutines.delay
 import java.nio.file.Path
-import kotlin.annotation.AnnotationTarget.FUNCTION
 
 fun main() {
   Config.fromEnvFile()
@@ -19,18 +19,28 @@ fun main() {
     assets("/", AssetsHandler(Path.of("public")))
 
     context("/hello") {
+      before(require<AdminChecker>())
+
       get { "Hello World" }
+
       get("/delay") {
         delay(1000)
         "Waited for 1 sec"
       }
+
       get("/failure") { error("Failure") }
-      get("/:param") @AdminOnly {
+
+      get("/admin") @AdminOnly {
+        "Only for admins" // TODO: Kotlin bug: suspend lambda annotations don't work yet
+      }
+
+      get("/:param") {
         "Path: ${path("param")}, Query: $queryParams"
       }
     }
 
     context("/api") {
+      before(require<AdminChecker>())
       enableJson()
       annotated<Routes>()
     }
@@ -38,6 +48,3 @@ fun main() {
     start()
   }
 }
-
-@Target(FUNCTION)
-annotation class AdminOnly

@@ -1,6 +1,8 @@
 package klite
 
 import klite.RequestMethod.*
+import kotlin.reflect.KClass
+import kotlin.reflect.full.isSuperclassOf
 
 class Router(
   val prefix: String,
@@ -16,7 +18,7 @@ class Router(
   internal val bodyRenderers = bodyRenderers.toMutableList()
   internal val bodyParsers = bodyParsers.toMutableList()
 
-  internal fun route(exchange: HttpExchange): Handler? {
+  internal fun route(exchange: HttpExchange): Route? {
     val suffix = exchange.path.removePrefix(prefix)
     return match(exchange.method, suffix)?.let { m ->
       exchange.pathParams = m.second.groups
@@ -24,15 +26,15 @@ class Router(
     }
   }
 
-  private fun match(method: RequestMethod, path: String): Pair<Handler, MatchResult>? {
+  private fun match(method: RequestMethod, path: String): Pair<Route, MatchResult>? {
     for (route in routes) {
       if (method != route.method) continue
-      route.path.matchEntire(path)?.let { return route.handler to it }
+      route.path.matchEntire(path)?.let { return route to it }
     }
     return null
   }
 
-  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = handlerAnnotations(route.handler)).also {
+  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = route.annotations + handlerAnnotations(route.handler)).also {
     routes += it.apply { logger.info("$method $prefix$path") }
   }
 
@@ -64,6 +66,9 @@ enum class RequestMethod {
 }
 
 data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList())
+
+fun <T: Annotation> Route.annotation(key: KClass<T>) = annotations.find { key.isSuperclassOf(it::class) }
+inline fun <reified T: Annotation> Route.annotation() = annotation(T::class)
 
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
 open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRegex()) {

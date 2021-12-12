@@ -55,12 +55,15 @@ class Server(
 
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).also { router ->
-      addContext(prefix) { runHandler(this, router.route(this)) }
+      addContext(prefix) {
+        runHandler(this, router.route(this))
+      }
       router.block()
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
-    addContext(prefix, Dispatchers.IO) { runHandler(this, handler.takeIf { this.method == GET }) }
+    val route = Route(GET, prefix.toRegex(), handler)
+    addContext(prefix, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET }) }
   }
 
   private fun addContext(prefix: String, coroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
@@ -71,9 +74,10 @@ class Server(
     }
   }
 
-  private suspend fun runHandler(exchange: HttpExchange, handler: Handler?) {
+  private suspend fun runHandler(exchange: HttpExchange, route: Route?) {
     try {
-      val result = (handler ?: notFoundHandler).invoke(exchange).takeIf { it != Unit }
+      exchange.route = route
+      val result = (route?.handler ?: notFoundHandler).invoke(exchange).takeIf { it != Unit }
       if (!exchange.isResponseStarted)
         exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
     } catch (e: Exception) {

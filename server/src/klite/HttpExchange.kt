@@ -17,6 +17,7 @@ open class HttpExchange(
   private val bodyRenderers: List<BodyRenderer>,
   private val bodyParsers: List<BodyParser>,
 ): AutoCloseable {
+  var route: Route? = null
   val method = RequestMethod.valueOf(original.requestMethod)
   open val remoteAddress: String get() = original.remoteAddress.address.hostAddress
   open val host: String get() = header("Host")!!

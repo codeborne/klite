@@ -24,4 +24,7 @@ class Routes {
   suspend fun suspendNoContent() {
     delay(1000)
   }
+
+  @GET("/admin") @AdminOnly
+  fun onlyForAdmins() = "Only for admins"
 }
