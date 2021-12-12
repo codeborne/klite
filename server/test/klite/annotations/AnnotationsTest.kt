@@ -41,13 +41,13 @@ class AnnotationsTest {
 
   @Test
   fun `no parameter handler`() {
-    val handler = router.toHandler(Routes(), Routes::root)
+    val handler = toHandler(Routes(), Routes::root)
     runBlocking { assertThat(handler(exchange)).isEqualTo("Hello") }
   }
 
   @Test
   fun `exchange parameter handler`() {
-    val handler = router.toHandler(Routes(), Routes::params)
+    val handler = toHandler(Routes(), Routes::params)
     every { exchange.body<String>() } returns "TheBody"
     every { exchange.path("world") } returns "7.9e9"
     every { exchange.query("date") } returns "2021-10-21"
