@@ -18,7 +18,6 @@ subprojects {
   }
 
   dependencies {
-    implementation("com.codeborne:jvm2dts:1.3.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
     testImplementation("org.assertj:assertj-core:3.21.0")
