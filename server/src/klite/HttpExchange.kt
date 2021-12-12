@@ -12,7 +12,11 @@ typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
 // TODO: session, auth/principal
-open class HttpExchange(private val original: OriginalHttpExchange, val bodyRenderers: List<BodyRenderer>, val bodyParsers: List<BodyParser>): AutoCloseable {
+open class HttpExchange(
+  private val original: OriginalHttpExchange,
+  private val bodyRenderers: List<BodyRenderer>,
+  private val bodyParsers: List<BodyParser>,
+): AutoCloseable {
   val method = RequestMethod.valueOf(original.requestMethod)
   open val remoteAddress: String get() = original.remoteAddress.address.hostAddress
   open val host: String get() = header("Host")!!

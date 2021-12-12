@@ -7,7 +7,7 @@ import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
-import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
 class Server(
@@ -25,7 +25,7 @@ class Server(
   val bodyParsers: List<BodyParser> = registry.requireAll(),
   val pathParamRegexer: PathParamRegexer = registry.require(),
   val notFoundHandler: Handler = globalDecorators.wrap { throw NotFoundException(path) },
-  val httpExchangeImpl: KClass<out HttpExchange> = XForwardedHttpExchange::class,
+  val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
 ): Registry by registry {
   private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
@@ -51,14 +51,16 @@ class Server(
   fun use(extension: Extension) = extension.install(this)
   fun decorator(decorator: Decorator) { globalDecorators += decorator }
 
-  fun context(prefix: String, block: Router.() -> Unit = {}) = Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).apply {
-    http.createContext(prefix) { ex ->
-      requestScope.launch {
-        httpExchangeImpl.primaryConstructor!!.call(ex, bodyRenderers, bodyParsers).let { handle(it, route(it)) }
+  fun context(prefix: String, block: Router.() -> Unit = {}) =
+    Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).also { router ->
+      http.createContext(prefix) { ex ->
+        requestScope.launch {
+          val exchange = httpExchangeCreator.call(ex, bodyRenderers, bodyParsers)
+          handle(exchange, router.route(exchange))
+        }
       }
+      router.block()
     }
-    block()
-  }
 
   fun assets(prefix: String, handler: AssetsHandler) {
     http.createContext(prefix) { ex ->
