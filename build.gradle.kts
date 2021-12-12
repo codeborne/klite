@@ -6,17 +6,19 @@ plugins {
 
 allprojects {
   group = rootProject.name
-  version = "0.1"
+  version = "0.5-SNAPSHOT"
 }
 
 subprojects {
   apply(plugin = "kotlin")
+  apply(plugin = "maven-publish")
 
   repositories {
     mavenCentral()
   }
 
   dependencies {
+    implementation("com.codeborne:jvm2dts:1.3.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
     testImplementation("org.assertj:assertj-core:3.21.0")
@@ -53,5 +55,23 @@ subprojects {
 
   tasks.test {
     useJUnitPlatform()
+  }
+
+  configure<PublishingExtension> {
+    repositories {
+      maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/angryziber/klite")
+        credentials {
+          username = System.getenv("GITHUB_ACTOR")
+          password = System.getenv("GITHUB_TOKEN")
+        }
+      }
+    }
+    publications {
+      register<MavenPublication>("gpr") {
+        from(components["java"])
+      }
+    }
   }
 }
