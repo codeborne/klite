@@ -12,7 +12,7 @@ import kotlin.reflect.full.primaryConstructor
 
 class Server(
   val port: Int = Config.optional("PORT")?.toInt() ?: 8080,
-  val numWorkers: Int = getRuntime().availableProcessors(),
+  val numWorkers: Int = Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors(),
   val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBodyRenderer>()
