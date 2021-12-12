@@ -27,6 +27,6 @@ jobs:
       - run: cd sample && docker-compose stop db && cd -
       - run: cd sample && docker-compose build && cd -
       - name: Publish package
-        run: ./gradle publish
+        run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
