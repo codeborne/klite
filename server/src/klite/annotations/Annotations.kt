@@ -25,12 +25,13 @@ import kotlin.reflect.jvm.javaMethod
 @Target(VALUE_PARAMETER) annotation class AttrParam
 
 fun Router.annotated(routes: Any) {
-  val path = routes::class.annotation<Path>()?.value ?: ""
-  routes::class.functions.forEach { f ->
+  val cls = routes::class
+  val path = cls.annotation<Path>()?.value ?: ""
+  cls.functions.forEach { f ->
     val a = f.annotations.firstOrNull() ?: return@forEach
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    add(Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f)))
+    add(Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f), cls.annotations + f.annotations))
   }
 }
 

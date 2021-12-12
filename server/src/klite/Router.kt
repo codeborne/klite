@@ -32,9 +32,12 @@ class Router(
     return null
   }
 
-  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler)).also {
+  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = handlerAnnotations(route.handler)).also {
     routes += it.apply { logger.info("$method $prefix$path") }
   }
+
+  // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-50200
+  private fun handlerAnnotations(handler: Handler) = handler.javaClass.methods.first { !it.isSynthetic }.annotations.toList()
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
   fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
@@ -60,7 +63,7 @@ enum class RequestMethod {
   GET, POST, PUT, DELETE, OPTIONS, HEAD
 }
 
-data class Route(val method: RequestMethod, val path: Regex, val handler: Handler)
+data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList())
 
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
 open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRegex()) {

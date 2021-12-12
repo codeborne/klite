@@ -7,6 +7,7 @@ import klite.jdbc.RequestTransactionHandler
 import klite.json.enableJson
 import kotlinx.coroutines.delay
 import java.nio.file.Path
+import kotlin.annotation.AnnotationTarget.FUNCTION
 
 fun main() {
   Config.fromEnvFile()
@@ -24,7 +25,7 @@ fun main() {
         "Waited for 1 sec"
       }
       get("/failure") { error("Failure") }
-      get("/:param") {
+      get("/:param") @AdminOnly {
         "Path: ${path("param")}, Query: $queryParams"
       }
     }
@@ -37,3 +38,6 @@ fun main() {
     start()
   }
 }
+
+@Target(FUNCTION)
+annotation class AdminOnly
