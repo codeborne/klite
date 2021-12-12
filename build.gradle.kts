@@ -5,7 +5,7 @@ plugins {
 }
 
 allprojects {
-  group = "com.github.angryziber"
+  group = rootProject.name
   version = "0.5-SNAPSHOT"
 }
 
