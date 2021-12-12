@@ -33,9 +33,11 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 
 ## Usage
 
-[![Release](https://jitpack.io/v/angryziber/klite.svg)](https://jitpack.io/#angryziber/klite)
+See [sample](sample) project on how to build apps with Klite.
 
-Currently, you can request klite to be built and served by [jitpack](https://jitpack.org):
+Klite builds are available from [jitpack](https://jitpack.org):
+[![Release](https://jitpack.io/v/User/Repo.svg)]
+(https://jitpack.io/#User/Repo)
 
 ```kt
   repositories {
