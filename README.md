@@ -30,3 +30,23 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 
 * Java 6+ built-in non-blocking jdk.httpserver
 * Re-routable Java 9+ System.Logger
+
+## Usage
+
+Currently, you can request klite to be built and served by [jitpack](https://jitpack.org):
+
+```kt
+  repositories {
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+  }
+
+  dependencies {
+    val kliteVersion = "master-SNAPSHOT" // you can put a released tag or commit hash here
+    implementation("com.github.angryziber.klite:server:$kliteVersion")
+    implementation("com.github.angryziber.klite:jackson:$kliteVersion")
+    implementation("com.github.angryziber.klite:jdbc:$kliteVersion")
+    testImplementation("com.github.angryziber.klite:jdbc-test:$kliteVersion")
+    ...
+  }
+```
