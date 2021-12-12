@@ -69,8 +69,8 @@ subprojects {
       }
     }
     publications {
-      register<MavenPublication>("gpr") {
-        from(components["java"])
+      if (project.name != "sample") {
+        register<MavenPublication>("gpr") { from(components["kotlin"]) }
       }
     }
   }
