@@ -33,7 +33,7 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 
 ## Usage
 
-See [sample](sample) project on how to build apps with Klite.
+See [sample subproject](sample) on how to build apps with Klite and run them in Docker.
 
 Klite builds are available from [jitpack](https://jitpack.org):
 [![Release](https://jitpack.io/v/User/Repo.svg)]
