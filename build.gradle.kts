@@ -55,4 +55,12 @@ subprojects {
   tasks.test {
     useJUnitPlatform()
   }
+
+  configure<PublishingExtension> {
+    publications {
+      if (project.name != "sample") {
+        register<MavenPublication>("maven") { from(components["kotlin"]) }
+      }
+    }
+  }
 }
