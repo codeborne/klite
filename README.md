@@ -31,7 +31,7 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
 * [jackson](jackson) - adds json parsing/rendering using Jackson
 * [slf4j](slf4j) - redirects server logs to slf4j and configures it
-* [jdbc][jdbc] - provides jdbc extensions and transaction handling (depends on slf4j because of Hikari)
+* [jdbc](jdbc) - provides jdbc extensions and transaction handling (depends on slf4j because of Hikari)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 
 ## Usage
