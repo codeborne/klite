@@ -39,8 +39,7 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 See [sample subproject](sample) on how to build apps with Klite and run them in Docker.
 
 Klite builds are available from [jitpack](https://jitpack.org):
-[![Release](https://jitpack.io/v/User/Repo.svg)]
-(https://jitpack.io/#User/Repo)
+[![Release](https://jitpack.io/v/angryziber/klite.svg)](https://jitpack.io/#angryziber/klite)
 
 ```kt
   repositories {
