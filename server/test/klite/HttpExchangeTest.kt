@@ -20,7 +20,7 @@ class HttpExchangeTest {
   val customParser = mockk<BodyParser> {
     every { contentType } returns "application/specific"
   }
-  val exchange = HttpExchange(original, listOf(bodyRenderer), listOf(TextBodyParser(), customParser))
+  val exchange = HttpExchange(original, listOf(bodyRenderer), listOf(TextBodyParser(), customParser), null)
 
   @Test
   fun path() {
