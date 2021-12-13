@@ -21,11 +21,6 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 * Very easy to do simple things, e.g.
   `@GET suspend fun route() = provider.fetchData()`
 
-## TODO
-* authorization checks with Forbidden/Unauthorized by default
-* api key support?
-* session as signed cookie (works with multiple nodes by default)
-
 ## Dependencies
 
 * Java 6+ built-in non-blocking jdk.httpserver
