@@ -33,6 +33,7 @@ class Server(
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val http = HttpServer.create()
+  var sessionStore: SessionStore? = null
 
   fun start(gracefulStopDelaySec: Int = 3) {
     logger.info("Listening on $port")
@@ -69,7 +70,7 @@ class Server(
   private fun addContext(prefix: String, coroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
     http.createContext(prefix) { ex ->
       requestScope.launch(coroutineContext) {
-        httpExchangeCreator.call(ex, bodyRenderers, bodyParsers).handler()
+        httpExchangeCreator.call(ex, bodyRenderers, bodyParsers, sessionStore).handler()
       }
     }
   }

@@ -6,16 +6,17 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.time.Instant
+import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.reflect.KClass
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
-// TODO: session, auth/principal
 open class HttpExchange(
   private val original: OriginalHttpExchange,
   private val bodyRenderers: List<BodyRenderer>,
   private val bodyParsers: List<BodyParser>,
+  private val sessionStore: SessionStore?
 ): AutoCloseable {
   var route: Route? = null
   val method = RequestMethod.valueOf(original.requestMethod)
@@ -55,11 +56,13 @@ open class HttpExchange(
   val responseHeaders: Headers get() = original.responseHeaders
   fun header(key: String, value: String) { responseHeaders[key] = value }
 
-  val cookies: Params by lazy { decodeCookies(header("Cookie")) }
+  val cookies: Params by lazy(NONE) { decodeCookies(header("Cookie")) }
   fun cookie(key: String) = cookies[key]
 
   fun cookie(key: String, value: String, expires: Instant? = null) { this += Cookie(key, value, expires, secure = isSecure) }
   operator fun plusAssign(cookie: Cookie) = responseHeaders.add("Set-Cookie", cookie.toString())
+
+  val session: Session by lazy(NONE) { sessionStore?.load(this) ?: error("No sessionStore defined") }
 
   val statusCode: Int get() = original.responseCode
   val isResponseStarted get() = statusCode >= 0
@@ -78,15 +81,19 @@ open class HttpExchange(
     val accept = accept
     val renderer = bodyRenderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) bodyRenderers.first() else throw NotAcceptableException(accept.contentTypes)
-    responseType = renderer.contentType
-    original.sendResponseHeaders(code.value, if (body == null) -1 else 0)
+    startResponse(code, if (body == null) -1 else 0, renderer.contentType)
     if (body != null) renderer.render(responseStream, body)
     // TODO: maybe still render null (vs Unit, when no rendering is needed)
   }
 
-  fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
+  private fun startResponse(code: StatusCode, length: Long, contentType: String?) {
+    sessionStore?.save(this, session)
     responseType = contentType
-    original.sendResponseHeaders(code.value, body?.size?.toLong() ?: -1)
+    original.sendResponseHeaders(code.value, length)
+  }
+
+  fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
+    startResponse(code, body?.size?.toLong() ?: -1, contentType)
     body?.let { responseStream.write(it) }
   }
 
@@ -104,8 +111,8 @@ open class HttpExchange(
   override fun toString() = "$method ${original.requestURI}"
 }
 
-class XForwardedHttpExchange(original: OriginalHttpExchange, bodyRenderers: List<BodyRenderer>, bodyParsers: List<BodyParser>):
-  HttpExchange(original, bodyRenderers, bodyParsers) {
+class XForwardedHttpExchange(original: OriginalHttpExchange, bodyRenderers: List<BodyRenderer>, bodyParsers: List<BodyParser>, sessionStore: SessionStore?):
+  HttpExchange(original, bodyRenderers, bodyParsers, sessionStore) {
   override val remoteAddress get() = header("X-Forwarded-For") ?: super.remoteAddress
   override val host get() = header("X-Forwarded-Host") ?: super.host
   override val isSecure get() = header("X-Forwarded-Proto") == "https"

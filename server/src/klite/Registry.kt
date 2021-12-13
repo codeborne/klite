@@ -21,7 +21,7 @@ inline fun <reified T: Any> Registry.requireAll() = requireAll(T::class)
 inline fun <reified T: Any> MutableRegistry.register(instance: T) = register(T::class, instance)
 inline fun <reified T: Any> MutableRegistry.register() = register(T::class)
 
-class RegistryException(message: String): Exception(message)
+class RegistryException(message: String, cause: Throwable? = null): Exception(message, cause)
 
 @Suppress("UNCHECKED_CAST")
 open class SimpleRegistry: MutableRegistry {
@@ -51,7 +51,7 @@ open class DependencyInjectingRegistry: SimpleRegistry() {
         logger.log(DEBUG) { "Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}" }
       }
     } catch (e: Exception) {
-      throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}: ${e.message}")
+      throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}", e.cause ?: e)
     }
   }
 
