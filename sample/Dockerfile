@@ -3,7 +3,7 @@ RUN apk add binutils # for objcopy, needed by jlink
 
 WORKDIR /app
 RUN jlink --output jre --compress=2 --no-header-files --no-man-pages --strip-debug --add-modules \
-    java.base,jdk.httpserver,java.sql,java.naming
+    java.base,jdk.httpserver,java.sql,java.net.http,jdk.crypto.ec,java.naming
 
 FROM alpine as final
 RUN adduser -S user
