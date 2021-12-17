@@ -4,6 +4,7 @@ import klite.Server
 import klite.annotations.annotated
 import klite.jdbc.DBModule
 import klite.jdbc.RequestTransactionHandler
+import klite.json.JsonBody
 import klite.json.enableJson
 import klite.require
 import kotlinx.coroutines.delay
@@ -13,6 +14,7 @@ fun main() {
   Config.fromEnvFile()
 
   Server().apply {
+    use(JsonBody())
     use(DBModule())
     use(RequestTransactionHandler())
 
