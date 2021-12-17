@@ -6,8 +6,9 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.*
 
-fun Any.logger(): Logger = System.getLogger(javaClass.name)
+fun Any.logger(name: String = javaClass.name): Logger = System.getLogger(name)
 inline fun Logger.info(msg: String) = log(Logger.Level.INFO, msg)
+inline fun Logger.error(msg: String, e: Throwable? = null) = log(Logger.Level.ERROR, msg, e)
 
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!
 fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
