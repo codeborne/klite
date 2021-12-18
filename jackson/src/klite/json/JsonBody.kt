@@ -36,7 +36,7 @@ class JsonBody(
       on(MissingKotlinParameterException::class, BadRequest)
       on(ValueInstantiationException::class, BadRequest)
     }
-    renderer(this@JsonBody)
-    parser(this@JsonBody)
+    renderers += this@JsonBody
+    parsers += this@JsonBody
   }
 }
