@@ -21,14 +21,12 @@ class Server(
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
   },
-  decorators: List<Decorator> = registry.requireAllDecorators(),
-  renderers: List<BodyRenderer> = registry.requireAll(),
-  parsers: List<BodyParser> = registry.requireAll(),
   val errors: ErrorHandler = registry.require(),
+  decorators: List<Decorator> = registry.requireAllDecorators(),
   val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
-): RouterConfig(decorators, renderers, parsers), Registry by registry {
+): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), Registry by registry {
   private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
