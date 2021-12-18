@@ -30,24 +30,13 @@ class JsonBody(
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T = json.readValue(input, type.java)
   override fun render(output: OutputStream, value: Any?) = json.writeValue(output, value)
 
-  override fun install(server: Server) {
-    server.registry.register(json)
-    server.errorHandler.apply {
+  override fun install(server: Server) = with(server) {
+    registry.register(json)
+    errorHandler.apply {
       on(MissingKotlinParameterException::class, BadRequest)
       on(ValueInstantiationException::class, BadRequest)
     }
-    server.addJson()
+    renderer(this@JsonBody)
+    parser(this@JsonBody)
   }
-}
-
-fun RouterConfig.addJson() {
-  val json = registry.require<JsonBody>()
-  renderer(json)
-  parser(json)
-}
-
-fun RouterConfig.jsonOnly() {
-  renderers.clear()
-  parsers.clear()
-  addJson()
 }

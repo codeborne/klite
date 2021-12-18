@@ -1,12 +1,8 @@
-import klite.AssetsHandler
-import klite.Config
-import klite.Server
+import klite.*
 import klite.annotations.annotated
 import klite.jdbc.DBModule
 import klite.jdbc.RequestTransactionHandler
 import klite.json.JsonBody
-import klite.json.jsonOnly
-import klite.require
 import kotlinx.coroutines.delay
 import java.nio.file.Path
 
@@ -42,7 +38,7 @@ fun main() {
     }
 
     context("/api") {
-      jsonOnly()
+      useOnly<JsonBody>()
       annotated<Routes>()
     }
 

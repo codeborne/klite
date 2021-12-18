@@ -19,8 +19,13 @@ abstract class RouterConfig(
   fun before(before: Before) = decorator(before.toDecorator())
   fun after(after: After) = decorator(after.toDecorator())
 
-  fun renderer(renderer: BodyRenderer) = renderers.add(renderer)
-  fun parser(parser: BodyParser) = parsers.add(parser)
+  fun renderer(renderer: BodyRenderer) { renderers.add(renderer) }
+  fun parser(parser: BodyParser) { parsers.add(parser) }
+}
+
+inline fun <reified T> RouterConfig.useOnly() where T: BodyParser, T: BodyRenderer {
+  renderers.removeIf { it !is T }
+  parsers.removeIf { it !is T }
 }
 
 class Router(
