@@ -30,7 +30,7 @@ class JsonBody(
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T = json.readValue(input, type.java)
   override fun render(output: OutputStream, value: Any?) = json.writeValue(output, value)
 
-  override fun install(server: Server) = with(server) {
+  override fun install(server: Server) = server.run {
     registry.register(json)
     errors.apply {
       on(MissingKotlinParameterException::class, BadRequest)
