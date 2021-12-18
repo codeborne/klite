@@ -4,7 +4,7 @@ services:
   app:
     build: .
     environment:
-      - DB_URL
+      - DB_URL=jdbc:postgresql://db/$DB_USER
       - DB_USER
       - DB_PASS
     depends_on:
