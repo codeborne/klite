@@ -32,7 +32,7 @@ class JsonBody(
 
   override fun install(server: Server) = with(server) {
     registry.register(json)
-    errorHandler.apply {
+    errors.apply {
       on(MissingKotlinParameterException::class, BadRequest)
       on(ValueInstantiationException::class, BadRequest)
     }

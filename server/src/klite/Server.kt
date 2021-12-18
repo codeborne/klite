@@ -24,7 +24,7 @@ class Server(
   decorators: List<Decorator> = registry.requireAllDecorators(),
   renderers: List<BodyRenderer> = registry.requireAll(),
   parsers: List<BodyParser> = registry.requireAll(),
-  val errorHandler: ErrorHandler = registry.require(),
+  val errors: ErrorHandler = registry.require(),
   val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
@@ -81,7 +81,7 @@ class Server(
       if (!exchange.isResponseStarted)
         exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
     } catch (e: Exception) {
-      errorHandler(exchange, e)
+      errors(exchange, e)
     } finally {
       exchange.close()
     }
