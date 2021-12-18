@@ -4,19 +4,35 @@ import klite.RequestMethod.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
-class Router(
-  val prefix: String,
-  val registry: Registry,
-  val pathParamRegexer: PathParamRegexer,
+abstract class RouterConfig(
   decorators: List<Decorator>,
   bodyRenderers: List<BodyRenderer>,
   bodyParsers: List<BodyParser>
-): Registry by registry {
+) {
+  abstract val registry: Registry
+  abstract val pathParamRegexer: PathParamRegexer
+  val decorators = decorators.toMutableList()
+  val renderers = bodyRenderers.toMutableList()
+  val parsers = bodyParsers.toMutableList()
+
+  fun decorator(decorator: Decorator) { decorators += decorator }
+  fun before(before: Before) = decorator(before.toDecorator())
+  fun after(after: After) = decorator(after.toDecorator())
+
+  fun renderer(renderer: BodyRenderer) = renderers.add(renderer)
+  fun parser(parser: BodyParser) = parsers.add(parser)
+}
+
+class Router(
+  val prefix: String,
+  override val registry: Registry,
+  override val pathParamRegexer: PathParamRegexer,
+  decorators: List<Decorator>,
+  renderers: List<BodyRenderer>,
+  parsers: List<BodyParser>
+): RouterConfig(decorators, renderers, parsers), Registry by registry {
   private val logger = logger()
   private val routes = mutableListOf<Route>()
-  private val decorators = decorators.toMutableList()
-  internal val bodyRenderers = bodyRenderers.toMutableList()
-  internal val bodyParsers = bodyParsers.toMutableList()
 
   internal fun route(exchange: HttpExchange): Route? {
     val suffix = exchange.path.removePrefix(prefix)
@@ -52,13 +68,6 @@ class Router(
 
   fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler))
   fun delete(path: String = "", handler: Handler) = delete(pathParamRegexer.from(path), handler)
-
-  fun decorator(decorator: Decorator) { decorators += decorator }
-  fun before(before: Before) = decorator(before.toDecorator())
-  fun after(after: After) = decorator(after.toDecorator())
-
-  fun renderer(renderer: BodyRenderer) = bodyRenderers.add(0, renderer)
-  fun parser(parser: BodyParser) = bodyParsers.add(0, parser)
 }
 
 enum class RequestMethod {

@@ -15,20 +15,20 @@ import kotlin.reflect.full.primaryConstructor
 class Server(
   val port: Int = Config.optional("PORT")?.toInt() ?: 8080,
   val numWorkers: Int = Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors(),
-  val registry: MutableRegistry = DependencyInjectingRegistry().apply {
+  override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBodyRenderer>()
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
   },
-  val globalDecorators: MutableList<Decorator> = registry.requireAllDecorators().toMutableList(),
+  decorators: List<Decorator> = registry.requireAllDecorators(),
+  renderers: List<BodyRenderer> = registry.requireAll(),
+  parsers: List<BodyParser> = registry.requireAll(),
   val errorHandler: ErrorHandler = registry.require(),
-  val bodyRenderers: List<BodyRenderer> = registry.requireAll(),
-  val bodyParsers: List<BodyParser> = registry.requireAll(),
-  val pathParamRegexer: PathParamRegexer = registry.require(),
-  val notFoundHandler: Handler = globalDecorators.wrap { throw NotFoundException(path) },
+  val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
+  override val pathParamRegexer: PathParamRegexer = registry.require(),
   val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
-): Registry by registry {
+): RouterConfig(decorators, renderers, parsers), Registry by registry {
   private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
@@ -52,11 +52,10 @@ class Server(
   }
 
   fun use(extension: Extension) = extension.install(this)
-  fun decorator(decorator: Decorator) { globalDecorators += decorator }
 
   fun context(prefix: String, block: Router.() -> Unit = {}) =
-    Router(prefix, registry, pathParamRegexer, globalDecorators, bodyRenderers, bodyParsers).also { router ->
-      addContext(prefix) {
+    Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
+      addContext(prefix, router) {
         runHandler(this, router.route(this))
       }
       router.block()
@@ -64,13 +63,13 @@ class Server(
 
   fun assets(prefix: String, handler: AssetsHandler) {
     val route = Route(GET, prefix.toRegex(), handler)
-    addContext(prefix, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET }) }
+    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET }) }
   }
 
-  private fun addContext(prefix: String, coroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
+  private fun addContext(prefix: String, config: RouterConfig, coroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
     http.createContext(prefix) { ex ->
       requestScope.launch(coroutineContext) {
-        httpExchangeCreator.call(ex, bodyRenderers, bodyParsers, sessionStore).handler()
+        httpExchangeCreator.call(ex, config, sessionStore).handler()
       }
     }
   }

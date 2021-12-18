@@ -36,11 +36,18 @@ class JsonBody(
       on(MissingKotlinParameterException::class, BadRequest)
       on(ValueInstantiationException::class, BadRequest)
     }
+    server.addJson()
   }
 }
 
-fun Router.enableJson() {
+fun RouterConfig.addJson() {
   val json = registry.require<JsonBody>()
   renderer(json)
   parser(json)
+}
+
+fun RouterConfig.jsonOnly() {
+  renderers.clear()
+  parsers.clear()
+  addJson()
 }

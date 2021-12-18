@@ -5,7 +5,7 @@ import klite.annotations.annotated
 import klite.jdbc.DBModule
 import klite.jdbc.RequestTransactionHandler
 import klite.json.JsonBody
-import klite.json.enableJson
+import klite.json.jsonOnly
 import klite.require
 import kotlinx.coroutines.delay
 import java.nio.file.Path
@@ -20,9 +20,9 @@ fun main() {
 
     assets("/", AssetsHandler(Path.of("public")))
 
-    context("/hello") {
-      before(require<AdminChecker>())
+    before(require<AdminChecker>())
 
+    context("/hello") {
       get { "Hello World" }
 
       get("/delay") {
@@ -42,8 +42,7 @@ fun main() {
     }
 
     context("/api") {
-      before(require<AdminChecker>())
-      enableJson()
+      jsonOnly()
       annotated<Routes>()
     }
 

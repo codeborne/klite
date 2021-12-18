@@ -14,8 +14,7 @@ typealias Headers = com.sun.net.httpserver.Headers
 
 open class HttpExchange(
   private val original: OriginalHttpExchange,
-  private val bodyRenderers: List<BodyRenderer>,
-  private val bodyParsers: List<BodyParser>,
+  private val config: RouterConfig,
   private val sessionStore: SessionStore?
 ): AutoCloseable {
   var route: Route? = null
@@ -38,7 +37,7 @@ open class HttpExchange(
   inline fun <reified T: Any> body(): T = body(T::class)
   fun <T: Any> body(type: KClass<T>): T {
     val contentType = requestType ?: "text/plain"
-    return bodyParsers.find { contentType.startsWith(it.contentType) }?.parse(requestStream, type) ?:
+    return config.parsers.find { contentType.startsWith(it.contentType) }?.parse(requestStream, type) ?:
       throw UnsupportedMediaTypeException(requestType)
   }
 
@@ -79,8 +78,8 @@ open class HttpExchange(
 
   fun render(code: StatusCode, body: Any?) {
     val accept = accept
-    val renderer = bodyRenderers.find { accept(it) } ?:
-      if (accept.isRelaxed || code != OK) bodyRenderers.first() else throw NotAcceptableException(accept.contentTypes)
+    val renderer = config.renderers.find { accept(it) } ?:
+      if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
     startResponse(code, if (body == null) -1 else 0, renderer.contentType)
     if (body != null) renderer.render(responseStream, body)
     // TODO: maybe still render null (vs Unit, when no rendering is needed)
@@ -111,8 +110,8 @@ open class HttpExchange(
   override fun toString() = "$method ${original.requestURI}"
 }
 
-class XForwardedHttpExchange(original: OriginalHttpExchange, bodyRenderers: List<BodyRenderer>, bodyParsers: List<BodyParser>, sessionStore: SessionStore?):
-  HttpExchange(original, bodyRenderers, bodyParsers, sessionStore) {
+class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?):
+  HttpExchange(original, config, sessionStore) {
   override val remoteAddress get() = header("X-Forwarded-For") ?: super.remoteAddress
   override val host get() = header("X-Forwarded-Host") ?: super.host
   override val isSecure get() = header("X-Forwarded-Proto") == "https"
