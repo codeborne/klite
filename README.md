@@ -40,7 +40,7 @@ See [sample subproject](sample) on how to build apps with Klite and run them in 
 
 [![Release](https://jitpack.io/v/angryziber/klite.svg)](https://jitpack.io/#angryziber/klite)
 
-Klite builds are available from [jitpack](https://jitpack.org):
+Klite builds are available from [jitpack](https://jitpack.io):
 ```kt
   repositories {
     mavenCentral()
