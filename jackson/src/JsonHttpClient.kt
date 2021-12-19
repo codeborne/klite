@@ -17,6 +17,10 @@ import kotlin.reflect.KClass
 
 typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
 
+/**
+ * Configure a default java.net.HttpClient in your registry, e.g.
+ * registry.register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
+ */
 class JsonHttpClient(
   registry: Registry,
   private val urlPrefix: String = "",
