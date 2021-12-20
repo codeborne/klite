@@ -67,7 +67,7 @@ subprojects {
   configure<PublishingExtension> {
     publications {
       if (project.name != "sample") {
-        register<MavenPublication>("maven") { from(components["kotlin"]) }
+        register<MavenPublication>("maven") { from(components["java"]) }
       }
     }
   }
