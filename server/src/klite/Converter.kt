@@ -15,6 +15,8 @@ object Converter {
   ))
   operator fun <T: Any> set(type: KClass<T>, converter: StringConverter<T>) { converters[type] = converter }
 
+  fun supports(type: KClass<*>) = converters[type] != null
+
   inline fun <reified T: Any> fromString(s: String) = fromString(s, T::class)
 
   @Suppress("UNCHECKED_CAST")

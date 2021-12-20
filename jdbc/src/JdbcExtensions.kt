@@ -1,6 +1,8 @@
 package klite.jdbc
 
+import klite.Converter
 import org.intellij.lang.annotations.Language
+import java.net.URI
 import java.net.URL
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -78,7 +80,7 @@ fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i
 private fun Connection.toDBType(v: Any?): Any? = when(v) {
   is Enum<*> -> v.name
   is Instant -> v.atOffset(UTC)
-  is Period, is URL, is Currency -> v.toString()
+  is Period, is URL, is URI, is Currency, is Locale, v != null && Converter.supports(v::class) -> v.toString()
   is Collection<*> -> createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
   else -> v
 }
