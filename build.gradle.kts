@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
   group = rootProject.name
-  version = "0.5-SNAPSHOT"
+  version = "0.9-SNAPSHOT"
 }
 
 subprojects {
