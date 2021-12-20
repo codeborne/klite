@@ -27,6 +27,11 @@ class ConverterTest {
   }
 
   @Test
+  fun jvmInline() {
+    assertThat(Converter.fromString<Inline>("hello")).isEqualTo(Inline("hello"))
+  }
+
+  @Test
   fun javaPrimitive() {
     assertThat(Converter.fromString("456", Int::class)).isEqualTo(456)
   }
@@ -44,3 +49,5 @@ class ConverterTest {
     }
   }
 }
+
+@JvmInline value class Inline(val string: String)

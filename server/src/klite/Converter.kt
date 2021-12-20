@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
 typealias StringConverter<T> = (s: String) -> T
@@ -39,7 +40,8 @@ object Converter {
   }
 
   private fun <T: Any> constructorCreator(type: KClass<T>): StringConverter<T> {
-    val constructor = type.javaObjectType.getConstructor(String::class.java)
+    val constructor = type.javaObjectType.getDeclaredConstructor(String::class.java)
+    if (type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
     return { s ->
       try { constructor.newInstance(s) }
       catch (e: InvocationTargetException) { throw e.targetException }
