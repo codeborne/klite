@@ -78,11 +78,17 @@ operator fun PreparedStatement.set(i: Int, value: Any?) = setObject(i, connectio
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
 
 private fun Connection.toDBType(v: Any?): Any? = when(v) {
+  null -> null
   is Enum<*> -> v.name
   is Instant -> v.atOffset(UTC)
-  is Period, is URL, is URI, is Currency, is Locale, v != null && Converter.supports(v::class) -> v.toString()
   is Collection<*> -> createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
-  else -> v
+  is Period, is URL, is URI, is Currency, is Locale -> v.toString()
+  is UUID -> v
+  else -> when {
+    v::class.isValue -> v.javaClass.declaredFields.first().apply { isAccessible = true }.get(v)
+    Converter.supports(v::class) -> v.toString()
+    else -> v
+  }
 }
 
 private fun <R> ResultSet.map(mapper: ResultSet.() -> R): List<R> = mutableListOf<R>().also {

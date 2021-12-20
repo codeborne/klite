@@ -11,7 +11,9 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
-import kotlin.reflect.full.*
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmErasure
 
@@ -38,8 +40,7 @@ private fun fromDBType(v: Any?, target: KType): Any? = when(target.jvmErasure) {
   LocalDate::class -> (v as? Date)?.toLocalDate()
   LocalDateTime::class -> (v as Timestamp).toLocalDateTime()
   else -> when {
-    v is String && !target.jvmErasure.isSuperclassOf(String::class) -> Converter.fromString(v)
-    target.jvmErasure.hasAnnotation<JvmInline>() -> (v as String?)?.let { target.jvmErasure.primaryConstructor!!.call(it) }
+    v is String && target.jvmErasure != String::class -> Converter.fromString(v, target.jvmErasure)
     v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { fromDBType(it, target.arguments[0].type!!) }.toSet()
     v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { fromDBType(it, target.arguments[0].type!!) }.toList()
     else -> v
