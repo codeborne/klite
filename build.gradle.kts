@@ -52,6 +52,14 @@ subprojects {
     }
   }
 
+  java {
+    withSourcesJar()
+  }
+
+  tasks.named<Jar>("sourcesJar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  }
+
   tasks.test {
     useJUnitPlatform()
   }
