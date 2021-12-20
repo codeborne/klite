@@ -15,7 +15,7 @@ abstract class DBTest {
     val yesterday = today.minusDays(1)
 
     val db = try {
-      Config.fromEnvFile()
+      Config.useEnvFile()
       DBModule("_test").dataSource.apply {
 //      TODO  migrate(listOf("test", "test-data"))
       }
