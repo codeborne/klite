@@ -14,7 +14,7 @@ import kotlin.text.Charsets.UTF_8
 class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
-  val cacheControl: String = "max-age=86400",
+  val headers: Map<String, String> = mapOf("Cache-Control" to "max-age=86400"),
   val textCharset: Charset = UTF_8
 ): Handler {
   private val mimeTypes = MimeTable.getDefaultTable()
@@ -41,7 +41,7 @@ class AssetsHandler(
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
     if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
     header("Last-Modified", lastModified)
-    header("Cache-Control", cacheControl)
+    headers += this.headers
     var contentType: String? = mimeTypes.getContentTypeFor(file.name)
     if (contentType?.startsWith("text/") == true) contentType += "; charset=$textCharset"
     send(StatusCode.OK, file.readBytes(), contentType)
