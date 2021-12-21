@@ -6,9 +6,12 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 class KeyGenerator(val keyFactory: SecretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")) {
-  fun keyFromSecret(password: String, salt: String? = "SaltyKlite"): SecretKey {
-    val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+  fun hash(password: String, salt: String?): ByteArray {
     val spec = PBEKeySpec(password.toCharArray(), salt?.toByteArray(), 65536, 256)
-    return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
+    return keyFactory.generateSecret(spec).encoded
+  }
+
+  fun keyFromSecret(password: String, salt: String? = "SaltyKlite"): SecretKey {
+    return SecretKeySpec(hash(password, salt), "AES")
   }
 }
