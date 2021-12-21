@@ -51,6 +51,7 @@ class Server(
 
   fun use(extension: Extension) = extension.install(this)
 
+  /** Adds a new router context. When handing a request, the longest matching router context is chosen. */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
       addContext(prefix, router) {
