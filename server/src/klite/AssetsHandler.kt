@@ -47,8 +47,8 @@ class AssetsHandler(
   }
 }
 
-class MimeTypes(byExtension: Map<String, String> = emptyMap()) {
-  val byExtension = mapOf(
+class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
+  private val typesByExtension = mapOf(
     "html" to "text/html",
     "txt" to "text/plain",
     "xml" to "text/xml",
@@ -78,8 +78,8 @@ class MimeTypes(byExtension: Map<String, String> = emptyMap()) {
     "zip" to "application/zip",
     "gz" to "application/gzip",
     "ics" to "text/calendar"
-  ) + byExtension
+  ) + moreTypesByFileExtension
 
-  fun typeFor(file: Path) = byExtension[file.extension]
+  fun typeFor(file: Path) = typesByExtension[file.extension]
   fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml")
 }
