@@ -66,7 +66,12 @@ subprojects {
   configure<PublishingExtension> {
     publications {
       if (project.name != "sample") {
-        register<MavenPublication>("maven") { from(components["java"]) }
+        register<MavenPublication>("maven") {
+          from(components["java"])
+          afterEvaluate {
+            artifactId = tasks.jar.get().archiveBaseName.get()
+          }
+        }
       }
     }
   }
