@@ -1,7 +1,5 @@
-@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 package klite
 
-import sun.net.www.MimeTable
 import java.io.IOException
 import java.lang.System.Logger.Level.WARNING
 import java.nio.charset.Charset
@@ -14,10 +12,10 @@ import kotlin.text.Charsets.UTF_8
 class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
-  val headers: Map<String, String> = mapOf("Cache-Control" to "max-age=86400"),
+  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=86400"),
+  val mimeTypes: MimeTypes = MimeTypes(),
   val textCharset: Charset = UTF_8
 ): Handler {
-  private val mimeTypes = MimeTable.getDefaultTable()
   private val logger = logger()
 
   init {
@@ -41,9 +39,47 @@ class AssetsHandler(
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
     if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
     header("Last-Modified", lastModified)
-    headers += this.headers
-    var contentType: String? = mimeTypes.getContentTypeFor(file.name)
-    if (contentType?.startsWith("text/") == true) contentType += "; charset=$textCharset"
+    additionalHeaders.forEach { (k, v) -> header(k, v) }
+    var contentType: String? = mimeTypes.typeFor(file)
+    if (contentType == null) logger.warn("Cannot detect content-type for $file")
+    else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
     send(StatusCode.OK, file.readBytes(), contentType)
   }
+}
+
+class MimeTypes(byExtension: Map<String, String> = emptyMap()) {
+  val byExtension = mapOf(
+    "html" to "text/html",
+    "txt" to "text/plain",
+    "xml" to "text/xml",
+    "xsd" to "text/xml",
+    "js" to "text/javascript",
+    "mjs" to "text/javascript",
+    "json" to "application/json",
+    "css" to "text/css",
+    "csv" to "text/csv",
+    "ico" to "image/vnd.microsoft.icon",
+    "png" to "image/png",
+    "gif" to "image/gif",
+    "jpg" to "image/jpeg",
+    "jpeg" to "image/jpeg",
+    "svg" to "image/svg+xml",
+    "mp4" to "video/mp4",
+    "ogv" to "video/ogv",
+    "oga" to "audio/oga",
+    "mp3" to "audio/mpeg",
+    "ttf" to "font/ttf",
+    "otf" to "font/otf",
+    "woff" to "font/woff",
+    "woff2" to "font/woff2",
+    "pdf" to "application/pdf",
+    "xls" to "application/vnd.ms-excel",
+    "xlsx" to "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "zip" to "application/zip",
+    "gz" to "application/gzip",
+    "ics" to "text/calendar"
+  ) + byExtension
+
+  fun typeFor(file: Path) = byExtension[file.extension]
+  fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml")
 }

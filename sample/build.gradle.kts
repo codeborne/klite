@@ -34,7 +34,6 @@ tasks.jar {
 }
 
 tasks.register<JavaExec>("run") {
-  jvmArgs("--add-exports=java.base/sun.net.www=ALL-UNNAMED")
   mainClass.set(mainClassName)
   classpath = sourceSets.main.get().runtimeClasspath
 }

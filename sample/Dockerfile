@@ -16,7 +16,7 @@ COPY build/libs /app
 USER user
 
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=80"
-CMD jre/bin/java $JAVA_OPTS --add-exports=java.base/sun.net.www=ALL-UNNAMED -jar *.jar
+CMD jre/bin/java $JAVA_OPTS -jar *.jar
 
 # Heroku redefines exposed port
 ENV PORT=8080
