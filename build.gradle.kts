@@ -38,7 +38,6 @@ subprojects {
   tasks.withType<KotlinCompile> {
     kotlinOptions {
       jvmTarget = "11"
-      javaParameters = true
     }
   }
 
