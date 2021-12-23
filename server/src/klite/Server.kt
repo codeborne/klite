@@ -49,7 +49,10 @@ class Server(
     onStopHandlers.forEach { it.run() }
   }
 
-  fun use(extension: Extension) = extension.install(this)
+  fun use(extension: Extension) {
+    registry.register(extension)
+    extension.install(this)
+  }
 
   /** Adds a new router context. When handing a request, the longest matching router context is chosen. */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
