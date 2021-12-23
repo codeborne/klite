@@ -25,8 +25,7 @@ class JsonHttpClientTest {
   val http = JsonHttpClient(registry, "http://some.host/v1", reqModifier = { setHeader("X-Custom-API", "123") },
     retryCount = 2, retryAfter = ofSeconds(0))
 
-  @Test
-  fun get() {
+  @Test fun get() {
     val response = mockResponse(200, """{"hello": "World"}""")
     every { httpClient.sendAsync<String>(any(), any()) } returns completedFuture(response)
 
@@ -38,24 +37,21 @@ class JsonHttpClientTest {
     coVerify { httpClient.sendAsync<String>(match { it.uri().toString() == "http://some.host/v1/some/data" }, any()) }
   }
 
-  @Test
-  fun `http error`() {
+  @Test fun `http error`() {
     val response = mockResponse(500, """{"error": "Error"}""")
     every { httpClient.sendAsync<String>(any(), any()) } returns completedFuture(response)
 
     assertThrows<IOException> { runBlocking { http.get<SomeData>("/error") } }
   }
 
-  @Test
-  fun exception() {
+  @Test fun exception() {
     val exception = IOException()
     every { httpClient.sendAsync<String>(any(), any()) }.returnsMany(failedFuture(exception))
     assertThrows<IOException> { runBlocking { http.post<String>("/some/data", "Hello") } }
     coVerify(exactly = 3) { httpClient.sendAsync<String>(any(), any()) }
   }
 
-  @Test
-  fun retry() {
+  @Test fun retry() {
     val response = mockResponse(200, """{"hello": "World"}""")
     every { httpClient.sendAsync<String>(any(), any()) }.returnsMany(failedFuture(IOException()), completedFuture(response))
     runBlocking {
@@ -64,8 +60,6 @@ class JsonHttpClientTest {
     }
     coVerify(exactly = 2) { httpClient.sendAsync<String>(any(), any()) }
   }
-
-  data class SomeData(val hello: String)
 
   private fun mockResponse(status: Int, body: String) = mockk<HttpResponse<String>> {
     every { statusCode() } returns status
