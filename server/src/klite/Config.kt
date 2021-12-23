@@ -10,9 +10,11 @@ object Config {
   fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
     file.forEachLine {
-      it.split('=', limit = 2).let { (key, value) ->
-        if (force || optional(key) == null) System.setProperty(key, value)
-      }
+      val line = it.trim()
+      if (line.isNotEmpty() && !line.startsWith('#'))
+        line.split('=', limit = 2).let { (key, value) ->
+          if (force || optional(key) == null) System.setProperty(key, value)
+        }
     }
   }
 }
