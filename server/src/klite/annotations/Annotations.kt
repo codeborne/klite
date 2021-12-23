@@ -45,6 +45,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
         val p = params[i]
         if (p.kind == INSTANCE) instance
         else if (p.type.classifier == HttpExchange::class) this
+        else if (p.type.classifier == Session::class) session
         else {
           val name = p.name!!
           val type = p.type.classifier as KClass<*>
