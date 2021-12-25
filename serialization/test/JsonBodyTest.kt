@@ -1,3 +1,4 @@
+@file:UseSerializers(UUIDSerializer::class)
 package klite.serialization
 
 import klite.ErrorResponse
@@ -5,6 +6,7 @@ import klite.StatusCode
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -38,7 +40,7 @@ class JsonBodyTest {
 @Serializable @JvmInline value class Email(val email: String)
 @Serializable data class SomeData(val email: Email, val date: LocalDate, val optional: String? = null)
 
-@Serializable data class SomeEntity(@Serializable(with = UUIDSerializer::class) val id: UUID)
+@Serializable data class SomeEntity(val id: UUID)
 
 class UUIDSerializer: KSerializer<UUID> {
   override val descriptor = PrimitiveSerialDescriptor("Locale", PrimitiveKind.STRING)
