@@ -1,10 +1,9 @@
-package klite.json
+package klite.serialization
 
-import kotlinx.serialization.Contextual
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 class JsonBodyTest {
   @Test fun `can create data classes`() {
@@ -14,4 +13,4 @@ class JsonBodyTest {
 }
 
 @Serializable @JvmInline value class Email(val email: String)
-@Serializable data class SomeData(val email: Email, @Contextual val date: LocalDate, val optional: String? = null)
+@Serializable data class SomeData(val email: Email, val date: LocalDate, val optional: String? = null)

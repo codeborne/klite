@@ -1,28 +1,17 @@
-package klite.json
+package klite.serialization
 
 import klite.*
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 import kotlinx.serialization.serializer
 import java.io.InputStream
 import java.io.OutputStream
-import java.time.LocalDate
 import kotlin.reflect.KClass
 
 class JsonBody(
   val json: Json = Json {
     ignoreUnknownKeys = true
-    serializersModule = SerializersModule {
-      contextual(LocalDateSerializer)
-    }
   },
   override val contentType: String = "application/json"
 ): BodyParser, BodyRenderer, Extension {
@@ -34,10 +23,4 @@ class JsonBody(
     renderers += this@JsonBody
     parsers += this@JsonBody
   }
-}
-
-object LocalDateSerializer: KSerializer<LocalDate> {
-  override val descriptor = PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
-  override fun serialize(encoder: Encoder, value: LocalDate) = encoder.encodeString(value.toString())
-  override fun deserialize(decoder: Decoder): LocalDate = LocalDate.parse(decoder.decodeString())
 }
