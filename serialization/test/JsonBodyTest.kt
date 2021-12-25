@@ -4,13 +4,8 @@ package klite.serialization
 import klite.ErrorResponse
 import klite.StatusCode
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
@@ -30,10 +25,13 @@ class JsonBodyTest {
     assertThat(out.toByteArray().decodeToString()).isEqualTo("""{"statusCode":404,"reason":"Not Found","message":"/"}""")
   }
 
-  @Test fun `can serialize using toString`() {
+  @Test fun `use ConverterSerializer`() {
     val out = ByteArrayOutputStream()
-    jsonBody.render(out, SomeEntity(UUID.fromString("fc587008-f555-4b4d-82c0-818b05eb8bad")))
+    val entity = SomeEntity(UUID.fromString("fc587008-f555-4b4d-82c0-818b05eb8bad"))
+    jsonBody.render(out, entity)
     assertThat(out.toByteArray().decodeToString()).isEqualTo("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""")
+
+    assertThat(jsonBody.parse("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""".byteInputStream(), SomeEntity::class)).isEqualTo(entity)
   }
 }
 
@@ -41,9 +39,3 @@ class JsonBodyTest {
 @Serializable data class SomeData(val email: Email, val date: LocalDate, val optional: String? = null)
 
 @Serializable data class SomeEntity(val id: UUID)
-
-class UUIDSerializer: KSerializer<UUID> {
-  override val descriptor = PrimitiveSerialDescriptor("Locale", PrimitiveKind.STRING)
-  override fun serialize(encoder: Encoder, value: UUID) = encoder.encodeString(value.toString())
-  override fun deserialize(decoder: Decoder) = UUID.fromString(decoder.decodeString())
-}

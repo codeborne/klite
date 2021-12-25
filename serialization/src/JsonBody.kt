@@ -3,6 +3,8 @@ package klite.serialization
 import klite.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -12,6 +14,7 @@ import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.serializer
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.*
 import kotlin.reflect.KClass
 
 class JsonBody(
@@ -41,4 +44,12 @@ object ErrorResponseSerializer: KSerializer<ErrorResponse> {
   override fun deserialize(decoder: Decoder): ErrorResponse = error("No need")
 
   @Serializable class SerializableErrorResponse(val statusCode: Int, val reason: String, val message: String?)
+}
+
+class UUIDSerializer: ConverterSerializer<UUID>(UUID::class)
+
+abstract class ConverterSerializer<T: Any>(val type: KClass<T>): KSerializer<T> {
+  override val descriptor = PrimitiveSerialDescriptor(type.simpleName!!, PrimitiveKind.STRING)
+  override fun serialize(encoder: Encoder, value: T) = encoder.encodeString(value.toString())
+  override fun deserialize(decoder: Decoder): T = Converter.fromString(decoder.decodeString(), type)
 }
