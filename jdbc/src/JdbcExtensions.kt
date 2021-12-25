@@ -1,7 +1,9 @@
 package klite.jdbc
 
 import klite.Converter
+import klite.annotations.annotation
 import org.intellij.lang.annotations.Language
+import java.lang.reflect.Modifier.isStatic
 import java.net.URI
 import java.net.URL
 import java.sql.Connection
@@ -85,7 +87,7 @@ private fun Connection.toDBType(v: Any?): Any? = when(v) {
   is Period, is URL, is URI, is Currency, is Locale -> v.toString()
   is UUID -> v
   else -> when {
-    v::class.isValue -> v.javaClass.declaredFields.first().apply { isAccessible = true }.get(v)
+    v::class.annotation<JvmInline>() != null -> v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
     Converter.supports(v::class) -> v.toString()
     else -> v
   }
