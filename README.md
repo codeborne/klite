@@ -51,10 +51,10 @@ Klite builds are available from [jitpack](https://jitpack.io):
 
   dependencies {
     val kliteVersion = "master-SNAPSHOT" // you can put a released tag or commit hash here
-    implementation("com.github.angryziber.klite:server:$kliteVersion")
-    implementation("com.github.angryziber.klite:jackson:$kliteVersion")
-    implementation("com.github.angryziber.klite:jdbc:$kliteVersion")
-    testImplementation("com.github.angryziber.klite:jdbc-test:$kliteVersion")
+    implementation("com.github.angryziber.klite:klite-server:$kliteVersion")
+    implementation("com.github.angryziber.klite:klite-jackson:$kliteVersion")
+    implementation("com.github.angryziber.klite:klite-jdbc:$kliteVersion")
+    testImplementation("com.github.angryziber.klite:klite-jdbc-test:$kliteVersion")
     ...
   }
 ```
