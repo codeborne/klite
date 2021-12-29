@@ -1,6 +1,5 @@
 package klite
 
-import klite.Cookie.SameSite.None
 import klite.crypto.KeyCipher
 import klite.crypto.KeyGenerator
 
@@ -22,7 +21,7 @@ interface SessionStore {
 
 class CookieSessionStore(
   sessionSecret: String = Config.required("SESSION_SECRET"),
-  val cookie: Cookie = Cookie("S", "", httpOnly = true, sameSite = None),
+  val cookie: Cookie = Cookie("S", "", httpOnly = true),
   keyGenerator: KeyGenerator = KeyGenerator()
 ): SessionStore {
   private val keyCipher = KeyCipher(keyGenerator.keyFromSecret(sessionSecret))
