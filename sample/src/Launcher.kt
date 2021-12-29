@@ -17,7 +17,7 @@ fun main() {
     use(DBModule())
     use(RequestTransactionHandler())
 
-    assets("/", AssetsHandler(Path.of("public")))
+    assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 
     before(require<AdminChecker>())
 

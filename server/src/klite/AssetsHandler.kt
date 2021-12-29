@@ -12,6 +12,7 @@ import kotlin.text.Charsets.UTF_8
 class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
+  val useIndexForUnknownPaths: Boolean = false,
   val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=86400"),
   val mimeTypes: MimeTypes = MimeTypes(),
   val textCharset: Charset = UTF_8
@@ -28,7 +29,10 @@ class AssetsHandler(
       var file = path / exchange.path.substring(1)
       if (!file.startsWith(path)) throw ForbiddenException(exchange.path)
       if (file.isDirectory()) file /= indexFile
-      if (!file.exists()) throw NotFoundException(exchange.path)
+      if (!file.exists()) {
+        if (useIndexForUnknownPaths && !file.name.contains(".")) file = path / indexFile
+        else throw NotFoundException(exchange.path)
+      }
       exchange.send(file)
     } catch (e: IOException) {
       throw NotFoundException(e.message)
