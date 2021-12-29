@@ -2,7 +2,6 @@ package klite
 
 import klite.RequestMethod.*
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSuperclassOf
 
 abstract class RouterConfig(
   decorators: List<Decorator>,
@@ -76,10 +75,10 @@ enum class RequestMethod {
   GET, POST, PUT, DELETE, OPTIONS, HEAD
 }
 
-data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList())
-
-fun <T: Annotation> Route.annotation(key: KClass<T>) = annotations.find { key.isSuperclassOf(it::class) }
-inline fun <reified T: Annotation> Route.annotation() = annotation(T::class)
+data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList()) {
+  fun <T: Annotation> annotation(key: KClass<T>) = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) }
+  inline fun <reified T: Annotation> annotation() = annotation(T::class)
+}
 
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
 open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRegex()) {
