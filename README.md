@@ -2,7 +2,7 @@
 
 [![Build & Test](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml/badge.svg)](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml)
 
-A very light-weight (lite) non-blocking http framework for Kotlin coroutines.
+A very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
 
 Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 
