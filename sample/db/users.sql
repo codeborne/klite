@@ -10,4 +10,6 @@ create table users(
   locale varchar not null default 'en',
   ${createdAt}
 );
+
+--changeset klite:users_email_idx
 create unique index users_email_idx on users (email);
