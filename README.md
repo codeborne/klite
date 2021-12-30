@@ -61,3 +61,6 @@ Klite builds are available from [jitpack](https://jitpack.io):
     ...
   }
 ```
+
+Jitpack builds requested versions on the fly, so it is also good if you want to fork Klite and customize for your own needs -
+you will still be able to add your fork as a Maven/Gradle dependency in your apps.
