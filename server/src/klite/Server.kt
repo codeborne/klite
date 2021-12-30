@@ -78,7 +78,7 @@ class Server(
 
   private suspend fun runHandler(exchange: HttpExchange, route: Route?) {
     try {
-      exchange.route = route
+      if (route != null) exchange.route = route
       val result = (route?.handler ?: notFoundHandler).invoke(exchange).takeIf { it != Unit }
       if (!exchange.isResponseStarted)
         exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)

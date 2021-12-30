@@ -17,7 +17,7 @@ open class HttpExchange(
   private val config: RouterConfig,
   private val sessionStore: SessionStore?
 ): AutoCloseable {
-  var route: Route? = null
+  lateinit var route: Route
   val method = RequestMethod.valueOf(original.requestMethod)
   open val remoteAddress: String get() = original.remoteAddress.address.hostAddress
   open val host: String get() = header("Host")!!
