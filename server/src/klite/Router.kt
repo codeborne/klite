@@ -56,7 +56,9 @@ class Router(
   }
 
   // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-50200
-  private fun handlerAnnotations(handler: Handler) = handler.javaClass.methods.first { !it.isSynthetic }.annotations.toList()
+  private fun handlerAnnotations(handler: Handler) = handler.javaClass.run {
+    methods.first { !it.isSynthetic }.annotations.toList() + annotations
+  }
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
   fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
