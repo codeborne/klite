@@ -12,9 +12,10 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 * Minimal amount of code
   * Simple to maintain & change
   * Performance is also important, but simplicity is preferred
-* Zero dependencies - Java built-in jdk.httpserver is used under the hood
+* Zero dependencies - Java built-in **jdk.httpserver** is used under the hood
   * Perfect for microservices
-  * But still possible to replace with something else
+  * But still possible to easily add support for other servers if needed
+  * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on number of used components
 * 12-factor apps by default
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
