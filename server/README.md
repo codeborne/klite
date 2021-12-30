@@ -8,7 +8,11 @@ Basic usage:
 ```kt
   Server().apply {
     context("/api") {
+      // Lambda routes
       get("/hello") { "Hello World" }
+
+      // or take routes from annotated functions of a class (better for testing)
+      annotated<MyRoutes>()
     }
 
     start()
@@ -21,26 +25,36 @@ request and response.
 
 Anything returned from a handler will be passed to [BodyRenderer](src/klite/Body.kt) to output the response with correct Content-Type. BodyRenderer is chosen based on the Accept request header or first one if no matches.
 
+## Contexts
+
+All routes must be organized into contexts with path prefixes. A context with the longest matching path prefix is chosen for handling a request.
+
 ## Assets
 
-A simple [AssetsHandler](src/klite/AssetsHandler.kt) is provided to serve static resources, e.g. your SPA.
+A simple [AssetsHandler](src/klite/AssetsHandler.kt) is provided to serve static resources.
 
 ```kt
 assets("/", AssetsHandler(Path.of("public")))
 ```
 
+For SPA client-side routing support, create AssetsHandler with `useIndexForUnknownPaths = true`.
+*Warning:* this won't return 404 responses for missing paths anymore, but will render the index file.
+
 ## Config
 
 [Config](src/klite/Config.kt) object is provided for an easy way to read System properties or env vars.
 
-Use `Config.fromEnvFile()` if you want to load default config from `.env` file in working directory.
+Use `Config.fromEnvFile()` if you want to load default config from an `.env`. This is useful for local development.
 
 ## Registry
 
-[Registry](src/klite/Registry.kt) and it's default implementation - DependencyInjectingRegistry - provide
+[Registry](src/klite/Registry.kt) and it's default implementation - `DependencyInjectingRegistry` - provide
 a simple way to register and require both Klite components and repositories/services of your application.
+
+`DependencyInjectingRegistry` is used by default and can create any classes by recursively creating their constructor
+arguments (dependencies).
 
 ## Decorators
 
 You can add both global and context-specific [decorators](src/klite/Decorator.kt), including Before and After handlers.
-The order is important, and decorators apply to all following routes that are defined in the same context.
+The order is important, and decorators apply to all *following routes* that are defined in the same context.

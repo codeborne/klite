@@ -21,6 +21,7 @@ Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
   `@GET suspend fun route() = provider.fetchData()`
+* Not much need for documentation - the source code is short and readable.
 
 ## Dependencies
 
@@ -53,6 +54,7 @@ Klite builds are available from [jitpack](https://jitpack.io):
   dependencies {
     val kliteVersion = "master-SNAPSHOT" // you can put a released tag or commit hash here
     implementation("com.github.angryziber.klite:klite-server:$kliteVersion")
+    // Plus any optional components with their own external dependencies, see above for list
     implementation("com.github.angryziber.klite:klite-jackson:$kliteVersion")
     implementation("com.github.angryziber.klite:klite-jdbc:$kliteVersion")
     testImplementation("com.github.angryziber.klite:klite-jdbc-test:$kliteVersion")
