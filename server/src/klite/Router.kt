@@ -51,14 +51,12 @@ class Router(
     return null
   }
 
-  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = route.annotations + handlerAnnotations(route.handler)).also {
+  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = route.annotations + anonymousHandlerAnnotations(route.handler)).also {
     routes += it.apply { logger.info("$method $prefix$path") }
   }
 
   // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-50200
-  private fun handlerAnnotations(handler: Handler) = handler.javaClass.run {
-    methods.first { !it.isSynthetic }.annotations.toList() + annotations
-  }
+  private fun anonymousHandlerAnnotations(handler: Handler) = handler.javaClass.methods.first { !it.isSynthetic }.annotations.toList()
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
   fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
@@ -78,7 +76,6 @@ enum class RequestMethod {
 }
 
 data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList()) {
-  @Suppress("UNCHECKED_CAST")
   fun <T: Annotation> annotation(key: KClass<T>): T? = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) } as? T
   inline fun <reified T: Annotation> annotation() = annotation(T::class)
   inline fun <reified T: Annotation> hasAnnotation() = annotation(T::class) != null
