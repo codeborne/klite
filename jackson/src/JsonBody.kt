@@ -3,6 +3,7 @@ package klite.json
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -33,6 +34,7 @@ class JsonBody(
   override fun install(server: Server) = server.run {
     registry.register(json)
     errors.apply {
+      on(MismatchedInputException::class, BadRequest)
       on(MissingKotlinParameterException::class, BadRequest)
       on(ValueInstantiationException::class, BadRequest)
     }
