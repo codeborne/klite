@@ -37,7 +37,7 @@ open class LiquibaseModule(
     try {
       liquibase.update(contexts)
     } catch (e: LiquibaseException) {
-      if (dropAllOnUpdateFailureInConfigs.isNotEmpty() && contexts.contexts.containsAll(dropAllOnUpdateFailureInConfigs)) {
+      if (dropAllOnUpdateFailureInConfigs.any { contexts.contexts.contains(it) }) {
         logger().warn("DB Updated failed, dropping all to retry")
         liquibase.dropAll()
         liquibase.update(contexts)
