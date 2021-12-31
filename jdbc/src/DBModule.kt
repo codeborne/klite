@@ -3,6 +3,7 @@ package klite.jdbc
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import klite.*
+import klite.StatusCode.Companion.Conflict
 import javax.sql.DataSource
 
 class DBModule(urlSuffix: String = "", configure: HikariConfig.() -> Unit = {}): Extension {
@@ -18,6 +19,7 @@ class DBModule(urlSuffix: String = "", configure: HikariConfig.() -> Unit = {}):
 
   override fun install(server: Server) = server.run {
     registry.register<DataSource>(dataSource)
+    errors.on(AlreadyExistsException::class, Conflict)
     onStop { dataSource.close() }
   }
 }
