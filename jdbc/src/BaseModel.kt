@@ -31,7 +31,9 @@ inline fun <reified T: Any> ResultSet.fromValues(vararg values: Pair<KProperty1<
 
 fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg values: Pair<KProperty1<T, *>, Any?>) = type.primaryConstructor!!.let { constructor ->
   val extraArgs = values.associate { it.first.name to it.second }
-  val args = constructor.parameters.associateWith { extraArgs[it.name] ?: fromDBType(getObject(it.name), it.type) }
+  val args = constructor.parameters.associateWith {
+    if (extraArgs.containsKey(it.name)) extraArgs[it.name] else fromDBType(getObject(it.name), it.type)
+  }
   constructor.callBy(args)
 }
 
