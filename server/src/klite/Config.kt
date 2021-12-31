@@ -8,6 +8,8 @@ object Config {
   fun required(env: String) = optional(env) ?: error("$env should be provided as system property or env var")
 
   val active get() = optional("ENV", "dev").split(",")
+  fun isActive(conf: String) = active.contains(conf)
+  fun isAnyActive(vararg confs: String) = active.any { confs.contains(it) }
 
   fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
