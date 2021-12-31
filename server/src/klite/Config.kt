@@ -7,6 +7,8 @@ object Config {
   fun optional(env: String, default: String) = optional(env) ?: default
   fun required(env: String) = optional(env) ?: error("$env should be provided as system property or env var")
 
+  val active get() = optional("ENV", "dev").split(",")
+
   fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
     file.forEachLine {

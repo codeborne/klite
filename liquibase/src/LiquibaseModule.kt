@@ -1,6 +1,7 @@
 package klite.liquibase
 
 import klite.*
+import liquibase.Contexts
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
@@ -18,28 +19,28 @@ open class LiquibaseModule(
 ): Extension {
   override fun install(server: Server) = server.run {
     redirectJavaLogging()
-    migrate(require(), Config.optional("ENV", "dev").split(","))
+    migrate(require(), Config.active)
   }
 
-  fun migrate(db: DataSource, configs: List<String>) {
+  fun migrate(db: DataSource, contexts: List<String>) {
     db.connection.use { conn ->
       val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(conn))
       val liquibase = Liquibase(changeSetPath, resourceAccessor, database)
       val shutdownHook = thread(start = false) { liquibase.forceReleaseLocks() }
       Runtime.getRuntime().addShutdownHook(shutdownHook)
-      update(liquibase, configs)
+      update(liquibase, Contexts(contexts))
       Runtime.getRuntime().removeShutdownHook(shutdownHook)
     }
   }
 
-  open fun update(liquibase: Liquibase, configs: List<String>) {
+  open fun update(liquibase: Liquibase, contexts: Contexts) {
     try {
-      liquibase.update(configs.joinToString(","))
+      liquibase.update(contexts)
     } catch (e: LiquibaseException) {
-      if (dropAllOnUpdateFailureInConfigs.isNotEmpty() && configs.containsAll(dropAllOnUpdateFailureInConfigs)) {
+      if (dropAllOnUpdateFailureInConfigs.isNotEmpty() && contexts.contexts.containsAll(dropAllOnUpdateFailureInConfigs)) {
         logger().warn("DB Updated failed, dropping all to retry")
         liquibase.dropAll()
-        liquibase.update(configs.joinToString(","))
+        liquibase.update(contexts)
       }
       else throw e
     }
