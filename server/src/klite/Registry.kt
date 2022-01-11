@@ -12,7 +12,6 @@ interface Registry {
 }
 
 interface MutableRegistry: Registry {
-  fun <T: Any> register(type: KClass<T>)
   fun <T: Any, I: T> register(type: KClass<T>, implementation: KClass<I>)
   fun <T: Any> register(type: KClass<T>, instance: T)
 }
@@ -20,7 +19,8 @@ interface MutableRegistry: Registry {
 inline fun <reified T: Any> Registry.require() = require(T::class)
 inline fun <reified T: Any> Registry.requireAll() = requireAll(T::class)
 inline fun <reified T: Any> MutableRegistry.register(instance: T) = register(T::class, instance)
-inline fun <reified T: Any> MutableRegistry.register() = register(T::class)
+inline fun <reified T: Any> MutableRegistry.register() = register(T::class, T::class)
+inline fun <reified T: Any> MutableRegistry.register(implementation: KClass<out T>) = register(T::class, implementation)
 
 class RegistryException(message: String, cause: Throwable? = null): Exception(message, cause)
 
@@ -30,7 +30,6 @@ open class SimpleRegistry: MutableRegistry {
 
   override fun <T : Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
   override fun <T : Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
-  override fun <T : Any> register(type: KClass<T>) = register(type, create(type))
 
   override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: create(type).also { register(type, it) }
   override fun <T : Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>

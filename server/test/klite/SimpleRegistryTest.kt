@@ -7,7 +7,7 @@ class SimpleRegistryTest {
   val registry = SimpleRegistry().apply {
     register(TextBodyParser())
     register<FormUrlEncodedParser>()
-    register(BodyRenderer::class, TextBodyRenderer::class)
+    register<BodyRenderer>(TextBodyRenderer::class)
   }
 
   @Test
