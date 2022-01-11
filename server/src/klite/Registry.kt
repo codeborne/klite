@@ -13,6 +13,7 @@ interface Registry {
 
 interface MutableRegistry: Registry {
   fun <T: Any> register(type: KClass<T>)
+  fun <T: Any, I: T> register(type: KClass<T>, implementation: KClass<I>)
   fun <T: Any> register(type: KClass<T>, instance: T)
 }
 
@@ -28,6 +29,7 @@ open class SimpleRegistry: MutableRegistry {
   private val instances = mutableMapOf<KClass<*>, Any>(Registry::class to this)
 
   override fun <T : Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
+  override fun <T : Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
   override fun <T : Any> register(type: KClass<T>) = register(type, create(type))
 
   override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: create(type).also { register(type, it) }

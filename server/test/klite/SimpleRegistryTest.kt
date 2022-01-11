@@ -7,6 +7,7 @@ class SimpleRegistryTest {
   val registry = SimpleRegistry().apply {
     register(TextBodyParser())
     register<FormUrlEncodedParser>()
+    register(BodyRenderer::class, TextBodyRenderer::class)
   }
 
   @Test
@@ -19,5 +20,10 @@ class SimpleRegistryTest {
   fun requireAll() {
     assertThat(registry.requireAll<TextBodyParser>()).hasSize(1)
     assertThat(registry.requireAll<BodyParser>()).hasSize(2)
+  }
+
+  @Test
+  fun `require class implementation`() {
+    assertThat(registry.require<BodyRenderer>()).isInstanceOf(TextBodyRenderer::class.java)
   }
 }
