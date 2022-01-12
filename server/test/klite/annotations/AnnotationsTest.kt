@@ -1,8 +1,6 @@
 package klite.annotations
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import klite.HttpExchange
 import klite.Router
 import klite.require
@@ -29,7 +27,10 @@ class AnnotationsTest {
   @Test
   fun `annotated instance`() {
     router.annotated(Routes())
-    verify(exactly = 2) { router.add(any()) }
+    verifyOrder {
+      router.add(match { it.annotations.containsAll(Routes::root.annotations) })
+      router.add(match { it.annotations.containsAll(Routes::params.annotations) })
+    }
   }
 
   @Test
