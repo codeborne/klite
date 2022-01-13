@@ -2,6 +2,7 @@ package klite.annotations
 
 import io.mockk.*
 import klite.HttpExchange
+import klite.PathParamRegexer
 import klite.Router
 import klite.require
 import kotlinx.coroutines.runBlocking
@@ -18,8 +19,8 @@ class AnnotationsTest {
     @GET fun root() = "Hello"
 
     @GET("/hello/:world")
-    fun params(e: HttpExchange, body: String, @PathParam world: BigDecimal, @QueryParam date: LocalDate,
-               @HeaderParam header: Long, @CookieParam cookie: Locale, @AttrParam attr: BigInteger
+    fun generic(e: HttpExchange, body: String, @PathParam world: BigDecimal, @QueryParam date: LocalDate,
+                @HeaderParam header: Long, @CookieParam cookie: Locale, @AttrParam attr: BigInteger
     ) = "Hello $body $world $date $header $cookie $attr"
 
     @GET("/hello/specific") fun specific() = "Hello"
@@ -31,8 +32,8 @@ class AnnotationsTest {
     router.annotated(Routes())
     verifyOrder {
       router.add(match { it.annotations.containsAll(Routes::root.annotations) })
-      router.add(match { it.annotations.containsAll(Routes::params.annotations) })
       router.add(match { it.annotations.containsAll(Routes::specific.annotations) })
+      router.add(match { it.annotations.containsAll(Routes::generic.annotations) })
     }
   }
 
@@ -40,7 +41,7 @@ class AnnotationsTest {
   fun `annotated class`() {
     every { router.require<Routes>() } returns Routes()
     router.annotated<Routes>()
-    verify(exactly = 2) { router.add(any()) }
+    verify(exactly = 3) { router.add(any()) }
   }
 
   @Test
@@ -51,7 +52,7 @@ class AnnotationsTest {
 
   @Test
   fun `exchange parameter handler`() {
-    val handler = toHandler(Routes(), Routes::params)
+    val handler = toHandler(Routes(), Routes::generic)
     every { exchange.body<String>() } returns "TheBody"
     every { exchange.path("world") } returns "7.9e9"
     every { exchange.query("date") } returns "2021-10-21"

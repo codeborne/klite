@@ -28,12 +28,12 @@ import kotlin.reflect.jvm.javaMethod
 fun Router.annotated(routes: Any) {
   val cls = routes::class
   val path = cls.annotation<Path>()?.value ?: ""
-  cls.functions.asSequence().map { f ->
-    val a = f.annotations.firstOrNull() ?: return@map null
+  cls.functions.asSequence().mapNotNull { f ->
+    val a = f.annotations.firstOrNull() ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f), cls.annotations + f.annotations)
-  }.filterNotNull().sortedBy { it.path.pattern }.forEach { add(it) }
+    subPath to Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f), cls.annotations + f.annotations)
+  }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())

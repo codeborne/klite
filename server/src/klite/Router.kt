@@ -76,6 +76,7 @@ enum class RequestMethod {
 }
 
 data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList()) {
+  @Suppress("UNCHECKED_CAST")
   fun <T: Annotation> annotation(key: KClass<T>): T? = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) } as? T
   inline fun <reified T: Annotation> annotation() = annotation(T::class)
   inline fun <reified T: Annotation> hasAnnotation() = annotation(T::class) != null
