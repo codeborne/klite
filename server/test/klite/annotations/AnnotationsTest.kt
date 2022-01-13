@@ -21,6 +21,8 @@ class AnnotationsTest {
     fun params(e: HttpExchange, body: String, @PathParam world: BigDecimal, @QueryParam date: LocalDate,
                @HeaderParam header: Long, @CookieParam cookie: Locale, @AttrParam attr: BigInteger
     ) = "Hello $body $world $date $header $cookie $attr"
+
+    @GET("/hello/specific") fun specific() = "Hello"
   }
   val router = mockk<Router>(relaxed = true)
 
@@ -30,6 +32,7 @@ class AnnotationsTest {
     verifyOrder {
       router.add(match { it.annotations.containsAll(Routes::root.annotations) })
       router.add(match { it.annotations.containsAll(Routes::params.annotations) })
+      router.add(match { it.annotations.containsAll(Routes::specific.annotations) })
     }
   }
 

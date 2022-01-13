@@ -7,8 +7,8 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
-import kotlin.reflect.jvm.kotlinFunction
 
 @Target(CLASS) annotation class Path(val value: String)
 @Target(FUNCTION) annotation class GET(val value: String = "")
@@ -24,16 +24,16 @@ import kotlin.reflect.jvm.kotlinFunction
 @Target(VALUE_PARAMETER) annotation class CookieParam
 @Target(VALUE_PARAMETER) annotation class AttrParam
 
+/** Adds all annotated methods as routes, sorted by path (matching more specific paths first) */
 fun Router.annotated(routes: Any) {
   val cls = routes::class
   val path = cls.annotation<Path>()?.value ?: ""
-  cls.java.methods.forEach { m ->
-    val f = m.kotlinFunction ?: return@forEach
-    val a = f.annotations.firstOrNull() ?: return@forEach
+  cls.functions.asSequence().map { f ->
+    val a = f.annotations.firstOrNull() ?: return@map null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    add(Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f), cls.annotations + f.annotations))
-  }
+    Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f), cls.annotations + f.annotations)
+  }.filterNotNull().sortedBy { it.path.pattern }.forEach { add(it) }
 }
 
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
