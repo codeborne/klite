@@ -43,6 +43,7 @@ open class HttpExchange(
 
   val bodyParams: Params by lazy { body() }
   fun body(param: String) = bodyParams[param]
+  val rawBody: String get() = requestStream.readAllBytes().decodeToString()
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
