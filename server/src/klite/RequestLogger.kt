@@ -11,8 +11,11 @@ typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String
 open class RequestLogger(
   val formatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode in $ms ms" }
 ): Decorator {
+  companion object {
+    val prefix = (0xFFFF * Math.random()).toInt().toString(16)
+  }
+
   private val logger = logger()
-  val prefix = (0xFFFF * Math.random()).toInt().toString(16)
   private val counter = AtomicLong()
 
   init {
