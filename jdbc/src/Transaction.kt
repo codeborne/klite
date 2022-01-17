@@ -18,11 +18,13 @@ class Transaction(private val db: DataSource) {
   val connection: Connection
     get() = conn ?: db.connection.also { it.autoCommit = false; conn = it }
 
-  fun close(commit: Boolean) {
+  fun close(commit: Boolean = true) {
     try {
       conn?.apply {
-        if (commit) commit() else rollback()
-        autoCommit = true
+        if (!autoCommit) {
+          if (commit) commit() else rollback()
+          autoCommit = true
+        }
         close()
       }
     } finally {
