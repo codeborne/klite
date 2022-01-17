@@ -12,7 +12,7 @@ open class RequestLogger(
   val formatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode in $ms ms" }
 ): Decorator {
   private val logger = logger()
-  private val prefix = (0xFFFF * Math.random()).toInt().toString(16)
+  val prefix = (0xFFFF * Math.random()).toInt().toString(16)
   private val counter = AtomicLong()
 
   init {
