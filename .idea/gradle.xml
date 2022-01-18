@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/jackson" />
             <option value="$PROJECT_DIR$/jdbc" />
             <option value="$PROJECT_DIR$/jdbc-test" />
+            <option value="$PROJECT_DIR$/jobs" />
             <option value="$PROJECT_DIR$/liquibase" />
             <option value="$PROJECT_DIR$/sample" />
             <option value="$PROJECT_DIR$/serialization" />

@@ -1,6 +1,8 @@
-package klite.jdbc
+package klite.jobs
 
 import klite.*
+import klite.jdbc.Transaction
+import klite.jdbc.TransactionContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import java.time.Duration.between
@@ -13,6 +15,10 @@ import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
+
+fun interface Job {
+  suspend fun run()
+}
 
 class JobRunner(private val db: DataSource): Extension, CoroutineScope {
   private val logger = logger()
@@ -62,8 +68,4 @@ class JobRunner(private val db: DataSource): Extension, CoroutineScope {
     executor.shutdown()
     executor.awaitTermination(10, SECONDS)
   }
-}
-
-fun interface Job {
-  suspend fun run()
 }
