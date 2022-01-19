@@ -2,7 +2,7 @@ package klite.jdbc
 
 import javax.sql.DataSource
 
-abstract class BaseRepository(val db: DataSource, protected val table: String) {
+abstract class BaseRepository(protected val db: DataSource, protected val table: String) {
   protected val orderAsc = "order by createdAt"
   protected val orderDesc = "$orderAsc desc"
 
