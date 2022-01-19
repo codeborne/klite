@@ -49,9 +49,10 @@ class Server(
     onStopHandlers.forEach { it.run() }
   }
 
-  fun use(extension: Extension) {
-    registry.register(extension)
-    extension.install(this)
+  inline fun <reified E: Extension> use() = require<E>().also { it.install(this) }
+  fun use(extension: Extension) = extension.also {
+    registry.register(it)
+    it.install(this)
   }
 
   /** Adds a new router context. When handing a request, the longest matching router context is chosen. */

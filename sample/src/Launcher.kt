@@ -13,9 +13,9 @@ fun main() {
   Config.useEnvFile()
 
   Server().apply {
-    use(JsonBody())
-    use(DBModule())
-    use(RequestTransactionHandler())
+    use<JsonBody>()
+    use<DBModule>()
+    use<RequestTransactionHandler>()
 
     assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 
