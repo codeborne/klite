@@ -33,7 +33,8 @@ class JobRunner(private val db: DataSource): Extension, CoroutineScope {
 
   fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) {
     val jobName = job::class.simpleName
-    logger.info("$jobName will start after $delay $unit and run every $period $unit")
+    val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
+    logger.info("$jobName will start at $startAt and run every $period $unit")
     executor.scheduleAtFixedRate({
       val threadName = RequestThreadNameContext("${RequestLogger.prefix}/$jobName#${seq.incrementAndGet()}")
       val tx = Transaction(db)
