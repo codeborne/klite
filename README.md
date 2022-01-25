@@ -4,7 +4,7 @@
 
 A very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
 
-Inspired by SparkJava, Jooby, etc, but smaller, simpler and better.
+Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Comparisons.md).
 
 ## Goals
 
