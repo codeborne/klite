@@ -15,8 +15,10 @@ DB access:
 
 ```kt
   val db = require<DataSource>()
+  // with boilerplate removed
   db.insert("table", mapOf("column" to value))
   db.query("table", mapOf("column" to value) { MyEntity(getString("column")) }
+  // or you can write full sql manually using db.exec() and db.select()
 ```
 
 In query mappers you can either use ResultSet methods and extensions to build your entities or use the [ResultSet.fromValues](src/BaseModel.kt): `{ fromValues<MyEntity>() }`
