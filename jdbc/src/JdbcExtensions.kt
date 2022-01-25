@@ -1,20 +1,11 @@
 package klite.jdbc
 
-import klite.Converter
-import klite.annotations.annotation
+import klite.jdbc.JdbcConverter.toDBType
 import org.intellij.lang.annotations.Language
-import java.lang.reflect.Modifier.isStatic
-import java.net.URI
-import java.net.URL
-import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.Period
-import java.time.ZoneOffset.UTC
 import java.util.*
 import javax.sql.DataSource
 
@@ -85,22 +76,8 @@ private fun Any?.toIterable(): Iterable<Any?> = when (this) {
   else -> flatExpr()
 }
 
-operator fun PreparedStatement.set(i: Int, value: Any?) = setObject(i, connection.toDBType(value))
+operator fun PreparedStatement.set(i: Int, value: Any?) = setObject(i, toDBType(value, connection))
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
-
-private fun Connection.toDBType(v: Any?): Any? = when(v) {
-  null -> null
-  is Enum<*> -> v.name
-  is Instant -> v.atOffset(UTC)
-  is Collection<*> -> createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
-  is Period, is URL, is URI, is Currency, is Locale -> v.toString()
-  is UUID, is Number, is Date, is LocalDate, is LocalDateTime -> v
-  else -> when {
-    v::class.annotation<JvmInline>() != null -> v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
-    Converter.supports(v::class) -> v.toString()
-    else -> v
-  }
-}
 
 private fun <R> ResultSet.map(mapper: ResultSet.() -> R): List<R> = mutableListOf<R>().also {
   while (next()) it += mapper()

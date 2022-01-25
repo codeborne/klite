@@ -7,14 +7,16 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
-typealias StringConverter<T> = (s: String) -> T
+typealias ToStringConverter<T> = (s: String) -> T
 
 object Converter {
-  private val converters: MutableMap<KClass<*>, StringConverter<*>> = ConcurrentHashMap(mapOf(
+  private val converters: MutableMap<KClass<*>, ToStringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
     Currency::class to Currency::getInstance
   ))
-  operator fun <T: Any> set(type: KClass<T>, converter: StringConverter<T>) { converters[type] = converter }
+
+  operator fun <T: Any> set(type: KClass<T>, converter: ToStringConverter<T>) { converters[type] = converter }
+  inline fun <reified T: Any> use(noinline converter: ToStringConverter<T>) = set(T::class, converter)
 
   fun supports(type: KClass<*>) = converters[type] != null
 
@@ -22,9 +24,9 @@ object Converter {
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> fromString(s: String, type: KClass<T>): T =
-    (converters[type] as? StringConverter<T> ?: findCreator(type).also { converters[type] = it }).invoke(s)
+    (converters[type] as? ToStringConverter<T> ?: findCreator(type).also { converters[type] = it }).invoke(s)
 
-  private fun <T: Any> findCreator(type: KClass<T>): StringConverter<T> =
+  private fun <T: Any> findCreator(type: KClass<T>): ToStringConverter<T> =
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
     try { constructorCreator(type) }
     catch (e: NoSuchMethodException) {
@@ -34,12 +36,12 @@ object Converter {
       }
     }
 
-  private fun <T: Any> enumCreator(type: KClass<T>): StringConverter<T> {
+  private fun <T: Any> enumCreator(type: KClass<T>): ToStringConverter<T> {
     val enumConstants = type.java.enumConstants
     return { s -> enumConstants.find { (it as Enum<*>).name == s } ?: error("No $type constant: $s") }
   }
 
-  private fun <T: Any> constructorCreator(type: KClass<T>): StringConverter<T> {
+  private fun <T: Any> constructorCreator(type: KClass<T>): ToStringConverter<T> {
     val constructor = type.javaObjectType.getDeclaredConstructor(String::class.java)
     if (type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
     return { s ->
@@ -48,7 +50,8 @@ object Converter {
     }
   }
 
-  private fun <T: Any> parseMethodCreator(type: KClass<T>): StringConverter<T> {
+  @Suppress("UNCHECKED_CAST")
+  private fun <T: Any> parseMethodCreator(type: KClass<T>): ToStringConverter<T> {
     val parse = type.java.getMethod("parse", CharSequence::class.java)
     return { s ->
       try { parse.invoke(null, s) as T }
