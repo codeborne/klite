@@ -11,6 +11,8 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Period
 import java.time.ZoneOffset.UTC
 import java.util.*
@@ -92,7 +94,7 @@ private fun Connection.toDBType(v: Any?): Any? = when(v) {
   is Instant -> v.atOffset(UTC)
   is Collection<*> -> createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
   is Period, is URL, is URI, is Currency, is Locale -> v.toString()
-  is UUID -> v
+  is UUID, is Number, is Date, is LocalDate, is LocalDateTime -> v
   else -> when {
     v::class.annotation<JvmInline>() != null -> v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
     Converter.supports(v::class) -> v.toString()
