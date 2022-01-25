@@ -1,4 +1,4 @@
-## Alternatives
+## Klite alternatives
 
 ### Ktor
 
