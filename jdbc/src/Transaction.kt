@@ -2,7 +2,6 @@ package klite.jdbc
 
 import kotlinx.coroutines.ThreadContextElement
 import java.sql.Connection
-import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
@@ -39,13 +38,8 @@ class Transaction(private val db: DataSource) {
 
 fun <R> DataSource.withConnection(block: Connection.() -> R): R {
   val tx = Transaction.current()
-  return try {
-    if (tx != null) tx.connection.block()
-    else connection.use(block)
-  }
-  catch (e: SQLException) {
-    throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e) else e
-  }
+  return if (tx != null) tx.connection.block()
+         else connection.use(block)
 }
 
 class TransactionContext(private val tx: Transaction? = Transaction.current()): ThreadContextElement<Transaction?>, AbstractCoroutineContextElement(Key) {

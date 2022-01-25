@@ -9,6 +9,7 @@ import java.net.URL
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.time.Instant
 import java.time.Period
 import java.time.ZoneOffset.UTC
@@ -21,17 +22,23 @@ fun <R> DataSource.query(table: String, id: UUID, mapper: ResultSet.() -> R): R 
 fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
   select("select * from $table", where, suffix, mapper)
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> = withConnection {
-  prepareStatement("$select${whereExpr(where)} $suffix").use { stmt ->
-    stmt.setAll(whereValues(where))
-    stmt.executeQuery().map(mapper)
+fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+  withStatement("$select${whereExpr(where)} $suffix") {
+    setAll(whereValues(where))
+    executeQuery().map(mapper)
   }
+
+fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence()): Int = withStatement(expr) {
+  setAll(values)
+  executeUpdate()
 }
 
-fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence()): Int = withConnection {
-  prepareStatement(expr).use { stmt ->
-    stmt.setAll(values)
-    stmt.executeUpdate()
+fun <R> DataSource.withStatement(sql: String, block: PreparedStatement.() -> R): R = withConnection {
+  try {
+    prepareStatement(sql).use { it.block() }
+  } catch (e: SQLException) {
+    throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e)
+          else SQLException(e.message + "\nSQL: $sql", e.sqlState, e.errorCode, e)
   }
 }
 
