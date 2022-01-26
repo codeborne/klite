@@ -44,7 +44,7 @@ object JdbcConverter {
     else -> {
       val cls = v::class
       @Suppress("UNCHECKED_CAST") when {
-        nativeTypes.contains(cls) -> v
+        cls.javaPrimitiveType != null || nativeTypes.contains(cls) -> v
         converters.contains(cls) -> (converters[cls] as ToJdbcConverter<Any>).invoke(v, conn)
         cls.annotation<JvmInline>() != null -> unwrapInline(v)
         Converter.supports(v::class) -> v.toString()
