@@ -14,11 +14,11 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
-typealias ToJdbcConverter<T> = (T, Connection) -> Any
+typealias ToJdbcConverter<T> = (T, Connection?) -> Any
 
 object JdbcConverter {
   val nativeTypes: MutableSet<KClass<*>> = mutableSetOf(
-    UUID::class, BigDecimal::class, BigInteger::class, LocalDate::class, LocalDateTime::class
+    UUID::class, BigDecimal::class, BigInteger::class, LocalDate::class, LocalDateTime::class, LocalTime::class, OffsetDateTime::class
   )
   private val converters: MutableMap<KClass<*>, ToJdbcConverter<*>> = ConcurrentHashMap()
 
@@ -37,10 +37,10 @@ object JdbcConverter {
   operator fun <T: Any> set(type: KClass<T>, converter: ToJdbcConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: ToJdbcConverter<T>) = set(T::class, converter)
 
-  fun toDBType(v: Any?, conn: Connection) = when (v) {
+  fun toDBType(v: Any?, conn: Connection? = null) = when (v) {
     null -> null
     is Enum<*> -> v.name
-    is Collection<*> -> conn.createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
+    is Collection<*> -> conn!!.createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
     else -> {
       val cls = v::class
       @Suppress("UNCHECKED_CAST") when {
