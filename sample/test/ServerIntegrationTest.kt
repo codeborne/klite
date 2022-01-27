@@ -14,8 +14,7 @@ import java.net.http.HttpClient
 import java.time.Duration.ofSeconds
 
 class ServerIntegrationTest {
-  @Test
-  fun requests() {
+  @Test fun requests() {
     val port = (Math.random() * 60000 + 1000).toInt()
     val server = Server(port = port).apply {
       registry.register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())

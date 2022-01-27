@@ -9,16 +9,14 @@ import org.junit.jupiter.api.Test
 class TransactionTest {
   val db = mockk<DriverDataSource>(relaxed = true)
 
-  @Test
-  fun `transaction does not open connection on creation`() {
+  @Test fun `transaction does not open connection on creation`() {
     val tx = Transaction(db)
     verify(exactly = 0) { db.connection }
     tx.close(true)
     verify(exactly = 0) { db.connection }
   }
 
-  @Test
-  fun `transaction creates and reuses connection on demand`() {
+  @Test fun `transaction creates and reuses connection on demand`() {
     val tx = Transaction(db).attachToThread()
     val conn = db.withConnection { this }
     assertThat(db.withConnection { this }).isSameAs(conn)
@@ -33,8 +31,7 @@ class TransactionTest {
     }
   }
 
-  @Test
-  fun `transaction with rollbackOnly rolls back`() {
+  @Test fun `transaction with rollbackOnly rolls back`() {
     val tx = Transaction(db).attachToThread()
     val conn = db.withConnection { this }
     verify { conn.autoCommit = false }
@@ -48,8 +45,7 @@ class TransactionTest {
     }
   }
 
-  @Test
-  fun `connection without transaction is closed`() {
+  @Test fun `connection without transaction is closed`() {
     val conn = db.withConnection { this }
     verify { conn.close() }
     verify(exactly = 0) { conn.autoCommit = any() }

@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test
 import java.net.URI
 
 class URITest {
-  @Test
-  fun queryParams() {
+  @Test fun queryParams() {
     assertThat(URI("/hello").queryParams).isEmpty()
     assertThat(URI("/hello?hello").queryParams).isEqualTo(mapOf("hello" to null))
     assertThat(URI("/hello?hello=world").queryParams).isEqualTo(mapOf("hello" to "world"))

@@ -6,13 +6,11 @@ import org.junit.jupiter.api.Test
 class DependencyInjectingRegistryTest {
   val registry = DependencyInjectingRegistry()
 
-  @Test
-  fun require() {
+  @Test fun require() {
     assertThat(registry.require<TextBodyParser>()).isInstanceOf(TextBodyParser::class.java)
   }
 
-  @Test
-  fun requireAll() {
+  @Test fun requireAll() {
     assertThat(registry.requireAll<TextBodyParser>()).isEmpty()
 
     assertThat(registry.require<TextBodyParser>()).isInstanceOf(TextBodyParser::class.java)

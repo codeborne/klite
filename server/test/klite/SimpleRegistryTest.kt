@@ -10,20 +10,17 @@ class SimpleRegistryTest {
     register<BodyRenderer>(TextBodyRenderer::class)
   }
 
-  @Test
-  fun require() {
+  @Test fun require() {
     assertThat(registry.require<Registry>()).isSameAs(registry)
     assertThat(registry.require<TextBodyParser>()).isInstanceOf(TextBodyParser::class.java)
   }
 
-  @Test
-  fun requireAll() {
+  @Test fun requireAll() {
     assertThat(registry.requireAll<TextBodyParser>()).hasSize(1)
     assertThat(registry.requireAll<BodyParser>()).hasSize(2)
   }
 
-  @Test
-  fun `require class implementation`() {
+  @Test fun `require class implementation`() {
     assertThat(registry.require<BodyRenderer>()).isInstanceOf(TextBodyRenderer::class.java)
   }
 }

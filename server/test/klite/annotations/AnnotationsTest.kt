@@ -1,8 +1,10 @@
 package klite.annotations
 
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import io.mockk.verifyOrder
 import klite.HttpExchange
-import klite.PathParamRegexer
 import klite.Router
 import klite.require
 import kotlinx.coroutines.runBlocking
@@ -27,8 +29,7 @@ class AnnotationsTest {
   }
   val router = mockk<Router>(relaxed = true)
 
-  @Test
-  fun `annotated instance`() {
+  @Test fun `annotated instance`() {
     router.annotated(Routes())
     verifyOrder {
       router.add(match { it.annotations.containsAll(Routes::root.annotations) })
@@ -37,21 +38,18 @@ class AnnotationsTest {
     }
   }
 
-  @Test
-  fun `annotated class`() {
+  @Test fun `annotated class`() {
     every { router.require<Routes>() } returns Routes()
     router.annotated<Routes>()
     verify(exactly = 3) { router.add(any()) }
   }
 
-  @Test
-  fun `no parameter handler`() {
+  @Test fun `no parameter handler`() {
     val handler = toHandler(Routes(), Routes::root)
     runBlocking { assertThat(handler(exchange)).isEqualTo("Hello") }
   }
 
-  @Test
-  fun `exchange parameter handler`() {
+  @Test fun `exchange parameter handler`() {
     val handler = toHandler(Routes(), Routes::generic)
     every { exchange.body<String>() } returns "TheBody"
     every { exchange.path("world") } returns "7.9e9"

@@ -11,8 +11,7 @@ class UserRepositoryTest: DBTest() {
   val user = User(Email("test@user.com"), "Test", "User", Locale.ENGLISH, "phash")
   val repository = UserRepository(db)
 
-  @Test
-  fun `save and load`() {
+  @Test fun `save and load`() {
     repository.save(user)
     assertThat(repository.get(user.id)).isEqualTo(user)
     assertThat(repository.by(user.email)).isEqualTo(user)

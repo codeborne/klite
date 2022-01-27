@@ -7,8 +7,7 @@ import java.util.*
 import java.util.UUID.randomUUID
 
 open class JdbcExtensionsTest: TempTableDBTest() {
-  @Test
-  fun `insert & query`() {
+  @Test fun `insert & query`() {
     val id = randomUUID()
     db.insert(table, mapOf("id" to id, "hello" to "Hello", "world" to 42))
     val id2 = randomUUID()
@@ -29,8 +28,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     assertThat(db.query("$table a join $table b on a.id = b.id", emptyMap()) { getId() }).contains(id, id2)
   }
 
-  @Test
-  fun upsert() {
+  @Test fun upsert() {
     val data = SomeData("World", 37)
     db.upsert(table, data.toValues())
     db.upsert(table, data.toValues())
@@ -39,8 +37,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     assertThat(loaded).isEqualTo(data)
   }
 
-  @Test
-  fun `update and delete`() {
+  @Test fun `update and delete`() {
     val data = SomeData("World", 37)
     db.insert(table, data.toValues())
 
