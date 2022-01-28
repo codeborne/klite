@@ -1,9 +1,9 @@
+package klite.jobs
+
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Server
 import klite.jdbc.Transaction
-import klite.jobs.Job
-import klite.jobs.JobRunner
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalTime
