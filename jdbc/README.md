@@ -6,14 +6,14 @@ Tested mostly with PostgreSQL.
 
 Usage:
 
-```kt
+```kotlin
   use<DBModule>() // to register a DataSource and connection pool
   use<RequestTransactionHandler>() // to enable per-request transactions
 ```
 
 DB access:
 
-```kt
+```kotlin
   val db = require<DataSource>()
   // with boilerplate removed
   db.insert("table", mapOf("column" to value))

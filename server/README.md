@@ -5,7 +5,7 @@ This is the main component of Klite - the [Server](src/klite/Server.kt).
 Create and instance, overriding any defaults using named constructor parameters, add contexts and routes, then start.
 
 Basic usage:
-```kt
+```kotlin
   Server().apply {
     context("/api") {
       // Lambda routes
@@ -33,7 +33,7 @@ All routes must be organized into contexts with path prefixes. A context with th
 
 A simple [AssetsHandler](src/klite/AssetsHandler.kt) is provided to serve static resources.
 
-```kt
+```kotlin
 assets("/", AssetsHandler(Path.of("public")))
 ```
 
