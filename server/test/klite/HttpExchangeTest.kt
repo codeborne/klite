@@ -4,7 +4,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Cookie.SameSite.Strict
-import org.assertj.core.api.Assertions.assertThat
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.equal
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.net.URI
@@ -27,27 +28,27 @@ class HttpExchangeTest {
   val exchange = HttpExchange(original, routerConfig, null)
 
   @Test fun path() {
-    assertThat(exchange.method).isEqualTo(RequestMethod.GET)
-    assertThat(exchange.path).isEqualTo("/hello")
+    expect(exchange.method).to.equal(RequestMethod.GET)
+    expect(exchange.path).to.equal("/hello")
   }
 
   @Test fun queryParams() {
-    assertThat(exchange.query).isEqualTo("?hello=world")
-    assertThat(exchange.queryParams).isEqualTo(mapOf("hello" to "world"))
+    expect(exchange.query).to.equal("?hello=world")
+    expect(exchange.queryParams).to.equal(mapOf("hello" to "world"))
   }
 
   @Test fun fullUrl() {
     every { exchange.host } returns "localhost:8080"
-    assertThat(exchange.fullUrl).isEqualTo(URI("http://localhost:8080/hello?hello=world"))
+    expect(exchange.fullUrl).to.equal(URI("http://localhost:8080/hello?hello=world"))
 
     every { exchange.host } returns "host.domain"
-    assertThat(exchange.fullUrl("/some/page")).isEqualTo(URI("http://host.domain/some/page"))
+    expect(exchange.fullUrl("/some/page")).to.equal(URI("http://host.domain/some/page"))
   }
 
   @Test fun `request cookies`() {
     every { exchange.header("Cookie") } returns "Hello=World; Second=123%20456"
-    assertThat(exchange.cookies).isEqualTo(mapOf("Hello" to "World", "Second" to "123 456"))
-    assertThat(exchange.cookie("Hello")).isEqualTo("World")
+    expect(exchange.cookies).to.equal(mapOf("Hello" to "World", "Second" to "123 456"))
+    expect(exchange.cookie("Hello")).to.equal("World")
   }
 
   @Test fun `response cookies`() {
@@ -61,8 +62,8 @@ class HttpExchangeTest {
   @Test fun `body as text`() {
     every { exchange.requestType } returns null
     every { original.requestBody } answers { "123".byteInputStream() }
-    assertThat(exchange.body<String>()).isEqualTo("123")
-    assertThat(exchange.body<Int>()).isEqualTo(123)
+    expect(exchange.body<String>()).to.equal("123")
+    expect(exchange.body<Int>()).to.equal(123)
   }
 
   @Test fun `body with specific content-type`() {
@@ -70,7 +71,7 @@ class HttpExchangeTest {
     val input = "{PI}".byteInputStream()
     every { original.requestBody } answers { input }
     every { customParser.parse(input, Double::class) } returns Math.PI
-    assertThat(exchange.body<Double>()).isEqualTo(Math.PI)
+    expect(exchange.body<Double>()).to.equal(Math.PI)
   }
 
   @Test fun `body with unsupported content-type`() {

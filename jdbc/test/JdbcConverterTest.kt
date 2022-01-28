@@ -1,5 +1,9 @@
-import klite.jdbc.JdbcConverter
-import org.assertj.core.api.Assertions.assertThat
+import klite.jdbc.JdbcConverter.toDBType
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.beNull
+import net.oddpoet.expect.extension.beSameInstance
+import net.oddpoet.expect.extension.equal
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 import java.time.*
 import java.time.ZoneOffset.UTC
@@ -7,34 +11,34 @@ import java.util.*
 
 class JdbcConverterTest {
   @Test fun `null`() {
-    assertThat(JdbcConverter.toDBType(null)).isNull()
+    expect(toDBType(null)).to.beNull()
   }
 
   @Test fun `primitive types are supported by jdbc`() {
-    assertThat(JdbcConverter.toDBType(123)).isEqualTo(123)
-    assertThat(JdbcConverter.toDBType(123L)).isEqualTo(123L)
-    assertThat(JdbcConverter.toDBType(123.0)).isEqualTo(123.0)
+    expect(toDBType(123)).to.equal(123)
+    expect(toDBType(123L)).to.equal(123L)
+    expect(toDBType(123.0)).to.equal(123.0)
   }
 
   @Test fun `BigInteger and BigDecimal`() {
-    assertThat(JdbcConverter.toDBType(123.toBigDecimal())).isEqualTo(123.toBigDecimal())
-    assertThat(JdbcConverter.toDBType(123.toBigInteger())).isEqualTo(123.toBigInteger())
+    expect(toDBType(123.toBigDecimal())).to.equal(123.toBigDecimal())
+    expect(toDBType(123.toBigInteger())).to.equal(123.toBigInteger())
   }
 
   @Test fun `local date and time`() {
-    assertThat(JdbcConverter.toDBType(LocalDate.of(2021, 10, 21))).isEqualTo(LocalDate.of(2021, 10, 21))
-    assertThat(JdbcConverter.toDBType(LocalDateTime.MIN)).isEqualTo(LocalDateTime.MIN)
-    assertThat(JdbcConverter.toDBType(LocalTime.MIN)).isEqualTo(LocalTime.MIN)
-    assertThat(JdbcConverter.toDBType(OffsetDateTime.MIN)).isEqualTo(OffsetDateTime.MIN)
+    expect(toDBType(LocalDate.of(2021, 10, 21))).to.equal(LocalDate.of(2021, 10, 21))
+    assertSame(LocalDateTime.MIN, toDBType(LocalDateTime.MIN))
+    expect(toDBType(LocalTime.MIN)).to.beSameInstance(LocalTime.MIN)
+    expect(toDBType(OffsetDateTime.MIN)).to.beSameInstance(OffsetDateTime.MIN)
   }
 
   @Test fun `Instant should be converted to offset`() {
-    assertThat(JdbcConverter.toDBType(Instant.EPOCH)).isEqualTo(Instant.EPOCH.atOffset(UTC))
+    expect(toDBType(Instant.EPOCH)).to.equal(Instant.EPOCH.atOffset(UTC))
   }
 
   @Test fun `toString types`() {
-    assertThat(JdbcConverter.toDBType(Currency.getInstance("EUR"))).isEqualTo("EUR")
-    assertThat(JdbcConverter.toDBType(Locale("et"))).isEqualTo("et")
-    assertThat(JdbcConverter.toDBType(Period.ofDays(3))).isEqualTo("P3D")
+    expect(toDBType(Currency.getInstance("EUR"))).to.equal("EUR")
+    expect(toDBType(Locale("et"))).to.equal("et")
+    expect(toDBType(Period.ofDays(3))).to.equal("P3D")
   }
 }

@@ -1,6 +1,7 @@
 package klite
 
-import org.assertj.core.api.Assertions.assertThat
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.beNull
 import org.junit.jupiter.api.Test
 
 annotation class Public
@@ -8,9 +9,9 @@ annotation class Public
 class RouteTest {
   @Test fun annotations() {
     val route = Route(RequestMethod.GET, "".toRegex(), {})
-    assertThat(route.annotation<Public>()).isNull()
+    expect(route.annotation<Public>()).to.beNull()
 
     val annotated = Route(RequestMethod.GET, "".toRegex(), {}, listOf(Public()))
-    assertThat(annotated.annotation<Public>()).isNotNull
+    expect(annotated.annotation<Public>()).to.not.beNull()
   }
 }

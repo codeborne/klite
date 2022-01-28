@@ -1,6 +1,9 @@
 package klite
 
-import org.assertj.core.api.Assertions.assertThat
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.beInstanceOf
+import net.oddpoet.expect.extension.beSameInstance
+import net.oddpoet.expect.extension.haveSizeOf
 import org.junit.jupiter.api.Test
 
 class SimpleRegistryTest {
@@ -11,16 +14,16 @@ class SimpleRegistryTest {
   }
 
   @Test fun require() {
-    assertThat(registry.require<Registry>()).isSameAs(registry)
-    assertThat(registry.require<TextBodyParser>()).isInstanceOf(TextBodyParser::class.java)
+    expect(registry.require<Registry>()).to.beSameInstance(registry)
+    expect(registry.require<TextBodyParser>()).to.beInstanceOf(TextBodyParser::class)
   }
 
   @Test fun requireAll() {
-    assertThat(registry.requireAll<TextBodyParser>()).hasSize(1)
-    assertThat(registry.requireAll<BodyParser>()).hasSize(2)
+    expect(registry.requireAll<TextBodyParser>()).to.haveSizeOf(1)
+    expect(registry.requireAll<BodyParser>()).to.haveSizeOf(2)
   }
 
   @Test fun `require class implementation`() {
-    assertThat(registry.require<BodyRenderer>()).isInstanceOf(TextBodyRenderer::class.java)
+    expect(registry.require<BodyRenderer>()).to.beInstanceOf(TextBodyRenderer::class)
   }
 }

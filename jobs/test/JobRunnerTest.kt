@@ -4,7 +4,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import klite.Server
 import klite.jdbc.Transaction
-import org.assertj.core.api.Assertions.assertThat
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.beNull
 import org.junit.jupiter.api.Test
 import java.time.LocalTime
 import java.util.concurrent.ScheduledExecutorService
@@ -25,7 +26,7 @@ class JobRunnerTest {
 
   @Test fun runInTransaction() {
     val job = Job {
-      assertThat(Transaction.current()).isNotNull
+      expect(Transaction.current()).to.not.beNull()
     }
     runner.runInTransaction("My job", job)
   }

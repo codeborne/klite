@@ -1,6 +1,8 @@
 package klite.jdbc.users
 
-import org.assertj.core.api.Assertions.assertThat
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.beNull
+import net.oddpoet.expect.extension.equal
 import org.junit.jupiter.api.Test
 import users.Email
 import users.User
@@ -13,8 +15,8 @@ class UserRepositoryTest: DBTest() {
 
   @Test fun `save and load`() {
     repository.save(user)
-    assertThat(repository.get(user.id)).isEqualTo(user)
-    assertThat(repository.by(user.email)).isEqualTo(user)
-    assertThat(repository.by(Email("no@email"))).isNull()
+    expect(repository.get(user.id)).to.equal(user)
+    expect(repository.by(user.email)).to.equal(user)
+    expect(repository.by(Email("no@email"))).to.beNull()
   }
 }

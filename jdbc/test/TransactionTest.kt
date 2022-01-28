@@ -3,7 +3,8 @@ package klite.jdbc
 import com.zaxxer.hikari.util.DriverDataSource
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
+import net.oddpoet.expect.expect
+import net.oddpoet.expect.extension.be
 import org.junit.jupiter.api.Test
 
 class TransactionTest {
@@ -19,7 +20,7 @@ class TransactionTest {
   @Test fun `transaction creates and reuses connection on demand`() {
     val tx = Transaction(db).attachToThread()
     val conn = db.withConnection { this }
-    assertThat(db.withConnection { this }).isSameAs(conn)
+    expect(db.withConnection { this }).to.be(conn)
     verify { conn.autoCommit = false }
     tx.close(true)
     verify(exactly = 1) {
