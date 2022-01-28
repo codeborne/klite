@@ -1,10 +1,10 @@
 package klite
 
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.beInstanceOf
-import net.oddpoet.expect.extension.beSameInstance
-import net.oddpoet.expect.extension.haveSizeOf
 import org.junit.jupiter.api.Test
+import strikt.api.expectThat
+import strikt.assertions.hasSize
+import strikt.assertions.isA
+import strikt.assertions.isSameInstanceAs
 
 class SimpleRegistryTest {
   val registry = SimpleRegistry().apply {
@@ -14,16 +14,16 @@ class SimpleRegistryTest {
   }
 
   @Test fun require() {
-    expect(registry.require<Registry>()).to.beSameInstance(registry)
-    expect(registry.require<TextBodyParser>()).to.beInstanceOf(TextBodyParser::class)
+    expectThat(registry.require<Registry>()).isSameInstanceAs(registry)
+    expectThat(registry.require<TextBodyParser>()).isA<TextBodyParser>()
   }
 
   @Test fun requireAll() {
-    expect(registry.requireAll<TextBodyParser>()).to.haveSizeOf(1)
-    expect(registry.requireAll<BodyParser>()).to.haveSizeOf(2)
+    expectThat(registry.requireAll<TextBodyParser>()).hasSize(1)
+    expectThat(registry.requireAll<BodyParser>()).hasSize(2)
   }
 
   @Test fun `require class implementation`() {
-    expect(registry.require<BodyRenderer>()).to.beInstanceOf(TextBodyRenderer::class)
+    expectThat(registry.require<BodyRenderer>()).isA<TextBodyRenderer>()
   }
 }

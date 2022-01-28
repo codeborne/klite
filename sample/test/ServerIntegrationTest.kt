@@ -8,9 +8,9 @@ import klite.json.JsonBody
 import klite.json.JsonHttpClient
 import klite.register
 import kotlinx.coroutines.runBlocking
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.equal
 import org.junit.jupiter.api.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import java.net.http.HttpClient
 import java.time.Duration.ofSeconds
 
@@ -32,8 +32,8 @@ class ServerIntegrationTest {
 
     runBlocking {
       val http = JsonHttpClient(server.registry, "http://localhost:$port")
-      expect(http.get<String>("/hello")).to.equal("\"Hello\"")
-      expect(http.get<SomeReposponse>("/api/hello")).to.equal(SomeReposponse("Hello"))
+      expectThat(http.get<String>("/hello")).isEqualTo("\"Hello\"")
+      expectThat(http.get<SomeReposponse>("/api/hello")).isEqualTo(SomeReposponse("Hello"))
     }
     server.stop()
   }

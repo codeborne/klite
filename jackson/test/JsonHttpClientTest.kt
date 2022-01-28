@@ -6,10 +6,10 @@ import io.mockk.mockk
 import klite.SimpleRegistry
 import klite.register
 import kotlinx.coroutines.runBlocking
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.equal
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import java.io.IOException
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
@@ -32,7 +32,7 @@ class JsonHttpClientTest {
 
     runBlocking {
       val data = http.get<SomeData>("/some/data")
-      expect(data).to.equal(SomeData("World"))
+      expectThat(data).isEqualTo(SomeData("World"))
     }
 
     coVerify { httpClient.sendAsync<String>(match { it.uri().toString() == "http://some.host/v1/some/data" }, any()) }
@@ -57,7 +57,7 @@ class JsonHttpClientTest {
     every { httpClient.sendAsync<String>(any(), any()) }.returnsMany(failedFuture(IOException()), completedFuture(response))
     runBlocking {
       val body = http.post<String>("/some/data", "Hello")
-      expect(body).to.equal(response.body())
+      expectThat(body).isEqualTo(response.body())
     }
     coVerify(exactly = 2) { httpClient.sendAsync<String>(any(), any()) }
   }

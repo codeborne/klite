@@ -3,9 +3,9 @@ package klite.jdbc
 import com.zaxxer.hikari.util.DriverDataSource
 import io.mockk.mockk
 import io.mockk.verify
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.be
 import org.junit.jupiter.api.Test
+import strikt.api.expectThat
+import strikt.assertions.isSameInstanceAs
 
 class TransactionTest {
   val db = mockk<DriverDataSource>(relaxed = true)
@@ -20,7 +20,7 @@ class TransactionTest {
   @Test fun `transaction creates and reuses connection on demand`() {
     val tx = Transaction(db).attachToThread()
     val conn = db.withConnection { this }
-    expect(db.withConnection { this }).to.be(conn)
+    expectThat(db.withConnection { this }).isSameInstanceAs(conn)
     verify { conn.autoCommit = false }
     tx.close(true)
     verify(exactly = 1) {

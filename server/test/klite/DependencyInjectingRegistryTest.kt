@@ -1,24 +1,24 @@
 package klite
 
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.beEmpty
-import net.oddpoet.expect.extension.beInstanceOf
-import net.oddpoet.expect.extension.haveSizeOf
 import org.junit.jupiter.api.Test
+import strikt.api.expectThat
+import strikt.assertions.hasSize
+import strikt.assertions.isA
+import strikt.assertions.isEmpty
 
 class DependencyInjectingRegistryTest {
   val registry = DependencyInjectingRegistry()
 
   @Test fun require() {
-    expect(registry.require<TextBodyParser>()).to.beInstanceOf(TextBodyParser::class)
+    expectThat(registry.require<TextBodyParser>()).isA<TextBodyParser>()
   }
 
   @Test fun requireAll() {
-    expect(registry.requireAll<TextBodyParser>()).to.beEmpty()
+    expectThat(registry.requireAll<TextBodyParser>()).isEmpty()
 
-    expect(registry.require<TextBodyParser>()).to.beInstanceOf(TextBodyParser::class)
+    expectThat(registry.require<TextBodyParser>()).isA<TextBodyParser>()
     registry.register<FormUrlEncodedParser>()
 
-    expect(registry.requireAll<BodyParser>()).to.haveSizeOf(2)
+    expectThat(registry.requireAll<BodyParser>()).hasSize(2)
   }
 }

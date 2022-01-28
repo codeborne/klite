@@ -8,9 +8,9 @@ import klite.HttpExchange
 import klite.Router
 import klite.require
 import kotlinx.coroutines.runBlocking
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.equal
 import org.junit.jupiter.api.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -47,7 +47,7 @@ class AnnotationsTest {
 
   @Test fun `no parameter handler`() {
     val handler = toHandler(Routes(), Routes::root)
-    runBlocking { expect(handler(exchange)).to.equal("Hello") }
+    runBlocking { expectThat(handler(exchange)).isEqualTo("Hello") }
   }
 
   @Test fun `exchange parameter handler`() {
@@ -58,6 +58,6 @@ class AnnotationsTest {
     every { exchange.header("header") } returns "42"
     every { exchange.cookie("cookie") } returns "et"
     every { exchange.attr<BigInteger>("attr") } returns BigInteger("90909")
-    runBlocking { expect(handler(exchange)).to.equal("Hello TheBody 7.9E+9 2021-10-21 42 et 90909") }
+    runBlocking { expectThat(handler(exchange)).isEqualTo("Hello TheBody 7.9E+9 2021-10-21 42 et 90909") }
   }
 }

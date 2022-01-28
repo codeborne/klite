@@ -20,7 +20,7 @@ subprojects {
   dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-    testImplementation("net.oddpoet:kotlin-expect:1.2.2")
+    testImplementation("io.strikt:strikt-jvm:0.33.0")
     testImplementation("io.mockk:mockk:1.12.1")
   }
 

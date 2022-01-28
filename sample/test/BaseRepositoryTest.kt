@@ -1,13 +1,13 @@
 package klite.jdbc
 
-import net.oddpoet.expect.expect
-import net.oddpoet.expect.extension.beGreaterThanOrEqualTo
 import org.junit.jupiter.api.Test
+import strikt.api.expectThat
+import strikt.assertions.isGreaterThanOrEqualTo
 
 class BaseRepositoryTest: TempTableDBTest() {
   val repository = object: BaseRepository(db, "temp") {}
 
   @Test fun count() {
-    expect(repository.count()).to.beGreaterThanOrEqualTo(0)
+    expectThat(repository.count()).isGreaterThanOrEqualTo(0)
   }
 }
