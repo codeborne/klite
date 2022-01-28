@@ -1,13 +1,13 @@
 package klite.json
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 
 class JsonBodyTest {
   @Test fun `can create Kotlin classes`() {
     val someData = JsonBody().parse("""{"hello":"World"}""".byteInputStream(), SomeData::class)
-    expectThat(someData).isEqualTo(SomeData("World"))
+    expect(someData).toEqual(SomeData("World"))
   }
 }
 

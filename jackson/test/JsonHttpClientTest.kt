@@ -1,5 +1,7 @@
 package klite.json
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -8,8 +10,6 @@ import klite.register
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import java.io.IOException
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
@@ -32,7 +32,7 @@ class JsonHttpClientTest {
 
     runBlocking {
       val data = http.get<SomeData>("/some/data")
-      expectThat(data).isEqualTo(SomeData("World"))
+      expect(data).toEqual(SomeData("World"))
     }
 
     coVerify { httpClient.sendAsync<String>(match { it.uri().toString() == "http://some.host/v1/some/data" }, any()) }
@@ -57,7 +57,7 @@ class JsonHttpClientTest {
     every { httpClient.sendAsync<String>(any(), any()) }.returnsMany(failedFuture(IOException()), completedFuture(response))
     runBlocking {
       val body = http.post<String>("/some/data", "Hello")
-      expectThat(body).isEqualTo(response.body())
+      expect(body).toEqual(response.body())
     }
     coVerify(exactly = 2) { httpClient.sendAsync<String>(any(), any()) }
   }

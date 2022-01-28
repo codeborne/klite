@@ -1,18 +1,18 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.notToEqualNull
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isNotNull
-import strikt.assertions.isNull
 
 annotation class Public
 
 class RouteTest {
   @Test fun annotations() {
     val route = Route(RequestMethod.GET, "".toRegex(), {})
-    expectThat(route.annotation<Public>()).isNull()
+    expect(route.annotation<Public>()).toEqual(null)
 
     val annotated = Route(RequestMethod.GET, "".toRegex(), {}, listOf(Public()))
-    expectThat(annotated.annotation<Public>()).isNotNull()
+    expect(annotated.annotation<Public>()).notToEqualNull()
   }
 }

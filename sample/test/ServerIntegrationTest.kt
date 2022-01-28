@@ -2,6 +2,8 @@ package klite.jdbc
 
 import Routes
 import SomeReposponse
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import klite.Server
 import klite.annotations.annotated
 import klite.json.JsonBody
@@ -9,8 +11,6 @@ import klite.json.JsonHttpClient
 import klite.register
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import java.net.http.HttpClient
 import java.time.Duration.ofSeconds
 
@@ -32,8 +32,8 @@ class ServerIntegrationTest {
 
     runBlocking {
       val http = JsonHttpClient(server.registry, "http://localhost:$port")
-      expectThat(http.get<String>("/hello")).isEqualTo("\"Hello\"")
-      expectThat(http.get<SomeReposponse>("/api/hello")).isEqualTo(SomeReposponse("Hello"))
+      expect(http.get<String>("/hello")).toEqual("\"Hello\"")
+      expect(http.get<SomeReposponse>("/api/hello")).toEqual(SomeReposponse("Hello"))
     }
     server.stop()
   }

@@ -1,13 +1,13 @@
 package klite.jdbc
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeGreaterThanOrEqualTo
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isGreaterThanOrEqualTo
 
 class BaseRepositoryTest: TempTableDBTest() {
   val repository = object: BaseRepository(db, "temp") {}
 
   @Test fun count() {
-    expectThat(repository.count()).isGreaterThanOrEqualTo(0)
+    expect(repository.count()).toBeGreaterThanOrEqualTo(0)
   }
 }

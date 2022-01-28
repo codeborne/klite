@@ -1,12 +1,12 @@
 package klite.jobs
 
+import ch.tutteli.atrium.api.fluent.en_GB.notToEqualNull
+import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Server
 import klite.jdbc.Transaction
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isNotNull
 import java.time.LocalTime
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit.MINUTES
@@ -26,7 +26,7 @@ class JobRunnerTest {
 
   @Test fun runInTransaction() {
     val job = Job {
-      expectThat(Transaction.current()).isNotNull()
+      expect(Transaction.current()).notToEqualNull()
     }
     runner.runInTransaction("My job", job)
   }

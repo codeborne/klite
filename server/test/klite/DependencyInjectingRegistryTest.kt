@@ -1,24 +1,24 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeAnInstanceOf
+import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
+import ch.tutteli.atrium.api.fluent.en_GB.toHaveSize
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.hasSize
-import strikt.assertions.isA
-import strikt.assertions.isEmpty
 
 class DependencyInjectingRegistryTest {
   val registry = DependencyInjectingRegistry()
 
   @Test fun require() {
-    expectThat(registry.require<TextBodyParser>()).isA<TextBodyParser>()
+    expect(registry.require<TextBodyParser>()).toBeAnInstanceOf<TextBodyParser>()
   }
 
   @Test fun requireAll() {
-    expectThat(registry.requireAll<TextBodyParser>()).isEmpty()
+    expect(registry.requireAll<TextBodyParser>()).toBeEmpty()
 
-    expectThat(registry.require<TextBodyParser>()).isA<TextBodyParser>()
+    expect(registry.require<TextBodyParser>()).toBeAnInstanceOf<TextBodyParser>()
     registry.register<FormUrlEncodedParser>()
 
-    expectThat(registry.requireAll<BodyParser>()).hasSize(2)
+    expect(registry.requireAll<BodyParser>()).toHaveSize(2)
   }
 }

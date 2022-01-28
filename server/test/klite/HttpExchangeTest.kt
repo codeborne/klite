@@ -1,13 +1,13 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Cookie.SameSite.Strict
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import java.net.URI
 
 class HttpExchangeTest {
@@ -28,27 +28,27 @@ class HttpExchangeTest {
   val exchange = HttpExchange(original, routerConfig, null)
 
   @Test fun path() {
-    expectThat(exchange.method).isEqualTo(RequestMethod.GET)
-    expectThat(exchange.path).isEqualTo("/hello")
+    expect(exchange.method).toEqual(RequestMethod.GET)
+    expect(exchange.path).toEqual("/hello")
   }
 
   @Test fun queryParams() {
-    expectThat(exchange.query).isEqualTo("?hello=world")
-    expectThat(exchange.queryParams).isEqualTo(mapOf("hello" to "world"))
+    expect(exchange.query).toEqual("?hello=world")
+    expect(exchange.queryParams).toEqual(mapOf("hello" to "world"))
   }
 
   @Test fun fullUrl() {
     every { exchange.host } returns "localhost:8080"
-    expectThat(exchange.fullUrl).isEqualTo(URI("http://localhost:8080/hello?hello=world"))
+    expect(exchange.fullUrl).toEqual(URI("http://localhost:8080/hello?hello=world"))
 
     every { exchange.host } returns "host.domain"
-    expectThat(exchange.fullUrl("/some/page")).isEqualTo(URI("http://host.domain/some/page"))
+    expect(exchange.fullUrl("/some/page")).toEqual(URI("http://host.domain/some/page"))
   }
 
   @Test fun `request cookies`() {
     every { exchange.header("Cookie") } returns "Hello=World; Second=123%20456"
-    expectThat(exchange.cookies).isEqualTo(mapOf("Hello" to "World", "Second" to "123 456"))
-    expectThat(exchange.cookie("Hello")).isEqualTo("World")
+    expect(exchange.cookies).toEqual(mapOf("Hello" to "World", "Second" to "123 456"))
+    expect(exchange.cookie("Hello")).toEqual("World")
   }
 
   @Test fun `response cookies`() {
@@ -62,8 +62,8 @@ class HttpExchangeTest {
   @Test fun `body as text`() {
     every { exchange.requestType } returns null
     every { original.requestBody } answers { "123".byteInputStream() }
-    expectThat(exchange.body<String>()).isEqualTo("123")
-    expectThat(exchange.body<Int>()).isEqualTo(123)
+    expect(exchange.body<String>()).toEqual("123")
+    expect(exchange.body<Int>()).toEqual(123)
   }
 
   @Test fun `body with specific content-type`() {
@@ -71,7 +71,7 @@ class HttpExchangeTest {
     val input = "{PI}".byteInputStream()
     every { original.requestBody } answers { input }
     every { customParser.parse(input, Double::class) } returns Math.PI
-    expectThat(exchange.body<Double>()).isEqualTo(Math.PI)
+    expect(exchange.body<Double>()).toEqual(Math.PI)
   }
 
   @Test fun `body with unsupported content-type`() {

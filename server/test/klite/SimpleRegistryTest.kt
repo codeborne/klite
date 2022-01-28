@@ -1,10 +1,10 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeAnInstanceOf
+import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
+import ch.tutteli.atrium.api.fluent.en_GB.toHaveSize
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.hasSize
-import strikt.assertions.isA
-import strikt.assertions.isSameInstanceAs
 
 class SimpleRegistryTest {
   val registry = SimpleRegistry().apply {
@@ -14,16 +14,16 @@ class SimpleRegistryTest {
   }
 
   @Test fun require() {
-    expectThat(registry.require<Registry>()).isSameInstanceAs(registry)
-    expectThat(registry.require<TextBodyParser>()).isA<TextBodyParser>()
+    expect(registry.require<Registry>()).toBeTheInstance(registry)
+    expect(registry.require<TextBodyParser>()).toBeAnInstanceOf<TextBodyParser>()
   }
 
   @Test fun requireAll() {
-    expectThat(registry.requireAll<TextBodyParser>()).hasSize(1)
-    expectThat(registry.requireAll<BodyParser>()).hasSize(2)
+    expect(registry.requireAll<TextBodyParser>()).toHaveSize(1)
+    expect(registry.requireAll<BodyParser>()).toHaveSize(2)
   }
 
   @Test fun `require class implementation`() {
-    expectThat(registry.require<BodyRenderer>()).isA<TextBodyRenderer>()
+    expect(registry.require<BodyRenderer>()).toBeAnInstanceOf<TextBodyRenderer>()
   }
 }

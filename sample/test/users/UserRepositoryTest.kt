@@ -1,9 +1,8 @@
 package klite.jdbc.users
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNull
 import users.Email
 import users.User
 import users.UserRepository
@@ -15,8 +14,8 @@ class UserRepositoryTest: DBTest() {
 
   @Test fun `save and load`() {
     repository.save(user)
-    expectThat(repository.get(user.id)).isEqualTo(user)
-    expectThat(repository.by(user.email)).isEqualTo(user)
-    expectThat(repository.by(Email("no@email"))).isNull()
+    expect(repository.get(user.id)).toEqual(user)
+    expect(repository.by(user.email)).toEqual(user)
+    expect(repository.by(Email("no@email"))).toEqual(null)
   }
 }

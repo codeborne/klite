@@ -1,5 +1,7 @@
 package klite.annotations
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -9,8 +11,6 @@ import klite.Router
 import klite.require
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -47,7 +47,7 @@ class AnnotationsTest {
 
   @Test fun `no parameter handler`() {
     val handler = toHandler(Routes(), Routes::root)
-    runBlocking { expectThat(handler(exchange)).isEqualTo("Hello") }
+    runBlocking { expect(handler(exchange)).toEqual("Hello") }
   }
 
   @Test fun `exchange parameter handler`() {
@@ -58,6 +58,6 @@ class AnnotationsTest {
     every { exchange.header("header") } returns "42"
     every { exchange.cookie("cookie") } returns "et"
     every { exchange.attr<BigInteger>("attr") } returns BigInteger("90909")
-    runBlocking { expectThat(handler(exchange)).isEqualTo("Hello TheBody 7.9E+9 2021-10-21 42 et 90909") }
+    runBlocking { expect(handler(exchange)).toEqual("Hello TheBody 7.9E+9 2021-10-21 42 et 90909") }
   }
 }

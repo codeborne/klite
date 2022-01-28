@@ -1,14 +1,14 @@
 @file:UseSerializers(UUIDSerializer::class)
 package klite.serialization
 
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
 import klite.ErrorResponse
 import klite.StatusCode
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import java.io.ByteArrayOutputStream
 import java.util.*
 
@@ -17,22 +17,22 @@ class JsonBodyTest {
 
   @Test fun `can create data classes`() {
     val someData = jsonBody.parse("""{"email":"a@b.ee","date":"2021-12-12","extra":123}""".byteInputStream(), SomeData::class)
-    expectThat(someData).isEqualTo(SomeData(Email("a@b.ee"), LocalDate.parse("2021-12-12")))
+    expect(someData).toEqual(SomeData(Email("a@b.ee"), LocalDate.parse("2021-12-12")))
   }
 
   @Test fun `can serialize ErrorResponse`() {
     val out = ByteArrayOutputStream()
     jsonBody.render(out, ErrorResponse(StatusCode.NotFound, "/"))
-    expectThat(out.toByteArray().decodeToString()).isEqualTo("""{"statusCode":404,"reason":"Not Found","message":"/"}""")
+    expect(out.toByteArray().decodeToString()).toEqual("""{"statusCode":404,"reason":"Not Found","message":"/"}""")
   }
 
   @Test fun `use ConverterSerializer`() {
     val out = ByteArrayOutputStream()
     val entity = SomeEntity(UUID.fromString("fc587008-f555-4b4d-82c0-818b05eb8bad"))
     jsonBody.render(out, entity)
-    expectThat(out.toByteArray().decodeToString()).isEqualTo("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""")
+    expect(out.toByteArray().decodeToString()).toEqual("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""")
 
-    expectThat(jsonBody.parse("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""".byteInputStream(), SomeEntity::class)).isEqualTo(entity)
+    expect(jsonBody.parse("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""".byteInputStream(), SomeEntity::class)).toEqual(entity)
   }
 }
 

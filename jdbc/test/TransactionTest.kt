@@ -1,11 +1,11 @@
 package klite.jdbc
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
+import ch.tutteli.atrium.api.verbs.expect
 import com.zaxxer.hikari.util.DriverDataSource
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import strikt.api.expectThat
-import strikt.assertions.isSameInstanceAs
 
 class TransactionTest {
   val db = mockk<DriverDataSource>(relaxed = true)
@@ -20,7 +20,7 @@ class TransactionTest {
   @Test fun `transaction creates and reuses connection on demand`() {
     val tx = Transaction(db).attachToThread()
     val conn = db.withConnection { this }
-    expectThat(db.withConnection { this }).isSameInstanceAs(conn)
+    expect(db.withConnection { this }).toBeTheInstance(conn)
     verify { conn.autoCommit = false }
     tx.close(true)
     verify(exactly = 1) {
