@@ -25,8 +25,6 @@ DB access:
 See [all available functions](src/JdbcExtensions.kt).
 
 In query mappers you can either use ResultSet methods and extensions to build your entities or use the
-[ResultSet.fromValues](src/BaseModel.kt), like shown above.
-
-Also, [Any.toValues](src/BaseModel.kt) is provided to simplify conversion of entities to Maps for use with insert/update/upsert.
+[ResultSet.fromValues](src/BaseModel.kt), like shown above. Likewise, [Any.toValues](src/BaseModel.kt) is provided to simplify conversion of entities to Maps for use with insert/update/upsert.
 
 [JdbcConverter](src/JdbcConverter.kt) can be used to register conversion of custom types to be sent to the DB.
