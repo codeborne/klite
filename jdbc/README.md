@@ -15,13 +15,17 @@ DB access:
 
 ```kotlin
   val db = require<DataSource>()
-  // with boilerplate removed
   db.insert("table", mapOf("column" to value))
-  db.query("table", mapOf("column" to value) { MyEntity(getString("column")) }
+  db.insert("table", entity.toValues())
+  db.query("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) } // mapper runs in context of ResultSet
+  db.query("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
   // or you can write full sql manually using db.exec() and db.select()
 ```
 
-In query mappers you can either use ResultSet methods and extensions to build your entities or use the [ResultSet.fromValues](src/BaseModel.kt): `{ fromValues<MyEntity>() }`
+See [all available functions](src/JdbcExtensions.kt).
+
+In query mappers you can either use ResultSet methods and extensions to build your entities or use the
+[ResultSet.fromValues](src/BaseModel.kt), like shown above.
 
 Also, [Any.toValues](src/BaseModel.kt) is provided to simplify conversion of entities to Maps for use with insert/update/upsert.
 
