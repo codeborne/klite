@@ -47,4 +47,10 @@ class JdbcConverterTest {
     expect(JdbcConverter.to(Locale("et"))).toEqual("et")
     expect(JdbcConverter.to(Period.ofDays(3))).toEqual("P3D")
   }
+
+  @Test fun `from toString types`() {
+    expect(JdbcConverter.from("EUR", Currency::class)).toEqual(Currency.getInstance("EUR"))
+    expect(JdbcConverter.from("et", Locale::class)).toEqual(Locale("et"))
+    expect(JdbcConverter.from("P3D", Period::class)).toEqual(Period.ofDays(3))
+  }
 }
