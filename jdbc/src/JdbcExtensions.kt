@@ -43,7 +43,7 @@ fun DataSource.upsert(table: String, values: Map<String, *>, uniqueFields: Strin
   exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
 
 private fun insertExpr(table: String, values: Map<String, *>) = """
-  insert into $table (${values.keys.joinToString()})
+  insert into $table (${values.keys.joinToString { q(it) }})
     values (${values.entries.joinToString { (it.value as? SqlExpr)?.expr(it.key) ?: "?" }})""".trimIndent()
 
 fun DataSource.update(table: String, where: Map<String, Any?>, values: Map<String, *>): Int =
