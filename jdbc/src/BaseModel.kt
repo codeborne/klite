@@ -12,11 +12,18 @@ interface BaseModel {
   val id: UUID
 }
 
-inline fun <reified T: Any> T.toValues() = toValuesSkipping()
+inline fun <reified T: Any> T.toValues(vararg values: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
+  val provided = mapOf(*values)
+  return toValuesSkipping(provided.keys) + provided.mapKeys { it.key.name }
+}
 
-inline fun <reified T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>): Map<String, Any?> =
-  (T::class.memberProperties - skip).filter { it.javaField != null }
-    .associate { it.name to it.javaField?.apply { trySetAccessible() }?.get(this) }
+inline fun <reified T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(setOf(*skip))
+
+inline fun <reified T: Any> T.toValuesSkipping(skip: Set<KProperty1<T, *>>): Map<String, Any?> =
+  toValues(T::class.memberProperties - skip)
+
+fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> =
+  props.filter { it.javaField != null }.associate { it.name to it.javaField?.apply { trySetAccessible() }?.get(this) }
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg values: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *values)
 

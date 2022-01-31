@@ -12,6 +12,7 @@ class BaseModelTest {
   @Test fun toValues() {
     val data = SomeData("Hello", 123)
     expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123))
+    expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124))
   }
 
   @Test fun toValuesSkipping() {
