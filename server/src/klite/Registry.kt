@@ -3,8 +3,10 @@ package klite
 import java.lang.System.Logger.Level.DEBUG
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.jvmErasure
 
 interface Registry {
   fun <T: Any> require(type: KClass<T>): T
@@ -28,11 +30,12 @@ class RegistryException(message: String, cause: Throwable? = null): Exception(me
 open class SimpleRegistry: MutableRegistry {
   private val instances = mutableMapOf<KClass<*>, Any>(Registry::class to this)
 
-  override fun <T : Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
-  override fun <T : Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
+  override fun <T: Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
+  override fun <T: Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
 
+  fun contains(type: KClass<*>) = instances.contains(type)
   override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: create(type).also { register(type, it) }
-  override fun <T : Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>
+  override fun <T: Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>
 
   protected open fun <T: Any> create(type: KClass<T>): T = type.createInstance()
 }
@@ -56,9 +59,9 @@ open class DependencyInjectingRegistry: SimpleRegistry() {
     }
   }
 
-  protected open fun <T : Any> chooseConstructor(type: KClass<T>) =
+  protected open fun <T : Any> chooseConstructor(type: KClass<T>): KFunction<T>? =
     type.primaryConstructor ?: type.constructors.minByOrNull { it.parameters.size }
 
-  protected open fun <T : Any> createArgs(constructor: KFunction<T>) =
-    constructor.parameters.filter { !it.isOptional }.associateWith { require(it.type.classifier as KClass<*>) }
+  protected open fun <T : Any> createArgs(constructor: KFunction<T>): Map<KParameter, Any> =
+    constructor.parameters.filter { !it.isOptional || contains(it.type.jvmErasure) }.associateWith { require(it.type.jvmErasure) }
 }
