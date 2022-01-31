@@ -42,7 +42,7 @@ object JdbcConverter {
   operator fun <T: Any> set(type: KClass<T>, converter: ToJdbcConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: ToJdbcConverter<T>) = set(T::class, converter)
 
-  fun toDBType(v: Any?, conn: Connection? = null) = when (v) {
+  fun to(v: Any?, conn: Connection? = null) = when (v) {
     null -> null
     is Enum<*> -> v.name
     is Collection<*> -> conn!!.createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
@@ -61,14 +61,14 @@ object JdbcConverter {
   private fun unwrapInline(v: Any) =
     v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
 
-  fun fromDBType(v: Any?, target: KType): Any? = when(target) {
+  fun from(v: Any?, target: KType): Any? = when(target) {
     Instant::class -> (v as Timestamp).toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
     LocalDateTime::class -> (v as Timestamp).toLocalDateTime()
     else -> when {
       v is String && target.jvmErasure != String::class -> Converter.from(v, target)
-      v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { fromDBType(it, target.arguments[0].type!!) }.toSet()
-      v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { fromDBType(it, target.arguments[0].type!!) }.toList()
+      v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toSet()
+      v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toList()
       else -> v
     }
   }

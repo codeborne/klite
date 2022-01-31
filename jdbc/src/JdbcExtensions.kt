@@ -1,6 +1,5 @@
 package klite.jdbc
 
-import klite.jdbc.JdbcConverter.toDBType
 import org.intellij.lang.annotations.Language
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -76,7 +75,7 @@ private fun Any?.toIterable(): Iterable<Any?> = when (this) {
   else -> flatExpr()
 }
 
-operator fun PreparedStatement.set(i: Int, value: Any?) = setObject(i, toDBType(value, connection))
+operator fun PreparedStatement.set(i: Int, value: Any?) = setObject(i, JdbcConverter.to(value, connection))
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
 
 private fun <R> ResultSet.map(mapper: ResultSet.() -> R): List<R> = mutableListOf<R>().also {
