@@ -8,11 +8,16 @@ import java.math.BigInteger
 import java.net.URI
 import java.net.URL
 import java.sql.Connection
+import java.sql.Date
+import java.sql.Timestamp
 import java.time.*
 import java.time.ZoneOffset.UTC
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.jvmErasure
 
 typealias ToJdbcConverter<T> = (T, Connection?) -> Any
 
@@ -55,4 +60,16 @@ object JdbcConverter {
 
   private fun unwrapInline(v: Any) =
     v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
+
+  fun fromDBType(v: Any?, target: KType): Any? = when(target) {
+    Instant::class -> (v as Timestamp).toInstant()
+    LocalDate::class -> (v as? Date)?.toLocalDate()
+    LocalDateTime::class -> (v as Timestamp).toLocalDateTime()
+    else -> when {
+      v is String && target.jvmErasure != String::class -> Converter.from(v, target)
+      v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { fromDBType(it, target.arguments[0].type!!) }.toSet()
+      v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { fromDBType(it, target.arguments[0].type!!) }.toList()
+      else -> v
+    }
+  }
 }
