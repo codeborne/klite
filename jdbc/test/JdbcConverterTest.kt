@@ -3,6 +3,8 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import klite.jdbc.JdbcConverter
 import org.junit.jupiter.api.Test
+import java.sql.Date
+import java.sql.Timestamp
 import java.time.*
 import java.time.ZoneOffset.UTC
 import java.util.*
@@ -23,11 +25,17 @@ class JdbcConverterTest {
     expect(JdbcConverter.to(123.toBigInteger())).toEqual(123.toBigInteger())
   }
 
-  @Test fun `local date and time`() {
+  @Test fun `to local date and time`() {
     expect(JdbcConverter.to(LocalDate.of(2021, 10, 21))).toEqual(LocalDate.of(2021, 10, 21))
     expect(JdbcConverter.to(LocalDateTime.MIN)).toBeTheInstance(LocalDateTime.MIN)
     expect(JdbcConverter.to(LocalTime.MIN)).toBeTheInstance(LocalTime.MIN)
     expect(JdbcConverter.to(OffsetDateTime.MIN)).toBeTheInstance(OffsetDateTime.MIN)
+  }
+
+  @Test fun `from local date and time`() {
+    expect(JdbcConverter.from(Date(123), LocalDate::class)).toEqual(LocalDate.of(1970, 1, 1))
+    expect(JdbcConverter.from(Timestamp(123), Instant::class)).toEqual(Instant.ofEpochMilli(123))
+    expect(JdbcConverter.from(Timestamp(123), LocalDateTime::class)).toEqual(Timestamp(123).toLocalDateTime())
   }
 
   @Test fun `Instant should be converted to offset`() {

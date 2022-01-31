@@ -61,15 +61,17 @@ object JdbcConverter {
   private fun unwrapInline(v: Any) =
     v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
 
-  fun from(v: Any?, target: KType): Any? = when(target) {
+  fun from(v: Any?, target: KType): Any? = when {
+    v is String && target.jvmErasure != String::class -> Converter.from(v, target)
+    v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toSet()
+    v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toList()
+    else -> from(v, target.jvmErasure)
+  }
+
+  fun from(v: Any?, target: KClass<*>): Any? = when(target) {
     Instant::class -> (v as Timestamp).toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
     LocalDateTime::class -> (v as Timestamp).toLocalDateTime()
-    else -> when {
-      v is String && target.jvmErasure != String::class -> Converter.from(v, target)
-      v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toSet()
-      v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toList()
-      else -> v
-    }
+    else -> v
   }
 }
