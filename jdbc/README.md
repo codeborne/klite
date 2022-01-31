@@ -4,17 +4,17 @@ Provides simple extension functions for JDBC standard classes for a simple way t
 
 Tested mostly with PostgreSQL.
 
-Usage:
+Registration with Server instance:
 
 ```kotlin
-  use<DBModule>() // to register a DataSource and connection pool
+  use<DBModule>() // to register a DataSource and connection pool using Config variables.
   use<RequestTransactionHandler>() // to enable per-request transactions
 ```
 
-DB access:
+Usage:
 
 ```kotlin
-  // obtain the DataSource instance (or declare it as a contructor parameter in your Repository class)
+  // obtain the registered DataSource (or declare it as a constructor parameter in your Repository class)
   val db = require<DataSource>()
 
   // basic insert into a table
@@ -40,7 +40,12 @@ DB access:
 
 See [all available functions](src/JdbcExtensions.kt).
 
+All the above can run without a transaction: in this case, every query will obtain and release its own connection from the pool,
+in autocommit mode. If [Transaction](src/Transaction.kt) is active, then it will obtain a connection on first use,
+set autoCommit=false and reuse it until the transaction is closed with either commit or rollback.
+
 In query mappers you can either use ResultSet methods and extensions to build your entities or use the
-[ResultSet.fromValues](src/BaseModel.kt), like shown above. Likewise, [Any.toValues](src/BaseModel.kt) is provided to simplify conversion of entities to Maps for use with insert/update/upsert.
+[ResultSet.fromValues](src/BaseModel.kt). Likewise, [Any.toValues](src/BaseModel.kt) is provided to simplify
+conversion of entities to Maps for use with insert/update/upsert.
 
 [JdbcConverter](src/JdbcConverter.kt) can be used to register conversion of custom types to be sent to the DB.
