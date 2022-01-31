@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
@@ -21,6 +22,9 @@ object Converter {
   fun supports(type: KClass<*>) = converters[type] != null
 
   inline fun <reified T: Any> fromString(s: String) = fromString(s, T::class)
+
+  @Suppress("UNCHECKED_CAST")
+  fun <T: Any> fromString(s: String, type: KType): T = fromString(s, type.classifier as KClass<T>)
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> fromString(s: String, type: KClass<T>): T =
