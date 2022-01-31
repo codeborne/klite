@@ -31,7 +31,7 @@ class TextBodyParser(
 ): BodyParser {
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T {
     val s = input.readBytes().decodeToString()
-    return if (type == String::class) s as T else Converter.fromString(s, type)
+    return if (type == String::class) s as T else Converter.from(s, type)
   }
 }
 

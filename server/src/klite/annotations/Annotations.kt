@@ -50,7 +50,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
         else {
           val name = p.name!!
           val type = p.type.classifier as KClass<*>
-          fun String.toType() = Converter.fromString(this, type)
+          fun String.toType() = Converter.from(this, type)
           when (p.annotations.firstOrNull()) {
             is PathParam -> path(name).toType()
             is QueryParam -> query(name)?.toType()

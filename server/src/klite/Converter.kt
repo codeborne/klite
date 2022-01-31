@@ -21,13 +21,13 @@ object Converter {
 
   fun supports(type: KClass<*>) = converters[type] != null
 
-  inline fun <reified T: Any> fromString(s: String) = fromString(s, T::class)
+  inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
   @Suppress("UNCHECKED_CAST")
-  fun <T: Any> fromString(s: String, type: KType): T = fromString(s, type.classifier as KClass<T>)
+  fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
 
   @Suppress("UNCHECKED_CAST")
-  fun <T: Any> fromString(s: String, type: KClass<T>): T =
+  fun <T: Any> from(s: String, type: KClass<T>): T =
     (converters[type] as? ToStringConverter<T> ?: findCreator(type).also { converters[type] = it }).invoke(s)
 
   private fun <T: Any> findCreator(type: KClass<T>): ToStringConverter<T> =

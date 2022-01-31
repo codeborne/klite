@@ -51,5 +51,5 @@ class UUIDSerializer: ConverterSerializer<UUID>(UUID::class)
 abstract class ConverterSerializer<T: Any>(val type: KClass<T>): KSerializer<T> {
   override val descriptor = PrimitiveSerialDescriptor(type.simpleName!!, PrimitiveKind.STRING)
   override fun serialize(encoder: Encoder, value: T) = encoder.encodeString(value.toString())
-  override fun deserialize(decoder: Decoder): T = Converter.fromString(decoder.decodeString(), type)
+  override fun deserialize(decoder: Decoder): T = Converter.from(decoder.decodeString(), type)
 }
