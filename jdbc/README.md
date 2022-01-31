@@ -14,11 +14,27 @@ Usage:
 DB access:
 
 ```kotlin
+  // obtain the DataSource instance (or declare it as a contructor parameter in your Repository class)
   val db = require<DataSource>()
-  db.insert("table", mapOf("column" to value))
+
+  // basic insert into a table
+  db.insert("table", mapOf("col1" to value, "col2" to value2))
+
+  // insert of all fields of an entity
   db.insert("table", entity.toValues())
-  db.query("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) } // mapper runs in context of ResultSet
+  // redefine some entity field value before inserting
+  db.upsert("table", entity.toValues(Entity::field to "another value"))
+
+  // basic query from a table (mapper runs in context of ResultSet)
+  db.query("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
+
+  // more advanced query with suffix and fromValues() auto-mapper
   db.query("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
+  // single row, with joins, etc
+  db.query("table1 left join table2 on table1.id = table2.megaId", mapOf("table2.field" to value), "limit 1") {
+    fromValues<MyEntity>(MyEntity::other to fromValues<OtherEntity>())
+  }.first()
+
   // or you can write full sql manually using db.exec() and db.select()
 ```
 
