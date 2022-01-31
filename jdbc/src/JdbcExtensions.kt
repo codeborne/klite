@@ -8,6 +8,8 @@ import java.time.Period
 import java.util.*
 import javax.sql.DataSource
 
+val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
+
 fun <R> DataSource.query(table: String, id: UUID, mapper: ResultSet.() -> R): R =
   query(table, mapOf("id" to id), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
@@ -50,20 +52,22 @@ fun DataSource.update(table: String, where: Map<String, Any?>, values: Map<Strin
 fun DataSource.delete(table: String, where: Map<String, Any?>): Int =
   exec("delete from $table${whereExpr(where)}", whereValues(where))
 
-private fun setExpr(values: Map<String, *>) = values.entries.joinToString { it.key + " = " + ((it.value as? SqlExpr)?.expr(it.key) ?: "?") }
+private fun setExpr(values: Map<String, *>) = values.entries.joinToString { q(it.key) + " = " + ((it.value as? SqlExpr)?.expr(it.key) ?: "?") }
 
 private fun whereExpr(where: Map<String, Any?>) = if (where.isEmpty()) "" else " where " +
   where.entries.joinToString(" and ") { (k, v) -> whereExpr(k, v) }
 
 private fun whereExpr(k: String, v: Any?) = when(v) {
-  null -> "$k is null"
+  null -> q(k) + " is null"
   is SqlExpr -> v.expr(k)
   is Iterable<*> -> inExpr(k, v)
   is Array<*> -> inExpr(k, v.toList())
-  else -> "$k = ?"
+  else -> q(k) + " = ?"
 }
 
-private fun inExpr(k: String, v: Iterable<*>) = "$k in (${v.joinToString { "?" }})"
+private fun q(name: String) = if (namesToQuote.contains(name)) "\"$name\"" else name
+
+private fun inExpr(k: String, v: Iterable<*>) = q(k) + " in (${v.joinToString { "?" }})"
 
 private fun setValues(values: Map<String, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
 private fun Any?.flatExpr(): Iterable<Any?> = if (this is SqlExpr) values else listOf(this)
@@ -100,25 +104,25 @@ open class SqlExpr(@Language("SQL") protected val expr: String, val values: Coll
 }
 
 class SqlComputed(@Language("SQL") expr: String): SqlExpr(expr) {
-  override fun expr(key: String) = "$key = $expr"
+  override fun expr(key: String) = q(key) + " = " + expr
 }
 
 open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if (value != null) listOf(value) else emptyList()) {
-  override fun expr(key: String) = "$key $operator" + ("?".takeIf { values.isNotEmpty() } ?: "")
+  override fun expr(key: String) = q(key) + " $operator" + ("?".takeIf { values.isNotEmpty() } ?: "")
 }
 
 val notNull = SqlOp("is not null")
 
 class Between(from: Any, to: Any): SqlExpr("", from, to) {
-  override fun expr(key: String) = "$key between ? and ?"
+  override fun expr(key: String) = q(key) + " between ? and ?"
 }
 
 class BetweenExcl(from: Any, to: Any): SqlExpr("", from, to) {
-  override fun expr(key: String) = "$key >= ? and $key < ?"
+  override fun expr(key: String) = "${q(key)} >= ? and ${q(key)} < ?"
 }
 
 class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
-  override fun expr(key: String) = "($key is null or $key $operator ?)"
+  override fun expr(key: String) = "(${q(key)} is null or $key $operator ?)"
 }
 
 class NotIn(values: Collection<*>): SqlExpr("", values) {
