@@ -45,5 +45,5 @@ fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProper
   val args = constructor.parameters.associateWith {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name] else JdbcConverter.from(getObject(it.name), it.type)
   }
-  constructor.callBy(args)
+  constructor.callBy(args).apply { if (this is Persistent<*>) withId(getId()) }
 }
