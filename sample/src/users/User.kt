@@ -1,8 +1,7 @@
 package users
 
-import klite.jdbc.BaseModel
+import klite.jdbc.Persistent
 import java.util.*
-import java.util.UUID.randomUUID
 
 @JvmInline value class Email(val email: String)
 
@@ -11,6 +10,5 @@ data class User(
   val firstName: String,
   val lastName: String,
   val locale: Locale,
-  val passwordHash: String,
-  override val id: UUID = randomUUID()
-): BaseModel
+  val passwordHash: String
+): Persistent<User>()

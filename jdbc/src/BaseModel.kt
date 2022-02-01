@@ -12,6 +12,16 @@ interface BaseModel {
   val id: UUID
 }
 
+abstract class Persistent<out T>: BaseModel {
+  override lateinit var id: UUID
+
+  fun withId(id: UUID = UUID.randomUUID()): T {
+    require(!this::id.isInitialized) { "id already initialized: $id" }
+    this.id = id
+    @Suppress("UNCHECKED_CAST") return this as T
+  }
+}
+
 inline fun <reified T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
   val values = mapOf(*provided)
   return toValuesSkipping(values.keys) + values.mapKeys { it.key.name }

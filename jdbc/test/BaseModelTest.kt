@@ -15,6 +15,13 @@ class BaseModelTest {
     expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124))
   }
 
+  @Test fun toValuesPersistent() {
+    val data = PersistentData("Hello")
+    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "id" to null))
+    data.withId()
+    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "id" to data.id))
+  }
+
   @Test fun toValuesSkipping() {
     val data = SomeData("Hello", 123)
     expect(data.toValuesSkipping(SomeData::hello)).toEqual(mapOf("world" to 123))
@@ -35,4 +42,5 @@ class BaseModelTest {
   }
 
   data class SomeData(val hello: String, val world: Int)
+  data class PersistentData(val hello: String): Persistent<SomeData>()
 }
