@@ -15,10 +15,9 @@ class BaseModelTest {
     expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124))
   }
 
-  @Test fun toValuesPersistent() {
+  @Test fun `toValuesPersistent generates id if not set`() {
     val data = PersistentData("Hello")
-    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "id" to null))
-    data.withId()
+    expect(data.toValuesSkipping(PersistentData::id)).toEqual(mapOf("hello" to "Hello"))
     expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "id" to data.id))
   }
 
