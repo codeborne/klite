@@ -1,5 +1,6 @@
 package klite.jdbc
 
+import ch.tutteli.atrium.api.fluent.en_GB.notToEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
@@ -47,9 +48,12 @@ class BaseModelTest {
       every { getObject("hello") } returns "x"
       every { getString("id") } returns id.toString()
     }
+
     val data = rs.fromValues<PersistentData>()
     expect(data).toEqual(PersistentData("x"))
     expect(data.id).toEqual(id)
+
+    expect(rs.fromValues(PersistentData::id to randomUUID()).id).notToEqual(id)
   }
 
   data class SomeData(val hello: String, val world: Int)
