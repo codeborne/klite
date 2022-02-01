@@ -15,9 +15,9 @@ interface BaseModel {
 abstract class Persistent<out T>: BaseModel {
   override lateinit var id: UUID
 
-  val hasId get() = this::id.isInitialized
+  fun hasId() = this::id.isInitialized
   fun withId(id: UUID = UUID.randomUUID()): T {
-    require(!hasId) { "id already initialized: $id" }
+    require(!hasId()) { "id already initialized: $id" }
     this.id = id
     @Suppress("UNCHECKED_CAST") return this as T
   }
@@ -34,7 +34,7 @@ inline fun <reified T: Any> T.toValuesSkipping(skip: Set<KProperty1<T, *>>): Map
   toValues(T::class.memberProperties - skip)
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> {
-  if (this is Persistent<*> && !hasId) withId()
+  if (this is Persistent<*> && !hasId()) withId()
   return props.filter { it.javaField != null }.associate { it.name to it.javaField?.apply { trySetAccessible() }?.get(this) }
 }
 
