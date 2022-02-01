@@ -6,6 +6,8 @@ Ktor seems bigger and more complicated than a simple web framework should be.
 It has more dependencies and the style of writing routes requires more boilerplate.
 
 Klite annotated routes are just plain classes and are very simple to unit test without complex request/response mocking.
+Unfortunately, Ktor documentation advices to write route classes, which are tightly-coupled to the framework and
+cannot be unit-tested like plain code.
 
 ### SparkJava/Kotlin
 
