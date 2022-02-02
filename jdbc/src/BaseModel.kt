@@ -12,25 +12,6 @@ interface BaseModel {
   val id: UUID
 }
 
-/**
- * Base class for data model classes.
- * Excludes id from equality checks, thus making it easier to check for equality in tests.
- *
- * Calling [setId] is possible only once, it will fail if id is already set (enforcing immutability)
- * [copy] method can be called to make a new instance without an id.
- * Note: you need to call [setId] if you want to update the model.
- */
-abstract class Persistent<out T>: BaseModel {
-  override lateinit var id: UUID
-
-  fun hasId() = this::id.isInitialized
-  fun setId(id: UUID = UUID.randomUUID()): T {
-    require(!hasId()) { "id already initialized: $id" }
-    this.id = id
-    @Suppress("UNCHECKED_CAST") return this as T
-  }
-}
-
 inline fun <reified T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
   val values = mapOf(*provided)
   return toValuesSkipping(values.keys) + values.mapKeys { it.key.name }
