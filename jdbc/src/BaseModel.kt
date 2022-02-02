@@ -12,11 +12,19 @@ interface BaseModel {
   val id: UUID
 }
 
+/**
+ * Base class for data model classes.
+ * Excludes id from equality checks, thus making it easier to check for equality in tests.
+ *
+ * Calling [withId] is possible only once, it will fail if id is already set (enforcing immutability)
+ * [copy] method can be called to make a new instance without an id.
+ * Note: you need to call [withId] if you want to update the model.
+ */
 abstract class Persistent<out T>: BaseModel {
   override lateinit var id: UUID
 
   fun hasId() = this::id.isInitialized
-  fun withId(id: UUID = UUID.randomUUID()): T {
+  fun withId(id: UUID = UUID.randomUUID()): T { // todo: rename to setId() to just id()
     require(!hasId()) { "id already initialized: $id" }
     this.id = id
     @Suppress("UNCHECKED_CAST") return this as T
