@@ -16,15 +16,15 @@ interface BaseModel {
  * Base class for data model classes.
  * Excludes id from equality checks, thus making it easier to check for equality in tests.
  *
- * Calling [withId] is possible only once, it will fail if id is already set (enforcing immutability)
+ * Calling [setId] is possible only once, it will fail if id is already set (enforcing immutability)
  * [copy] method can be called to make a new instance without an id.
- * Note: you need to call [withId] if you want to update the model.
+ * Note: you need to call [setId] if you want to update the model.
  */
 abstract class Persistent<out T>: BaseModel {
   override lateinit var id: UUID
 
   fun hasId() = this::id.isInitialized
-  fun withId(id: UUID = UUID.randomUUID()): T { // todo: rename to setId() to just id()
+  fun setId(id: UUID = UUID.randomUUID()): T {
     require(!hasId()) { "id already initialized: $id" }
     this.id = id
     @Suppress("UNCHECKED_CAST") return this as T
@@ -42,7 +42,7 @@ inline fun <reified T: Any> T.toValuesSkipping(skip: Set<KProperty1<T, *>>): Map
   toValues(T::class.memberProperties - skip)
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> {
-  if (this is Persistent<*> && !hasId()) withId()
+  if (this is Persistent<*> && !hasId()) setId()
   return props.filter { it.javaField != null }.associate { it.name to it.javaField?.apply { trySetAccessible() }?.get(this) }
 }
 
@@ -53,5 +53,5 @@ fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProper
   val args = constructor.parameters.associateWith {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name] else JdbcConverter.from(getObject(it.name), it.type)
   }
-  constructor.callBy(args).apply { if (this is Persistent<*>) withId(extraArgs["id"] as UUID? ?: getId()) }
+  constructor.callBy(args).apply { if (this is Persistent<*>) setId(extraArgs["id"] as UUID? ?: getId()) }
 }
