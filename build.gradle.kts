@@ -20,8 +20,12 @@ subprojects {
   dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-    testImplementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.17.0")
-    testImplementation("io.mockk:mockk:1.12.1")
+    testImplementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.17.0") {
+      exclude("org.jetbrains.kotlin")
+    }
+    testImplementation("io.mockk:mockk:1.12.1") {
+      exclude("org.jetbrains.kotlin")
+    }
   }
 
   sourceSets {
