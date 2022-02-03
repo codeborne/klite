@@ -35,8 +35,8 @@ class JsonBody(
     registry.register(json)
     errors.apply {
       on(MismatchedInputException::class, BadRequest)
-      on(MissingKotlinParameterException::class) { e, _ -> handleMissingParameter(e) }
       on(ValueInstantiationException::class, BadRequest)
+      on(MissingKotlinParameterException::class) { e, _ -> handleMissingParameter(e) }
     }
     renderers += this@JsonBody
     parsers += this@JsonBody

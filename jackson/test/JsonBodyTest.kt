@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import klite.ErrorResponse
 import klite.StatusCode.Companion.BadRequest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 class JsonBodyTest {
   val jsonBody = JsonBody()
@@ -18,6 +19,7 @@ class JsonBodyTest {
   @Test fun `more meaningful error messages`() {
     try {
       jsonBody.parse("{}".byteInputStream(), SomeData::class)
+      fail("Expecting MissingKotlinParameterException")
     } catch (e: MissingKotlinParameterException) {
       expect(jsonBody.handleMissingParameter(e)).toEqual(ErrorResponse(BadRequest, "hello is required"))
     }
