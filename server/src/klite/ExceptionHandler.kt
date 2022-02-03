@@ -4,18 +4,20 @@ import klite.StatusCode.Companion.BadRequest
 import klite.StatusCode.Companion.NotFound
 import kotlin.reflect.KClass
 
-typealias ExceptionHandler = (exchange: HttpExchange, e: Exception) -> ErrorResponse?
+fun interface ExceptionHandler<in E: Exception> {
+  fun handle(e: E, exchange: HttpExchange): ErrorResponse?
+}
 
 open class ErrorHandler {
   private val logger = logger()
-  private val handlers = mutableMapOf<KClass<out Exception>, ExceptionHandler>()
+  private val handlers = mutableMapOf<KClass<out Exception>, ExceptionHandler<Exception>>()
   private val statusCodes = mutableMapOf<KClass<out Exception>, StatusCode>(
     NoSuchElementException::class to NotFound,
     IllegalArgumentException::class to BadRequest,
     IllegalStateException::class to BadRequest
   )
 
-  fun on(e: KClass<out Exception>, handler: ExceptionHandler) { handlers[e] = handler }
+  fun <T: Exception> on(e: KClass<out T>, handler: ExceptionHandler<T>) { handlers[e] = handler as ExceptionHandler<Exception> }
   fun on(e: KClass<out Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
   operator fun invoke(exchange: HttpExchange, e: Exception) =
@@ -25,17 +27,17 @@ open class ErrorHandler {
     if (e is StatusCodeException) return ErrorResponse(e.statusCode, e.message)
     // TODO: look for subclasses
     statusCodes[e::class]?.let {
-      logger.log(System.Logger.Level.ERROR, "", e)
+      logger.error(e)
       return ErrorResponse(it, e.message)
     }
     handlers[e::class]?.let { handler ->
-      return handler(exchange, e)
+      return handler.handle(e, exchange)
     }
     return unhandled(e)
   }
 
   open fun unhandled(e: Exception): ErrorResponse {
-    logger.log(System.Logger.Level.ERROR, "Unhandled exception", e)
+    logger.error("Unhandled exception", e)
     return ErrorResponse(StatusCode.InternalServerError, e.message)
   }
 }

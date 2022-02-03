@@ -35,10 +35,16 @@ class JsonBody(
     registry.register(json)
     errors.apply {
       on(MismatchedInputException::class, BadRequest)
-      on(MissingKotlinParameterException::class, BadRequest)
+      on(MissingKotlinParameterException::class) { e, _ -> handleMissingParameter(e) }
       on(ValueInstantiationException::class, BadRequest)
     }
     renderers += this@JsonBody
     parsers += this@JsonBody
+  }
+
+  internal fun handleMissingParameter(e: MissingKotlinParameterException): ErrorResponse {
+    val message = "${e.parameter.name} is required"
+    logger().error("$message: " + e.message)
+    return ErrorResponse(BadRequest, message)
   }
 }
