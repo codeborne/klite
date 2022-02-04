@@ -86,5 +86,6 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
   ) + moreTypesByFileExtension
 
   fun typeFor(file: Path) = typesByExtension[file.extension]
+  fun typeFor(fileName: String) = typeFor(Path.of(fileName))
   fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml")
 }
