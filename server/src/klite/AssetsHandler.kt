@@ -81,7 +81,8 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
     "xlsx" to "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "zip" to "application/zip",
     "gz" to "application/gzip",
-    "ics" to "text/calendar"
+    "ics" to "text/calendar",
+    "asice" to "application/vnd. etsi.asic-e+zip"
   ) + moreTypesByFileExtension
 
   fun typeFor(file: Path) = typesByExtension[file.extension]
