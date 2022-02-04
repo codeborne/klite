@@ -70,7 +70,6 @@ open class HttpExchange(
   val requestType get() = header("Content-Type")
   val requestStream: InputStream get() = original.requestBody
 
-  val responseStream: OutputStream get() = original.responseBody
   var responseType: String?
     get() = responseHeaders["Content-Type"]?.firstOrNull()
     set(value) { value?.let { header("Content-Type", it) } }
@@ -81,20 +80,25 @@ open class HttpExchange(
     val accept = accept
     val renderer = config.renderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
-    startResponse(code, if (body == null) -1 else 0, renderer.contentType)
-    if (body != null) renderer.render(responseStream, body)
+    val out = startResponse(code, if (body == null) 0 else null, renderer.contentType)
+    if (body != null) renderer.render(out, body)
     // TODO: maybe still render null (vs Unit, when no rendering is needed)
   }
 
-  private fun startResponse(code: StatusCode, length: Long, contentType: String?) {
+  /**
+   * Sends response headers and provides the stream
+   * @param length 0 -> no response, null -> use chunked encoding
+   */
+  fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null): OutputStream {
     sessionStore?.save(this, session)
     responseType = contentType
-    original.sendResponseHeaders(code.value, length)
+    original.sendResponseHeaders(code.value, length ?: 0)
+    return original.responseBody
   }
 
   fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
-    startResponse(code, body?.size?.toLong() ?: -1, contentType)
-    body?.let { responseStream.write(it) }
+    val out = startResponse(code, body?.size?.toLong() ?: 0, contentType)
+    body?.let { out.write(it) }
   }
 
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
