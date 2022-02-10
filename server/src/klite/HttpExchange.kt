@@ -2,6 +2,7 @@ package klite
 
 import com.sun.net.httpserver.HttpsExchange
 import klite.StatusCode.Companion.OK
+import klite.StatusCode.Companion.TemporaryRedirect
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -103,6 +104,11 @@ open class HttpExchange(
 
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), "$contentType; charset=UTF-8")
+
+  fun redirect(url: String, statusCode: StatusCode = TemporaryRedirect) {
+    header("Location", url)
+    send(statusCode)
+  }
 
   private val onCompleteHandlers = mutableListOf<Runnable>()
   fun onComplete(handler: Runnable) { onCompleteHandlers += handler }
