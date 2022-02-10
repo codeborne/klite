@@ -1,6 +1,7 @@
 package klite
 
 import com.sun.net.httpserver.HttpsExchange
+import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.OK
 import klite.StatusCode.Companion.TemporaryRedirect
 import java.io.InputStream
@@ -105,7 +106,7 @@ open class HttpExchange(
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), "$contentType; charset=UTF-8")
 
-  fun redirect(url: String, statusCode: StatusCode = TemporaryRedirect) {
+  fun redirect(url: String, statusCode: StatusCode = Found) {
     header("Location", url)
     send(statusCode)
   }
