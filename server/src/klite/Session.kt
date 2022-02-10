@@ -21,7 +21,7 @@ interface SessionStore {
 
 class CookieSessionStore(
   sessionSecret: String = Config.required("SESSION_SECRET"),
-  val cookie: Cookie = Cookie("S", "", httpOnly = true),
+  val cookie: Cookie = Cookie("S", "", path = "/", httpOnly = true),
   keyGenerator: KeyGenerator = KeyGenerator()
 ): SessionStore {
   private val keyCipher = KeyCipher(keyGenerator.keyFromSecret(sessionSecret))
