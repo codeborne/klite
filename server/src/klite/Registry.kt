@@ -37,7 +37,7 @@ open class SimpleRegistry: MutableRegistry {
   override fun <T: Any> require(type: KClass<T>) = instances[type] as? T ?: create(type).also { register(type, it) }
   override fun <T: Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>
 
-  protected open fun <T: Any> create(type: KClass<T>): T = type.createInstance()
+  open fun <T: Any> create(type: KClass<T>): T = type.createInstance()
 }
 
 /**
