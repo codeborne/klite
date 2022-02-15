@@ -82,7 +82,7 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
     "zip" to "application/zip",
     "gz" to "application/gzip",
     "ics" to "text/calendar",
-    "asice" to "application/vnd. etsi.asic-e+zip"
+    "asice" to "application/vnd.etsi.asic-e+zip"
   ) + moreTypesByFileExtension
 
   fun typeFor(file: Path) = typesByExtension[file.extension]
