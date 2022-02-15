@@ -45,7 +45,7 @@ in autocommit mode. If [Transaction](src/Transaction.kt) is active, then it will
 set autoCommit=false and reuse it until the transaction is closed with either commit or rollback.
 
 In query mappers you can either use ResultSet methods and extensions to build your entities or use the
-[ResultSet.fromValues](src/BaseModel.kt). Likewise, [Any.toValues](src/BaseModel.kt) is provided to simplify
+[ResultSet.fromValues](src/Entity.kt). Likewise, [Any.toValues](src/Entity.kt) is provided to simplify
 conversion of entities to Maps for use with insert/update/upsert.
 
 [JdbcConverter](src/JdbcConverter.kt) can be used to register conversion of custom types to be sent to the DB.

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import java.sql.ResultSet
 import java.util.UUID.randomUUID
 
-class BaseModelTest {
+class EntityTest {
   @Test fun toValues() {
     val data = SomeData("Hello", 123)
     expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123))
