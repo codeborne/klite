@@ -10,7 +10,7 @@ import java.util.*
  * [copy] method can be called to make a new instance without an id.
  * Note: you need to call [setId] if you want to update the model.
  */
-abstract class Persistent<out T>: BaseModel {
+abstract class Persistable<out T>: BaseModel {
   override lateinit var id: UUID
 
   fun hasId() = this::id.isInitialized

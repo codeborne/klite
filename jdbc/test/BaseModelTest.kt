@@ -17,9 +17,9 @@ class BaseModelTest {
     expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124))
   }
 
-  @Test fun `toValues for Persistent generates id if not set`() {
-    val data = PersistentData("Hello")
-    expect(data.toValuesSkipping(PersistentData::id)).toEqual(mapOf("hello" to "Hello"))
+  @Test fun `toValues for Persistable generates id if not set`() {
+    val data = PersistableEntity("Hello")
+    expect(data.toValuesSkipping(PersistableEntity::id)).toEqual(mapOf("hello" to "Hello"))
     expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "id" to data.id))
   }
 
@@ -42,20 +42,20 @@ class BaseModelTest {
     expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42)).toEqual(SomeData("Hello", 42))
   }
 
-  @Test fun `fromValues for Persistent`() {
+  @Test fun `fromValues for Persistable`() {
     val id = randomUUID()
     val rs = mockk<ResultSet> {
       every { getObject("hello") } returns "x"
       every { getString("id") } returns id.toString()
     }
 
-    val data = rs.fromValues<PersistentData>()
-    expect(data).toEqual(PersistentData("x"))
+    val data = rs.fromValues<PersistableEntity>()
+    expect(data).toEqual(PersistableEntity("x"))
     expect(data.id).toEqual(id)
 
-    expect(rs.fromValues(PersistentData::id to randomUUID()).id).notToEqual(id)
+    expect(rs.fromValues(PersistableEntity::id to randomUUID()).id).notToEqual(id)
   }
 
   data class SomeData(val hello: String, val world: Int)
-  data class PersistentData(val hello: String): Persistent<SomeData>()
+  data class PersistableEntity(val hello: String): Persistable<SomeData>()
 }

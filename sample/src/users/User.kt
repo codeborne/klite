@@ -1,6 +1,6 @@
 package users
 
-import klite.jdbc.Persistent
+import klite.jdbc.Persistable
 import java.util.*
 
 @JvmInline value class Email(val email: String)
@@ -11,4 +11,4 @@ data class User(
   val lastName: String,
   val locale: Locale,
   val passwordHash: String
-): Persistent<User>()
+): Persistable<User>()
