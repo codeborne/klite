@@ -68,9 +68,9 @@ object JdbcConverter {
   }
 
   fun from(v: Any?, target: KClass<*>): Any? = when(target) {
-    Instant::class -> (v as Timestamp).toInstant()
+    Instant::class -> (v as? Timestamp)?.toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
-    LocalDateTime::class -> (v as Timestamp).toLocalDateTime()
+    LocalDateTime::class -> (v as? Timestamp)?.toLocalDateTime()
     else -> if (v is String && target != String::class) Converter.from(v, target) else v
   }
 }
