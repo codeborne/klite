@@ -9,12 +9,9 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
-@Deprecated(message = "Use Entity instead", replaceWith = ReplaceWith("Entity"))
-interface BaseModel {
+interface Entity {
   val id: UUID
 }
-
-interface Entity: BaseModel
 
 inline fun <reified T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
   val values = mapOf(*provided)
