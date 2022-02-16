@@ -2,6 +2,7 @@ package klite.jdbc
 
 import java.sql.ResultSet
 import java.util.*
+import klite.trimToNull
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -27,8 +28,10 @@ inline fun <reified T: Any> T.toValuesSkipping(skip: Set<KProperty1<T, *>>): Map
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> {
   if (this is Persistable<*> && !hasId()) setId()
-  return props.filter { it.javaField != null }.associate { it.name to it.javaField?.apply { trySetAccessible() }?.get(this) }
+  return props.filter { it.javaField != null }.associate { it.name to it.javaField!!.apply { trySetAccessible() }.get(this).trimToNull(it) }
 }
+
+private fun Any?.trimToNull(prop: KProperty1<*, *>): Any? = if (this is String && prop.returnType.isMarkedNullable) trimToNull() else this
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *provided)
 

@@ -26,3 +26,5 @@ fun urlDecodeParams(params: String?): Params = params?.split('&')?.associate(::k
 internal fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
 
 val URI.queryParams: Params get() = urlDecodeParams(rawQuery)
+
+fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }

@@ -13,8 +13,8 @@ import java.util.UUID.randomUUID
 class EntityTest {
   @Test fun toValues() {
     val data = SomeData("Hello", 123)
-    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123))
-    expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124))
+    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123, "nullable" to null))
+    expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124, "nullable" to null))
   }
 
   @Test fun `toValues for Persistable generates id if not set`() {
@@ -25,21 +25,27 @@ class EntityTest {
 
   @Test fun toValuesSkipping() {
     val data = SomeData("Hello", 123)
-    expect(data.toValuesSkipping(SomeData::hello)).toEqual(mapOf("world" to 123))
-    expect(data.toValuesSkipping(SomeData::hello, SomeData::world)).toBeEmpty()
+    expect(data.toValuesSkipping(SomeData::hello, SomeData::nullable)).toEqual(mapOf("world" to 123))
+    expect(data.toValuesSkipping(SomeData::hello, SomeData::world, SomeData::nullable)).toBeEmpty()
+  }
+
+  @Test fun `toValues converts empty string to null`() {
+    val data = SomeData("", 123, nullable = " ")
+    expect(data.toValues()).toEqual(mapOf("hello" to "", "world" to 123, "nullable" to null))
   }
 
   @Test fun fromValues() {
     val rs = mockk<ResultSet> {
       every { getObject("hello") } returns "Hello"
       every { getObject("world") } returns 42
+      every { getObject("nullable") } returns null
     }
     expect(rs.fromValues<SomeData>()).toEqual(SomeData("Hello", 42))
   }
 
   @Test fun `fromValues with some values provided`() {
     val rs = mockk<ResultSet>()
-    expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42)).toEqual(SomeData("Hello", 42))
+    expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null)).toEqual(SomeData("Hello", 42))
   }
 
   @Test fun `fromValues for Persistable`() {
@@ -56,6 +62,6 @@ class EntityTest {
     expect(rs.fromValues(PersistableEntity::id to randomUUID()).id).notToEqual(id)
   }
 
-  data class SomeData(val hello: String, val world: Int)
+  data class SomeData(val hello: String, val world: Int, val nullable: String? = null)
   data class PersistableEntity(val hello: String): Persistable<SomeData>()
 }
