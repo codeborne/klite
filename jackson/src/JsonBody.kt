@@ -1,11 +1,12 @@
 package klite.json
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
@@ -22,6 +23,12 @@ fun buildMapper() = jsonMapper {
   disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
   serializationInclusion(JsonInclude.Include.NON_NULL)
+  addModule(SimpleModule().apply { addDeserializer(String::class.java, EmptyStringToNullDeserializer) })
+}
+
+object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
+  override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): String? =
+    jsonParser.readValueAsTree<JsonNode>().asText().trimToNull()
 }
 
 class JsonBody(

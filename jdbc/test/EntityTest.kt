@@ -29,11 +29,6 @@ class EntityTest {
     expect(data.toValuesSkipping(SomeData::hello, SomeData::world, SomeData::nullable)).toBeEmpty()
   }
 
-  @Test fun `toValues converts empty string to null`() {
-    val data = SomeData("", 123, nullable = " ")
-    expect(data.toValues()).toEqual(mapOf("hello" to "", "world" to 123, "nullable" to null))
-  }
-
   @Test fun fromValues() {
     val rs = mockk<ResultSet> {
       every { getObject("hello") } returns "Hello"
