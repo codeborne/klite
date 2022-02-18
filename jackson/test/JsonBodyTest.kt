@@ -16,6 +16,11 @@ class JsonBodyTest {
     expect(someData).toEqual(SomeData("World"))
   }
 
+  @Test fun `parses empty strings to null`() {
+    val someData = jsonBody.parse("""{"hello":"World", "nullable": ""}""".byteInputStream(), SomeData::class)
+    expect(someData).toEqual(SomeData("World"))
+  }
+
   @Test fun `more meaningful error messages`() {
     try {
       jsonBody.parse("{}".byteInputStream(), SomeData::class)
@@ -26,5 +31,5 @@ class JsonBodyTest {
   }
 }
 
-data class SomeData(val hello: String)
+data class SomeData(val hello: String, val nullable: String? = null)
 
