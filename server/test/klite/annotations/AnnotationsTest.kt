@@ -11,6 +11,7 @@ import klite.Router
 import klite.require
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.io.InputStream
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -27,6 +28,8 @@ class AnnotationsTest {
     ) = "Hello $body $world $date $header $cookie $attr"
 
     @GET("/hello/specific") fun specific() = "Hello"
+
+    @GET("/hello/inputstream") fun stream(body: InputStream) = "Hello"
   }
   val router = mockk<Router>(relaxed = true)
 
@@ -34,6 +37,7 @@ class AnnotationsTest {
     router.annotated(Routes())
     verifyOrder {
       router.add(match { it.annotations.containsAll(Routes::root.annotations) })
+      router.add(match { it.annotations.containsAll(Routes::stream.annotations) })
       router.add(match { it.annotations.containsAll(Routes::specific.annotations) })
       router.add(match { it.annotations.containsAll(Routes::generic.annotations) })
     }
@@ -42,7 +46,7 @@ class AnnotationsTest {
   @Test fun `annotated class`() {
     every { router.require<Routes>() } returns Routes()
     router.annotated<Routes>()
-    verify(exactly = 3) { router.add(any()) }
+    verify(exactly = 4) { router.add(any()) }
   }
 
   @Test fun `no parameter handler`() {

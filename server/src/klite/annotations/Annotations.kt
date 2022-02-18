@@ -1,6 +1,7 @@
 package klite.annotations
 
 import klite.*
+import java.io.InputStream
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KClass
@@ -47,6 +48,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
         if (p.kind == INSTANCE) instance
         else if (p.type.classifier == HttpExchange::class) this
         else if (p.type.classifier == Session::class) session
+        else if (p.type.classifier == InputStream::class) requestStream
         else {
           val name = p.name!!
           val type = p.type.classifier as KClass<*>
