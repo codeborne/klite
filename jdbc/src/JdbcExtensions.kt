@@ -103,7 +103,7 @@ inline fun <reified T: Enum<T>> ResultSet.getEnum(column: String) = enumValueOf<
 inline fun <reified T: Enum<T>> ResultSet.getEnumOrNull(column: String) = getString(column)?.let { enumValueOf<T>(it) }
 
 open class SqlExpr(@Language("SQL") protected val expr: String, val values: Collection<*> = emptyList<Any>()) {
-  constructor(expr: String, vararg values: Any?): this(expr, values.toList())
+  constructor(@Language("SQL") expr: String, vararg values: Any?): this(expr, values.toList())
   open fun expr(key: String) = expr
 }
 
