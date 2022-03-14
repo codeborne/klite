@@ -6,6 +6,7 @@ import klite.jdbc.TransactionContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import java.time.Duration.between
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.ConcurrentHashMap
@@ -65,6 +66,12 @@ class JobRunner(
     val todayAt = at.atDate(now.toLocalDate())
     val runAt = if (todayAt.isAfter(now)) todayAt else todayAt.plusDays(1)
     scheduleDaily(job, between(now, runAt).toMinutes())
+  }
+
+  fun scheduleMonthly(job: Job, dayOfMonth: Int, at: LocalTime) {
+    scheduleDaily({
+      if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
+    }, at)
   }
 
   private fun gracefulStop() {
