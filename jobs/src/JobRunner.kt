@@ -20,6 +20,7 @@ import javax.sql.DataSource
 
 fun interface Job {
   suspend fun run()
+  val name get() = this::class.simpleName!!
 }
 
 class JobRunner(
@@ -52,27 +53,26 @@ class JobRunner(
     launched.invokeOnCompletion { runningJobs -= launched }
   }
 
-  fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) {
-    val jobName = job::class.simpleName!!
+  fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
     val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
     logger.info("$jobName will start at $startAt and run every $period $unit")
     executor.scheduleAtFixedRate({ runInTransaction(jobName, job) }, delay, period, unit)
   }
 
-  fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong()) =
-    schedule(job, delayMinutes, 24 * 60, MINUTES)
+  fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong(), jobName: String = job.name) =
+    schedule(job, delayMinutes, 24 * 60, MINUTES, jobName)
 
-  fun scheduleDaily(job: Job, at: LocalTime) {
+  fun scheduleDaily(job: Job, at: LocalTime, jobName: String = job.name) {
     val now = LocalDateTime.now()
     val todayAt = at.atDate(now.toLocalDate())
     val runAt = if (todayAt.isAfter(now)) todayAt else todayAt.plusDays(1)
-    scheduleDaily(job, between(now, runAt).toMinutes())
+    scheduleDaily(job, between(now, runAt).toMinutes(), jobName)
   }
 
   fun scheduleMonthly(job: Job, dayOfMonth: Int, at: LocalTime) {
     scheduleDaily({
       if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
-    }, at)
+    }, at, job.name)
   }
 
   private fun gracefulStop() {
