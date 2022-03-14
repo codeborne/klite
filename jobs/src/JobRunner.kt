@@ -40,6 +40,7 @@ class JobRunner(
     val tx = Transaction(db)
     val launched = launch(start = UNDISPATCHED, context = TransactionContext(tx) + threadName) {
       try {
+        logger.info("$jobName started")
         job.run()
         tx.close(true)
       } catch (e: Exception) {
