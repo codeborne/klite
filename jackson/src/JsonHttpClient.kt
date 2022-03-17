@@ -49,7 +49,11 @@ class JsonHttpClient(
     val body = res.body().trim()
     if (res.statusCode() < 300) {
       logger.info("${req.method()} $urlSuffix ${cut(payload)} in $ms ms: ${cut(body)}")
-      return if (type == String::class) body as T else json.parse(body, type)
+      @Suppress("UNCHECKED_CAST") return when (type) {
+        Unit::class -> Unit as T
+        String::class -> body as T
+        else -> json.parse(body, type)
+      }
     }
     else {
       logger.error("Failed ${req.method()} $urlSuffix ${cut(payload)} in $ms ms: ${res.statusCode()}: $body")

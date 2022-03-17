@@ -6,7 +6,7 @@ import kotlinx.coroutines.delay
 @Path("/hello")
 class Routes {
   @GET
-  fun sayHello() = SomeReposponse("Hello")
+  fun sayHello() = SomeResponse("Hello")
 
   @GET("2")
   fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
@@ -22,11 +22,14 @@ class Routes {
 
   @GET("/suspend204")
   suspend fun suspendNoContent() {
-    delay(1000)
+    delay(50)
   }
+
+  @GET("/null")
+  fun returnNull() = null
 
   @GET("/admin") @AdminOnly
   fun onlyForAdmins() = "Only for admins"
 }
 
-data class SomeReposponse(val hello: String, val world: Double = Math.PI)
+data class SomeResponse(val hello: String, val world: Double = Math.PI)

@@ -1,7 +1,7 @@
 package klite.jdbc
 
 import Routes
-import SomeReposponse
+import SomeResponse
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import klite.Server
@@ -33,7 +33,9 @@ class ServerIntegrationTest {
     runBlocking {
       val http = JsonHttpClient(server.registry, "http://localhost:$port")
       expect(http.get<String>("/hello")).toEqual("\"Hello\"")
-      expect(http.get<SomeReposponse>("/api/hello")).toEqual(SomeReposponse("Hello"))
+      expect(http.get<SomeResponse>("/api/hello")).toEqual(SomeResponse("Hello"))
+      expect(http.get<Unit>("/api/hello/suspend204")).toEqual(Unit)
+      expect(http.get<String>("/api/hello/null")).toEqual("null")
     }
     server.stop()
   }

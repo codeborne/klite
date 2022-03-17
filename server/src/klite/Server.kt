@@ -80,9 +80,9 @@ class Server(
   private suspend fun runHandler(exchange: HttpExchange, route: Route?) {
     try {
       if (route != null) exchange.route = route
-      val result = (route?.handler ?: notFoundHandler).invoke(exchange).takeIf { it != Unit }
+      val result = (route?.handler ?: notFoundHandler).invoke(exchange)
       if (!exchange.isResponseStarted)
-        exchange.render(if (result == null) StatusCode.NoContent else StatusCode.OK, result)
+        exchange.render(if (result == Unit) StatusCode.NoContent else StatusCode.OK, result)
     } catch (e: Exception) {
       errors(exchange, e)
     } finally {
