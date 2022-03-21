@@ -25,8 +25,8 @@ open class HttpExchange(
   open val isSecure: Boolean get() = original is HttpsExchange
 
   val path: String get() = original.requestURI.path
-  lateinit var pathParams: MatchGroupCollection internal set
-  fun path(param: String) = pathParams[param]?.value ?: error("Param $param missing in path")
+  lateinit var pathParams: Params internal set
+  fun path(param: String) = pathParams[param] ?: error("Param $param missing in path")
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Params by lazy { original.requestURI.queryParams }

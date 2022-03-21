@@ -38,7 +38,7 @@ class Router(
   internal fun route(exchange: HttpExchange): Route? {
     val suffix = exchange.path.removePrefix(prefix)
     return match(exchange.method, suffix)?.let { m ->
-      exchange.pathParams = m.second.groups
+      exchange.pathParams = PathParams(m.second.groups)
       m.first
     }
   }
@@ -85,4 +85,15 @@ data class Route(val method: RequestMethod, val path: Regex, val handler: Handle
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
 open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRegex()) {
   open fun from(path: String) = paramConverter.replace(path, "/(?<$1>[^/]+)").toRegex()
+}
+
+class PathParams(val groups: MatchGroupCollection): Params {
+  override val entries get() = throw NotImplementedError()
+  override val keys get() = throw NotImplementedError()
+  override val values get() = groups.map { it?.value }
+  override val size get() = groups.size
+  override fun isEmpty() = groups.isEmpty()
+  override fun get(key: String) = runCatching { groups[key] }.getOrNull()?.value
+  override fun containsKey(key: String) = get(key) != null
+  override fun containsValue(value: String?) = groups.find { it != null && it.value == value } != null
 }
