@@ -37,10 +37,10 @@ class JobRunner(
     server.onStop(::gracefulStop)
   }
 
-  fun runInTransaction(jobName: String, job: Job, start: CoroutineStart = DEFAULT) {
+  fun runInTransaction(jobName: String, job: Job, start: CoroutineStart = DEFAULT): kotlinx.coroutines.Job {
     val threadName = RequestThreadNameContext("${RequestLogger.prefix}/$jobName#${seq.incrementAndGet()}")
     val tx = Transaction(db)
-    val launched = launch(TransactionContext(tx) + threadName, start) {
+    return launch(TransactionContext(tx) + threadName, start) {
       try {
         logger.info("$jobName started")
         job.run()
@@ -49,9 +49,10 @@ class JobRunner(
         logger.error("$jobName failed", e)
         tx.close(false)
       }
+    }.also { launched ->
+      runningJobs += launched
+      launched.invokeOnCompletion { runningJobs -= launched }
     }
-    runningJobs += launched
-    launched.invokeOnCompletion { runningJobs -= launched }
   }
 
   fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
