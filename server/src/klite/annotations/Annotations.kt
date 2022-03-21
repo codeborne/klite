@@ -9,6 +9,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.functions
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.javaMethod
 
 @Target(CLASS) annotation class Path(val value: String)
@@ -29,6 +30,8 @@ import kotlin.reflect.jvm.javaMethod
 fun Router.annotated(routes: Any) {
   val cls = routes::class
   val path = cls.annotation<Path>()?.value ?: ""
+  if (routes is Before) before(routes)
+  if (routes is After) after(routes)
   cls.functions.asSequence().mapNotNull { f ->
     val a = f.annotations.firstOrNull() ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
