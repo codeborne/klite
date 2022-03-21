@@ -1,6 +1,9 @@
 package klite.jdbc
 
-import kotlinx.coroutines.ThreadContextElement
+import com.sun.org.slf4j.internal.LoggerFactory
+import klite.error
+import klite.logger
+import kotlinx.coroutines.*
 import java.sql.Connection
 import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -47,4 +50,16 @@ class TransactionContext(private val tx: Transaction? = Transaction.current()): 
 
   override fun updateThreadContext(context: CoroutineContext) = tx?.attachToThread()
   override fun restoreThreadContext(context: CoroutineContext, oldState: Transaction?) { oldState?.attachToThread() }
+}
+
+object RequestScope: CoroutineScope {
+  private val exceptionHandler = CoroutineExceptionHandler { _, e -> logger().error("Async operation failed", e) }
+  override val coroutineContext get() = exceptionHandler
+
+  fun async(block: suspend CoroutineScope.() -> Unit) = launch(block = block)
+}
+
+object AppScope: CoroutineScope {
+  override val coroutineContext get() = RequestScope.coroutineContext + NonCancellable
+  fun async(block: suspend CoroutineScope.() -> Unit) = RequestScope.async(block)
 }
