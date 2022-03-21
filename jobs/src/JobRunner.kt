@@ -4,6 +4,7 @@ import klite.*
 import klite.jdbc.Transaction
 import klite.jdbc.TransactionContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import java.time.Duration.between
 import java.time.LocalDate
@@ -36,10 +37,10 @@ class JobRunner(
     server.onStop(::gracefulStop)
   }
 
-  internal fun runInTransaction(jobName: String, job: Job) {
+  fun runInTransaction(jobName: String, job: Job, start: CoroutineStart = DEFAULT) {
     val threadName = RequestThreadNameContext("${RequestLogger.prefix}/$jobName#${seq.incrementAndGet()}")
     val tx = Transaction(db)
-    val launched = launch(start = UNDISPATCHED, context = TransactionContext(tx) + threadName) {
+    val launched = launch(TransactionContext(tx) + threadName, start) {
       try {
         logger.info("$jobName started")
         job.run()
@@ -56,7 +57,7 @@ class JobRunner(
   fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
     val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
     logger.info("$jobName will start at $startAt and run every $period $unit")
-    executor.scheduleAtFixedRate({ runInTransaction(jobName, job) }, delay, period, unit)
+    executor.scheduleAtFixedRate({ runInTransaction(jobName, job, UNDISPATCHED) }, delay, period, unit)
   }
 
   fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong(), jobName: String = job.name) =

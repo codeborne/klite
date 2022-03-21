@@ -3,7 +3,6 @@ package klite
 import com.sun.net.httpserver.HttpsExchange
 import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.OK
-import klite.StatusCode.Companion.TemporaryRedirect
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI

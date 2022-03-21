@@ -1,9 +1,9 @@
 package klite.jdbc
 
-import com.sun.org.slf4j.internal.LoggerFactory
 import klite.error
 import klite.logger
 import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import java.sql.Connection
 import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -56,7 +56,7 @@ object RequestScope: CoroutineScope {
   private val exceptionHandler = CoroutineExceptionHandler { _, e -> logger().error("Async operation failed", e) }
   override val coroutineContext get() = exceptionHandler
 
-  fun async(block: suspend CoroutineScope.() -> Unit) = launch(block = block)
+  fun async(block: suspend CoroutineScope.() -> Unit) = launch(start = UNDISPATCHED, block = block)
 }
 
 object AppScope: CoroutineScope {
