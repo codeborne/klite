@@ -9,7 +9,6 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.functions
-import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.javaMethod
 
 @Target(CLASS) annotation class Path(val value: String)
@@ -26,17 +25,21 @@ import kotlin.reflect.jvm.javaMethod
 @Target(VALUE_PARAMETER) annotation class CookieParam
 @Target(VALUE_PARAMETER) annotation class AttrParam
 
-/** Adds all annotated methods as routes, sorted by path (matching more specific paths first) */
+/**
+ * Adds all annotated methods as routes, sorted by path (matching more specific paths first).
+ * Routes can also implement Before/After interfaces.
+ */
 fun Router.annotated(routes: Any) {
   val cls = routes::class
   val path = cls.annotation<Path>()?.value ?: ""
-  if (routes is Before) before(routes)
-  if (routes is After) after(routes)
+  val classDecorators = mutableListOf<Decorator>()
+  if (routes is Before) classDecorators += routes.toDecorator()
+  if (routes is After) classDecorators += routes.toDecorator()
   cls.functions.asSequence().mapNotNull { f ->
     val a = f.annotations.firstOrNull() ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    subPath to Route(method, pathParamRegexer.from(path + subPath), toHandler(routes, f), cls.annotations + f.annotations)
+    subPath to Route(method, pathParamRegexer.from(path + subPath), classDecorators.wrap(toHandler(routes, f)), cls.annotations + f.annotations)
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
