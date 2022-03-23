@@ -21,6 +21,7 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
   `@GET suspend fun route() = provider.fetchData()`
+* Most app code will not depend on the framework, easy to switch
 * Not much need for documentation - the source code is short and readable.
 
 ## Dependencies
