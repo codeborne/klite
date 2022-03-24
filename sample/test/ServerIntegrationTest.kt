@@ -41,7 +41,8 @@ class ServerIntegrationTest {
       expect(http.get<String>("/api/hello/null")).toEqual("null")
       expect(http.get<String>("/api/hello/params?required=123")).toEqual("\"false,123,null\"")
     }
-    expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>().messageToContain("""{"statusCode":500,"message":"Parameter specified as non-null is null: method Routes.withOptionalParams, parameter required","reason":"Internal Server Error"}""")
+    expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>()
+      .messageToContain("""{"statusCode":400,"message":"required is required","reason":"Bad Request"}""")
     server.stop()
   }
 }
