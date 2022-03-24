@@ -7,7 +7,7 @@ import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
-import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
 
@@ -49,8 +49,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
   return {
     try {
-      val args = Array(params.size) { i ->
-        val p = params[i]
+      val args = params.associateWith { p ->
         if (p.kind == INSTANCE) instance
         else if (p.type.classifier == HttpExchange::class) this
         else if (p.type.classifier == Session::class) session
@@ -69,8 +68,8 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
             else -> body(type)
           }
         }
-      }
-      f.callSuspend(*args)
+      }.filter { !it.key.isOptional || it.value != null }
+      f.callSuspendBy(args)
     } catch (e: InvocationTargetException) {
       throw e.targetException
     }

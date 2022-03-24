@@ -2,7 +2,9 @@ package klite.jdbc
 
 import Routes
 import SomeResponse
+import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import klite.Server
 import klite.annotations.annotated
@@ -11,6 +13,7 @@ import klite.json.JsonHttpClient
 import klite.register
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.net.http.HttpClient
 import java.time.Duration.ofSeconds
 
@@ -30,13 +33,15 @@ class ServerIntegrationTest {
       start(gracefulStopDelaySec = -1)
     }
 
+    val http = JsonHttpClient(server.registry, "http://localhost:$port")
     runBlocking {
-      val http = JsonHttpClient(server.registry, "http://localhost:$port")
       expect(http.get<String>("/hello")).toEqual("\"Hello\"")
       expect(http.get<SomeResponse>("/api/hello")).toEqual(SomeResponse("Hello"))
       expect(http.get<Unit>("/api/hello/suspend204")).toEqual(Unit)
       expect(http.get<String>("/api/hello/null")).toEqual("null")
+      expect(http.get<String>("/api/hello/params?required=123")).toEqual("\"false,123,null\"")
     }
+    expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>().messageToContain("""{"statusCode":500,"message":"Parameter specified as non-null is null: method Routes.withOptionalParams, parameter required","reason":"Internal Server Error"}""")
     server.stop()
   }
 }

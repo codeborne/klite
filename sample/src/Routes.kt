@@ -1,6 +1,7 @@
 import klite.HttpExchange
 import klite.annotations.GET
 import klite.annotations.Path
+import klite.annotations.QueryParam
 import kotlinx.coroutines.delay
 
 @Path("/hello")
@@ -30,6 +31,9 @@ class Routes {
 
   @GET("/admin") @AdminOnly
   fun onlyForAdmins() = "Only for admins"
+
+  @GET("/params")
+  fun withOptionalParams(@QueryParam optional: Boolean = false, @QueryParam required: String, @QueryParam nullable: String?) = "$optional,$required,$nullable"
 }
 
 data class SomeResponse(val hello: String, val world: Double = Math.PI)
