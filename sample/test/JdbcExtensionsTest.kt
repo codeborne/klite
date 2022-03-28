@@ -2,7 +2,10 @@ package klite.jdbc
 
 import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
+import liquibase.pro.packaged.id
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.math.BigDecimal.ZERO
 import java.util.*
 import java.util.UUID.randomUUID
 
@@ -10,6 +13,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
   @Test fun `insert & query`() {
     val id = randomUUID()
     db.insert(table, mapOf("id" to id, "hello" to "Hello", "world" to 42))
+
     val id2 = randomUUID()
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
 
@@ -26,6 +30,18 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
     expect(db.query(table, emptyMap(), "where world is null") { getId() }).toContainExactly(id2)
     expect(db.query("$table a join $table b on a.id = b.id", emptyMap()) { getId() }).toContain(id, id2)
+  }
+
+  @Test fun generatedKey() {
+    val generatedKey = GeneratedKey<Int>()
+    db.insert(table, mapOf("id" to randomUUID(), "hello" to "Hello", "gen" to generatedKey))
+    expect(generatedKey.value).toBeGreaterThanOrEqualTo(1)
+  }
+
+  @Test fun `generatedKey with type`() {
+    val generatedKey = GeneratedKey(BigDecimal::class)
+    db.insert(table, mapOf("id" to randomUUID(), "hello" to "BD", "gen" to generatedKey))
+    expect(generatedKey.value).toBeGreaterThan(ZERO)
   }
 
   @Test fun upsert() {
