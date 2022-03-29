@@ -81,9 +81,8 @@ open class HttpExchange(
     val accept = accept
     val renderer = config.renderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
-    val out = startResponse(code, if (body == Unit) 0 else null, renderer.contentType)
-    // TODO: what if render fails (headers already sent)
-    if (body != Unit) renderer.render(out, body)
+    val out = startResponse(code, contentType = renderer.contentType)
+    renderer.render(out, body)
   }
 
   /**

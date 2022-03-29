@@ -2,6 +2,8 @@ package klite
 
 import com.sun.net.httpserver.HttpServer
 import klite.RequestMethod.GET
+import klite.StatusCode.Companion.NoContent
+import klite.StatusCode.Companion.OK
 import kotlinx.coroutines.*
 import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
@@ -81,8 +83,10 @@ class Server(
     try {
       if (route != null) exchange.route = route
       val result = (route?.handler ?: notFoundHandler).invoke(exchange)
-      if (!exchange.isResponseStarted)
-        exchange.render(if (result == Unit) StatusCode.NoContent else StatusCode.OK, result)
+      if (!exchange.isResponseStarted) {
+        if (result == Unit) exchange.send(NoContent)
+        else exchange.render(OK, result)
+      }
     } catch (e: Exception) {
       errors(exchange, e)
     } finally {
