@@ -21,8 +21,10 @@ open class ErrorHandler {
   fun <T: Exception> on(e: KClass<out T>, handler: ExceptionHandler<T>) { handlers[e] = handler as ExceptionHandler<Exception> }
   fun on(e: KClass<out Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
-  operator fun invoke(exchange: HttpExchange, e: Exception) =
-    toResponse(exchange, e)?.also { exchange.render(it.statusCode, it) }
+  operator fun invoke(exchange: HttpExchange, e: Exception) = toResponse(exchange, e)?.also {
+    if (!exchange.isResponseStarted) exchange.render(it.statusCode, it)
+    else logger.error("Error after headers sent: $it")
+  }
 
   open fun toResponse(exchange: HttpExchange, e: Exception): ErrorResponse? {
     if (e is StatusCodeException) return ErrorResponse(e.statusCode, e.message)

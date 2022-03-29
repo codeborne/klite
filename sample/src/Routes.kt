@@ -34,6 +34,9 @@ class Routes {
 
   @GET("/params")
   fun withOptionalParams(@QueryParam optional: Boolean = false, @QueryParam required: String, @QueryParam nullable: String?) = "$optional,$required,$nullable"
+
+  @GET("/broken-render")
+  fun brokenRender() = object { lateinit var hello: String }
 }
 
 data class SomeResponse(val hello: String, val world: Double = Math.PI)
