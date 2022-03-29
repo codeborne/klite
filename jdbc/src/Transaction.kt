@@ -52,14 +52,9 @@ class TransactionContext(private val tx: Transaction? = Transaction.current()): 
   override fun restoreThreadContext(context: CoroutineContext, oldState: Transaction?) { oldState?.attachToThread() }
 }
 
-object RequestScope: CoroutineScope {
+object AppScope: CoroutineScope {
   private val exceptionHandler = CoroutineExceptionHandler { _, e -> logger().error("Async operation failed", e) }
-  override val coroutineContext get() = exceptionHandler
+  override val coroutineContext get() = exceptionHandler + NonCancellable
 
   fun async(block: suspend CoroutineScope.() -> Unit) = launch(start = UNDISPATCHED, block = block)
-}
-
-object AppScope: CoroutineScope {
-  override val coroutineContext get() = RequestScope.coroutineContext + NonCancellable
-  fun async(block: suspend CoroutineScope.() -> Unit) = RequestScope.async(block)
 }
