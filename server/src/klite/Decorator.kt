@@ -11,7 +11,7 @@ fun interface Before {
 }
 
 internal fun Before.toDecorator(): Decorator = { ex, next ->
-  before(ex); next(ex)
+  before(ex); if (!ex.isResponseStarted) next(ex)
 }
 
 fun interface After {
