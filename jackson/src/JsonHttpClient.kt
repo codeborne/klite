@@ -29,8 +29,8 @@ class JsonHttpClient(
   val retryCount: Int = 0,
   val retryAfter: Duration = ofSeconds(1),
   private val maxLoggedLen: Int = 1000,
-  private val json: JsonMapper = registry.require(),
-  private val http: HttpClient = registry.require()
+  val http: HttpClient = registry.require(),
+  val json: JsonMapper = registry.require()
 ) {
   val logger = logger(Exception().stackTrace.first { it.className !== javaClass.name }.className).apply {
     info("Using $urlPrefix")
@@ -45,7 +45,7 @@ class JsonHttpClient(
     val start = System.nanoTime()
     val res = http.sendAsync(req, ofString()).await()
     val ms = (System.nanoTime() - start) / 1000_000
-    val body = res.body().trim()
+    val body = res.body().trim() // TODO: NPE -> return nullable type
     if (res.statusCode() < 300) {
       logger.info("${req.method()} $urlSuffix ${cut(payload)} in $ms ms: ${cut(body)}")
       @Suppress("UNCHECKED_CAST") return when (type) {
