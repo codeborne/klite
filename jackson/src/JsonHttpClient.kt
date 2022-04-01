@@ -28,11 +28,10 @@ class JsonHttpClient(
   val errorHandler: (HttpResponse<*>, String) -> Nothing = { res, body -> throw IOException("Failed with ${res.statusCode()}: $body") },
   val retryCount: Int = 0,
   val retryAfter: Duration = ofSeconds(1),
-  private val maxLoggedLen: Int = 1000
-) {
-  val json: JsonMapper = registry.require()
+  private val maxLoggedLen: Int = 1000,
+  private val json: JsonMapper = registry.require(),
   private val http: HttpClient = registry.require()
-
+) {
   val logger = logger(Exception().stackTrace.first { it.className !== javaClass.name }.className).apply {
     info("Using $urlPrefix")
   }
