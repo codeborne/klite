@@ -92,7 +92,7 @@ open class HttpExchange(
   fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null): OutputStream {
     sessionStore?.save(this, session)
     responseType = contentType
-    original.sendResponseHeaders(code.value, length ?: 0)
+    original.sendResponseHeaders(code.value, if (length == 0L) -1 else length ?: 0)
     return original.responseBody
   }
 
