@@ -104,9 +104,9 @@ open class HttpExchange(
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), "$contentType; charset=UTF-8")
 
-  fun redirect(url: String, statusCode: StatusCode = Found) {
+  fun redirect(url: String, statusCode: StatusCode = Found): Nothing {
     header("Location", url)
-    send(statusCode)
+    throw StatusCodeException(statusCode)
   }
 
   private val onCompleteHandlers = mutableListOf<Runnable>()

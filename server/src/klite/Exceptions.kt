@@ -1,6 +1,6 @@
 package klite
 
-open class StatusCodeException(val statusCode: StatusCode, content: String?): Exception(content) {
+open class StatusCodeException(val statusCode: StatusCode, content: String? = null): Exception(content) {
   override fun fillInStackTrace() = this
 }
 
