@@ -10,6 +10,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KFunction
@@ -19,21 +20,25 @@ class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val workerPool: ExecutorService = Executors.newFixedThreadPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
+    register<XRequestIdGenerator>()
     register<RequestLogger>()
     register<TextBodyRenderer>()
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
   },
+  private val requestIdGenerator: RequestIdGenerator = registry.require<RequestIdGenerator>().also {
+    Thread.currentThread().name += "/" + it.prefix
+  },
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
-  val sessionStore: SessionStore? = registry.optional(),
+  private val sessionStore: SessionStore? = registry.optional(),
   val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
-  val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
+  private val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
-  private val logger = logger()
   private val http = HttpServer.create()
-  val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
+  private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
+  private val logger = logger()
 
   fun start(gracefulStopDelaySec: Int = 3) {
     logger.info("Listening on $listen")
@@ -60,9 +65,7 @@ class Server(
   /** Adds a new router context. When handing a request, the longest matching router context is chosen. */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
-      addContext(prefix, router) {
-        runHandler(this, router.route(this))
-      }
+      addContext(prefix, router) { runHandler(this, router.route(this)) }
       router.block()
     }
 
@@ -71,10 +74,11 @@ class Server(
     addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET }) }
   }
 
-  private fun addContext(prefix: String, config: RouterConfig, coroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
+  private fun addContext(prefix: String, config: RouterConfig, extraCoroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
     http.createContext(prefix) { ex ->
-      requestScope.launch(coroutineContext) {
-        httpExchangeCreator.call(ex, config, sessionStore).handler()
+      val requestId = requestIdGenerator(ex.requestHeaders)
+      requestScope.launch(ThreadNameContext(requestId) + extraCoroutineContext) {
+        httpExchangeCreator.call(ex, config, sessionStore, requestId).handler()
       }
     }
   }
@@ -97,4 +101,10 @@ class Server(
 
 interface Extension {
   fun install(server: Server)
+}
+
+class ThreadNameContext(private val requestId: String): ThreadContextElement<String?>, AbstractCoroutineContextElement(Key) {
+  companion object Key: CoroutineContext.Key<ThreadNameContext>
+  override fun updateThreadContext(context: CoroutineContext) = Thread.currentThread().also { it.name = requestId }.name
+  override fun restoreThreadContext(context: CoroutineContext, oldState: String?) { Thread.currentThread().name = oldState }
 }

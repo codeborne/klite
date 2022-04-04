@@ -7,6 +7,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.reflect.KClass
 
@@ -16,7 +17,8 @@ typealias Headers = com.sun.net.httpserver.Headers
 open class HttpExchange(
   private val original: OriginalHttpExchange,
   private val config: RouterConfig,
-  private val sessionStore: SessionStore?
+  private val sessionStore: SessionStore?,
+  val requestId: String
 ): AutoCloseable {
   lateinit var route: Route
   val method = RequestMethod.valueOf(original.requestMethod)
@@ -120,8 +122,18 @@ open class HttpExchange(
   override fun toString() = "$method ${original.requestURI}"
 }
 
-class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?):
-  HttpExchange(original, config, sessionStore) {
+open class RequestIdGenerator {
+  val prefix = (0xFFFF * Math.random()).toInt().toString(16)
+  private val counter = AtomicLong()
+  open operator fun invoke(headers: Headers) = "$prefix-${counter.incrementAndGet()}"
+}
+
+open class XRequestIdGenerator: RequestIdGenerator() {
+  override fun invoke(headers: Headers) = super.invoke(headers) + (headers.getFirst("X-Request-Id")?.let { "/$it" } ?: "")
+}
+
+class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
+  HttpExchange(original, config, sessionStore, requestId) {
   override val remoteAddress get() = header("X-Forwarded-For") ?: super.remoteAddress
   override val host get() = header("X-Forwarded-Host") ?: super.host
   override val isSecure get() = header("X-Forwarded-Proto") == "https"

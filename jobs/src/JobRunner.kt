@@ -26,6 +26,7 @@ fun interface Job {
 
 class JobRunner(
   private val db: DataSource,
+  private val requestIdGenerator: RequestIdGenerator,
   private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_RUNNER_THREADS", "3").toInt())
 ): Extension, CoroutineScope {
   override val coroutineContext = executor.asCoroutineDispatcher()
@@ -38,9 +39,9 @@ class JobRunner(
   }
 
   fun runInTransaction(jobName: String, job: Job, start: CoroutineStart = DEFAULT): kotlinx.coroutines.Job {
-    val threadName = RequestThreadNameContext("${RequestLogger.prefix}/$jobName#${seq.incrementAndGet()}")
+    val threadName = ThreadNameContext("${requestIdGenerator.prefix}/$jobName#${seq.incrementAndGet()}")
     val tx = Transaction(db)
-    return launch(TransactionContext(tx) + threadName, start) {
+    return launch(threadName + TransactionContext(tx), start) {
       try {
         logger.info("$jobName started")
         job.run()
