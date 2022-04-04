@@ -33,7 +33,7 @@ class Server(
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val http = HttpServer.create()
-  var sessionStore: SessionStore? = null
+  var sessionStore: SessionStore? = registry.optional()
 
   fun start(gracefulStopDelaySec: Int = 3) {
     logger.info("Listening on $port")
