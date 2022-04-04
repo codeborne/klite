@@ -29,7 +29,7 @@ class Server(
   val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
-): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), Registry by registry {
+): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
   private val logger = logger()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
@@ -53,7 +53,7 @@ class Server(
 
   inline fun <reified E: Extension> use() = require<E>().also { it.install(this) }
   fun use(extension: Extension) = extension.also {
-    registry.register(it)
+    register(it)
     it.install(this)
   }
 
