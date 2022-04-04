@@ -25,6 +25,7 @@ class Server(
   },
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
+  val sessionStore: SessionStore? = registry.optional(),
   val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
@@ -33,7 +34,6 @@ class Server(
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val http = HttpServer.create()
-  var sessionStore: SessionStore? = registry.optional()
 
   fun start(gracefulStopDelaySec: Int = 3) {
     logger.info("Listening on $port")
