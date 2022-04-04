@@ -49,13 +49,13 @@ class JobRunnerTest {
   }
 
   @Test fun `scheduleDaily at time`() {
-    runner.scheduleDaily(job, at = LocalTime.of(6, 30))
-    verify { executor.scheduleAtFixedRate(any(), match { it > 0 }, 24 * 60, MINUTES) }
+    runner.scheduleDaily(job, LocalTime.of(6, 30), LocalTime.of(6, 45))
+    verify(exactly = 2) { executor.scheduleAtFixedRate(any(), match { it > 0 }, 24 * 60, MINUTES) }
   }
 
   @Test fun `scheduleMonthly today`() {
     val job = mockk<Job>(relaxed = true)
-    runner.scheduleMonthly(job, LocalDate.now().dayOfMonth, at = LocalTime.of(6, 30))
+    runner.scheduleMonthly(job, LocalDate.now().dayOfMonth, LocalTime.of(6, 30))
     val dailyJob = slot<Runnable>()
     verify { executor.scheduleAtFixedRate(capture(dailyJob), match { it > 0 }, 24 * 60, MINUTES) }
     dailyJob.captured.run()
@@ -64,7 +64,7 @@ class JobRunnerTest {
 
   @Test fun `scheduleMonthly not today`() {
     val job = mockk<Job>(relaxed = true)
-    runner.scheduleMonthly(job, LocalDate.now().dayOfMonth + 1, at = LocalTime.of(6, 30))
+    runner.scheduleMonthly(job, LocalDate.now().dayOfMonth + 1, LocalTime.of(6, 30))
     val dailyJob = slot<Runnable>()
     verify { executor.scheduleAtFixedRate(capture(dailyJob), match { it > 0 }, 24 * 60, MINUTES) }
     dailyJob.captured.run()
