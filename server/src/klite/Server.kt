@@ -7,6 +7,7 @@ import klite.StatusCode.Companion.OK
 import kotlinx.coroutines.*
 import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
@@ -16,7 +17,7 @@ import kotlin.reflect.full.primaryConstructor
 
 class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
-  val numWorkers: Int = Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors(),
+  val workerPool: ExecutorService = Executors.newFixedThreadPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBodyRenderer>()
@@ -32,7 +33,6 @@ class Server(
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
   private val logger = logger()
   private val http = HttpServer.create()
-  val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
 
   fun start(gracefulStopDelaySec: Int = 3) {
