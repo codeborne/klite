@@ -88,7 +88,7 @@ class Server(
         else exchange.render(OK, result)
       }
     } catch (e: Exception) {
-      errors(exchange, e)
+      errors.handle(exchange, e)
     } finally {
       exchange.close()
     }

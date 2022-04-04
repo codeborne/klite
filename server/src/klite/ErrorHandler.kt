@@ -18,10 +18,11 @@ open class ErrorHandler {
     IllegalStateException::class to BadRequest
   )
 
+  @Suppress("UNCHECKED_CAST")
   fun <T: Exception> on(e: KClass<out T>, handler: ExceptionHandler<T>) { handlers[e] = handler as ExceptionHandler<Exception> }
   fun on(e: KClass<out Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
-  operator fun invoke(exchange: HttpExchange, e: Exception) = toResponse(exchange, e)?.also {
+  fun handle(exchange: HttpExchange, e: Exception) = toResponse(exchange, e)?.also {
     if (!exchange.isResponseStarted) exchange.render(it.statusCode, it)
     else logger.error("Error after headers sent: $it")
   }
