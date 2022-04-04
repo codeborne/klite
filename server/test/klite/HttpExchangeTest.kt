@@ -25,7 +25,7 @@ class HttpExchangeTest {
     every { parsers } returns mutableListOf(TextBodyParser(), customParser)
     every { renderers } returns mutableListOf(bodyRenderer)
   }
-  val exchange = HttpExchange(original, routerConfig, null)
+  val exchange = HttpExchange(original, routerConfig, null, "req-id")
 
   @Test fun path() {
     expect(exchange.method).toEqual(RequestMethod.GET)

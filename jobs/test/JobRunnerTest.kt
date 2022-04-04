@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import klite.RequestIdGenerator
 import klite.Server
 import klite.jdbc.Transaction
 import org.junit.jupiter.api.Test
@@ -20,7 +21,7 @@ class JobRunnerTest {
   val db = mockk<DataSource>()
   val executor = mockk<ScheduledExecutorService>(relaxed = true)
   val job = MyJob()
-  val runner = JobRunner(db, executor)
+  val runner = JobRunner(db, RequestIdGenerator(), executor)
 
   class MyJob: Job {
     override suspend fun run() {

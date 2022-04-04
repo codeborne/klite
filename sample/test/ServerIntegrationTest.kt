@@ -14,13 +14,14 @@ import klite.register
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.net.http.HttpClient
 import java.time.Duration.ofSeconds
 
 class ServerIntegrationTest {
   @Test fun requests() {
     val port = (Math.random() * 60000 + 1000).toInt()
-    val server = Server(port = port).apply {
+    val server = Server(listen = InetSocketAddress(port)).apply {
       registry.register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
       use(JsonBody())
       context("/") {
