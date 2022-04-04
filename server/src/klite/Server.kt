@@ -15,7 +15,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
 class Server(
-  val port: Int = Config.optional("PORT")?.toInt() ?: 8080,
+  val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val numWorkers: Int = Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors(),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
@@ -31,13 +31,13 @@ class Server(
   val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
   private val logger = logger()
+  private val http = HttpServer.create()
   val workerPool = Executors.newFixedThreadPool(numWorkers)
   val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
-  private val http = HttpServer.create()
 
   fun start(gracefulStopDelaySec: Int = 3) {
-    logger.info("Listening on $port")
-    http.bind(InetSocketAddress(port), 0)
+    logger.info("Listening on $listen")
+    http.bind(listen, 0)
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
