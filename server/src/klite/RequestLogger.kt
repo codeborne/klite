@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
-typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String
+typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String?
 
 open class RequestLogger(
   val formatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode in $ms ms" }
@@ -28,7 +28,7 @@ open class RequestLogger(
     // TODO: use X-Request-Id header if available
     exchange.onComplete {
       val ms = (System.nanoTime() - start) / 1000_000
-      logger.info(formatter(exchange, ms))
+      formatter(exchange, ms)?.let { logger.info(it) }
     }
     return withContext(RequestThreadNameContext(requestId)) {
       handler(exchange)
