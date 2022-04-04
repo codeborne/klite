@@ -24,8 +24,7 @@ open class RequestLogger(
 
   override suspend fun invoke(exchange: HttpExchange, handler: Handler): Any? {
     val start = System.nanoTime()
-    val requestId = "$prefix-${counter.incrementAndGet()}"
-    // TODO: use X-Request-Id header if available
+    val requestId = "$prefix-${counter.incrementAndGet()}" + (exchange.header("X-Request-Id")?.let { "/$it" } ?: "")
     exchange.onComplete {
       val ms = (System.nanoTime() - start) / 1000_000
       logger.info(formatter(exchange, ms))
