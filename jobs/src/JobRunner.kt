@@ -74,7 +74,7 @@ class JobRunner(
   }
 
   fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) {
-    scheduleDaily({
+    scheduleDaily(Job {
       if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
     }, at = at, job.name)
   }
