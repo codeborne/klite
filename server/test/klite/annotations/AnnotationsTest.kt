@@ -23,8 +23,8 @@ class AnnotationsTest {
     @GET fun root() = "Hello"
 
     @GET("/hello/:world")
-    fun generic(e: HttpExchange, body: String, @PathParam world: BigDecimal, @QueryParam date: LocalDate,
-                @HeaderParam header: Long, @CookieParam cookie: Locale, @AttrParam attr: BigInteger
+    fun generic(body: String, @PathParam world: BigDecimal, @QueryParam date: LocalDate, @HeaderParam header: Long,
+      @CookieParam cookie: Locale, @AttrParam attr: BigInteger
     ) = "Hello $body $world $date $header $cookie $attr"
 
     @GET("/hello/specific") fun specific() = "Hello"

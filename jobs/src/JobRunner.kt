@@ -64,17 +64,19 @@ class JobRunner(
   fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong(), jobName: String = job.name) =
     schedule(job, delayMinutes, 24 * 60, MINUTES, jobName)
 
-  fun scheduleDaily(job: Job, at: LocalTime, jobName: String = job.name) {
+  fun scheduleDaily(job: Job, vararg at: LocalTime, jobName: String = job.name) {
     val now = LocalDateTime.now()
-    val todayAt = at.atDate(now.toLocalDate())
-    val runAt = if (todayAt.isAfter(now)) todayAt else todayAt.plusDays(1)
-    scheduleDaily(job, between(now, runAt).toMinutes(), jobName)
+    for (time in at) {
+      val todayAt = time.atDate(now.toLocalDate())
+      val runAt = if (todayAt.isAfter(now)) todayAt else todayAt.plusDays(1)
+      scheduleDaily(job, between(now, runAt).toMinutes(), jobName)
+    }
   }
 
-  fun scheduleMonthly(job: Job, dayOfMonth: Int, at: LocalTime) {
-    scheduleDaily({
+  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) {
+    scheduleDaily(Job {
       if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
-    }, at, job.name)
+    }, at = at, job.name)
   }
 
   private fun gracefulStop() {

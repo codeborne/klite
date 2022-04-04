@@ -67,10 +67,10 @@ object JdbcConverter {
     else -> from(v, target.jvmErasure)
   }
 
-  fun from(v: Any?, target: KClass<*>): Any? = when(target) {
+  fun from(v: Any?, target: KClass<*>?): Any? = when(target) {
     Instant::class -> (v as? Timestamp)?.toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
     LocalDateTime::class -> (v as? Timestamp)?.toLocalDateTime()
-    else -> if (v is String && target != String::class) Converter.from(v, target) else v
+    else -> if (v is String && target != null && target != String::class) Converter.from(v, target) else v
   }
 }

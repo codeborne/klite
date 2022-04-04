@@ -5,9 +5,12 @@ import java.io.InputStream
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.sql.Statement
+import java.sql.Statement.RETURN_GENERATED_KEYS
 import java.time.Period
 import java.util.*
 import javax.sql.DataSource
+import kotlin.reflect.KClass
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
@@ -23,22 +26,28 @@ fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, An
     executeQuery().map(mapper)
   }
 
-fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence()): Int = withStatement(expr) {
+fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int = withStatement(expr) {
   setAll(values)
-  executeUpdate()
+  executeUpdate().also {
+    if (callback != null) callback()
+  }
 }
 
 fun <R> DataSource.withStatement(sql: String, block: PreparedStatement.() -> R): R = withConnection {
   try {
-    prepareStatement(sql).use { it.block() }
+    prepareStatement(sql, RETURN_GENERATED_KEYS).use { it.block() }
   } catch (e: SQLException) {
     throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e)
           else SQLException(e.message + "\nSQL: $sql", e.sqlState, e.errorCode, e)
   }
 }
 
-fun DataSource.insert(table: String, values: Map<String, *>): Int =
-  exec(insertExpr(table, values), setValues(values))
+fun DataSource.insert(table: String, values: Map<String, *>): Int {
+  val vals = values.filter { it.value !is GeneratedKey<*> }
+  return exec(insertExpr(table, vals), setValues(vals)) {
+    if (vals.size != values.size) processGeneratedKeys(values)
+  }
+}
 
 fun DataSource.upsert(table: String, values: Map<String, *>, uniqueFields: String = "id"): Int =
   exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
@@ -132,4 +141,19 @@ class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
 class NotIn(values: Collection<*>): SqlExpr("", values) {
   constructor(vararg values: Any?): this(values.toList())
   override fun expr(key: String) = inExpr(key, values).replace(" in ", " not in ")
+}
+
+class GeneratedKey<T: Any>(val convertTo: KClass<T>? = null) {
+  lateinit var value: T
+}
+
+private fun Statement.processGeneratedKeys(values: Map<String, *>) {
+  generatedKeys.map {
+    values.forEach { e ->
+      @Suppress("UNCHECKED_CAST") (e.value as? GeneratedKey<Any>)?.let {
+        val value = if (it.convertTo != null) getString(e.key) else getObject(e.key)
+        it.value = JdbcConverter.from(value, it.convertTo) as Any
+      }
+    }
+  }
 }

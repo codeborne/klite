@@ -81,8 +81,8 @@ open class HttpExchange(
     val accept = accept
     val renderer = config.renderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
-    val out = startResponse(code, if (body == Unit) 0 else null, renderer.contentType)
-    if (body != Unit) renderer.render(out, body)
+    val out = startResponse(code, contentType = renderer.contentType)
+    renderer.render(out, body)
   }
 
   /**
@@ -92,7 +92,7 @@ open class HttpExchange(
   fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null): OutputStream {
     sessionStore?.save(this, session)
     responseType = contentType
-    original.sendResponseHeaders(code.value, length ?: 0)
+    original.sendResponseHeaders(code.value, if (length == 0L) -1 else length ?: 0)
     return original.responseBody
   }
 
@@ -104,9 +104,9 @@ open class HttpExchange(
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), "$contentType; charset=UTF-8")
 
-  fun redirect(url: String, statusCode: StatusCode = Found) {
+  fun redirect(url: String, statusCode: StatusCode = Found): Nothing {
     header("Location", url)
-    send(statusCode)
+    throw StatusCodeException(statusCode)
   }
 
   private val onCompleteHandlers = mutableListOf<Runnable>()
