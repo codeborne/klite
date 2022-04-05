@@ -20,7 +20,7 @@ class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val workerPool: ExecutorService = Executors.newFixedThreadPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
-    register<XRequestIdGenerator>()
+    register<RequestIdGenerator>(XRequestIdGenerator::class)
     register<RequestLogger>()
     register<TextBodyRenderer>()
     register<TextBodyParser>()
