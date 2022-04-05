@@ -3,9 +3,11 @@ package klite.jdbc
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.verbs.expect
 import com.zaxxer.hikari.util.DriverDataSource
+import io.mockk.MockKSettings.relaxed
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import java.sql.Connection
 
 class TransactionTest {
   val db = mockk<DriverDataSource>(relaxed = true)
@@ -33,10 +35,11 @@ class TransactionTest {
   }
 
   @Test fun connectionCallback() {
-    val tx = Transaction(db).attachToThread()
-    tx.connectionCallback = mockk(relaxed = true)
+    val connectionCallback = mockk<(Connection) -> Unit>(relaxed = true)
+    val tx = Transaction(db, connectionCallback).attachToThread()
     val conn = db.withConnection { this }
-    verify { tx.connectionCallback!!.invoke(conn) }
+    verify { connectionCallback.invoke(conn) }
+    tx.close()
   }
 
   @Test fun `transaction with rollbackOnly rolls back`() {

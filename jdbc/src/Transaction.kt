@@ -9,15 +9,13 @@ import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
-class Transaction(private val db: DataSource) {
+class Transaction(private val db: DataSource, private val connectionCallback: ((Connection) -> Unit)? = null) {
   companion object {
     private val threadLocal = ThreadLocal<Transaction>()
     fun current(): Transaction? = threadLocal.get()
   }
 
   private var conn: Connection? = null
-  var connectionCallback: ((Connection) -> Unit)? = null
-
   val connection: Connection
     get() = conn ?: db.connection.also {
       it.autoCommit = false
