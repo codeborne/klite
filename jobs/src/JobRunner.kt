@@ -27,7 +27,7 @@ fun interface Job {
 class JobRunner(
   private val db: DataSource,
   private val requestIdGenerator: RequestIdGenerator,
-  private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_RUNNER_THREADS", "3").toInt())
+  private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_WORKERS", "3").toInt())
 ): Extension, CoroutineScope {
   override val coroutineContext = executor.asCoroutineDispatcher()
   private val logger = logger()

@@ -13,6 +13,8 @@ class DBModule(urlSuffix: String = "", configure: HikariConfig.() -> Unit = {}):
     username = Config.optional("DB_USER")
     password = Config.optional("DB_PASS")
     minimumIdle = 1
+    maximumPoolSize = Config.optional("DB_POOL_SIZE")?.toInt() ?:
+      ((Config.optional("NUM_WORKERS")?.toInt() ?: 5) + (Config.optional("JOB_WORKERS")?.toInt() ?: 5))
     configure()
     logger.info("Connecting to $jdbcUrl")
   })
