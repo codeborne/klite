@@ -32,6 +32,13 @@ class TransactionTest {
     }
   }
 
+  @Test fun connectionCallback() {
+    val tx = Transaction(db).attachToThread()
+    tx.connectionCallback = mockk(relaxed = true)
+    val conn = db.withConnection { this }
+    verify { tx.connectionCallback!!.invoke(conn) }
+  }
+
   @Test fun `transaction with rollbackOnly rolls back`() {
     val tx = Transaction(db).attachToThread()
     val conn = db.withConnection { this }

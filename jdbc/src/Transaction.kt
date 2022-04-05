@@ -16,9 +16,14 @@ class Transaction(private val db: DataSource) {
   }
 
   private var conn: Connection? = null
+  var connectionCallback: ((Connection) -> Unit)? = null
 
   val connection: Connection
-    get() = conn ?: db.connection.also { it.autoCommit = false; conn = it }
+    get() = conn ?: db.connection.also {
+      it.autoCommit = false
+      conn = it
+      connectionCallback?.invoke(it)
+    }
 
   fun close(commit: Boolean = true) {
     try {
