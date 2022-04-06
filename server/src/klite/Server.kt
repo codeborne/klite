@@ -2,6 +2,7 @@ package klite
 
 import com.sun.net.httpserver.HttpServer
 import klite.RequestMethod.GET
+import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
 import kotlinx.coroutines.*

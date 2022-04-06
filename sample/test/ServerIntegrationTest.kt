@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
+import java.net.http.HttpRequest.BodyPublishers.noBody
 import java.time.Duration.ofSeconds
 
 class ServerIntegrationTest {
@@ -38,6 +39,7 @@ class ServerIntegrationTest {
     runBlocking {
       expect(http.get<String>("/hello")).toEqual("\"Hello\"")
       expect(http.get<SomeResponse>("/api/hello")).toEqual(SomeResponse("Hello"))
+      expect(http.request("/api/hello", Unit::class) { method("HEAD", noBody()) }).toEqual(Unit)
       expect(http.get<Unit>("/api/hello/suspend204")).toEqual(Unit)
       expect(http.get<String>("/api/hello/broken-render")).toEqual("{")
       expect(http.get<String>("/api/hello/null")).toEqual("null")
@@ -45,6 +47,7 @@ class ServerIntegrationTest {
     }
     expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>()
       .messageToContain("""{"statusCode":400,"message":"required is required","reason":"Bad Request"}""")
+
     server.stop()
   }
 }

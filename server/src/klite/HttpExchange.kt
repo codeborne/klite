@@ -1,6 +1,7 @@
 package klite
 
 import com.sun.net.httpserver.HttpsExchange
+import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.OK
 import java.io.InputStream
@@ -84,7 +85,7 @@ open class HttpExchange(
     val renderer = config.renderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
     val out = startResponse(code, contentType = renderer.contentType)
-    renderer.render(out, body)
+    if (method != HEAD) renderer.render(out, body)
   }
 
   /**
@@ -100,7 +101,7 @@ open class HttpExchange(
 
   fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
     val out = startResponse(code, body?.size?.toLong() ?: 0, contentType)
-    body?.let { out.write(it) }
+    if (method != HEAD) body?.let { out.write(it) }
   }
 
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
