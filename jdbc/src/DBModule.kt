@@ -6,7 +6,7 @@ import klite.*
 import klite.StatusCode.Companion.Conflict
 import javax.sql.DataSource
 
-class DBModule(urlSuffix: String = "", configure: HikariConfig.() -> Unit = {}): Extension {
+class DBModule(urlSuffix: String = if (Config.isActive("test")) "_test" else "", configure: HikariConfig.() -> Unit = {}): Extension {
   private val logger = logger()
   val dataSource = HikariDataSource(HikariConfig().apply {
     jdbcUrl = Config.required("DB_URL") + urlSuffix

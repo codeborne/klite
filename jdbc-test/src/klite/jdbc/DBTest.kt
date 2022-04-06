@@ -16,9 +16,8 @@ abstract class DBTest {
 
     val db = try {
       Config.useEnvFile()
-      DBModule("_test").dataSource.apply {
-//      TODO  migrate(listOf("test", "test-data"))
-      }
+      Config["ENV"] = "test"
+      DBModule().dataSource
     } catch (e: HikariPool.PoolInitializationException) {
       throw IllegalStateException("Test DB not running, please use `docker-compose up -d db`\n${e.message}")
     }
