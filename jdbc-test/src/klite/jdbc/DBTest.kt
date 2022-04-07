@@ -14,7 +14,7 @@ abstract class DBTest {
     val tomorrow = today.plusDays(1)
     val yesterday = today.minusDays(1)
 
-    val db = try {
+    var db = try {
       Config.useEnvFile()
       Config["ENV"] = "test"
       DBModule().dataSource
