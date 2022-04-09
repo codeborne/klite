@@ -1,4 +1,4 @@
 dependencies {
-  api(project(":server"))
+  implementation(project(":server"))
   api(project(":jdbc"))
 }
