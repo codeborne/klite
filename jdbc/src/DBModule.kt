@@ -16,7 +16,7 @@ class DBModule(urlSuffix: String = if (Config.isActive("test")) "_test" else "",
     maximumPoolSize = Config.optional("DB_POOL_SIZE")?.toInt() ?:
       ((Config.optional("NUM_WORKERS")?.toInt() ?: 5) + (Config.optional("JOB_WORKERS")?.toInt() ?: 5))
     configure()
-    logger.info("Connecting to $jdbcUrl, user: $username")
+    logger.info("Connecting to $jdbcUrl${username?.let { ", user: $username" }}")
   })
 
   override fun install(server: Server) = server.run {
