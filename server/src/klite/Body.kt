@@ -29,6 +29,7 @@ class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRen
 class TextBodyParser(
   override val contentType: String = "text/plain"
 ): BodyParser {
+  @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T {
     val s = input.readBytes().decodeToString()
     return if (type == String::class) s as T else Converter.from(s, type)
@@ -36,7 +37,9 @@ class TextBodyParser(
 }
 
 class FormUrlEncodedParser(override val contentType: String = "application/x-www-form-urlencoded"): BodyParser {
-  override fun <T : Any> parse(input: InputStream, type: KClass<T>): T = urlDecodeParams(input.readBytes().decodeToString()) as T
+  @Suppress("UNCHECKED_CAST")
+  override fun <T : Any> parse(input: InputStream, type: KClass<T>): T =
+    urlDecodeParams(input.readBytes().decodeToString()) as T
 }
 
 // TODO: multipart/form-data parser
