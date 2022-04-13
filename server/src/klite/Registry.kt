@@ -33,8 +33,11 @@ class RegistryException(message: String, cause: Throwable? = null): Exception(me
 open class SimpleRegistry: MutableRegistry {
   private val instances = mutableMapOf<KClass<*>, Any>(Registry::class to this)
 
-  override fun <T: Any> register(type: KClass<T>, instance: T) { instances[type] = instance }
   override fun <T: Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
+  override fun <T: Any> register(type: KClass<T>, instance: T) {
+    instances[type] = instance
+    if (instance::class != type) instances[instance::class] = instance
+  }
 
   override fun contains(type: KClass<*>) = instances.contains(type)
   override fun <T: Any> optional(type: KClass<T>) = instances[type] as T?

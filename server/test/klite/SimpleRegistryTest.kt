@@ -24,6 +24,6 @@ class SimpleRegistryTest {
   }
 
   @Test fun `require class implementation`() {
-    expect(registry.require<BodyRenderer>()).toBeAnInstanceOf<TextBodyRenderer>()
+    expect(registry.require<BodyRenderer>()).toBeAnInstanceOf<TextBodyRenderer>().toBeTheInstance(registry.require())
   }
 }

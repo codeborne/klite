@@ -10,4 +10,9 @@
   <component name="SuppressKotlinCodeStyleNotification">
     <option name="disableForAll" value="true" />
   </component>
+  <component name="SwUserDefinedSpecifications">
+    <option name="specTypeByUrl">
+      <map />
+    </option>
+  </component>
 </project>
