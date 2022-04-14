@@ -100,7 +100,7 @@ open class HttpExchange(
   }
 
   fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
-    val out = startResponse(code, body?.size?.toLong() ?: 0, contentType)
+    val out = startResponse(code, body?.size?.toLong().takeIf { method != HEAD } ?: 0, contentType)
     if (method != HEAD) body?.let { out.write(it) }
   }
 
