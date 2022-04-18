@@ -3,7 +3,10 @@ package klite
 import klite.StatusCode.Companion.BadRequest
 import klite.StatusCode.Companion.InternalServerError
 import klite.StatusCode.Companion.NotFound
+import klite.StatusCode.Companion.UnprocessableEntity
 import kotlin.reflect.KClass
+
+open class BusinessException(messageKey: String, cause: Throwable? = null): Exception(messageKey, cause)
 
 fun interface ExceptionHandler<in E: Exception> {
   fun handle(e: E, exchange: HttpExchange): ErrorResponse?
@@ -12,10 +15,11 @@ fun interface ExceptionHandler<in E: Exception> {
 open class ErrorHandler {
   private val logger = logger()
   private val handlers = mutableMapOf<KClass<out Exception>, ExceptionHandler<Exception>>()
-  private val statusCodes = mutableMapOf<KClass<out Exception>, StatusCode>(
+  private val statusCodes = mutableMapOf(
     NoSuchElementException::class to NotFound,
     IllegalArgumentException::class to BadRequest,
-    IllegalStateException::class to BadRequest
+    IllegalStateException::class to BadRequest,
+    BusinessException::class to UnprocessableEntity
   )
 
   @Suppress("UNCHECKED_CAST")

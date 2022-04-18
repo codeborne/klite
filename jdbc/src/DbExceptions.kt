@@ -1,5 +1,5 @@
 package klite.jdbc
 
-open class BusinessException(messageKey: String, cause: Throwable? = null): Exception(messageKey, cause)
+import klite.BusinessException
 
 class AlreadyExistsException(cause: Throwable? = null): BusinessException("errors.alreadyExists", cause)
