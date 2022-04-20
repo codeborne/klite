@@ -9,6 +9,8 @@ import liquibase.exception.LiquibaseException
 import liquibase.resource.ClassLoaderResourceAccessor
 import liquibase.resource.ResourceAccessor
 import org.slf4j.bridge.SLF4JBridgeHandler
+import java.sql.Connection
+import java.sql.DriverManager
 import javax.sql.DataSource
 import kotlin.concurrent.thread
 
@@ -19,11 +21,11 @@ open class LiquibaseModule(
 ): Extension {
   override fun install(server: Server) = server.run {
     redirectJavaLogging()
-    migrate(require(), Config.active)
+    migrate(Config.active, optional<DataSource>()?.connection)
   }
 
-  fun migrate(db: DataSource, contexts: List<String>) {
-    db.connection.use { conn ->
+  fun migrate(contexts: List<String>, connection: Connection? = null) {
+    (connection ?: DriverManager.getConnection(Config["DB_URL"], Config.optional("DB_USER"), Config.optional("DB_PASS"))).use { conn ->
       val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(conn))
       val liquibase = Liquibase(changeSetPath, resourceAccessor, database)
       val shutdownHook = thread(start = false) { liquibase.forceReleaseLocks() }
