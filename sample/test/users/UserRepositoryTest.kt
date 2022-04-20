@@ -1,15 +1,16 @@
-package klite.jdbc.users
+package klite.sample.users
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import klite.sample.DBTest
 import org.junit.jupiter.api.Test
 import users.Email
 import users.User
 import users.UserRepository
-import java.util.*
+import java.util.Locale.ENGLISH
 
 class UserRepositoryTest: DBTest() {
-  val user = User(Email("test@user.com"), "Test", "User", Locale.ENGLISH, "phash")
+  val user = User(Email("test@user.com"), "Test", "User", ENGLISH, "phash")
   val repository = UserRepository(db)
 
   @Test fun `save and load`() {

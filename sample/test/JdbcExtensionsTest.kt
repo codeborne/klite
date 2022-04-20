@@ -1,8 +1,8 @@
-package klite.jdbc
+package klite.sample
 
 import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
-import liquibase.pro.packaged.id
+import klite.jdbc.*
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO

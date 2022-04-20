@@ -1,4 +1,4 @@
-package klite.jdbc
+package klite.sample
 
 import Routes
 import SomeResponse

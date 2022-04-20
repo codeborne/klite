@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
+import javax.sql.DataSource
 
 abstract class DBTest {
   companion object {
@@ -14,12 +15,16 @@ abstract class DBTest {
     val tomorrow = today.plusDays(1)
     val yesterday = today.minusDays(1)
 
-    var db = try {
+    init {
       Config.useEnvFile()
       Config["ENV"] = "test"
-      DBModule().dataSource
-    } catch (e: HikariPool.PoolInitializationException) {
-      throw IllegalStateException("Test DB not running, please use `docker-compose up -d db`\n${e.message}")
+    }
+
+    val db: DataSource by lazy {
+      try { DBModule().dataSource }
+      catch (e: HikariPool.PoolInitializationException) {
+        error("Test DB not running, please use `docker-compose up -d db`\n${e.message}")
+      }
     }
   }
 
