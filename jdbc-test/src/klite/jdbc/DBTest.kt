@@ -2,10 +2,8 @@ package klite.jdbc
 
 import com.zaxxer.hikari.pool.HikariPool
 import klite.Config
-import org.junit.jupiter.api.extension.AfterEachCallback
-import org.junit.jupiter.api.extension.BeforeEachCallback
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.api.extension.RegisterExtension
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import java.time.LocalDate
 import javax.sql.DataSource
 
@@ -28,16 +26,11 @@ abstract class DBTest {
     }
   }
 
-  @RegisterExtension @JvmField @Suppress("unused")
-  val autoRollback = InTransactionRunner()
+  @BeforeEach open fun startTx() {
+    Transaction(db).attachToThread()
+  }
 
-  class InTransactionRunner: BeforeEachCallback, AfterEachCallback {
-    override fun beforeEach(context: ExtensionContext?) {
-      Transaction(db).attachToThread()
-    }
-
-    override fun afterEach(context: ExtensionContext?) {
-      Transaction.current()!!.close(commit = false)
-    }
+  @AfterEach open fun rollbackTx() {
+    Transaction.current()!!.close(commit = false)
   }
 }
