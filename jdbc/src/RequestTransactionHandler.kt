@@ -6,11 +6,16 @@ import klite.require
 import kotlinx.coroutines.withContext
 import javax.sql.DataSource
 
-class RequestTransactionHandler(): Extension {
+annotation class NoTransaction
+
+class RequestTransactionHandler: Extension {
   override fun install(server: Server) = server.run {
     val db = require<DataSource>()
 
     decorator { exchange, handler ->
+      if (exchange.route.hasAnnotation<NoTransaction>())
+        return@decorator handler(exchange)
+
       val tx = Transaction(db)
       withContext(TransactionContext(tx)) {
         try {
