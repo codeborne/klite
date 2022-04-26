@@ -24,10 +24,12 @@ class CookieSessionStore(
   val cookie: Cookie = Cookie("S", "", path = "/", httpOnly = true),
   keyGenerator: KeyGenerator = KeyGenerator()
 ): SessionStore {
+  private val logger = logger()
   private val keyCipher = KeyCipher(keyGenerator.keyFromSecret(sessionSecret))
 
   override fun load(exchange: HttpExchange) = exchange.cookie(cookie.name)?.let {
-    Session(urlDecodeParams(keyCipher.decrypt(it)) as MutableMap<String, String?>, isNew = false)
+    val params = try { keyCipher.decrypt(it) } catch (e: Exception) { "".also { logger.info("Failed to decrypt session cookie: $e") } }
+    Session(urlDecodeParams(params) as MutableMap<String, String?>, isNew = false)
   } ?: Session()
 
   override fun save(exchange: HttpExchange, session: Session) {
