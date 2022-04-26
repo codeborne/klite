@@ -40,7 +40,7 @@ class JsonHttpClient(
     .setHeader("Content-Type", "application/json; charset=UTF-8").setHeader("Accept", "application/json")
     .timeout(ofSeconds(10)).reqModifier()
 
-  suspend fun <T: Any> request(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: HttpRequest.Builder.() -> HttpRequest.Builder): T {
+  private suspend fun <T: Any> request(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: RequestModifier): T {
     val req = jsonReq(urlSuffix).builder().build()
     val start = System.nanoTime()
     val res = http.sendAsync(req, ofString()).await()
@@ -62,7 +62,7 @@ class JsonHttpClient(
 
   private fun cut(s: String?) = if (s == null) "" else if (s.length <= maxLoggedLen) s else s.substring(0, maxLoggedLen) + "..."
 
-  private suspend fun <T: Any> retryRequest(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: HttpRequest.Builder.() -> HttpRequest.Builder): T {
+  suspend fun <T: Any> retryRequest(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: RequestModifier): T {
     for (i in 0..retryCount) {
       try {
         return request(urlSuffix, type, payload, builder)
@@ -79,6 +79,8 @@ class JsonHttpClient(
     }
     error("Unreachable")
   }
+
+  suspend inline fun <reified T: Any> request(urlSuffix: String, noinline builder: RequestModifier) = retryRequest(urlSuffix, T::class, builder = builder)
 
   suspend fun <T: Any> get(urlSuffix: String, type: KClass<T>) = retryRequest(urlSuffix, type) { GET() }
   suspend inline fun <reified T: Any> get(urlSuffix: String) = get(urlSuffix, T::class)
