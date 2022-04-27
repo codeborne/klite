@@ -13,7 +13,7 @@ class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
   val useIndexForUnknownPaths: Boolean = false,
-  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=604800, immutable"),
+  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=604800"),
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val mimeTypes: MimeTypes = MimeTypes(),
   val textCharset: Charset = UTF_8
