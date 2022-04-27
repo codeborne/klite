@@ -123,6 +123,8 @@ open class HttpExchange(
   override fun toString() = "$method ${original.requestURI}"
 }
 
+operator fun Headers.plusAssign(headers: Map<String, String>) = headers.forEach { (k, v) -> set(k, v) }
+
 open class RequestIdGenerator {
   val prefix = (0xFFFF * Math.random()).toInt().toString(16)
   private val counter = AtomicLong()

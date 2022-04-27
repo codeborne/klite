@@ -13,7 +13,8 @@ class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
   val useIndexForUnknownPaths: Boolean = false,
-  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=86400"),
+  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=604800, immutable"),
+  val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val mimeTypes: MimeTypes = MimeTypes(),
   val textCharset: Charset = UTF_8
 ): Handler {
@@ -41,9 +42,10 @@ class AssetsHandler(
 
   private fun HttpExchange.send(file: Path) {
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
-    if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
     header("Last-Modified", lastModified)
-    additionalHeaders.forEach { (k, v) -> header(k, v) }
+    if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
+    responseHeaders += additionalHeaders
+    if (path.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType: String? = mimeTypes.typeFor(file)
     if (contentType == null) logger.warn("Cannot detect content-type for $file")
     else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
