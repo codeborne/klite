@@ -17,22 +17,34 @@ import kotlin.concurrent.thread
 open class LiquibaseModule(
   val changeSetPath: String = Config.optional("LIQUIBASE_CHANGESET", "db.xml"),
   val resourceAccessor: ResourceAccessor = ClassLoaderResourceAccessor(),
+  private val dropAllBeforeUpdate: Boolean = false,
   private val dropAllOnUpdateFailureInConfigs: Collection<String> = setOf("test")
 ): Extension {
-  override fun install(server: Server) = server.run {
-    redirectJavaLogging()
-    migrate(Config.active, optional<DataSource>()?.connection)
+  companion object {
+    init {
+      SLF4JBridgeHandler.removeHandlersForRootLogger()
+      SLF4JBridgeHandler.install()
+    }
   }
 
-  fun migrate(contexts: List<String>, connection: Connection? = null) {
+  override fun install(server: Server) {
+    migrate(Config.active, server.optional<DataSource>()?.connection)
+  }
+
+  fun exec(connection: Connection? = null, block: Liquibase.() -> Unit) {
     (connection ?: DriverManager.getConnection(Config["DB_URL"], Config.optional("DB_USER"), Config.optional("DB_PASS"))).use { conn ->
       val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(conn))
       val liquibase = Liquibase(changeSetPath, resourceAccessor, database)
       val shutdownHook = thread(start = false) { liquibase.forceReleaseLocks() }
       Runtime.getRuntime().addShutdownHook(shutdownHook)
-      update(liquibase, Contexts(contexts))
+      liquibase.block()
       Runtime.getRuntime().removeShutdownHook(shutdownHook)
     }
+  }
+
+  fun migrate(contexts: List<String>, connection: Connection? = null) = exec(connection) {
+    if (dropAllBeforeUpdate) dropAll()
+    update(this, Contexts(contexts))
   }
 
   open fun update(liquibase: Liquibase, contexts: Contexts) {
@@ -46,10 +58,5 @@ open class LiquibaseModule(
       }
       else throw e
     }
-  }
-
-  open fun redirectJavaLogging() {
-    SLF4JBridgeHandler.removeHandlersForRootLogger()
-    SLF4JBridgeHandler.install()
   }
 }
