@@ -45,7 +45,7 @@ class AssetsHandler(
     header("Last-Modified", lastModified)
     if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
     responseHeaders += additionalHeaders
-    if (path.endsWith(indexFile)) responseHeaders += indexHeaders
+    if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType: String? = mimeTypes.typeFor(file)
     if (contentType == null) logger.warn("Cannot detect content-type for $file")
     else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
