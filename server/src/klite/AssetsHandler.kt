@@ -44,11 +44,20 @@ class AssetsHandler(
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
     header("Last-Modified", lastModified)
     if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
+
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType: String? = mimeTypes.typeFor(file)
+
     if (contentType == null) logger.warn("Cannot detect content-type for $file")
     else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
+
+    val gzFile = Path.of("$file.gz")
+    if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
+      header("Content-Encoding", "gzip")
+      return send(StatusCode.OK, gzFile.readBytes(), contentType)
+    }
+
     send(StatusCode.OK, file.readBytes(), contentType)
   }
 }
