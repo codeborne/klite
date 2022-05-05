@@ -2,6 +2,7 @@ package klite.json
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import klite.ErrorResponse
 import klite.StatusCode.Companion.BadRequest
@@ -21,7 +22,7 @@ class JsonBodyTest {
     expect(someData).toEqual(SomeData("World"))
   }
 
-  @Test fun `more meaningful error messages`() {
+  @Test fun `more meaningful error messages from MissingKotlinParameterException`() {
     try {
       jsonBody.parse("{}".byteInputStream(), SomeData::class)
       fail("Expecting MissingKotlinParameterException")
@@ -29,7 +30,20 @@ class JsonBodyTest {
       expect(jsonBody.handleMissingParameter(e)).toEqual(ErrorResponse(BadRequest, "hello is required"))
     }
   }
+
+  @Test fun `more meaningful error messages from ValueInstantiationException`() {
+    try {
+      jsonBody.parse("""{"hello":"Illegal stuff"}""".byteInputStream(), SomeData::class)
+      fail("Expecting ValueInstantiationException")
+    } catch (e: ValueInstantiationException) {
+      expect(jsonBody.handleValueInstantiation(e)).toEqual(ErrorResponse(BadRequest, "Illegal stuff in hello"))
+    }
+  }
 }
 
-data class SomeData(val hello: String, val nullable: String? = null)
+data class SomeData(val hello: String, val nullable: String? = null) {
+  init {
+    require(!hello.contains("Illegal")) { "Illegal stuff in hello" }
+  }
+}
 
