@@ -13,11 +13,11 @@ object Lang {
   val available: List<String> = load("langs")
   private val translations = loadTranslations()
 
-  fun lang(exchange: HttpExchange) = ensureAvailable(exchange.cookie(COOKIE))
+  fun lang(e: HttpExchange) = ensureAvailable(e.cookie(COOKIE))
   fun takeIfAvailable(lang: String?) = lang?.takeIf { available.contains(it) }
   fun ensureAvailable(requestedLang: String?) = takeIfAvailable(requestedLang) ?: available.first()
 
-  fun translations(exchange: HttpExchange): Translations = translations[lang(exchange)]!!
+  fun translations(e: HttpExchange): Translations = translations[lang(e)]!!
   fun translations(requestedLang: String?): Translations = translations[ensureAvailable(requestedLang)]!!
 
   fun translate(e: HttpExchange, key: String) = translations(e).invoke(key)
@@ -45,8 +45,6 @@ object Lang {
     }
   }
 
-  private fun acceptLanguage(accept: String?) = accept?.replace("[-,;].*$".toRegex(), "")
-
   @Suppress("UNCHECKED_CAST")
   private inline fun <reified T: Any> load(lang: String): T = JsonMapper().parse(
     javaClass.getResourceAsStream("/$lang.json") ?: error("/$lang.json not found in classpath"), T::class)
@@ -63,3 +61,5 @@ operator fun Translations.invoke(key: String, substitutions: Map<String, String>
   substitutions.forEach { result = result.replace("{${it.key}}", it.value) }
   return result
 }
+
+val HttpExchange.lang: String get() = Lang.lang(this)
