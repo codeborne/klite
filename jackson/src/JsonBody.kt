@@ -42,11 +42,17 @@ class JsonBody(
     registry.register(json)
     errors.apply {
       on(MismatchedInputException::class, BadRequest)
-      on(ValueInstantiationException::class, BadRequest)
+      on(ValueInstantiationException::class) { e, _ -> handleValueInstantiation(e) }
       on(MissingKotlinParameterException::class) { e, _ -> handleMissingParameter(e) }
     }
     renderers += this@JsonBody
     parsers += this@JsonBody
+  }
+
+  internal fun handleValueInstantiation(e: ValueInstantiationException): ErrorResponse {
+    val message = if (e.cause is IllegalArgumentException) e.cause!!.message else e.message
+    logger().error(e.toString())
+    return ErrorResponse(BadRequest, message)
   }
 
   internal fun handleMissingParameter(e: MissingKotlinParameterException): ErrorResponse {

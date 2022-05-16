@@ -44,11 +44,11 @@ fun <R> DataSource.withConnection(block: Connection.() -> R): R {
          else connection.use(block)
 }
 
-class TransactionContext(private val tx: Transaction? = Transaction.current()): ThreadContextElement<Transaction?>, AbstractCoroutineContextElement(Key) {
+class TransactionContext(val tx: Transaction? = Transaction.current()): ThreadContextElement<Transaction?>, AbstractCoroutineContextElement(Key) {
   companion object Key: CoroutineContext.Key<TransactionContext>
 
-  override fun updateThreadContext(context: CoroutineContext) = tx?.attachToThread()
-  override fun restoreThreadContext(context: CoroutineContext, oldState: Transaction?) { oldState?.attachToThread() }
+  override fun updateThreadContext(context: CoroutineContext) = Transaction.current().also { tx?.attachToThread() }
+  override fun restoreThreadContext(context: CoroutineContext, oldState: Transaction?) { oldState?.attachToThread() ?: tx?.detachFromThread() }
 }
 
 object AppScope: CoroutineScope {

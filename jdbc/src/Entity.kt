@@ -12,15 +12,16 @@ interface Entity {
   val id: UUID
 }
 
-inline fun <reified T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
+fun <T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
   val values = mapOf(*provided)
-  return toValuesSkipping(values.keys) + values.mapKeys { it.key.name }
+  return toValuesSkipping() + values.mapKeys { it.key.name }
 }
 
-inline fun <reified T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(setOf(*skip))
+fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.map { it.name }.toSet())
 
-inline fun <reified T: Any> T.toValuesSkipping(skip: Set<KProperty1<T, *>>): Map<String, Any?> =
-  toValues(T::class.memberProperties - skip)
+@Suppress("UNCHECKED_CAST")
+private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> =
+  toValues((this::class.memberProperties as Iterable<KProperty1<T, *>>).filter { !skipNames.contains(it.name) })
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> {
   if (this is Persistable<*> && !hasId()) setId()
