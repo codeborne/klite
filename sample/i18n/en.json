@@ -1,0 +1,7 @@
+{
+  "title": "Klite Test",
+  "greeting": {
+    "hello": "Hello",
+    "helloName": "Hello, {name}!"
+  }
+}

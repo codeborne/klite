@@ -35,6 +35,7 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 * [jackson](jackson) - adds json parsing/rendering using Jackson
 * [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization
 * [slf4j](slf4j) - redirects server logs to slf4j and configures it
+* [i18n](i18n) - simple server-side translations (for emails, etc)
 * [jdbc](jdbc) - provides jdbc extensions and transaction handling (depends on slf4j because of Hikari)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner

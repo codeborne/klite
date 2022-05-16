@@ -3,6 +3,7 @@ val mainClassName = "LauncherKt"
 dependencies {
   implementation(project(":server"))
   implementation(project(":jackson"))
+  implementation(project(":i18n"))
   implementation(project(":jdbc"))
   implementation(project(":liquibase"))
   implementation(project(":slf4j"))
@@ -12,7 +13,7 @@ dependencies {
 
 sourceSets {
   named("main") {
-    resources.srcDir("db")
+    resources.srcDirs("db", "i18n")
   }
 }
 
