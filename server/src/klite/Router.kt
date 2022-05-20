@@ -51,7 +51,7 @@ class Router(
     return null
   }
 
-  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = route.annotations + anonymousHandlerAnnotations(route.handler)).also {
+  fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = anonymousHandlerAnnotations(route.handler) + route.annotations).also {
     routes += it.apply { logger.info("$method $prefix$path") }
   }
 

@@ -2,11 +2,9 @@ package klite.annotations
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import io.mockk.verifyOrder
+import io.mockk.*
 import klite.HttpExchange
+import klite.PathParamRegexer
 import klite.Router
 import klite.require
 import kotlinx.coroutines.runBlocking
@@ -17,9 +15,11 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
 
+annotation class CustomAnnotation(val hello: String)
+
 class AnnotationsTest {
   val exchange = mockk<HttpExchange>()
-  @Path("/context") class Routes {
+  @Path("/context") @CustomAnnotation("class") class Routes {
     @GET fun root() = "Hello"
 
     @GET("/hello/:world")
@@ -27,11 +27,11 @@ class AnnotationsTest {
       @CookieParam cookie: Locale, @AttrParam attr: BigInteger
     ) = "Hello $body $world $date $header $cookie $attr"
 
-    @GET("/hello/specific") fun specific() = "Hello"
+    @GET("/hello/specific") @CustomAnnotation("method") fun specific() = "Hello"
 
     @GET("/hello/inputstream") fun stream(body: InputStream) = "Hello"
   }
-  val router = mockk<Router>(relaxed = true)
+  val router = spyk(Router("", mockk(), PathParamRegexer(), emptyList(), emptyList(), emptyList()))
 
   @Test fun `annotated instance`() {
     router.annotated(Routes())
@@ -40,6 +40,14 @@ class AnnotationsTest {
       router.add(match { it.annotations.containsAll(Routes::stream.annotations) })
       router.add(match { it.annotations.containsAll(Routes::specific.annotations) })
       router.add(match { it.annotations.containsAll(Routes::generic.annotations) })
+    }
+  }
+
+  @Test fun `method annotations win class annotations`() {
+    router.annotated(Routes())
+    verify {
+      router.add(match { it.path.toString() == "/context" && it.annotation<CustomAnnotation>()!!.hello == "class" })
+      router.add(match { it.path.toString() == "/context/hello/specific" && it.annotation<CustomAnnotation>()!!.hello == "method" })
     }
   }
 
