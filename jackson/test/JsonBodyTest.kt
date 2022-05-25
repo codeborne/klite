@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import klite.ErrorResponse
 import klite.StatusCode.Companion.BadRequest
+import klite.trimToNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 
@@ -52,4 +53,8 @@ data class SomeData(val hello: String, val nullable: String? = null, val nullabl
 
 // TODO: register values classes with klite Converter if they have @JsonCreator and @JsonValue annotations
 // then they will also be supported by JdbcConverter
-data class Value @JsonCreator(mode = DELEGATING) constructor(@JsonValue val value: String)
+data class Value(@JsonValue val value: String) {
+  companion object {
+    @JsonCreator(mode = DELEGATING) @JvmStatic fun create(value: String?) = value?.trimToNull()?.let { Value(it) }
+  }
+}

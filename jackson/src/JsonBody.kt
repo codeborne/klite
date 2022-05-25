@@ -24,6 +24,10 @@ fun buildMapper() = jsonMapper {
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
   serializationInclusion(JsonInclude.Include.NON_NULL)
   addModule(SimpleModule().apply { addDeserializer(String::class.java, EmptyStringToNullDeserializer) })
+//  withCoercionConfigDefaults {
+//    it.acceptBlankAsEmpty = true
+//    it.setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull)
+//  }
 }
 
 object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
