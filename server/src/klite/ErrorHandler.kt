@@ -13,7 +13,7 @@ fun interface ExceptionHandler<in E: Exception> {
 }
 
 open class ErrorHandler {
-  private val logger = logger()
+  private val logger = logger(ErrorHandler::class.qualifiedName!!)
   private val handlers = mutableMapOf<KClass<out Exception>, ExceptionHandler<Exception>>()
   private val statusCodes = mutableMapOf(
     NoSuchElementException::class to NotFound,
