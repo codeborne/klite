@@ -1,13 +1,20 @@
+import ch.tutteli.atrium.api.fluent.en_GB.toBeAnInstanceOf
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.mockk
+import io.mockk.verify
 import klite.jdbc.JdbcConverter
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal.ONE
+import java.math.BigDecimal.TEN
+import java.sql.Connection
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.*
 import java.time.ZoneOffset.UTC
 import java.util.*
+import java.util.UUID.randomUUID
 
 class JdbcConverterTest {
   @Test fun `null`() {
@@ -23,6 +30,25 @@ class JdbcConverterTest {
   @Test fun `BigInteger and BigDecimal`() {
     expect(JdbcConverter.to(123.toBigDecimal())).toEqual(123.toBigDecimal())
     expect(JdbcConverter.to(123.toBigInteger())).toEqual(123.toBigInteger())
+  }
+
+  @Test fun `to array of varchar`() {
+    val conn = mockk<Connection>(relaxed = true)
+    expect(JdbcConverter.to(listOf("hello"), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("varchar", arrayOf("hello")) }
+  }
+
+  @Test fun `to array of uuid`() {
+    val conn = mockk<Connection>(relaxed = true)
+    val uuid = randomUUID()
+    expect(JdbcConverter.to(listOf(uuid, uuid), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("uuid", arrayOf(uuid, uuid)) }
+  }
+
+  @Test fun `to array of BigDecimal`() {
+    val conn = mockk<Connection>(relaxed = true)
+    expect(JdbcConverter.to(listOf(ONE, TEN), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("numeric", arrayOf(ONE, TEN)) }
   }
 
   @Test fun `to local date and time`() {

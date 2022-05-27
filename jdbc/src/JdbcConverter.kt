@@ -45,7 +45,7 @@ object JdbcConverter {
   fun to(v: Any?, conn: Connection? = null) = when (v) {
     null -> null
     is Enum<*> -> v.name
-    is Collection<*> -> conn!!.createArrayOf(if (v.firstOrNull() is UUID) "uuid" else "varchar", v.toTypedArray())
+    is Collection<*> -> conn!!.createArrayOf(arrayType(v), v.toTypedArray())
     else -> {
       val cls = v::class
       @Suppress("UNCHECKED_CAST") when {
@@ -56,6 +56,12 @@ object JdbcConverter {
         else -> v
       }
     }
+  }
+
+  private fun arrayType(v: Collection<*>) = when (v.firstOrNull()) {
+    is UUID -> "uuid"
+    is Number -> "numeric"
+    else -> "varchar"
   }
 
   private fun unwrapInline(v: Any) =
