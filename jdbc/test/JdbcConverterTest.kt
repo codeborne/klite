@@ -36,6 +36,12 @@ class JdbcConverterTest {
     val conn = mockk<Connection>(relaxed = true)
     expect(JdbcConverter.to(listOf("hello"), conn)).toBeAnInstanceOf<java.sql.Array>()
     verify { conn.createArrayOf("varchar", arrayOf("hello")) }
+
+    expect(JdbcConverter.to(setOf("set"), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("varchar", arrayOf("set")) }
+
+    expect(JdbcConverter.to(arrayOf("a1", "a2"), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("varchar", arrayOf("a1", "a2")) }
   }
 
   @Test fun `to array of uuid`() {
