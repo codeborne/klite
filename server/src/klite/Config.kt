@@ -25,3 +25,7 @@ object Config {
     }
   }
 }
+
+val Config.isDev get() = isActive("test")
+val Config.isTest get() = isActive("test")
+val Config.isProd get() = isActive("prod")
