@@ -11,7 +11,7 @@ import java.lang.Thread.currentThread
 
 open class KliteLogger(name: String): MarkerIgnoringBase() {
   companion object {
-    internal var out = System.out
+    var out = System.out
     private val defaultLevel = Config.optional("LOGGER_LEVEL", "INFO")
     private val start = currentTimeMillis()
   }
@@ -20,11 +20,12 @@ open class KliteLogger(name: String): MarkerIgnoringBase() {
   open val level = Level.valueOf(Config.optional("LOGGER.$name", defaultLevel))
   init { this.name = name }
 
-  override fun isTraceEnabled() = level >= TRACE
-  override fun isDebugEnabled() = level >= DEBUG
-  override fun isInfoEnabled() = level >= INFO
-  override fun isWarnEnabled() = level >= WARN
-  override fun isErrorEnabled() = level >= ERROR
+  open fun isEnabled(level: Level) = this.level >= level
+  override fun isTraceEnabled() = isEnabled(TRACE)
+  override fun isDebugEnabled() = isEnabled(DEBUG)
+  override fun isInfoEnabled() = isEnabled(INFO)
+  override fun isWarnEnabled() = isEnabled(WARN)
+  override fun isErrorEnabled() = isEnabled(ERROR)
 
   override fun trace(msg: String?) = log(TRACE, msg)
   override fun trace(msg: String?, t: Throwable?) = log(TRACE, msg, t)
@@ -56,19 +57,24 @@ open class KliteLogger(name: String): MarkerIgnoringBase() {
   override fun error(format: String, arg1: Any?, arg2: Any?) = log(ERROR, format, arg1, arg2)
   override fun error(format: String, vararg args: Any?) = log(ERROR, format, *args)
 
-  protected open fun log(level: Level, msg: String?, t: Throwable? = null) {
-    if (this.level < level) return
-    out.println("${currentTimeMillis() - start} [${currentThread().name}] $level $shortName - ${msg ?: ""}")
-    t?.printStackTrace(out)
+  open fun formatMessage(level: Level, msg: String?) =
+    "${currentTimeMillis() - start} [${currentThread().name}] $level $shortName - ${msg ?: ""}"
+
+  open fun printThrowable(t: Throwable?) = t?.printStackTrace(out)
+
+  private fun log(level: Level, msg: String?, t: Throwable? = null) {
+    if (!isEnabled(level)) return
+    out.println(formatMessage(level, msg))
+    printThrowable(t)
   }
 
-  protected fun log(level: Level, format: String, vararg args: Any?) {
-    if (this.level < level) return
+  private fun log(level: Level, format: String, vararg args: Any?) {
+    if (!isEnabled(level)) return
     arrayFormat(format, args).apply { log(level, msg = message, throwable) }
   }
 
-  protected fun log(level: Level, format: String, arg: Any?) {
-    if (this.level < level) return
+  private fun log(level: Level, format: String, arg: Any?) {
+    if (!isEnabled(level)) return
     format(format, arg).apply { log(level, msg = message, throwable) }
   }
 }
