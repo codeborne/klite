@@ -102,8 +102,11 @@ private fun <R> ResultSet.map(mapper: ResultSet.() -> R): List<R> = mutableListO
 fun ResultSet.getId(column: String = "id") = getString(column).toId()
 fun ResultSet.getIdOrNull(column: String) = getString(column)?.toId()
 fun ResultSet.getInstant(column: String) = getTimestamp(column).toInstant()
+fun ResultSet.getInstantOrNull(column: String) = getTimestamp(column)?.toInstant()
 fun ResultSet.getLocalDate(column: String) = getDate(column).toLocalDate()
+fun ResultSet.getLocalDateOrNull(column: String) = getDate(column)?.toLocalDate()
 fun ResultSet.getPeriod(column: String) = Period.parse(getString(column))
+fun ResultSet.getPeriodOrNull(column: String) = getString(column)?.let { Period.parse(it) }
 fun ResultSet.getIntOrNull(column: String) = getObject(column)?.let { (it as Number).toInt() }
 
 fun String.toId(): UUID = UUID.fromString(this)
