@@ -5,6 +5,7 @@ import klite.RequestMethod.GET
 import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
+import klite.StatusCode.Companion.PermanentRedirect
 import kotlinx.coroutines.*
 import java.lang.Runtime.getRuntime
 import java.net.InetSocketAddress
@@ -97,6 +98,13 @@ class Server(
     } finally {
       exchange.close()
     }
+  }
+}
+
+fun Server.enforceHttps() = before { e ->
+  if (!e.isSecure) {
+    e.header("Strict-Transport-Security", "max-age=31536000")
+    e.redirect(e.fullUrl.toString().replace("http://", "https://"), PermanentRedirect)
   }
 }
 
