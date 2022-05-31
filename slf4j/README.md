@@ -8,7 +8,6 @@ The following Config properties are supported:
 * `LOGGER_LEVEL=INFO` - to set the default logger level
 * `LOGGER.logger.name=DEBUG` - to set some logger to another level
 
-If you want to redefine the logging format, define `META-INF/services/org.slf4j.ILoggerFactory` file in your application
-according to JVM ServiceLoader rules. Then extend [KliteLogger](src/KliteLogger.kt) and override the `log` method.
+If you want to redefine the logging format, define extend [KliteLogger](src/KliteLogger.kt) and specify it's full class name as `LOGGER_CLASS`.
 
 When deploying as a 12-factor app, this is all you need - logging to standard out.
