@@ -57,18 +57,18 @@ open class KliteLogger(name: String): MarkerIgnoringBase() {
   override fun error(format: String, vararg args: Any?) = log(ERROR, format, *args)
 
   protected open fun log(level: Level, msg: String?, t: Throwable? = null) {
-    if (level < this.level) return
+    if (this.level < level) return
     out.println("${currentTimeMillis() - start} [${currentThread().name}] $level $shortName - ${msg ?: ""}")
     t?.printStackTrace(out)
   }
 
   protected fun log(level: Level, format: String, vararg args: Any?) {
-    if (level < this.level) return
+    if (this.level < level) return
     arrayFormat(format, args).apply { log(level, msg = message, throwable) }
   }
 
   protected fun log(level: Level, format: String, arg: Any?) {
-    if (level < this.level) return
+    if (this.level < level) return
     format(format, arg).apply { log(level, msg = message, throwable) }
   }
 }

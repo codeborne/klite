@@ -1,7 +1,6 @@
+import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
 import ch.tutteli.atrium.api.fluent.en_GB.toContain
-import ch.tutteli.atrium.api.fluent.en_GB.toEndWith
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.fluent.en_GB.toMatch
 import ch.tutteli.atrium.api.verbs.expect
 import klite.slf4j.KliteLogger
 import org.junit.jupiter.api.AfterEach
@@ -35,6 +34,11 @@ class KliteLoggerTest {
   @Test fun logs() {
     logger.info("Hello")
     expect(out.toString("UTF-8")).toContain(" [${currentThread().name}] INFO MyLogger - Hello")
+  }
+
+  @Test fun `does not log`() {
+    logger.debug("Hello")
+    expect(out.toString("UTF-8")).toBeEmpty()
   }
 
   @Test fun `logs stack trace`() {
