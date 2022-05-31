@@ -1,9 +1,14 @@
 # klite-slf4j
 
 As many Java libraries already depend on slf4j-api instead of the built-in System.Logger,
-including this dependency will redirect System.Logger to slf4j and use slf4j-simple.jar for
+including this dependency will redirect System.Logger to slf4j and use a simple implementation for
 actual lightweight logging to System.out.
 
-See the default [simplelogger.properties](src/simplelogger.properties) for defaults and how to customize logging format.
+The following Config properties are supported:
+* `LOGGER_LEVEL=INFO` - to set the default logger level
+* `LOGGER.logger.name=DEBUG` - to set some logger to another level
+
+If you want to redefine the logging format, define `META-INF/services/org.slf4j.ILoggerFactory` file in your application
+according to JVM ServiceLoader rules. Then extend [KliteLogger](src/KliteLogger.kt) and override the `log` method.
 
 When deploying as a 12-factor app, this is all you need - logging to standard out.
