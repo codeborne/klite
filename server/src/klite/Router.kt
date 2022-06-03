@@ -69,6 +69,9 @@ class Router(
 
   fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler))
   fun delete(path: String = "", handler: Handler) = delete(pathParamRegexer.from(path), handler)
+
+  fun options(path: Regex, handler: Handler) = add(Route(OPTIONS, path, handler))
+  fun options(path: String = "", handler: Handler) = options(pathParamRegexer.from(path), handler)
 }
 
 enum class RequestMethod {
