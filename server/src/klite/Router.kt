@@ -58,19 +58,19 @@ class Router(
   // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-50200
   private fun anonymousHandlerAnnotations(handler: Handler) = handler.javaClass.methods.first { !it.isSynthetic }.annotations.toList()
 
-  fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler))
+  fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler = handler))
   fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
 
-  fun post(path: Regex, handler: Handler) = add(Route(POST, path, handler))
+  fun post(path: Regex, handler: Handler) = add(Route(POST, path, handler = handler))
   fun post(path: String = "", handler: Handler) = post(pathParamRegexer.from(path), handler)
 
-  fun put(path: Regex, handler: Handler) = add(Route(PUT, path, handler))
+  fun put(path: Regex, handler: Handler) = add(Route(PUT, path, handler = handler))
   fun put(path: String = "", handler: Handler) = put(pathParamRegexer.from(path), handler)
 
-  fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler))
+  fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler = handler))
   fun delete(path: String = "", handler: Handler) = delete(pathParamRegexer.from(path), handler)
 
-  fun options(path: Regex, handler: Handler) = add(Route(OPTIONS, path, handler))
+  fun options(path: Regex, handler: Handler) = add(Route(OPTIONS, path, handler = handler))
   fun options(path: String = "", handler: Handler) = options(pathParamRegexer.from(path), handler)
 }
 
@@ -78,7 +78,7 @@ enum class RequestMethod {
   GET, POST, PUT, DELETE, OPTIONS, HEAD
 }
 
-data class Route(val method: RequestMethod, val path: Regex, val handler: Handler, val annotations: List<Annotation> = emptyList()) {
+data class Route(val method: RequestMethod, val path: Regex, val annotations: List<Annotation> = emptyList(), val handler: Handler) {
   @Suppress("UNCHECKED_CAST")
   fun <T: Annotation> annotation(key: KClass<T>): T? = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) } as? T
   inline fun <reified T: Annotation> annotation() = annotation(T::class)

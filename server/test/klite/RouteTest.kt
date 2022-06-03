@@ -9,10 +9,10 @@ annotation class Public
 
 class RouteTest {
   @Test fun annotations() {
-    val route = Route(RequestMethod.GET, "".toRegex(), {})
+    val route = Route(RequestMethod.GET, "".toRegex()) {}
     expect(route.annotation<Public>()).toEqual(null)
 
-    val annotated = Route(RequestMethod.GET, "".toRegex(), {}, listOf(Public()))
+    val annotated = Route(RequestMethod.GET, "".toRegex(), listOf(Public())) {}
     expect(annotated.annotation<Public>()).notToEqualNull()
   }
 }

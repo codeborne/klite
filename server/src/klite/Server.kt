@@ -72,7 +72,7 @@ class Server(
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
-    val route = Route(GET, prefix.toRegex(), decorators.wrap(handler))
+    val route = Route(GET, prefix.toRegex(), handler = decorators.wrap(handler))
     addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET || method == HEAD }) }
   }
 

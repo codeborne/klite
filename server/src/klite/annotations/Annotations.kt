@@ -39,7 +39,7 @@ fun Router.annotated(routes: Any) {
     val a = f.annotations.firstOrNull() ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    subPath to Route(method, pathParamRegexer.from(path + subPath), classDecorators.wrap(toHandler(routes, f)), f.annotations + cls.annotations)
+    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, classDecorators.wrap(toHandler(routes, f)))
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
