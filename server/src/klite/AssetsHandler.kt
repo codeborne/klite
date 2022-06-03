@@ -16,7 +16,8 @@ class AssetsHandler(
   val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=604800"),
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val mimeTypes: MimeTypes = MimeTypes(),
-  val textCharset: Charset = UTF_8
+  val textCharset: Charset = UTF_8,
+  val headerModifier: HttpExchange.() -> Unit = {}
 ): Handler {
   private val logger = logger()
 
@@ -51,6 +52,8 @@ class AssetsHandler(
 
     if (contentType == null) logger.warn("Cannot detect content-type for $file")
     else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
+
+    headerModifier()
 
     val gzFile = Path.of("$file.gz")
     if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
