@@ -45,8 +45,8 @@ class Router(
 
   private fun match(method: RequestMethod, path: String): Pair<Route, MatchResult>? {
     for (route in routes) {
-      if (method != route.method && !(method == HEAD && route.method == GET)) continue
-      route.path.matchEntire(path)?.let { return route to it }
+      if (method == route.method || method == HEAD && route.method == GET)
+        route.path.matchEntire(path)?.let { return route to it }
     }
     return null
   }
