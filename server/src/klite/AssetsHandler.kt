@@ -81,6 +81,7 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
     "gif" to "image/gif",
     "jpg" to "image/jpeg",
     "jpeg" to "image/jpeg",
+    "webp" to "image/webp",
     "svg" to "image/svg+xml",
     "mp4" to "video/mp4",
     "ogv" to "video/ogv",
