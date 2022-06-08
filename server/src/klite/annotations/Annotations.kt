@@ -18,12 +18,12 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
-@Target(VALUE_PARAMETER) annotation class PathParam
-@Target(VALUE_PARAMETER) annotation class QueryParam
 @Target(VALUE_PARAMETER) annotation class BodyParam
-@Target(VALUE_PARAMETER) annotation class HeaderParam
-@Target(VALUE_PARAMETER) annotation class CookieParam
-@Target(VALUE_PARAMETER) annotation class AttrParam
+@Target(VALUE_PARAMETER) annotation class PathParam
+@Target(VALUE_PARAMETER) annotation class QueryParam(val value: String = "")
+@Target(VALUE_PARAMETER) annotation class HeaderParam(val value: String = "")
+@Target(VALUE_PARAMETER) annotation class CookieParam(val value: String = "")
+@Target(VALUE_PARAMETER) annotation class AttrParam(val value: String = "")
 
 /**
  * Adds all annotated methods as routes, sorted by path (matching more specific paths first).
@@ -58,13 +58,13 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
           val name = p.name!!
           val type = p.type.classifier as KClass<*>
           fun String.toType() = Converter.from(this, type)
-          when (p.annotations.firstOrNull()) {
-            is PathParam -> path(name).toType()
-            is QueryParam -> query(name)?.toType()
+          when (val a = p.annotations.firstOrNull()) {
             is BodyParam -> body(name)?.toType()
-            is HeaderParam -> header(name)?.toType()
-            is CookieParam -> cookie(name)?.toType()
-            is AttrParam -> attr(name)
+            is PathParam -> path(name).toType()
+            is QueryParam -> query(a.value.trimToNull() ?: name)?.toType()
+            is HeaderParam -> header(a.value.trimToNull() ?: name)?.toType()
+            is CookieParam -> cookie(a.value.trimToNull() ?: name)?.toType()
+            is AttrParam -> attr(a.value.trimToNull() ?: name)
             else -> body(type)
           }
         }
