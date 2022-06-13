@@ -34,6 +34,9 @@ class Transaction(private val db: DataSource) {
     }
   }
 
+  fun commit() = conn?.commit()
+  fun rollback() = conn?.rollback()
+
   fun attachToThread() = this.also { threadLocal.set(it) }
   fun detachFromThread() = threadLocal.remove()
 }
