@@ -15,4 +15,9 @@ class URITest {
     expect(URI("/hello?encoded=Hello%20World").queryParams).toEqual(mapOf("encoded" to "Hello World"))
     expect(URI("/hello?encoded=Hello%26World").queryParams).toEqual(mapOf("encoded" to "Hello&World"))
   }
+
+  @Test fun plus() {
+    expect(URI("http://codeborne.com") + mapOf("hello" to "world 123")).toEqual(URI("http://codeborne.com?hello=world+123"))
+    expect(URI("http://codeborne.com?world=hello") + mapOf("hello" to "world 123")).toEqual(URI("http://codeborne.com?world=hello&hello=world+123"))
+  }
 }

@@ -28,6 +28,7 @@ internal fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.get
 
 val URI.queryParams: Params get() = urlDecodeParams(rawQuery)
 operator fun URI.plus(suffix: String) = URI(toString() + suffix)
+operator fun URI.plus(params: Params) = plus((if (rawQuery == null) "?" else "&") + urlEncodeParams(params))
 
 fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }
 
