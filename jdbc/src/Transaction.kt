@@ -57,6 +57,4 @@ class TransactionContext(val tx: Transaction? = Transaction.current()): ThreadCo
 object AppScope: CoroutineScope {
   private val exceptionHandler = CoroutineExceptionHandler { _, e -> logger().error("Async operation failed", e) }
   override val coroutineContext get() = exceptionHandler + NonCancellable
-
-  fun async(block: suspend CoroutineScope.() -> Unit) = launch(start = UNDISPATCHED, block = block)
 }
