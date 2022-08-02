@@ -111,9 +111,3 @@ fun Server.enforceHttps() = before { e ->
 interface Extension {
   fun install(server: Server)
 }
-
-class ThreadNameContext(private val requestId: String): ThreadContextElement<String?>, AbstractCoroutineContextElement(Key) {
-  companion object Key: CoroutineContext.Key<ThreadNameContext>
-  override fun updateThreadContext(context: CoroutineContext) = Thread.currentThread().also { it.name = requestId }.name
-  override fun restoreThreadContext(context: CoroutineContext, oldState: String?) { Thread.currentThread().name = oldState }
-}
