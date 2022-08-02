@@ -1,9 +1,11 @@
 package klite.jdbc
 
+import klite.ThreadNameContext
 import klite.error
 import klite.logger
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
+import java.lang.Thread.currentThread
 import java.sql.Connection
 import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -57,4 +59,6 @@ class TransactionContext(val tx: Transaction? = Transaction.current()): ThreadCo
 object AppScope: CoroutineScope {
   private val exceptionHandler = CoroutineExceptionHandler { _, e -> logger().error("Async operation failed", e) }
   override val coroutineContext get() = exceptionHandler + NonCancellable
+
+  fun async(block: suspend CoroutineScope.() -> Unit) = launch(ThreadNameContext(currentThread().name + "+async"), block = block)
 }
