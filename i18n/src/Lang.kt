@@ -65,4 +65,6 @@ operator fun Translations.invoke(key: String, substitutions: Map<String, String>
   return result
 }
 
-val HttpExchange.lang: String get() = Lang.lang(this)
+var HttpExchange.lang: String
+  get() = Lang.lang(this)
+  set(value) = Lang.remember(this, value)
