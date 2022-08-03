@@ -53,9 +53,9 @@ class HttpExchangeTest {
 
   @Test fun `response cookies`() {
     exchange.cookie("Hello", "World")
-    verify { original.responseHeaders.add("Set-Cookie", "Hello=World") }
+    verify { original.responseHeaders.add("Set-Cookie", "Hello=World; Path=/") }
 
-    exchange += Cookie("LANG", "et", sameSite = Strict, domain = "angryip.org")
+    exchange += Cookie("LANG", "et", sameSite = Strict, domain = "angryip.org", path = null)
     verify { original.responseHeaders.add("Set-Cookie", "LANG=et; Domain=angryip.org; SameSite=Strict") }
   }
 

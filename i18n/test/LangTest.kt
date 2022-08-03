@@ -5,6 +5,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import klite.HttpExchange
 import org.junit.jupiter.api.Test
 
@@ -37,6 +38,11 @@ class LangTest {
   @Test fun `fallback to en`() {
     every { exchange.header("Accept-Language") } returns null
     expect(Lang.lang(exchange)).toEqual("en")
+  }
+
+  @Test fun remember() {
+    Lang.remember(exchange, "et")
+    verify { exchange.cookie(Lang.COOKIE, "et") }
   }
 
   @Test fun readAvailableLangs() {

@@ -3,6 +3,7 @@ package klite.i18n
 import com.fasterxml.jackson.databind.json.JsonMapper
 import klite.HttpExchange
 import klite.json.parse
+import java.util.Locale
 
 typealias Translations = Map<String, Any>
 private typealias MutableTranslations = MutableMap<String, Any>
@@ -16,6 +17,8 @@ object Lang {
   fun lang(e: HttpExchange) = ensureAvailable(e.cookie(COOKIE))
   fun takeIfAvailable(lang: String?) = lang?.takeIf { available.contains(it) }
   fun ensureAvailable(requestedLang: String?) = takeIfAvailable(requestedLang) ?: available.first()
+
+  fun remember(e: HttpExchange, lang: String) = e.cookie(COOKIE, lang)
 
   fun translations(e: HttpExchange): Translations = translations[lang(e)]!!
   fun translations(requestedLang: String?): Translations = translations[ensureAvailable(requestedLang)]!!
