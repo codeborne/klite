@@ -18,7 +18,7 @@ open class KliteLogger(name: String): MarkerIgnoringBase() {
 
   init { this.name = name }
   open val shortName = name.substringAfterLast(".")
-  open val level = Level.valueOf(Config.inherited("LEVEL.$name", defaultLevel))
+  open val level = Level.valueOf(Config.inherited("LOGGER.$name", defaultLevel))
 
   open fun isEnabled(level: Level) = this.level >= level
   override fun isTraceEnabled() = isEnabled(TRACE)

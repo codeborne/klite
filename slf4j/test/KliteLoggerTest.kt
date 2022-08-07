@@ -28,11 +28,11 @@ class KliteLoggerTest {
 
   @Test fun findInheritedLevel() {
     expect(KliteLogger("mega.cool.MyLogger").level).toEqual(INFO)
-    Config["LEVEL.mega"] = DEBUG.name
+    Config["LOGGER.mega"] = DEBUG.name
     expect(KliteLogger("mega.cool.MyLogger").level).toEqual(DEBUG)
-    Config["LEVEL.mega.cool"] = WARN.name
+    Config["LOGGER.mega.cool"] = WARN.name
     expect(KliteLogger("mega.cool.MyLogger").level).toEqual(WARN)
-    Config["LEVEL.mega.cool.MyLogger"] = INFO.name
+    Config["LOGGER.mega.cool.MyLogger"] = INFO.name
     expect(KliteLogger("mega.cool.MyLogger").level).toEqual(INFO)
   }
 
