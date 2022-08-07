@@ -33,4 +33,12 @@ class ConfigTest {
     Config["TEST_SOMETHING.SOMETHING.MORE"] = "MORE"
     expect(Config.inherited("TEST_SOMETHING.SOMETHING.MORE")).toEqual("MORE")
   }
+
+  @Test fun overridable() {
+    Config.overridable("TEST_SOMETHING", "VALUE2")
+    expect(Config["TEST_SOMETHING"]).toEqual("VALUE")
+
+    Config.overridable("TEST_SOMETHING2", "VALUE2")
+    expect(Config["TEST_SOMETHING2"]).toEqual("VALUE2")
+  }
 }

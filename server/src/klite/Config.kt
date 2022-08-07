@@ -17,6 +17,10 @@ object Config {
   operator fun get(env: String) = required(env)
   operator fun set(env: String, value: String) = System.setProperty(env, value)
 
+  fun overridable(env: String, value: String) {
+    if (Config.optional(env) == null) Config[env] = value
+  }
+
   fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
     file.forEachLine {
