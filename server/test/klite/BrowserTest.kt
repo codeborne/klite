@@ -13,5 +13,7 @@ class BrowserTest {
     expect(detectBrowser("Mozilla/5.0+(compatible; UptimeRobot/2.0; http://www.uptimerobot.com/)")).toEqual("UptimeRobot/2.0")
     expect(detectBrowser("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")).toEqual("Googlebot/2.1")
     expect(detectBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1")).toEqual("Mobile/Safari/13.0.3")
+    expect(detectBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/219.0.457350353 Mobile/15E148 Safari/604.1")).toEqual("Mobile/Safari/13.0.3")
+    expect(detectBrowser("Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 243.1.0.14.111 (iPhone14,5; iOS 15_5; en_LV; en-LV; scale=3.00; 1170x2532; 382468104)")).toEqual("Mobile/Safari/13.0.3")
   }
 }
