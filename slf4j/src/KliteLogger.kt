@@ -12,7 +12,7 @@ import java.lang.Thread.currentThread
 open class KliteLogger(name: String): MarkerIgnoringBase() {
   companion object {
     var out = System.out
-    private val defaultLevel = Config.optional("LOGGER_LEVEL", "INFO")
+    private val defaultLevel = Config.optional("LOGGER", Config.optional("LOGGER_LEVEL", INFO.name))
     private val start = currentTimeMillis()
   }
 
