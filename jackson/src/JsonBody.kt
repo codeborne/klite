@@ -1,6 +1,7 @@
 package klite.json
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
@@ -45,6 +46,7 @@ class JsonBody(
   override fun install(server: Server) = server.run {
     registry.register(json)
     errors.apply {
+      on(JsonParseException::class, BadRequest)
       on(MismatchedInputException::class, BadRequest)
       on(ValueInstantiationException::class) { e, _ -> handleValueInstantiation(e) }
       on(MissingKotlinParameterException::class) { e, _ -> handleMissingParameter(e) }
