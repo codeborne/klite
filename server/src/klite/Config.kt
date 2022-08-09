@@ -7,12 +7,19 @@ object Config {
   fun optional(env: String, default: String) = optional(env) ?: default
   fun required(env: String) = optional(env) ?: error("$env should be provided as system property or env var")
 
+  fun inherited(env: String): String? = optional(env) ?: if (env.contains(".")) inherited(env.substringBeforeLast(".")) else null
+  fun inherited(env: String, default: String): String = inherited(env) ?: default
+
   val active get() = optional("ENV", "dev").split(",").map { it.trim() }
   fun isActive(conf: String) = active.contains(conf)
   fun isAnyActive(vararg confs: String) = active.any { confs.contains(it) }
 
   operator fun get(env: String) = required(env)
   operator fun set(env: String, value: String) = System.setProperty(env, value)
+
+  fun overridable(env: String, value: String) {
+    if (Config.optional(env) == null) Config[env] = value
+  }
 
   fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")

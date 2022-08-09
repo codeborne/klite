@@ -24,6 +24,7 @@ open class LiquibaseModule(
     init {
       SLF4JBridgeHandler.removeHandlersForRootLogger()
       SLF4JBridgeHandler.install()
+      Config.overridable("LOGGER.liquibase.servicelocator", "ERROR")
     }
   }
 

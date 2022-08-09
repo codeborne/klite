@@ -4,17 +4,18 @@ import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
 import ch.tutteli.atrium.api.fluent.en_GB.toContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
-import klite.slf4j.KliteLogger
+import klite.Config
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
+import org.slf4j.event.Level.*
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.lang.Thread.currentThread
 
 class KliteLoggerTest {
-  val logger: Logger = KliteLogger("MyLogger")
+  val logger: Logger = KliteLogger("mega.cool.MyLogger")
   val out = ByteArrayOutputStream()
 
   @BeforeEach fun setUp() {
@@ -23,6 +24,16 @@ class KliteLoggerTest {
 
   @AfterEach fun tearDown() {
     KliteLogger.out = System.out
+  }
+
+  @Test fun findInheritedLevel() {
+    expect(KliteLogger("mega.cool.MyLogger").level).toEqual(INFO)
+    Config["LOGGER.mega"] = DEBUG.name
+    expect(KliteLogger("mega.cool.MyLogger").level).toEqual(DEBUG)
+    Config["LOGGER.mega.cool"] = WARN.name
+    expect(KliteLogger("mega.cool.MyLogger").level).toEqual(WARN)
+    Config["LOGGER.mega.cool.MyLogger"] = INFO.name
+    expect(KliteLogger("mega.cool.MyLogger").level).toEqual(INFO)
   }
 
   @Test fun isLevelEnabled() {
