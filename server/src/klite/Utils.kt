@@ -44,3 +44,6 @@ fun detectBrowser(userAgent: String?) = userAgent?.run {
     detect("Edg") ?: detect("Chrome") ?: detect("Firefox") ?: detect("Trident") ?: detect("MSIE") ?:
     if (contains("Safari")) detect("Version")?.replace("Version", "Safari") else split(' ', ';').find { it.contains("bot") } ?: this)
 }
+
+@Suppress("UNCHECKED_CAST")
+fun <V> mapOfNotNull(vararg pairs: Pair<String, V?>) = mapOf(*pairs).filterValues { it != null } as Map<String, V>
