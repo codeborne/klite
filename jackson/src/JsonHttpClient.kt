@@ -82,17 +82,18 @@ class JsonHttpClient(
 
   suspend inline fun <reified T: Any> request(urlSuffix: String, payload: String? = null, noinline builder: RequestModifier) = retryRequest(urlSuffix, T::class, payload, builder)
 
-  suspend fun <T: Any> get(urlSuffix: String, type: KClass<T>, modifier: RequestModifier) = retryRequest(urlSuffix, type) { GET().modifier() }
-  suspend inline fun <reified T: Any> get(urlSuffix: String, noinline modifier: RequestModifier = { this }) = get(urlSuffix, T::class, modifier)
+  suspend fun <T: Any> get(urlSuffix: String, type: KClass<T>, modifier: RequestModifier? = null) = retryRequest(urlSuffix, type) { GET().apply(modifier) }
+  suspend inline fun <reified T: Any> get(urlSuffix: String, noinline modifier: RequestModifier? = null) = get(urlSuffix, T::class, modifier)
 
-  suspend fun <T: Any> post(urlSuffix: String, o: Any?, type: KClass<T>, modifier: RequestModifier) = toJson(o).let { retryRequest(urlSuffix, type, it) { POST(ofString(it)).modifier() } }
-  suspend inline fun <reified T: Any> post(urlSuffix: String, o: Any?, noinline modifier: RequestModifier = { this }) = post(urlSuffix, o, T::class, modifier)
+  suspend fun <T: Any> post(urlSuffix: String, o: Any?, type: KClass<T>, modifier: RequestModifier? = null) = toJson(o).let { retryRequest(urlSuffix, type, it) { POST(ofString(it)).apply(modifier) } }
+  suspend inline fun <reified T: Any> post(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null) = post(urlSuffix, o, T::class, modifier)
 
-  suspend fun <T: Any> put(urlSuffix: String, o: Any?, type: KClass<T>, modifier: RequestModifier) = toJson(o).let { retryRequest(urlSuffix, type, it) { PUT(ofString(it)).modifier() } }
-  suspend inline fun <reified T: Any> put(urlSuffix: String, o: Any?, noinline modifier: RequestModifier = { this }) = put(urlSuffix, o, T::class, modifier)
+  suspend fun <T: Any> put(urlSuffix: String, o: Any?, type: KClass<T>, modifier: RequestModifier? = null) = toJson(o).let { retryRequest(urlSuffix, type, it) { PUT(ofString(it)).apply(modifier) } }
+  suspend inline fun <reified T: Any> put(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null) = put(urlSuffix, o, T::class, modifier)
 
-  suspend fun <T: Any> delete(urlSuffix: String, type: KClass<T>, modifier: RequestModifier) = retryRequest(urlSuffix, type) { DELETE().modifier() }
-  suspend inline fun <reified T: Any> delete(urlSuffix: String, noinline modifier: RequestModifier = { this }) = delete(urlSuffix, T::class, modifier)
+  suspend fun <T: Any> delete(urlSuffix: String, type: KClass<T>, modifier: RequestModifier? = null) = retryRequest(urlSuffix, type) { DELETE().apply(modifier) }
+  suspend inline fun <reified T: Any> delete(urlSuffix: String, noinline modifier: RequestModifier? = null) = delete(urlSuffix, T::class, modifier)
 
   private fun toJson(o: Any?) = if (o is String) o else json.stringify(o)
+  private fun HttpRequest.Builder.apply(modifier: RequestModifier?) = modifier?.let { it() } ?: this
 }
