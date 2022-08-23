@@ -2,15 +2,18 @@ package klite
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import klite.StatusCode.Companion.BadRequest
 import klite.StatusCode.Companion.Forbidden
 import klite.StatusCode.Companion.InternalServerError
 import klite.StatusCode.Companion.NotFound
 import org.junit.jupiter.api.Test
+import java.io.IOException
 
 class ErrorHandlerTest {
-  val exchange = mockk<HttpExchange>()
+  val exchange = mockk<HttpExchange>(relaxUnitFun = true)
   val errorHandler = ErrorHandler()
 
   @Test fun `status code exception`() {
@@ -31,5 +34,17 @@ class ErrorHandlerTest {
   @Test fun unhandled() {
     expect(errorHandler.toResponse(exchange, Exception("Kaboom")))
       .toEqual(ErrorResponse(InternalServerError, "Kaboom"))
+  }
+
+  @Test fun `handle broken pipe - client closed connection`() {
+    every { exchange.isResponseStarted } returns true
+    errorHandler.handle(exchange, IOException("Broken pipe"))
+    verify(exactly = 0) { exchange.render(any(), any()) }
+  }
+
+  @Test fun `render error`() {
+    every { exchange.isResponseStarted } returns false
+    errorHandler.handle(exchange, IOException("Any exception"))
+    verify { exchange.render(InternalServerError, ErrorResponse(InternalServerError, "Any exception")) }
   }
 }

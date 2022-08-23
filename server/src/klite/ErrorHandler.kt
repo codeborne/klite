@@ -26,10 +26,9 @@ open class ErrorHandler {
   fun <T: Exception> on(e: KClass<out T>, handler: ExceptionHandler<T>) { handlers[e] = handler as ExceptionHandler<Exception> }
   fun on(e: KClass<out Exception>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
-  fun handle(exchange: HttpExchange, e: Exception) = toResponse(exchange, e)?.also {
-    if (!exchange.isResponseStarted) exchange.render(it.statusCode, it)
-    else logger.error("Error after headers sent: $it")
-  }
+  fun handle(exchange: HttpExchange, e: Exception) =
+    if (!exchange.isResponseStarted) toResponse(exchange, e)?.let { exchange.render(it.statusCode, it) }
+    else logger.error("Error after headers sent: $e")
 
   open fun toResponse(exchange: HttpExchange, e: Exception): ErrorResponse? {
     if (e is StatusCodeException) return ErrorResponse(e.statusCode, e.message)
