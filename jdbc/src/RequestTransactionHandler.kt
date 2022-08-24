@@ -25,7 +25,7 @@ class RequestTransactionHandler: Extension {
         handler(e).also {
           tx.close(commit = true)
         }
-      } catch (e: Exception) {
+      } catch (e: Throwable) {
         tx.close(commit = e is StatusCodeException)
         throw e
       }

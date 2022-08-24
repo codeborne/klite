@@ -93,7 +93,7 @@ class Server(
         if (result == Unit) exchange.send(NoContent)
         else exchange.render(OK, result)
       }
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       errors.handle(exchange, e)
     } finally {
       exchange.close()
