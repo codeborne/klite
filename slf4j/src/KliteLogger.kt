@@ -62,12 +62,13 @@ open class KliteLogger(name: String): MarkerIgnoringBase() {
 
   private fun log(level: Level, msg: String?, t: Throwable? = null) {
     if (!isEnabled(level)) return
-    printMessage(formatMessage(level, msg))
-    printThrowable(t)
+    print(formatMessage(level, msg), t)
   }
 
-  open fun printMessage(message: String) = out.println(message)
-  open fun printThrowable(t: Throwable?) = t?.printStackTrace(out)
+  protected open fun print(formatted: String, t: Throwable?) {
+    out.println(formatted)
+    t?.printStackTrace(out)
+  }
 
   private fun log(level: Level, format: String, vararg args: Any?) {
     if (!isEnabled(level)) return
