@@ -13,7 +13,7 @@ class StackTraceOptimizingJsonLoggerTest {
   @Test fun `puts stack trace into json in prod for PaperTrail`() {
     val out = ByteArrayOutputStream()
     KliteLogger.out = PrintStream(out)
-    StacktraceOptimizingJsonLogger("MyLogger").print("", Exception("Hello\n\"World\""))
+    StackTraceOptimizingJsonLogger("MyLogger").print("", Exception("Hello\n\"World\""))
     val json = out.toString("UTF-8")
     expect(json).toStartWith("""{"error": "java.lang.Exception: Hello\n\"World\"", "stack": {"0": "${javaClass.name}""")
     buildMapper().parse<JsonNode>(json)

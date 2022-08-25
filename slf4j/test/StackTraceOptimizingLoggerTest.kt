@@ -18,7 +18,7 @@ class StackTraceOptimizingLoggerTest {
     KliteLogger.out = PrintStream(out)
     val decorator: Decorator = { e, h -> h(e) }
     val handler: Handler = {
-      StacktraceOptimizingLogger("MyLogger").print("", Exception("Hello"))
+      StackTraceOptimizingLogger("MyLogger").print("", Exception("Hello"))
       expect(out.toString("UTF-8")).toContain("java.lang.Exception: Hello", "  at klite.").notToContain("  at ${javaClass.name}.cuts")
     }
     runBlocking { decorator.wrap(handler).invoke(mockk()) }

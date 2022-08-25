@@ -4,7 +4,7 @@ package klite.slf4j
  * Use this logger if you want stack traces to be logged as a single log line in json format:
  * Config["LOGGER_CLASS"] = StacktraceOptimizingJsonLogger::class
  */
-class StacktraceOptimizingJsonLogger(name: String): StacktraceOptimizingLogger(name) {
+open class StackTraceOptimizingJsonLogger(name: String): StackTraceOptimizingLogger(name) {
   override fun print(formatted: String, t: Throwable?) {
     out.print(formatted)
     if (t == null) out.println()
