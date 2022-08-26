@@ -48,7 +48,7 @@ open class ErrorHandler {
 
   open fun unhandled(e: Throwable): ErrorResponse {
     logger.error("Unhandled exception", e)
-    return ErrorResponse(InternalServerError, e.message)
+    return ErrorResponse(InternalServerError, e.message.takeUnless { Config.isProd })
   }
 }
 
