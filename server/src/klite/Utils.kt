@@ -1,17 +1,9 @@
-@file:Suppress("NOTHING_TO_INLINE")
 package klite
 
-import java.lang.System.Logger
 import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.*
-
-fun Any.logger(name: String = javaClass.name): Logger = System.getLogger(name)
-inline fun Logger.info(msg: String) = log(Logger.Level.INFO, msg)
-inline fun Logger.warn(msg: String) = log(Logger.Level.WARNING, msg)
-inline fun Logger.error(msg: String, e: Throwable? = null) = log(Logger.Level.ERROR, msg, e)
-inline fun Logger.error(e: Throwable) = log(Logger.Level.ERROR, "", e)
 
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!
 fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
