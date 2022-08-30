@@ -6,7 +6,10 @@ package klite.slf4j
  */
 open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
   public override fun print(formatted: String, t: Throwable?) {
-    out.println(formatted)
+    if (formatted.isNotEmpty()) {
+      out.print(formatted)
+      out.print(": ")
+    }
     if (t != null) {
       val stackTrace = t.stackTrace
       out.println(t.toString())
@@ -14,6 +17,7 @@ open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
         out.print("  at ")
         out.println(stackTrace[i].toString())
       }
+      t.cause?.let { print("Caused by", it) }
     }
   }
 

@@ -18,8 +18,10 @@ class StackTraceOptimizingLoggerTest {
     KliteLogger.out = PrintStream(out)
     val decorator: Decorator = { e, h -> h(e) }
     val handler: Handler = {
-      StackTraceOptimizingLogger("MyLogger").print("", Exception("Hello"))
-      expect(out.toString("UTF-8")).toContain("java.lang.Exception: Hello", "  at klite.").notToContain("  at ${javaClass.name}.cuts")
+      StackTraceOptimizingLogger("MyLogger").print("Message", Exception("Hello", IllegalStateException("cause")))
+      expect(out.toString()).toContain("Message: java.lang.Exception: Hello", "  at klite.")
+        .toContain("Caused by: java.lang.IllegalStateException: cause")
+        .notToContain("  at ${javaClass.name}.cuts")
     }
     runBlocking { decorator.wrap(handler).invoke(mockk()) }
     KliteLogger.out = System.out
