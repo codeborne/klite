@@ -45,5 +45,12 @@ fun detectBrowser(userAgent: String?) = userAgent?.run {
     if (contains("Safari")) detect("Version")?.replace("Version", "Safari") else split(' ', ';').find { it.contains("bot") } ?: this)
 }
 
+fun Server.enforceHttps(maxAgeSec: Long = 31536000) = before { e ->
+  if (!e.isSecure) {
+    e.header("Strict-Transport-Security", "max-age=$maxAgeSec")
+    e.redirect(e.fullUrl.toString().replace("http://", "https://"), StatusCode.PermanentRedirect)
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 fun <V> mapOfNotNull(vararg pairs: Pair<String, V?>) = mapOf(*pairs).filterValues { it != null } as Map<String, V>

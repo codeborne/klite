@@ -5,14 +5,13 @@ import klite.RequestMethod.GET
 import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
-import klite.StatusCode.Companion.PermanentRedirect
 import kotlinx.coroutines.*
 import java.lang.Runtime.getRuntime
+import java.lang.Thread.currentThread
 import java.net.InetSocketAddress
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
-import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KFunction
@@ -29,7 +28,7 @@ class Server(
     register<FormUrlEncodedParser>()
   },
   private val requestIdGenerator: RequestIdGenerator = registry.require<RequestIdGenerator>().also {
-    Thread.currentThread().name += "/" + it.prefix
+    currentThread().name += "/" + it.prefix
   },
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
@@ -98,13 +97,6 @@ class Server(
     } finally {
       exchange.close()
     }
-  }
-}
-
-fun Server.enforceHttps() = before { e ->
-  if (!e.isSecure) {
-    e.header("Strict-Transport-Security", "max-age=31536000")
-    e.redirect(e.fullUrl.toString().replace("http://", "https://"), PermanentRedirect)
   }
 }
 
