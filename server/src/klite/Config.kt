@@ -10,7 +10,7 @@ object Config {
   fun inherited(env: String): String? = optional(env) ?: if (env.contains(".")) inherited(env.substringBeforeLast(".")) else null
   fun inherited(env: String, default: String): String = inherited(env) ?: default
 
-  val active get() = optional("ENV", "dev").split(",").map { it.trim() }
+  val active: List<String> by lazy { optional("ENV", "dev").split(",").map { it.trim() } }
   fun isActive(conf: String) = active.contains(conf)
   fun isAnyActive(vararg confs: String) = active.any { confs.contains(it) }
 
