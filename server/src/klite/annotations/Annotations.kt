@@ -23,6 +23,7 @@ import kotlin.reflect.jvm.javaMethod
 @Target(VALUE_PARAMETER) annotation class QueryParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class HeaderParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class CookieParam(val value: String = "")
+@Target(VALUE_PARAMETER) annotation class SessionParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class AttrParam(val value: String = "")
 
 /**
@@ -64,6 +65,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
             is QueryParam -> query(a.value.trimToNull() ?: name)?.toType()
             is HeaderParam -> header(a.value.trimToNull() ?: name)?.toType()
             is CookieParam -> cookie(a.value.trimToNull() ?: name)?.toType()
+            is SessionParam -> session[a.value.trimToNull() ?: name]?.toType()
             is AttrParam -> attr(a.value.trimToNull() ?: name)
             else -> body(type)
           }
