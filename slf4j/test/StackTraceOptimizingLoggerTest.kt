@@ -2,6 +2,8 @@ package klite.slf4j
 
 import ch.tutteli.atrium.api.fluent.en_GB.notToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toContain
+import ch.tutteli.atrium.api.fluent.en_GB.toEndWith
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.mockk
 import klite.Decorator
@@ -18,10 +20,15 @@ class StackTraceOptimizingLoggerTest {
     KliteLogger.out = PrintStream(out)
     val decorator: Decorator = { e, h -> h(e) }
     val handler: Handler = {
-      StackTraceOptimizingLogger("MyLogger").print("Message", Exception("Hello", IllegalStateException("cause")))
+      val logger = StackTraceOptimizingLogger("MyLogger")
+      logger.print("Just message", null)
+      expect(out.toString()).toEqual("Just message\n")
+
+      logger.print("Message", Exception("Hello", IllegalStateException("cause")))
       expect(out.toString()).toContain("Message: java.lang.Exception: Hello", "  at klite.")
         .toContain("Caused by: java.lang.IllegalStateException: cause")
         .notToContain("  at ${javaClass.name}.cuts")
+        .toEndWith("\n")
     }
     runBlocking { decorator.wrap(handler).invoke(mockk()) }
     KliteLogger.out = System.out

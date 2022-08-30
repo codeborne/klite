@@ -8,7 +8,8 @@ open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
   public override fun print(formatted: String, t: Throwable?) {
     if (formatted.isNotEmpty()) {
       out.print(formatted)
-      out.print(": ")
+      if (t == null) out.println()
+      else out.print(": ")
     }
     if (t != null) {
       val stackTrace = t.stackTrace
