@@ -41,9 +41,14 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 * [jobs](jobs) - provides a simple scheduled JobRunner
 * [liquibase](liquibase) - allows to use liquibase for DB migration
 
+## Status
+
+Klite powers a few production apps already.
+Public announcement is pending at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/).
+
 ## Usage
 
-See [sample subproject](sample) on how to build apps with Klite and run them in Docker.
+See [the sample subproject](sample) on how to build apps with Klite and run them in Docker.
 
 [![Release](https://jitpack.io/v/angryziber/klite.svg)](https://jitpack.io/#angryziber/klite)
 
