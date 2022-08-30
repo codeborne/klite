@@ -15,10 +15,10 @@ object Config {
   fun isAnyActive(vararg confs: String) = active.any { confs.contains(it) }
 
   operator fun get(env: String) = required(env)
-  operator fun set(env: String, value: String) = System.setProperty(env, value)
+  operator fun set(env: String, value: String): String? = System.setProperty(env, value)
 
   fun overridable(env: String, value: String) {
-    if (Config.optional(env) == null) Config[env] = value
+    if (optional(env) == null) Config[env] = value
   }
 
   fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
