@@ -9,7 +9,7 @@ interface ContentTypeProvider {
 }
 
 class Accept(val contentTypes: String?) {
-  val isRelaxed get() = contentTypes?.startsWith("text/html,") ?: true || contentTypes?.contains("*") ?: true
+  val isRelaxed get() = contentTypes == null || contentTypes.contains("*") || contentTypes.startsWith("text/html,")
   operator fun invoke(contentType: String) = contentTypes?.contains(contentType) ?: true
   operator fun invoke(provider: ContentTypeProvider) = invoke(provider.contentType)
 }
