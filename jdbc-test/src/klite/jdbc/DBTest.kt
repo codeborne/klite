@@ -8,12 +8,13 @@ import javax.sql.DataSource
 /**
  * Base class for DB-dependent unit tests.
  * Will try to start dev DB via docker-compose automatically.
+ * Transaction rollback will happen after each test, so that all tests can run in a clean state.
  */
 abstract class DBTest {
   companion object {
     init {
-      Config.useEnvFile()
       Config["ENV"] = "test"
+      Config.useEnvFile()
       startDevDB()
     }
 
