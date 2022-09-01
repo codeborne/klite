@@ -28,6 +28,9 @@ Usage:
   // basic query from a table (mapper runs in context of ResultSet)
   db.query("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
 
+  // if you need to add several criteria for a single column (map key), use SqlExpr and friends
+  db.query("table", mapOf("column" to SqlExpr("(column is null or column >= 10)")))
+
   // more advanced query with suffix and fromValues() auto-mapper
   db.query("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
   // single row, with joins, etc
