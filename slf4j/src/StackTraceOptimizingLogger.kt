@@ -9,7 +9,7 @@ open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
     if (formatted.isNotEmpty()) {
       out.print(formatted)
       if (t == null) out.println()
-      else out.print(": ")
+      else if (!formatted.endsWith(" ")) out.print(": ")
     }
     if (t != null) {
       val stackTrace = t.stackTrace
