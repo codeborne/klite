@@ -1,24 +1,23 @@
 package klite.jdbc
 
-import com.zaxxer.hikari.pool.HikariPool
 import klite.Config
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import javax.sql.DataSource
 
+/**
+ * Base class for DB-dependent unit tests.
+ * Will try to start dev DB via docker-compose automatically.
+ */
 abstract class DBTest {
   companion object {
     init {
       Config.useEnvFile()
       Config["ENV"] = "test"
+      startDevDB()
     }
 
-    val db: DataSource by lazy {
-      try { DBModule().dataSource }
-      catch (e: HikariPool.PoolInitializationException) {
-        error("Test DB not running, please use `docker-compose up -d db`\n${e.message}")
-      }
-    }
+    val db: DataSource by lazy { DBModule().dataSource }
   }
 
   @BeforeEach open fun startTx() {
