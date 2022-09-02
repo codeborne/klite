@@ -2,7 +2,7 @@
 
 This is the main component of Klite - the [Server](src/klite/Server.kt).
 
-Create and instance, overriding any defaults using named constructor parameters, add contexts and routes, then start.
+Create an instance, overriding any defaults using named constructor parameters, add contexts and routes, then start.
 
 Basic usage:
 ```kotlin
@@ -10,6 +10,7 @@ Basic usage:
     context("/api") {
       // Lambda routes
       get("/hello") { "Hello World" }
+      post("/hello") { "You posted: $rawBody" }
 
       // or take routes from annotated functions of a class (better for testing)
       annotated<MyRoutes>()
@@ -18,12 +19,16 @@ Basic usage:
     start()
   }
 ```
-See [sample subproject](../sample/src/Launcher.kt) for a full working example.
+See the [sample subproject](../sample/src/Launcher.kt) for a full working example.
 
 Route handlers run in context of [HttpExchange](src/klite/HttpExchange.kt) and can use its methods to work with
 request and response.
 
 Anything returned from a handler will be passed to [BodyRenderer](src/klite/Body.kt) to output the response with correct Content-Type. BodyRenderer is chosen based on the Accept request header or first one if no matches.
+
+POST/PUT requests with body will be parsed using one of registered [BodyParsers](src/klite/Body.kt) according to the request Content-Type header; `text/plain` and `application/x-www-form-urlencoded` are enabled by default.
+
+use<[JsonBody](../jackson/src/JsonBody.kt)>() for `application/json` support.
 
 ## Contexts
 
@@ -56,5 +61,5 @@ arguments (dependencies).
 
 ## Decorators
 
-You can add both global and context-specific [decorators](src/klite/Decorator.kt), including Before and After handlers.
+You can add both global and context-specific [decorators](src/klite/Decorator.kt), including `Before` and `After` handlers.
 The order is important, and decorators apply to all *following routes* that are defined in the same context.
