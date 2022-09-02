@@ -3,8 +3,10 @@ package klite.jdbc
 import klite.*
 import kotlinx.coroutines.withContext
 import javax.sql.DataSource
+import kotlin.annotation.AnnotationTarget.CLASS
+import kotlin.annotation.AnnotationTarget.FUNCTION
 
-annotation class NoTransaction
+@Target(FUNCTION, CLASS) annotation class NoTransaction
 
 /**
  * Will start and close DB transaction for each request.
