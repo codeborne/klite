@@ -11,6 +11,8 @@ It is a best practice in terms of security to use a user with fewer right for th
 Your Liquibase scripts can actually create this user without the "create table" and "drop table" permissions.
 
 ```kotlin
+  // start dev db, for developer convenience
+  if (Config.isDev) startDevDB()
   // migrate with the default all-rights user
   use(LiquibaseModule())
   // use app user for the application DataSource and connection pool
