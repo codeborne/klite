@@ -44,10 +44,11 @@ open class HttpExchange(
     return config.parsers.find { contentType.startsWith(it.contentType) }?.parse(requestStream, type) ?:
       throw UnsupportedMediaTypeException(requestType)
   }
+  /** Note: this can be called only once */
+  val rawBody: String get() = requestStream.use { it.readBytes().decodeToString() }
 
   val bodyParams: Params by lazy { body() }
   fun body(param: String) = bodyParams[param]
-  val rawBody: String get() = requestStream.readAllBytes().decodeToString()
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
