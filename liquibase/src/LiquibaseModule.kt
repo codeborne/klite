@@ -18,7 +18,7 @@ open class LiquibaseModule(
   val changeSetPath: String = Config.optional("LIQUIBASE_CHANGESET", "db.xml"),
   val resourceAccessor: ResourceAccessor = ClassLoaderResourceAccessor(),
   private val dropAllBeforeUpdate: Boolean = false,
-  private val dropAllOnUpdateFailureInConfigs: Collection<String> = setOf("test")
+  private val dropAllOnUpdateFailure: Boolean = Config.isTest
 ): Extension {
   companion object {
     init {
@@ -52,7 +52,7 @@ open class LiquibaseModule(
     try {
       liquibase.update(contexts)
     } catch (e: LiquibaseException) {
-      if (dropAllOnUpdateFailureInConfigs.any { contexts.contexts.contains(it) }) {
+      if (dropAllOnUpdateFailure) {
         logger().warn("DB Updated failed, dropping all to retry")
         liquibase.dropAll()
         liquibase.update(contexts)
