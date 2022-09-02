@@ -13,10 +13,8 @@ Your Liquibase scripts can actually create this user without the "create table" 
 ```kotlin
   // migrate with the default all-rights user
   use(LiquibaseModule())
-  // switch user
-  Config["DB_USER"] = "app"
-  Config["DB_PASS"] = Config["DB_APP_PASS"]
   // use app user for the application DataSource and connection pool
+  useAppDBUser()
   use(DBModule {
     // override any other connection pool settings
   })

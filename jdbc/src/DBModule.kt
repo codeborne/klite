@@ -27,11 +27,17 @@ class DBModule(configure: HikariConfig.() -> Unit = {}): Extension {
   }
 }
 
-/** Call this to add support for Heroku-like DATABASE_URL env variable */
+/** Call this before to add support for Heroku-like DATABASE_URL env variable */
 fun initHerokuDB(suffix: String = "?sslmode=require") {
   val url = Config.optional("DATABASE_URL") ?: return
   val m = "postgres://(?<user>.+?):(?<password>.+?)@(?<hostportdb>.*)".toRegex().matchEntire(url)?.groups ?: return
   Config["DB_URL"] = "jdbc:postgresql://${m["hostportdb"]!!.value}$suffix"
   Config["DB_USER"] = m["user"]!!.value
   Config["DB_PASS"] = m["password"]!!.value
+}
+
+/** Call this before to switch to less-privileged DB user after DB migration */
+fun useAppDBUser(user: String = Config.optional("DB_APP_USER", "app"), password: String = Config["DB_APP_PASS"]) {
+  Config["DB_USER"] = user
+  Config["DB_PASS"] = password
 }
