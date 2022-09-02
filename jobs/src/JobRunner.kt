@@ -27,9 +27,9 @@ fun interface Job {
 class JobRunner(
   private val db: DataSource,
   private val requestIdGenerator: RequestIdGenerator,
-  private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_WORKERS", "3").toInt())
+  val workerPool: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_WORKERS", "3").toInt())
 ): Extension, CoroutineScope {
-  override val coroutineContext = executor.asCoroutineDispatcher()
+  override val coroutineContext = workerPool.asCoroutineDispatcher()
   private val logger = logger()
   private val seq = AtomicLong()
   private val runningJobs = ConcurrentHashMap.newKeySet<kotlinx.coroutines.Job>()
@@ -59,7 +59,7 @@ class JobRunner(
   fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
     val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
     logger.info("$jobName will start at $startAt and run every $period $unit")
-    executor.scheduleAtFixedRate({ runInTransaction(jobName, job, UNDISPATCHED) }, delay, period, unit)
+    workerPool.scheduleAtFixedRate({ runInTransaction(jobName, job, UNDISPATCHED) }, delay, period, unit)
   }
 
   fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong(), jobName: String = job.name) =
@@ -84,7 +84,7 @@ class JobRunner(
     runBlocking {
       runningJobs.forEach { it.cancelAndJoin() }
     }
-    executor.shutdown()
-    executor.awaitTermination(10, SECONDS)
+    workerPool.shutdown()
+    workerPool.awaitTermination(10, SECONDS)
   }
 }
