@@ -50,7 +50,9 @@ Public announcement is pending at [KKON 2022](https://rheinwerk-kkon.de/programm
 
 See [the sample subproject](sample) on how to build apps with Klite and run them in Docker.
 
-Klite builds are available from [![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite)
+Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite).
+
+[![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite)
 
 ```kotlin
   repositories {
