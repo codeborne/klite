@@ -137,6 +137,7 @@ open class XRequestIdGenerator: RequestIdGenerator() {
   override fun invoke(headers: Headers) = super.invoke(headers) + (headers.getFirst("X-Request-Id")?.let { "/$it" } ?: "")
 }
 
+// TODO: maybe a separate interface inside of HttpExchange?
 class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
   HttpExchange(original, config, sessionStore, requestId) {
   companion object {

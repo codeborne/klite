@@ -21,22 +21,20 @@ class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val workerPool: ExecutorService = Executors.newFixedThreadPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
-    register<RequestIdGenerator>(XRequestIdGenerator::class)
     register<RequestLogger>()
     register<TextBodyRenderer>()
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
   },
-  private val requestIdGenerator: RequestIdGenerator = registry.require<RequestIdGenerator>().also {
-    currentThread().name += "/" + it.prefix
-  },
+  private val requestIdGenerator: RequestIdGenerator = registry.require(),
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
   private val sessionStore: SessionStore? = registry.optional(),
   val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
-  private val httpExchangeCreator: KFunction<HttpExchange> = XForwardedHttpExchange::class.primaryConstructor!!,
+  private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
+  init { currentThread().name += "/" + requestIdGenerator.prefix }
   private val http = HttpServer.create()
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val logger = logger()
