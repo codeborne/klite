@@ -69,4 +69,8 @@ The order is important, and decorators apply to all *following routes* that are 
 No built-in support for that. You may either implement a [BodyRenderer](src/klite/Body.kt) that will pass route responses to your favorite template engine or just call the engine in your routes and produce html output directly with `send(OK, "html", "text/html")`.
 
 In Kotlin, you may also consider using template strings for html/xml generation:
-`get("/hello") { """<html><body><h1>Hello ${query("who")}</h1></body></html>""" }`
+```kotlin
+get("/hello") {
+  """<html><body><h1>Hello ${query("who")}</h1></body></html>"""
+}
+```
