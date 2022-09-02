@@ -17,9 +17,6 @@ fun main() {
     use<DBModule>() // configure a DataSource
     use<RequestTransactionHandler>() // runs each request in a transaction
 
-    // if you need to parse x-www-form-urlencoded POST parameters as @BodyParam's
-    parsers += FormUrlEncodedParser()
-
     assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 
     before(require<AdminChecker>())
