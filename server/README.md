@@ -63,3 +63,7 @@ arguments (dependencies).
 
 You can add both global and context-specific [decorators](src/klite/Decorator.kt), including `Before` and `After` handlers.
 The order is important, and decorators apply to all *following routes* that are defined in the same context.
+
+## HTML templates for server-side rendering
+
+No built-in support for that. You may either implement a [BodyRenderer](src/klite/Body.kt) that will pass route responses to your favorite template engine or just call the engine in your routes and produce html output directly with `send(OK, "html", "text/html")`.
