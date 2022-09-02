@@ -1,11 +1,8 @@
-import klite.AssetsHandler
-import klite.Config
-import klite.Server
+import klite.*
 import klite.annotations.annotated
 import klite.jdbc.DBModule
 import klite.jdbc.RequestTransactionHandler
 import klite.json.JsonBody
-import klite.require
 import kotlinx.coroutines.delay
 import java.nio.file.Path
 
@@ -13,9 +10,12 @@ fun main() {
   Config.useEnvFile()
 
   Server().apply {
-    use<JsonBody>()
-    use<DBModule>()
-    use<RequestTransactionHandler>()
+    use<JsonBody>() // enables parsing/sending of application/json requests/responses
+    use<DBModule>() // configures a DataSource
+    use<RequestTransactionHandler>() // runs each request in a transaction
+
+    // if you need to parse x-www-form-urlencoded POST parameters as @BodyParam's
+    parsers += FormUrlEncodedParser()
 
     assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 
@@ -37,6 +37,11 @@ fun main() {
 
       get("/:param") {
         "Path: ${path("param")}, Query: $queryParams"
+      }
+
+      post("/post") {
+        data class JsonRequest(val required: String, val hello: String = "World")
+        body<JsonRequest>()
       }
     }
 
