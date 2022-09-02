@@ -1,7 +1,7 @@
 package klite.sample
 
-import Routes
-import SomeResponse
+import MyData
+import MyRoutes
 import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
@@ -30,7 +30,7 @@ class ServerIntegrationTest {
       }
       context("/api") {
         useOnly<JsonBody>()
-        annotated<Routes>()
+        annotated<MyRoutes>()
       }
       start(gracefulStopDelaySec = -1)
     }
@@ -38,12 +38,13 @@ class ServerIntegrationTest {
     val http = JsonHttpClient(server.registry, "http://localhost:$port")
     runBlocking {
       expect(http.get<String>("/hello")).toEqual("\"Hello\"")
-      expect(http.get<SomeResponse>("/api/hello")).toEqual(SomeResponse("Hello"))
+      expect(http.get<MyData>("/api/hello")).toEqual(MyData("Hello"))
       expect(http.request<Unit>("/api/hello") { method("HEAD", noBody()) }).toEqual(Unit)
       expect(http.get<Unit>("/api/hello/suspend204")).toEqual(Unit)
       expect(http.get<String>("/api/hello/broken-render")).toEqual("{")
       expect(http.get<String>("/api/hello/null")).toEqual("null")
       expect(http.get<String>("/api/hello/params?required=123")).toEqual("\"false,123,null\"")
+      expect(http.post<String>("/api/hello/post", MyData("World"))).toEqual("\"Received Some(hello=World, world=3.141592653589793) as json, optional = true\"")
     }
     expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>()
       .messageToContain("""{"statusCode":400,"message":"required is required","reason":"Bad Request"}""")
