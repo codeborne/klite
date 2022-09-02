@@ -9,6 +9,7 @@ import javax.sql.DataSource
 class DBModule(configure: HikariConfig.() -> Unit = {}): Extension {
   private val logger = logger()
   val dataSource = HikariDataSource(HikariConfig().apply {
+    poolName = "app-db"
     jdbcUrl = Config.required("DB_URL")
     username = Config.optional("DB_USER")
     password = Config.optional("DB_PASS")
