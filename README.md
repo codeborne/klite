@@ -1,6 +1,6 @@
 # Klite
 
-[![Build & Test](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml/badge.svg)](https://github.com/angryziber/kotlin-server/actions/workflows/ci.yml)
+[![Build & Test](https://github.com/codeborne/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/codeborne/klite/actions/workflows/ci.yml)
 
 A very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
 
@@ -50,7 +50,7 @@ Public announcement is pending at [KKON 2022](https://rheinwerk-kkon.de/programm
 
 See [the sample subproject](sample) on how to build apps with Klite and run them in Docker.
 
-[![Release](https://jitpack.io/v/angryziber/klite.svg)](https://jitpack.io/#angryziber/klite)
+[![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite)
 
 Klite builds are available from [jitpack](https://jitpack.io):
 ```kotlin
@@ -61,11 +61,11 @@ Klite builds are available from [jitpack](https://jitpack.io):
 
   dependencies {
     val kliteVersion = "master-SNAPSHOT" // you can put a released tag or commit hash here
-    implementation("com.github.angryziber.klite:klite-server:$kliteVersion")
+    implementation("com.github.codeborne.klite:klite-server:$kliteVersion")
     // Plus any optional components with their own external dependencies, see above for list
-    implementation("com.github.angryziber.klite:klite-jackson:$kliteVersion")
-    implementation("com.github.angryziber.klite:klite-jdbc:$kliteVersion")
-    testImplementation("com.github.angryziber.klite:klite-jdbc-test:$kliteVersion")
+    implementation("com.github.codeborne.klite:klite-jackson:$kliteVersion")
+    implementation("com.github.codeborne.klite:klite-jdbc:$kliteVersion")
+    testImplementation("com.github.codeborne.klite:klite-jdbc-test:$kliteVersion")
     ...
   }
 ```
