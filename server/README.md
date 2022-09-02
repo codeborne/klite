@@ -64,6 +64,17 @@ arguments (dependencies).
 You can add both global and context-specific [decorators](src/klite/Decorator.kt), including `Before` and `After` handlers.
 The order is important, and decorators apply to all *following routes* that are defined in the same context.
 
+## Sessions
+
+Session support can be enabled by providing a [SessionStore](src/klite/Session.kt) implementation, e.g.
+```kotlin
+  Server(sessionStore = CookieSessionStore())
+```
+
+The included [CookieSessionStore](src/klite/Session.kt) stores sessions in an encrypted cookie, which doesn't require any synchronization between multiple server nodes. It requires a `Config["SESSION_SECRET"]` to be available to derive an encryption key. Make sure it is different in all your environments.
+
+You can implement your own store if you want sessions to be stored in e.g. a database.
+
 ## HTML templates for server-side rendering
 
 No built-in support for that. You may either implement a [BodyRenderer](src/klite/Body.kt) that will pass route responses to your favorite template engine or just call the engine in your routes and produce html output directly with `send(OK, "html", "text/html")`.

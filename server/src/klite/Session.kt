@@ -19,7 +19,7 @@ interface SessionStore {
   fun save(exchange: HttpExchange, session: Session)
 }
 
-class CookieSessionStore(
+open class CookieSessionStore(
   sessionSecret: String = Config.required("SESSION_SECRET"),
   val cookie: Cookie = Cookie("S", "", path = "/", httpOnly = true),
   keyGenerator: KeyGenerator = KeyGenerator()
