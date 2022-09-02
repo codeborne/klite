@@ -44,7 +44,7 @@ class ServerIntegrationTest {
       expect(http.get<String>("/api/hello/broken-render")).toEqual("{")
       expect(http.get<String>("/api/hello/null")).toEqual("null")
       expect(http.get<String>("/api/hello/params?required=123")).toEqual("\"false,123,null\"")
-      expect(http.post<String>("/api/hello/post", MyData("World"))).toEqual("\"Received Some(hello=World, world=3.141592653589793) as json, optional = true\"")
+      expect(http.post<String>("/api/hello/post", MyData("World"))).toEqual("\"Received MyData(hello=World, world=3.141592653589793) as json, optional = true\"")
     }
     expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>()
       .messageToContain("""{"statusCode":400,"message":"required is required","reason":"Bad Request"}""")
