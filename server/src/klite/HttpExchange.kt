@@ -26,6 +26,7 @@ open class HttpExchange(
   open val remoteAddress: String get() = original.remoteAddress.address.hostAddress
   open val host: String get() = header("Host")!!
   open val isSecure: Boolean get() = original is HttpsExchange
+  open val protocol: String get() = if (isSecure) "https" else "http"
 
   val path: String get() = original.requestURI.path
   lateinit var pathParams: Params internal set
@@ -36,7 +37,7 @@ open class HttpExchange(
   fun query(param: String) = queryParams[param]
 
   val fullUrl get() = fullUrl(original.requestURI.toString())
-  fun fullUrl(suffix: String): URI = URI("http${if (isSecure) "s" else ""}://$host$suffix")
+  fun fullUrl(suffix: String): URI = URI("$protocol://$host$suffix")
 
   inline fun <reified T: Any> body(): T = body(T::class)
   fun <T: Any> body(type: KClass<T>): T {
@@ -137,7 +138,6 @@ open class XRequestIdGenerator: RequestIdGenerator() {
   override fun invoke(headers: Headers) = super.invoke(headers) + (headers.getFirst("X-Request-Id")?.let { "/$it" } ?: "")
 }
 
-// TODO: maybe a separate interface inside of HttpExchange?
 class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
   HttpExchange(original, config, sessionStore, requestId) {
   companion object {
@@ -145,5 +145,6 @@ class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfi
   }
   override val remoteAddress get() = header("X-Forwarded-For")?.split(", ")?.let { it.getOrNull(it.size - forwardedIPIndexFromEnd) } ?: super.remoteAddress
   override val host get() = header("X-Forwarded-Host") ?: super.host
-  override val isSecure get() = header("X-Forwarded-Proto") == "https"
+  override val protocol get() = header("X-Forwarded-Proto") ?: "http"
+  override val isSecure get() = protocol == "https"
 }
