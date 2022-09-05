@@ -6,30 +6,31 @@ package klite.slf4j
  */
 open class StackTraceOptimizingJsonLogger(name: String): StackTraceOptimizingLogger(name) {
   override fun print(formatted: String, t: Throwable?) {
+    val sb = StringBuilder()
     if (formatted.isNotEmpty()) {
-      out.print(formatted)
-      out.print(" ")
+      sb.append(formatted)
+      sb.append(" ")
     }
-    if (t != null) printJson(t)
-    out.println()
+    if (t != null) appendJson(sb, t)
+    out.println(sb.toString())
   }
 
-  private fun printJson(t: Throwable) {
-    out.print("""{"error": """")
-    out.print(t.toString().replace("\"", "\\\"").replace("\n", "\\n"))
-    out.print("""", "stack": {""")
+  private fun appendJson(sb: StringBuilder, t: Throwable) {
+    sb.append("""{"error": """")
+    sb.append(t.toString().replace("\"", "\\\"").replace("\n", "\\n"))
+    sb.append("""", "stack": {""")
     val stackTrace = t.stackTrace
     val until = findUsefulStackTraceEnd(stackTrace)
     for (i in 0..until) {
-      out.print("\""); out.print(i); out.print("\": \"")
-      out.print(stackTrace[i].toString())
-      out.print("\"")
-      if (i != until) out.print(", ")
+      sb.append("\""); sb.append(i); sb.append("\": \"")
+      sb.append(stackTrace[i].toString())
+      sb.append("\"")
+      if (i != until) sb.append(", ")
     }
     t.cause?.let {
-      out.print(""", "cause": """)
-      printJson(it)
+      sb.append(""", "cause": """)
+      appendJson(sb, it)
     }
-    out.print("}}")
+    sb.append("}}")
   }
 }
