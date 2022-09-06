@@ -1,7 +1,8 @@
 package klite
 
+import klite.StatusCode.Companion.NotModified
+import klite.StatusCode.Companion.OK
 import java.io.IOException
-import java.lang.System.Logger.Level.WARNING
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.ZoneOffset.UTC
@@ -22,11 +23,10 @@ class AssetsHandler(
   private val logger = logger()
 
   init {
-    if (!path.isDirectory()) logger.log(WARNING, "Assets path ${path.toAbsolutePath()} is not a readable directory")
+    if (!path.isDirectory()) logger.warn("Assets path ${path.toAbsolutePath()} is not a readable directory")
   }
 
   override suspend fun invoke(exchange: HttpExchange) {
-    // TODO AsynchronousFileChannel.open(path.resolve(exchange.requestPath), READ).read().await()
     try {
       var file = path / exchange.path.substring(1)
       if (!file.startsWith(path)) throw ForbiddenException(exchange.path)
@@ -44,7 +44,7 @@ class AssetsHandler(
   private fun HttpExchange.send(file: Path) {
     val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
     header("Last-Modified", lastModified)
-    if (lastModified == header("If-Modified-Since")) return send(StatusCode.NotModified)
+    if (lastModified == header("If-Modified-Since")) return send(NotModified)
 
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
@@ -58,10 +58,11 @@ class AssetsHandler(
     val gzFile = Path.of("$file.gz")
     if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
       header("Content-Encoding", "gzip")
-      return send(StatusCode.OK, gzFile.readBytes(), contentType)
+      return send(OK, gzFile.readBytes(), contentType)
     }
 
-    send(StatusCode.OK, file.readBytes(), contentType)
+    // TODO AsynchronousFileChannel.open(path.resolve(exchange.requestPath), READ).read().await()
+    send(OK, file.readBytes(), contentType)
   }
 }
 
