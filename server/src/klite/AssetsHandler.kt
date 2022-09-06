@@ -5,6 +5,7 @@ import klite.StatusCode.Companion.OK
 import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption.READ
 import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import kotlin.io.path.*
@@ -56,13 +57,13 @@ class AssetsHandler(
     headerModifier()
 
     val gzFile = Path.of("$file.gz")
-    val bytes = if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
+    val fileToSend = if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
       header("Content-Encoding", "gzip")
-      gzFile.readBytes()
-    } else file.readBytes()
+      gzFile
+    } else file
 
-    // TODO AsynchronousFileChannel.open(path.resolve(exchange.requestPath), READ).read().await()
-    send(OK, bytes, contentType)
+    val out = startResponse(OK, fileToSend.fileSize(), contentType)
+    fileToSend.inputStream(READ).use { it.transferTo(out) }
   }
 }
 
