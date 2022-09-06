@@ -56,13 +56,13 @@ class AssetsHandler(
     headerModifier()
 
     val gzFile = Path.of("$file.gz")
-    if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
+    val bytes = if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
       header("Content-Encoding", "gzip")
-      return send(OK, gzFile.readBytes(), contentType)
-    }
+      gzFile.readBytes()
+    } else file.readBytes()
 
     // TODO AsynchronousFileChannel.open(path.resolve(exchange.requestPath), READ).read().await()
-    send(OK, file.readBytes(), contentType)
+    send(OK, bytes, contentType)
   }
 }
 
