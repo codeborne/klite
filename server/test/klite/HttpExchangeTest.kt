@@ -9,6 +9,7 @@ import klite.Cookie.SameSite.Strict
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.net.URI
+import kotlin.reflect.typeOf
 
 class HttpExchangeTest {
   abstract class MockableHttpExchange: OriginalHttpExchange()
@@ -70,7 +71,7 @@ class HttpExchangeTest {
     every { exchange.requestType } returns customParser.contentType
     val input = "{PI}".byteInputStream()
     every { original.requestBody } answers { input }
-    every { customParser.parse(input, Double::class) } returns Math.PI
+    every { customParser.parse<Double>(input, typeOf<Double>()) } returns Math.PI
     expect(exchange.body<Double>()).toEqual(Math.PI)
   }
 

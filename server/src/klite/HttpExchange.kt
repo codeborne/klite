@@ -10,7 +10,8 @@ import java.net.URI
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.LazyThreadSafetyMode.NONE
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
@@ -39,8 +40,8 @@ open class HttpExchange(
   val fullUrl get() = fullUrl(original.requestURI.toString())
   fun fullUrl(suffix: String): URI = URI("$protocol://$host$suffix")
 
-  inline fun <reified T: Any> body(): T = body(T::class)
-  fun <T: Any> body(type: KClass<T>): T {
+  inline fun <reified T: Any> body(): T = body(typeOf<T>())
+  fun <T: Any> body(type: KType): T {
     val contentType = requestType ?: "text/plain"
     val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
     return requestStream.use { bodyParser.parse(requestStream, type) }

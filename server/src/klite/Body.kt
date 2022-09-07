@@ -3,6 +3,7 @@ package klite
 import java.io.InputStream
 import java.io.OutputStream
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 interface ContentTypeProvider {
   val contentType: String
@@ -20,6 +21,7 @@ interface BodyRenderer: ContentTypeProvider {
 
 interface BodyParser: ContentTypeProvider {
   fun <T: Any> parse(input: InputStream, type: KClass<T>): T
+  @Suppress("UNCHECKED_CAST") fun <T: Any> parse(input: InputStream, type: KType): T = parse(input, type.classifier as KClass<T>)
 }
 
 class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {

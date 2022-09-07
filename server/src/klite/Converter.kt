@@ -63,3 +63,5 @@ object Converter {
     }
   }
 }
+
+val KType.java get() = (classifier as KClass<*>).java

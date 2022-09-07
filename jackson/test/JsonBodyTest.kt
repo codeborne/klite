@@ -12,6 +12,8 @@ import klite.StatusCode.Companion.BadRequest
 import klite.trimToNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
+import java.math.BigDecimal
+import kotlin.reflect.typeOf
 
 class JsonBodyTest {
   val jsonBody = JsonBody()
@@ -42,6 +44,11 @@ class JsonBodyTest {
     } catch (e: ValueInstantiationException) {
       expect(jsonBody.handleValueInstantiation(e)).toEqual(ErrorResponse(BadRequest, "Illegal stuff in hello"))
     }
+  }
+
+  @Test fun `parameterized types`() {
+    val set = jsonBody.parse<Set<BigDecimal>>("""[1,2]""".byteInputStream(), typeOf<Set<BigDecimal>>())
+    expect(set).toEqual(setOf(1.toBigDecimal(), 2.toBigDecimal()))
   }
 }
 

@@ -57,8 +57,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
         else if (p.type.classifier == InputStream::class) requestStream
         else {
           val name = p.name!!
-          val type = p.type.classifier as KClass<*>
-          fun String.toType() = Converter.from(this, type)
+          fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
           when (val a = p.annotations.firstOrNull()) {
             is BodyParam -> body(name)?.toType()
             is PathParam -> path(name).toType()
@@ -67,7 +66,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
             is CookieParam -> cookie(a.value.trimToNull() ?: name)?.toType()
             is SessionParam -> session[a.value.trimToNull() ?: name]?.toType()
             is AttrParam -> attr(a.value.trimToNull() ?: name)
-            else -> body(type)
+            else -> body(p.type)
           }
         }
       }.filter { !it.key.isOptional || it.value != null }
