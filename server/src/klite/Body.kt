@@ -31,15 +31,14 @@ class TextBodyParser(
 ): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T {
-    val s = input.readBytes().decodeToString()
+    val s = input.reader().readText()
     return if (type == String::class) s as T else Converter.from(s, type)
   }
 }
 
 class FormUrlEncodedParser(override val contentType: String = "application/x-www-form-urlencoded"): BodyParser {
   @Suppress("UNCHECKED_CAST")
-  override fun <T : Any> parse(input: InputStream, type: KClass<T>): T =
-    urlDecodeParams(input.readBytes().decodeToString()) as T
+  override fun <T : Any> parse(input: InputStream, type: KClass<T>): T = urlDecodeParams(input.reader().readText()) as T
 }
 
 // TODO: multipart/form-data parser

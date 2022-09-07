@@ -42,11 +42,11 @@ open class HttpExchange(
   inline fun <reified T: Any> body(): T = body(T::class)
   fun <T: Any> body(type: KClass<T>): T {
     val contentType = requestType ?: "text/plain"
-    return config.parsers.find { contentType.startsWith(it.contentType) }?.parse(requestStream, type) ?:
-      throw UnsupportedMediaTypeException(requestType)
+    val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
+    return requestStream.use { bodyParser.parse(requestStream, type) }
   }
   /** Note: this can be called only once */
-  val rawBody: String get() = requestStream.use { it.readBytes().decodeToString() }
+  val rawBody: String get() = requestStream.reader().use { it.readText() }
 
   val bodyParams: Params by lazy { body() }
   fun body(param: String) = bodyParams[param]
