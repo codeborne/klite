@@ -2,6 +2,7 @@ package klite
 
 import com.sun.net.httpserver.HttpsExchange
 import klite.RequestMethod.HEAD
+import klite.RequestMethod.OPTIONS
 import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.OK
 import java.io.InputStream
@@ -88,7 +89,7 @@ open class HttpExchange(
     val renderer = config.renderers.find { accept(it) } ?:
       if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
     val out = startResponse(code, contentType = renderer.contentType)
-    if (method != HEAD) renderer.render(out, body)
+    renderer.render(out, body)
   }
 
   /**
@@ -98,13 +99,15 @@ open class HttpExchange(
   fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null): OutputStream {
     sessionStore?.save(this, session)
     responseType = contentType
-    original.sendResponseHeaders(code.value, if (length == 0L) -1 else length ?: 0)
+    val canHaveBody = method != HEAD && method != OPTIONS
+    original.sendResponseHeaders(code.value, if (length == 0L || !canHaveBody) -1 else length ?: 0)
+    if (!canHaveBody) throw BodyNotAllowedException()
     return original.responseBody
   }
 
   fun send(code: StatusCode, body: ByteArray? = null, contentType: String? = null) {
-    val out = startResponse(code, body?.size?.toLong().takeIf { method != HEAD } ?: 0, contentType)
-    if (method != HEAD) body?.let { out.write(it) }
+    val out = startResponse(code, body?.size?.toLong(), contentType)
+    body?.let { out.write(it) }
   }
 
   fun send(code: StatusCode, body: String?, contentType: String? = null) =

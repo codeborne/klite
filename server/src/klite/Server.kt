@@ -90,6 +90,7 @@ class Server(
         if (result == Unit) exchange.send(NoContent)
         else exchange.render(OK, result)
       }
+    } catch (ignore: BodyNotAllowedException) {
     } catch (e: Throwable) {
       errors.handle(exchange, e)
     } finally {
