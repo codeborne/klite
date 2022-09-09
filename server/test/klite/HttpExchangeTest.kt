@@ -6,6 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Cookie.SameSite.Strict
+import klite.StatusCode.Companion.Created
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.net.URI
@@ -84,16 +85,16 @@ class HttpExchangeTest {
   @Test fun `send text`() {
     exchange.send(StatusCode.OK, "Hello", "text/custom")
     verify {
-      original.responseHeaders["Content-Type"] = "text/custom; charset=UTF-8"
+      original.responseHeaders["Content-type"] = "text/custom; charset=UTF-8"
       original.sendResponseHeaders(200, 5)
       original.responseBody.write("Hello".toByteArray())
     }
   }
 
   @Test fun `send binary`() {
-    exchange.send(StatusCode.Created, "XXX".toByteArray(), "image/custom")
+    exchange.send(Created, "XXX".toByteArray(), "image/custom")
     verify {
-      original.responseHeaders["Content-Type"] = "image/custom"
+      original.responseHeaders["Content-type"] = "image/custom"
       original.sendResponseHeaders(201, 3)
       original.responseBody.write("XXX".toByteArray())
     }
