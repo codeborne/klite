@@ -5,7 +5,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEndWith
 import ch.tutteli.atrium.api.fluent.en_GB.toStartWith
 import ch.tutteli.atrium.api.verbs.expect
 import com.fasterxml.jackson.databind.JsonNode
-import klite.json.buildMapper
+import klite.json.kliteJsonMapper
 import klite.json.parse
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
@@ -20,7 +20,7 @@ class StackTraceOptimizingJsonLoggerTest {
     expect(json).toStartWith("""{"error": "java.lang.Exception: Hello\n\"World\"", "stack": {"0": "${javaClass.name}""")
       .toContain(""", "cause": {"error": "java.lang.IllegalStateException: cause", "stack": {"0": """)
       .toEndWith("}}}}\n")
-    buildMapper().parse<JsonNode>(json)
+    kliteJsonMapper().parse<JsonNode>(json)
     KliteLogger.out = System.out
   }
 }
