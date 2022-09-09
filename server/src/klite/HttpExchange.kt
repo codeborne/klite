@@ -73,8 +73,8 @@ open class HttpExchange(
 
   val session: Session by lazy(NONE) { sessionStore?.load(this) ?: error("No sessionStore defined") }
 
-  val statusCode: Int get() = original.responseCode
-  val isResponseStarted get() = statusCode >= 0
+  val statusCode: StatusCode? get() = StatusCode(original.responseCode).takeIf { isResponseStarted }
+  val isResponseStarted get() = original.responseCode >= 0
 
   val requestType: String? get() = header("Content-Type")
   val requestStream: InputStream get() = original.requestBody
