@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 fun buildMapper() = jsonMapper {
-  addModule(KotlinModule())
+  addModule(KotlinModule.Builder().build())
   addModule(JavaTimeModule())
   disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
