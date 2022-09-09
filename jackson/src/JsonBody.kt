@@ -24,6 +24,7 @@ fun buildMapper() = jsonMapper {
   addModule(JavaTimeModule())
   disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+  enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
   serializationInclusion(JsonInclude.Include.NON_NULL)
   addModule(SimpleModule().apply { addDeserializer(String::class.java, EmptyStringToNullDeserializer) })
 //  withCoercionConfigDefaults {
