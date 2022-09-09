@@ -31,6 +31,11 @@ But the biggest problem is that filters/decorators don't support coroutines prop
 to have stable transaction management when coroutines are used. "After" filters and decorators run before the first
 suspension, rendering them useless in async use cases.
 
+### Javalin
+
+Javalin also strives to be simple, but contains 7000 lines of code vs Klite's less than 1000.
+Also, it is blocking by design with no easy way to write coroutines.
+
 ### General
 
 All of the above lack logging/jdbc/transaction/migrations that most projects need.
