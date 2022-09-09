@@ -60,7 +60,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
           fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
           when (val a = p.annotations.firstOrNull()) {
             is BodyParam -> body(name)?.toType()
-            is PathParam -> path(name).toType()
+            is PathParam -> path(name)?.toType()
             is QueryParam -> query(a.value.trimToNull() ?: name)?.toType()
             is HeaderParam -> header(a.value.trimToNull() ?: name)?.toType()
             is CookieParam -> cookie(a.value.trimToNull() ?: name)?.toType()

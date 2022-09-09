@@ -32,7 +32,7 @@ open class HttpExchange(
 
   val path: String get() = original.requestURI.path
   lateinit var pathParams: Params internal set
-  fun path(param: String): String = pathParams[param] ?: error("Param $param missing in path")
+  fun path(param: String): String? = pathParams[param]
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Params by lazy { original.requestURI.queryParams }
