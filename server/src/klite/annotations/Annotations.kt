@@ -29,6 +29,10 @@ import kotlin.reflect.jvm.javaMethod
 /**
  * Adds all annotated methods as routes, sorted by path (matching more specific paths first).
  * Routes can also implement Before/After interfaces.
+ *
+ * Use the @XXXParam annotations to bind specific types of params.
+ * Non-annotated binding of well known classes is possible, like [HttpExchange] and [Session].
+ * Non-annotated custom class is interpreted as the whole POST/PUT body, e.g. a data class deserialized from json.
  */
 fun Router.annotated(routes: Any) {
   val cls = routes::class
