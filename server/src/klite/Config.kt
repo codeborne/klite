@@ -4,7 +4,7 @@ import klite.Config.useEnvFile
 import java.io.File
 
 /**
- * An easy way to read configuration from env vars or System properties,
+ * An overridable way to read configuration from env vars or system properties,
  * as per 12-factor apps spec. In development, it is convenient to use [useEnvFile]
  */
 object Config {
