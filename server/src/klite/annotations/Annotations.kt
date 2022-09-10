@@ -18,9 +18,9 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
-@Target(VALUE_PARAMETER) annotation class BodyParam
 @Target(VALUE_PARAMETER) annotation class PathParam
 @Target(VALUE_PARAMETER) annotation class QueryParam(val value: String = "")
+@Target(VALUE_PARAMETER) annotation class BodyParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class HeaderParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class CookieParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class SessionParam(val value: String = "")
@@ -59,9 +59,9 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
           val name = p.name!!
           fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
           when (val a = p.annotations.firstOrNull()) {
-            is BodyParam -> body(name)?.toType()
             is PathParam -> path(name)?.toType()
             is QueryParam -> query(a.value.trimToNull() ?: name)?.toType()
+            is BodyParam -> body(a.value.trimToNull() ?: name)?.toType()
             is HeaderParam -> header(a.value.trimToNull() ?: name)?.toType()
             is CookieParam -> cookie(a.value.trimToNull() ?: name)?.toType()
             is SessionParam -> session[a.value.trimToNull() ?: name]?.toType()
