@@ -1,15 +1,22 @@
 package klite
 
+import klite.Config.useEnvFile
 import java.io.File
 
+/**
+ * An easy way to read configuration from env vars or System properties,
+ * as per 12-factor apps spec. In development, it is convenient to use [useEnvFile]
+ */
 object Config {
   fun optional(env: String): String? = System.getProperty(env) ?: System.getenv(env)
   fun optional(env: String, default: String) = optional(env) ?: default
   fun required(env: String) = optional(env) ?: error("$env should be provided as system property or env var")
 
+  /** For dot-separated inheritance, e.g. logger level */
   fun inherited(env: String): String? = optional(env) ?: if (env.contains(".")) inherited(env.substringBeforeLast(".")) else null
   fun inherited(env: String, default: String): String = inherited(env) ?: default
 
+  /** List of active configurations, e.g. dev or prod, from ENV var */
   val active: List<String> by lazy { optional("ENV", "dev").split(",").map { it.trim() } }
   fun isActive(conf: String) = active.contains(conf)
   fun isAnyActive(vararg confs: String) = active.any { confs.contains(it) }
