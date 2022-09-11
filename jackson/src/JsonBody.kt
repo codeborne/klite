@@ -59,6 +59,7 @@ class JsonBody(
     }
     renderers += this@JsonBody
     parsers += this@JsonBody
+    // TODO: use Jackson's FromStringDeserializer in klite Converter, or vice versa
   }
 
   internal fun handleValueInstantiation(e: ValueInstantiationException): ErrorResponse {
