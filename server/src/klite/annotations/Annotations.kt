@@ -15,6 +15,7 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class GET(val value: String = "")
 @Target(FUNCTION) annotation class POST(val value: String = "")
 @Target(FUNCTION) annotation class PUT(val value: String = "")
+@Target(FUNCTION) annotation class PATCH(val value: String = "")
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
