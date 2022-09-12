@@ -90,6 +90,7 @@ class Server(
         when (result) {
           Unit -> exchange.send(NoContent)
           is StatusCode -> exchange.send(result)
+          is ErrorResponse -> exchange.render(result.statusCode, result)
           else -> exchange.render(OK, result)
         }
       }
