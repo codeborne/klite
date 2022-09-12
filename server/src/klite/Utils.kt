@@ -15,7 +15,7 @@ fun String.base64Decode() = Base64.getDecoder().decode(this)
 
 typealias Params = Map<String, String?>
 
-fun urlEncodeParams(params: Params) = params.mapNotNull { e -> e.value?.let { e.key + "=" + it.urlEncode() } }.joinToString("&")
+fun urlEncodeParams(params: Map<String, Any?>) = params.mapNotNull { e -> e.value?.let { e.key + "=" + it.toString().urlEncode() } }.joinToString("&")
 fun urlDecodeParams(params: String?): Params = params?.split('&')?.associate(::keyValue) ?: emptyMap()
 internal fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
 

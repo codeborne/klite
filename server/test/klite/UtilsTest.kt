@@ -8,6 +8,7 @@ import java.net.URI
 class UtilsTest {
   @Test fun urlPlus() {
     expect(URI("https://codeborne.com/#ref") + mapOf("hello" to "world")).toEqual(URI("https://codeborne.com/?hello=world#ref"))
+    expect(URI("https://codeborne.com/?x=y#ref") + mapOf("hello" to "world")).toEqual(URI("https://codeborne.com/?x=y&hello=world#ref"))
   }
 
   @Test fun urlParams() {
