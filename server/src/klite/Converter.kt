@@ -13,7 +13,8 @@ typealias FromStringConverter<T> = (s: String) -> T
 object Converter {
   private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
-    Currency::class to Currency::getInstance
+    Currency::class to Currency::getInstance,
+    Locale::class to { Locale.forLanguageTag(it.replace('_', '-')) }
   ))
 
   operator fun <T: Any> set(type: KClass<T>, converter: FromStringConverter<T>) { converters[type] = converter }

@@ -8,10 +8,18 @@ import java.net.URI
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
+import java.util.regex.Pattern
 
 class ConverterTest {
   @Test fun `pre-defined`() {
     expect(Converter.from<UUID>("05e1cebe-67dc-4780-b5df-472edd55fab6")).toEqual(UUID.fromString("05e1cebe-67dc-4780-b5df-472edd55fab6"))
+    expect(Converter.from<Currency>("EUR")).toEqual(Currency.getInstance("EUR"))
+    expect(Converter.from<Locale>("et_EE")).toEqual(Locale("et", "EE"))
+  }
+
+  @Test fun custom() {
+    Converter.use<Pattern> { Pattern.compile(it) }
+    expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
   }
 
   @Test fun enum() {

@@ -20,6 +20,10 @@ class CookieTest {
     expect(Cookie("Hello", "World", path = null, expires = ofEpochSecond(1634800860)).toString()).toEqual("Hello=World; Expires=Thu, 21 Oct 2021 07:21:00 GMT")
   }
 
+  @Test fun maxAge() {
+    expect(Cookie("Hello", "World", path = null, maxAgeSec = 123).toString()).toEqual("Hello=World; Max-Age=123")
+  }
+
   @Test fun domain() {
     expect(Cookie("Hello", "World", domain = "github.com").toString()).toEqual("Hello=World; Path=/; Domain=github.com")
   }

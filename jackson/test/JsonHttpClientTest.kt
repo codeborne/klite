@@ -21,7 +21,7 @@ class JsonHttpClientTest {
   val httpClient = mockk<HttpClient>()
   val registry = SimpleRegistry().apply {
     register(httpClient)
-    register(buildMapper())
+    register(kliteJsonMapper())
   }
   val http = JsonHttpClient(registry, "http://some.host/v1", reqModifier = { setHeader("X-Custom-API", "123") },
     retryCount = 2, retryAfter = ofSeconds(0))

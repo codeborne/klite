@@ -32,11 +32,11 @@ open class HttpExchange(
 
   val path: String get() = original.requestURI.path
   lateinit var pathParams: Params internal set
-  fun path(param: String) = pathParams[param] ?: error("Param $param missing in path")
+  fun path(param: String): String? = pathParams[param]
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Params by lazy { original.requestURI.queryParams }
-  fun query(param: String) = queryParams[param]
+  fun query(param: String): String? = queryParams[param]
 
   val fullUrl get() = fullUrl(original.requestURI.toString())
   fun fullUrl(suffix: String): URI = URI("$protocol://$host$suffix")
@@ -51,7 +51,8 @@ open class HttpExchange(
   val rawBody: String get() = requestStream.reader().use { it.readText() }
 
   val bodyParams: Params by lazy { body() }
-  fun body(param: String) = bodyParams[param]
+  /** e.g. form param, passed in body */
+  fun body(param: String): String? = bodyParams[param]
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
@@ -72,15 +73,15 @@ open class HttpExchange(
 
   val session: Session by lazy(NONE) { sessionStore?.load(this) ?: error("No sessionStore defined") }
 
-  val statusCode: Int get() = original.responseCode
-  val isResponseStarted get() = statusCode >= 0
+  val statusCode: StatusCode? get() = StatusCode(original.responseCode).takeIf { isResponseStarted }
+  val isResponseStarted get() = original.responseCode >= 0
 
-  val requestType get() = header("Content-Type")
+  val requestType: String? get() = header("Content-Type")
   val requestStream: InputStream get() = original.requestBody
 
   var responseType: String?
-    get() = responseHeaders["Content-Type"]?.firstOrNull()
-    set(value) { value?.let { header("Content-Type", it) } }
+    get() = responseHeaders["Content-type"]?.firstOrNull()
+    set(value) { value?.let { header("Content-type", it) } }
 
   val accept get() = Accept(header("Accept"))
 

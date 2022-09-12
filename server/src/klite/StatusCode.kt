@@ -41,4 +41,6 @@ import kotlin.reflect.full.memberProperties
       it.get(StatusCode) to it.name.replace("[A-Z]".toRegex(), " $0").trim()
     }
   }
+
+  override fun toString() = value.toString()
 }

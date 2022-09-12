@@ -4,7 +4,7 @@ import java.net.InetSocketAddress
 
 /**
  * Test it with:
- * ab -n 10000 -c 100 http://localhost:8080/hello
+ * ab -n 1000 -c 100 http://localhost:8080/hello
  */
 fun main() {
   val server = HttpServer.create(InetSocketAddress(8080), 0)

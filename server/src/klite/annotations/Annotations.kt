@@ -15,12 +15,13 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class GET(val value: String = "")
 @Target(FUNCTION) annotation class POST(val value: String = "")
 @Target(FUNCTION) annotation class PUT(val value: String = "")
+@Target(FUNCTION) annotation class PATCH(val value: String = "")
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
-@Target(VALUE_PARAMETER) annotation class BodyParam
 @Target(VALUE_PARAMETER) annotation class PathParam
 @Target(VALUE_PARAMETER) annotation class QueryParam(val value: String = "")
+@Target(VALUE_PARAMETER) annotation class BodyParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class HeaderParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class CookieParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class SessionParam(val value: String = "")
@@ -29,6 +30,10 @@ import kotlin.reflect.jvm.javaMethod
 /**
  * Adds all annotated methods as routes, sorted by path (matching more specific paths first).
  * Routes can also implement Before/After interfaces.
+ *
+ * Use the @XXXParam annotations to bind specific types of params.
+ * Non-annotated binding of well known classes is possible, like [HttpExchange] and [Session].
+ * Non-annotated custom class is interpreted as the whole POST/PUT body, e.g. a data class deserialized from json.
  */
 fun Router.annotated(routes: Any) {
   val cls = routes::class
@@ -59,13 +64,13 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
           val name = p.name!!
           fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
           when (val a = p.annotations.firstOrNull()) {
-            is BodyParam -> body(name)?.toType()
-            is PathParam -> path(name).toType()
-            is QueryParam -> query(a.value.trimToNull() ?: name)?.toType()
-            is HeaderParam -> header(a.value.trimToNull() ?: name)?.toType()
-            is CookieParam -> cookie(a.value.trimToNull() ?: name)?.toType()
-            is SessionParam -> session[a.value.trimToNull() ?: name]?.toType()
-            is AttrParam -> attr(a.value.trimToNull() ?: name)
+            is PathParam -> path(name)?.toType()
+            is QueryParam -> query(a.value.ifEmpty { name })?.toType()
+            is BodyParam -> body(a.value.ifEmpty { name })?.toType()
+            is HeaderParam -> header(a.value.ifEmpty { name })?.toType()
+            is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
+            is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
+            is AttrParam -> attr(a.value.ifEmpty { name })
             else -> body(p.type)
           }
         }

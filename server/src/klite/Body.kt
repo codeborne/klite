@@ -5,21 +5,21 @@ import java.io.OutputStream
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-interface ContentTypeProvider {
+interface SupportsContentType {
   val contentType: String
 }
 
 class Accept(val contentTypes: String?) {
   val isRelaxed get() = contentTypes == null || contentTypes.contains("*") || contentTypes.startsWith("text/html,")
   operator fun invoke(contentType: String) = contentTypes?.contains(contentType) ?: true
-  operator fun invoke(provider: ContentTypeProvider) = invoke(provider.contentType)
+  operator fun invoke(provider: SupportsContentType) = invoke(provider.contentType)
 }
 
-interface BodyRenderer: ContentTypeProvider {
+interface BodyRenderer: SupportsContentType {
   fun render(output: OutputStream, value: Any?)
 }
 
-interface BodyParser: ContentTypeProvider {
+interface BodyParser: SupportsContentType {
   fun <T: Any> parse(input: InputStream, type: KClass<T>): T
   @Suppress("UNCHECKED_CAST") fun <T: Any> parse(input: InputStream, type: KType): T = parse(input, type.classifier as KClass<T>)
 }

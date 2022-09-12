@@ -67,6 +67,9 @@ class Router(
   fun put(path: Regex, handler: Handler) = add(Route(PUT, path, handler = handler))
   fun put(path: String = "", handler: Handler) = put(pathParamRegexer.from(path), handler)
 
+  fun patch(path: Regex, handler: Handler) = add(Route(PATCH, path, handler = handler))
+  fun patch(path: String = "", handler: Handler) = patch(pathParamRegexer.from(path), handler)
+
   fun delete(path: Regex, handler: Handler) = add(Route(DELETE, path, handler = handler))
   fun delete(path: String = "", handler: Handler) = delete(pathParamRegexer.from(path), handler)
 
@@ -75,7 +78,7 @@ class Router(
 }
 
 enum class RequestMethod {
-  GET, POST, PUT, DELETE, OPTIONS, HEAD
+  GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD
 }
 
 data class Route(val method: RequestMethod, val path: Regex, val annotations: List<Annotation> = emptyList(), val handler: Handler) {

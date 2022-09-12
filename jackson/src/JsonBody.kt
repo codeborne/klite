@@ -12,6 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.jsonMapper
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import klite.*
 import klite.StatusCode.Companion.BadRequest
 import java.io.InputStream
@@ -19,8 +20,8 @@ import java.io.OutputStream
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-fun buildMapper() = jsonMapper {
-  addModule(KotlinModule())
+fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonMapper.Builder.() -> Unit = {}) = jsonMapper {
+  addModule(kotlinModule)
   addModule(JavaTimeModule())
   disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -30,6 +31,7 @@ fun buildMapper() = jsonMapper {
 //    it.acceptBlankAsEmpty = true
 //    it.setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull)
 //  }
+  modifier()
 }
 
 object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
@@ -38,7 +40,7 @@ object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
 }
 
 class JsonBody(
-  val json: JsonMapper = buildMapper(),
+  val json: JsonMapper = kliteJsonMapper(),
   override val contentType: String = "application/json"
 ): BodyParser, BodyRenderer, Extension {
   override fun <T: Any> parse(input: InputStream, type: KClass<T>): T = json.readValue(input, type.java)
@@ -57,6 +59,7 @@ class JsonBody(
     }
     renderers += this@JsonBody
     parsers += this@JsonBody
+    // TODO: use Jackson's FromStringDeserializer in klite Converter, or vice versa
   }
 
   internal fun handleValueInstantiation(e: ValueInstantiationException): ErrorResponse {
