@@ -87,8 +87,11 @@ class Server(
       if (route != null) exchange.route = route
       val result = (route?.handler ?: notFoundHandler).invoke(exchange)
       if (!exchange.isResponseStarted) {
-        if (result == Unit) exchange.send(NoContent)
-        else exchange.render(OK, result)
+        when (result) {
+          Unit -> exchange.send(NoContent)
+          is StatusCode -> exchange.send(result)
+          else -> exchange.render(OK, result)
+        }
       }
     } catch (ignore: BodyNotAllowedException) {
     } catch (e: Throwable) {

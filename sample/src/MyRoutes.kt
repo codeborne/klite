@@ -1,4 +1,5 @@
 import klite.HttpExchange
+import klite.StatusCode
 import klite.annotations.GET
 import klite.annotations.POST
 import klite.annotations.Path
@@ -19,6 +20,7 @@ class MyRoutes {
   }
 
   @GET("/suspend204") suspend fun suspendNoContent() = delay(50)
+  @POST("/201") fun created() = StatusCode.Created
   @GET("/null") fun returnNull() = null
 
   @GET("/admin") @AdminOnly fun onlyForAdmins() = "Only for admins"
