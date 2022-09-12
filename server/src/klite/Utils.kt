@@ -3,6 +3,7 @@ package klite
 import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.time.Duration.ofDays
 import java.util.*
 
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!
@@ -25,7 +26,7 @@ operator fun URI.plus(params: Params) = plus((if (rawQuery == null) "?" else "&"
 
 fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }
 
-fun Server.enforceHttps(maxAgeSec: Long = 31536000) = before { e ->
+fun Server.enforceHttps(maxAgeSec: Long = ofDays(365).toSeconds()) = before { e ->
   if (!e.isSecure) {
     e.header("Strict-Transport-Security", "max-age=$maxAgeSec")
     e.redirect(e.fullUrl.toString().replace("http://", "https://"), StatusCode.PermanentRedirect)
