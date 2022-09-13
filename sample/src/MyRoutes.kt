@@ -1,20 +1,20 @@
 import klite.HttpExchange
 import klite.StatusCode
-import klite.annotations.GET
-import klite.annotations.POST
-import klite.annotations.Path
-import klite.annotations.QueryParam
+import klite.annotations.*
 import klite.i18n.Lang
 import kotlinx.coroutines.delay
+import users.UserRepository
+import java.util.*
 
 @Path("/hello")
-class MyRoutes {
+class MyRoutes(private val userRepository: UserRepository) {
   @GET fun sayHello() = MyData("Hello")
   @GET("2") fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
   @GET("3") fun HttpExchange.asContext() = "${Lang.translate(this, "hello")} $method $path"
 
-  @GET("/suspend")
-  suspend fun suspend(exchange: HttpExchange): String {
+  @GET("/user/:id") fun user(@PathParam id: UUID) = userRepository.get(id)
+
+  @GET("/suspend") suspend fun suspend(exchange: HttpExchange): String {
     delay(100)
     return "Suspend ${exchange.method} ${exchange.path}"
   }
