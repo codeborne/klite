@@ -86,7 +86,9 @@ class Server(
     try {
       if (route != null) exchange.route = route
       val result = (route?.handler ?: notFoundHandler).invoke(exchange)
-      if (!exchange.isResponseStarted) {
+      if (exchange.isResponseStarted) {
+        if (result != null && result != Unit) logger.warn("Response already started, cannot render return value")
+      } else {
         when (result) {
           Unit -> exchange.send(NoContent)
           is StatusCode -> exchange.send(result)
