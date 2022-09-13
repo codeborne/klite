@@ -98,7 +98,12 @@ class Server(
       }
     } catch (ignore: BodyNotAllowedException) {
     } catch (e: Throwable) {
-      errors.handle(exchange, e)
+      try {
+        errors.handle(exchange, e)
+      } catch (ignore: BodyNotAllowedException) {
+      } catch (e2: Throwable) {
+        logger.error("While handling $e", e2)
+      }
     } finally {
       exchange.close()
     }
