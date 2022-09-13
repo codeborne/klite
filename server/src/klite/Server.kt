@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer
 import klite.RequestMethod.GET
 import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.NoContent
+import klite.StatusCode.Companion.NotFound
 import klite.StatusCode.Companion.OK
 import kotlinx.coroutines.*
 import java.lang.Runtime.getRuntime
@@ -30,7 +31,7 @@ class Server(
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
   private val sessionStore: SessionStore? = registry.optional(),
-  val notFoundHandler: Handler = decorators.wrap { throw NotFoundException(path) },
+  val notFoundHandler: Handler = decorators.wrap { ErrorResponse(NotFound, path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
@@ -86,27 +87,28 @@ class Server(
     try {
       if (route != null) exchange.route = route
       val result = (route?.handler ?: notFoundHandler).invoke(exchange)
-      if (exchange.isResponseStarted) {
-        if (result != null && result != Unit) logger.warn("Response already started, cannot render return value")
-      } else {
-        when (result) {
-          Unit -> exchange.send(NoContent)
-          is StatusCode -> exchange.send(result)
-          is ErrorResponse -> exchange.render(result.statusCode, result)
-          else -> exchange.render(OK, result)
-        }
-      }
+      if (!exchange.isResponseStarted) exchange.handle(result)
+      else if (result != null && result != Unit) logger.warn("Response already started, cannot render $result")
     } catch (ignore: BodyNotAllowedException) {
     } catch (e: Throwable) {
-      try {
-        errors.handle(exchange, e)
-      } catch (ignore: BodyNotAllowedException) {
-      } catch (e2: Throwable) {
-        logger.error("While handling $e", e2)
-      }
+      handleError(exchange, e)
     } finally {
       exchange.close()
     }
+  }
+
+  private fun HttpExchange.handle(result: Any?) = when (result) {
+    Unit -> send(NoContent)
+    is StatusCode -> send(result)
+    is ErrorResponse -> render(result.statusCode, result)
+    else -> render(OK, result)
+  }
+
+  private fun handleError(exchange: HttpExchange, e: Throwable) = try {
+    errors.handle(exchange, e)
+  } catch (ignore: BodyNotAllowedException) {
+  } catch (e2: Throwable) {
+    logger.error("While handling $e", e2)
   }
 }
 
