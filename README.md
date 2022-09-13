@@ -46,7 +46,7 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 The core server is less than 1000 lines of code.
 
 Klite powers a few production apps already.
-Public announcement is pending at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/).
+Public announcement at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/), see [the slides](https://docs.google.com/presentation/d/1m5UORE88nVRdZXyDEoj74c0alk1Ff_tX8mfB8oLMbk0).
 
 ## Usage
 
