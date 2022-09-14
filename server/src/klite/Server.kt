@@ -85,13 +85,17 @@ class Server(
 
   private suspend fun runHandler(exchange: HttpExchange, route: Route?) {
     try {
-      if (route != null) exchange.route = route
-      val result = (route?.handler ?: notFoundHandler).invoke(exchange)
-      if (!exchange.isResponseStarted) exchange.handle(result)
-      else if (result != null && result != Unit) logger.warn("Response already started, cannot render $result")
+      try {
+        if (route != null) exchange.route = route
+        val result = (route?.handler ?: notFoundHandler).invoke(exchange)
+        if (!exchange.isResponseStarted) exchange.handle(result)
+        else if (result != null && result != Unit) logger.warn("Response already started, cannot render $result")
+      } catch (e: Throwable) {
+        errors.handle(exchange, e)
+      }
     } catch (ignore: BodyNotAllowedException) {
     } catch (e: Throwable) {
-      handleError(exchange, e)
+      logger.error("While handling another error", e)
     } finally {
       exchange.close()
     }
@@ -102,13 +106,6 @@ class Server(
     is StatusCode -> send(result)
     is ErrorResponse -> render(result.statusCode, result)
     else -> render(OK, result)
-  }
-
-  private fun handleError(exchange: HttpExchange, e: Throwable) = try {
-    errors.handle(exchange, e)
-  } catch (ignore: BodyNotAllowedException) {
-  } catch (e2: Throwable) {
-    logger.error("While handling $e", e2)
   }
 }
 
