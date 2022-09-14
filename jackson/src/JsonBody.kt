@@ -28,14 +28,7 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonM
   serializationInclusion(JsonInclude.Include.NON_NULL)
   addModule(SimpleModule().apply {
     addDeserializer(String::class.java, EmptyStringToNullDeserializer)
-
-    Converter.converters.forEach { (type, converter) ->
-      @Suppress("UNCHECKED_CAST")
-      addDeserializer(type.java as Class<Any>, object: JsonDeserializer<Any>() {
-        override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): Any? =
-          jsonParser.valueAsString?.trimToNull()?.let { converter.invoke(it) }
-      })
-    }
+    addConverterDeserializers()
   })
 //  withCoercionConfigDefaults {
 //    it.acceptBlankAsEmpty = true
@@ -47,6 +40,14 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonM
 object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
   override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): String? =
     jsonParser.valueAsString?.trimToNull()
+}
+
+fun SimpleModule.addConverterDeserializers() = Converter.converters.forEach { (type, converter) ->
+  @Suppress("UNCHECKED_CAST")
+  addDeserializer(type.java as Class<Any>, object: JsonDeserializer<Any>() {
+    override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): Any? =
+      jsonParser.valueAsString?.trimToNull()?.let { converter.invoke(it) }
+  })
 }
 
 class JsonBody(
