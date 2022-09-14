@@ -11,7 +11,7 @@ import kotlin.reflect.full.isSubclassOf
 typealias FromStringConverter<T> = (s: String) -> T
 
 object Converter {
-  private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
+  val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
     Currency::class to Currency::getInstance,
     Locale::class to { Locale.forLanguageTag(it.replace('_', '-')) }

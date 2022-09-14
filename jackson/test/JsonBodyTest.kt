@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator.Mode.DELEGATING
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import klite.Converter
 import klite.ErrorResponse
 import klite.StatusCode.Companion.BadRequest
 import klite.trimToNull
@@ -16,6 +17,7 @@ import java.math.BigDecimal
 import kotlin.reflect.typeOf
 
 class JsonBodyTest {
+  init { Converter.use { ConverterValue(it) } }
   val jsonBody = JsonBody()
 
   @Test fun `can create Kotlin classes`() {
@@ -26,6 +28,11 @@ class JsonBodyTest {
   @Test fun `coerces empty strings as nulls`() {
     val someData = jsonBody.parse("""{"hello":"World", "nullable": "", "nullableValue": ""}""".byteInputStream(), SomeData::class)
     expect(someData).toEqual(SomeData("World"))
+  }
+
+  @Test fun `uses converter to convert values`() {
+    val value = jsonBody.parse("\"value\"".byteInputStream(), ConverterValue::class)
+    expect(value).toEqual(ConverterValue("value"))
   }
 
   @Test fun `more meaningful error messages from MissingKotlinParameterException`() {
@@ -58,10 +65,10 @@ data class SomeData(val hello: String, val nullable: String? = null, val nullabl
   }
 }
 
-// TODO: register values classes with klite Converter if they have @JsonCreator and @JsonValue annotations
-// then they will also be supported by JdbcConverter
 data class Value(@JsonValue val value: String) {
   companion object {
     @JsonCreator(mode = DELEGATING) @JvmStatic fun create(value: String?) = value?.trimToNull()?.let { Value(it) }
   }
 }
+
+data class ConverterValue(val value: String)

@@ -26,7 +26,17 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonM
   disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
   serializationInclusion(JsonInclude.Include.NON_NULL)
-  addModule(SimpleModule().apply { addDeserializer(String::class.java, EmptyStringToNullDeserializer) })
+  addModule(SimpleModule().apply {
+    addDeserializer(String::class.java, EmptyStringToNullDeserializer)
+
+    Converter.converters.forEach { (type, converter) ->
+      @Suppress("UNCHECKED_CAST")
+      addDeserializer(type.java as Class<Any>, object: JsonDeserializer<Any>() {
+        override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): Any? =
+          jsonParser.valueAsString?.trimToNull()?.let { converter.invoke(it) }
+      })
+    }
+  })
 //  withCoercionConfigDefaults {
 //    it.acceptBlankAsEmpty = true
 //    it.setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull)
@@ -36,7 +46,7 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonM
 
 object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
   override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): String? =
-    jsonParser.readValueAsTree<JsonNode>().asText().trimToNull()
+    jsonParser.valueAsString?.trimToNull()
 }
 
 class JsonBody(
@@ -59,7 +69,6 @@ class JsonBody(
     }
     renderers += this@JsonBody
     parsers += this@JsonBody
-    // TODO: use Jackson's FromStringDeserializer in klite Converter, or vice versa
   }
 
   internal fun handleValueInstantiation(e: ValueInstantiationException): ErrorResponse {
