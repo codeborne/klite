@@ -42,7 +42,7 @@ object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
     jsonParser.valueAsString?.trimToNull()
 }
 
-fun SimpleModule.addConverterDeserializers() = Converter.converters.forEach { (type, converter) ->
+fun SimpleModule.addConverterDeserializers() = Converter.forEach { type, converter ->
   @Suppress("UNCHECKED_CAST")
   addDeserializer(type.java as Class<Any>, object: JsonDeserializer<Any>() {
     override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): Any? =

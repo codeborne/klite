@@ -11,7 +11,7 @@ import kotlin.reflect.full.isSubclassOf
 typealias FromStringConverter<T> = (s: String) -> T
 
 object Converter {
-  val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
+  private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
     Currency::class to Currency::getInstance,
     Locale::class to { Locale.forLanguageTag(it.replace('_', '-')) }
@@ -21,6 +21,7 @@ object Converter {
   inline fun <reified T: Any> use(noinline converter: FromStringConverter<T>) = set(T::class, converter)
 
   fun supports(type: KClass<*>) = converters[type] != null
+  fun forEach(block: (type: KClass<*>, converter: FromStringConverter<*>) -> Unit) = converters.forEach { block(it.key, it.value) }
 
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
