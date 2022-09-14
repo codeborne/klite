@@ -6,8 +6,10 @@ import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Config
 import klite.Server
 import klite.annotations.annotated
+import klite.jdbc.DBModule
 import klite.json.JsonBody
 import klite.json.JsonHttpClient
 import klite.register
@@ -23,6 +25,8 @@ class ServerIntegrationTest {
   @Test fun requests() {
     val port = (Math.random() * 60000 + 1000).toInt()
     val server = Server(listen = InetSocketAddress(port)).apply {
+      Config.useEnvFile()
+      use(DBModule())
       registry.register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
       use(JsonBody())
       context("/") {
