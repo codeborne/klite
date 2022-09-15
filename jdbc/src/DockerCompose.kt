@@ -11,5 +11,5 @@ fun dockerCompose(vararg args: String) = ProcessBuilder("docker-compose", *args)
 fun startDevDB(service: String = Config.optional("DB_START", "db")) {
   if (service.isEmpty()) return
   val ms = measureTimeMillis { dockerCompose("up", "-d", service) }
-  if (ms > 400) sleep(1000) // give the db more time to start listening
+  if (ms > 400) sleep(2000) // give the db more time to start listening
 }
