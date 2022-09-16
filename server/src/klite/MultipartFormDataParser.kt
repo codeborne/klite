@@ -30,8 +30,9 @@ class MultipartFormDataParser(override val contentType: String = "multipart/form
         }
       } else {
         if (line == boundary) {
-          if (name != null) result[name] = content.toString().trim()
-          // TODO file
+          if (name != null) result[name] = fileName?.let {
+            FileUpload(it, contentType, content.toString().removeSuffix("\r\n"))
+          } ?: content.toString().trim()
           content = StringBuilder()
           readingHeaders = true
           name = null
@@ -46,3 +47,5 @@ class MultipartFormDataParser(override val contentType: String = "multipart/form
 
   private fun keyValue(s: String) = s.split('=', limit = 2).let { it[0].trim() to it.getOrNull(1)?.trim('"') }
 }
+
+data class FileUpload(val fileName: String, val contentType: String?, val content: String)
