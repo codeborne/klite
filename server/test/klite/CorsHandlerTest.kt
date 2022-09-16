@@ -44,7 +44,7 @@ class CorsHandlerTest {
     runBlocking { assertThrows<BodyNotAllowedException> { cors.before(exchange) } }
 
     verify {
-      exchange.header("Access-Control-Allow-Methods", "GET, POST")
+      exchange.header("Access-Control-Allow-Methods", cors.allowedMethods.joinToString())
       exchange.header("Access-Control-Allow-Headers", "Custom-Header")
       exchange.header("Access-Control-Max-Age", cors.maxAgeSec.toString())
     }

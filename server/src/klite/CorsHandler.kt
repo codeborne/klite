@@ -4,9 +4,9 @@ import klite.RequestMethod.*
 
 open class CorsHandler(
   val maxAgeSec: Int = 604800,
-  val allowCredentials: Boolean = false,
+  val allowCredentials: Boolean = true,
   val allowedOrigins: Set<String>? = null,
-  val allowedMethods: Set<RequestMethod> = setOf(GET, POST),
+  val allowedMethods: Set<RequestMethod> = setOf(GET, POST, PUT, PATCH, DELETE),
   val allowedHeaders: Set<String>? = null
 ): Before {
   override suspend fun before(exchange: HttpExchange) {
