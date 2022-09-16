@@ -17,11 +17,16 @@ class Accept(val contentTypes: String?) {
 
 interface BodyRenderer: SupportsContentType {
   fun render(output: OutputStream, value: Any?)
+  fun render(exchange: HttpExchange, code: StatusCode, value: Any?) {
+    val out = exchange.startResponse(code, contentType = contentType)
+    render(out, value)
+  }
 }
 
 interface BodyParser: SupportsContentType {
   fun <T: Any> parse(input: InputStream, type: KClass<T>): T
-  @Suppress("UNCHECKED_CAST") fun <T: Any> parse(input: InputStream, type: KType): T = parse(input, type.classifier as KClass<T>)
+  @Suppress("UNCHECKED_CAST")
+  fun <T: Any> parse(input: InputStream, type: KType): T = parse(input, type.classifier as KClass<T>)
 }
 
 class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
