@@ -30,8 +30,8 @@ class MultipartFormDataParserTest {
 
     expect(parser.parse(body.byteInputStream(), Map::class)).toEqual(mapOf(
       "text" to "text default",
-      "file1" to FileUpload("a.txt", "text/plain", "Content of a.txt.\r\n"),
-      "file2" to FileUpload("a.html", "text/html", "<!DOCTYPE html><title>Content of a.html.</title>\r\n")
+      "file1" to FileUpload("a.txt", "text/plain", "Content of a.txt.\n"),
+      "file2" to FileUpload("a.html", "text/html", "<!DOCTYPE html><title>Content of a.html.</title>\n")
     ))
   }
 }
