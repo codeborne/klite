@@ -46,6 +46,6 @@ class MultipartFormDataParser(override val contentType: String = "multipart/form
 }
 
 /** Warning: this is experimental and supports text files only */
-data class FileUpload(val fileName: String, val contentType: String?, private val content: String) {
+data class FileUpload(val fileName: String, val contentType: String?, private val content: String = "") {
   val stream: InputStream get() = content.byteInputStream()
 }
