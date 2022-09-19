@@ -4,6 +4,7 @@ import klite.*
 import java.io.InputStream
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
+import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter.Kind.INSTANCE
@@ -42,7 +43,7 @@ fun Router.annotated(routes: Any) {
   if (routes is Before) classDecorators += routes.toDecorator()
   if (routes is After) classDecorators += routes.toDecorator()
   cls.functions.asSequence().mapNotNull { f ->
-    val a = f.annotations.firstOrNull() ?: return@mapNotNull null
+    val a = f.kliteAnnotation ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
     subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, classDecorators.wrap(toHandler(routes, f)))
@@ -50,6 +51,9 @@ fun Router.annotated(routes: Any) {
 }
 
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
+
+private val packageName = GET::class.java.packageName
+private val KAnnotatedElement.kliteAnnotation get() = annotations.find { it.annotationClass.java.packageName == packageName }
 
 internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
@@ -63,7 +67,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
         else {
           val name = p.name!!
           fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
-          when (val a = p.annotations.firstOrNull()) {
+          when (val a = p.kliteAnnotation) {
             is PathParam -> path(name)?.toType()
             is QueryParam -> query(a.value.ifEmpty { name })?.toType()
             is BodyParam -> body(a.value.ifEmpty { name })?.toType()
