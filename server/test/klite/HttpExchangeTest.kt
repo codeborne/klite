@@ -7,9 +7,11 @@ import io.mockk.mockk
 import io.mockk.verify
 import klite.Cookie.SameSite.Strict
 import klite.StatusCode.Companion.Created
+import klite.StatusCode.Companion.OK
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.net.URI
+import java.time.LocalDate
 import kotlin.reflect.typeOf
 
 class HttpExchangeTest {
@@ -76,14 +78,23 @@ class HttpExchangeTest {
     expect(exchange.body<Double>()).toEqual(Math.PI)
   }
 
+  @Test fun `body as String`() {
+    every { original.requestBody } returns "Raw".byteInputStream()
+    expect(exchange.body<String>()).toEqual("Raw")
+  }
+
+  @Test fun `body as bytes`() {
+    every { original.requestBody } returns "Raw".byteInputStream()
+    expect(exchange.body<ByteArray>().decodeToString()).toEqual("Raw")
+  }
+
   @Test fun `body with unsupported content-type`() {
     every { exchange.requestType } returns "unsupported"
-    every { original.requestBody } returns "".byteInputStream()
-    assertThrows<UnsupportedMediaTypeException> { exchange.body<String>() }
+    assertThrows<UnsupportedMediaTypeException> { exchange.body<LocalDate>() }
   }
 
   @Test fun `send text`() {
-    exchange.send(StatusCode.OK, "Hello", "text/custom")
+    exchange.send(OK, "Hello", "text/custom")
     verify {
       original.responseHeaders["Content-type"] = "text/custom; charset=UTF-8"
       original.sendResponseHeaders(200, 5)
