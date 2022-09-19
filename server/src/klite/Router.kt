@@ -14,8 +14,13 @@ abstract class RouterConfig(
   val parsers = bodyParsers.toMutableList()
 
   fun decorator(decorator: Decorator) { decorators += decorator }
+  inline fun <reified T: Decorator> decorator() = decorator(registry.require<T>())
+
   fun before(before: Before) { decorators += before }
+  inline fun <reified T: Before> before() = before(registry.require<T>())
+
   fun after(after: After) { decorators += after }
+  inline fun <reified T: After> after() = after(registry.require<T>())
 
   inline fun <reified T> useOnly() where T: BodyParser, T: BodyRenderer {
     renderers.removeIf { it !is T }
