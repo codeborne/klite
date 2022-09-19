@@ -13,28 +13,34 @@ import java.io.IOException
 class DecoratorsTest {
   val exchange = mockk<HttpExchange>()
   val handler = mockk<Handler>().also {
-    coEvery { it.invoke(exchange) } returns "Result"
+    coEvery { it(exchange) } returns "Result"
   }
 
   @Test fun before() {
     val before = mockk<Before>(relaxed = true)
     val wrapped = before.toDecorator().wrap(handler)
-    expect(runBlocking { wrapped.invoke(exchange) }).toEqual("Result")
+    expect(runBlocking { wrapped(exchange) }).toEqual("Result")
     coVerify { before.before(exchange) }
   }
 
   @Test fun after() {
     val after = mockk<After>(relaxed = true)
     val wrapped = after.toDecorator().wrap(handler)
-    expect(runBlocking { wrapped.invoke(exchange) }).toEqual("Result")
+    expect(runBlocking { wrapped(exchange) }).toEqual("Result")
     coVerify { after.after(exchange, null) }
   }
 
   @Test fun `after with exception`() {
     val after = mockk<After>(relaxed = true)
-    coEvery { handler.invoke(exchange) } throws IOException()
+    coEvery { handler(exchange) } throws IOException()
     val wrapped = after.toDecorator().wrap(handler)
-    expect { runBlocking { wrapped.invoke(exchange) }}.toThrow<IOException>()
+    expect { runBlocking { wrapped(exchange) }}.toThrow<IOException>()
     coVerify { after.after(exchange, any<IOException>()) }
+  }
+
+  @Test fun around() {
+    val around: Decorator = { ex, h -> "<<${h(ex)}>>" }
+    val wrapped = around.wrap(handler)
+    expect(runBlocking { wrapped(exchange) }).toEqual("<<Result>>")
   }
 }
