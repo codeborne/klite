@@ -13,7 +13,7 @@ import java.io.IOException
 class DecoratorsTest {
   val exchange = mockk<HttpExchange>()
   val handler = mockk<Handler>().also {
-    coEvery { it(exchange) } returns "Result"
+    coEvery { exchange.it() } returns "Result"
   }
 
   @Test fun before() {
