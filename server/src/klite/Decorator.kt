@@ -19,7 +19,10 @@ fun interface After {
 }
 
 fun After.toDecorator(): Decorator = { ex, next ->
-  runCatching { next(ex) }.also { after(ex, it.exceptionOrNull()) }
+  var error: Throwable? = null
+  try { next(ex) }
+  catch (e: Throwable) { error = e; throw e }
+  finally { after(ex, error) }
 }
 
 fun Registry.requireAllDecorators() =
