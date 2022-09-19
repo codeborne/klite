@@ -4,19 +4,18 @@ import klite.RequestMethod.*
 import kotlin.reflect.KClass
 
 abstract class RouterConfig(
-  decorators: List<Decorator>,
+  var decorators: Decorators,
   bodyRenderers: List<BodyRenderer>,
   bodyParsers: List<BodyParser>
 ) {
   abstract val registry: Registry
   abstract val pathParamRegexer: PathParamRegexer
-  val decorators = decorators.toMutableList()
   val renderers = bodyRenderers.toMutableList()
   val parsers = bodyParsers.toMutableList()
 
   fun decorator(decorator: Decorator) { decorators += decorator }
-  fun before(before: Before) = decorator(before.toDecorator())
-  fun after(after: After) = decorator(after.toDecorator())
+  fun before(before: Before) { decorators += before }
+  fun after(after: After) { decorators += after }
 
   inline fun <reified T> useOnly() where T: BodyParser, T: BodyRenderer {
     renderers.removeIf { it !is T }
@@ -28,7 +27,7 @@ class Router(
   val prefix: String,
   override val registry: Registry,
   override val pathParamRegexer: PathParamRegexer,
-  decorators: List<Decorator>,
+  decorators: Decorators,
   renderers: List<BodyRenderer>,
   parsers: List<BodyParser>
 ): RouterConfig(decorators, renderers, parsers), Registry by registry {

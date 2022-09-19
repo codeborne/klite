@@ -30,7 +30,7 @@ class Server(
   },
   private val requestIdGenerator: RequestIdGenerator = registry.require(),
   val errors: ErrorHandler = registry.require(),
-  decorators: List<Decorator> = registry.requireAllDecorators(),
+  decorators: Decorators = Decorators(registry.requireAll(), registry.requireAll(), registry.requireAll()),
   private val sessionStore: SessionStore? = registry.optional(),
   val notFoundHandler: Handler = decorators.wrap { ErrorResponse(NotFound, path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
