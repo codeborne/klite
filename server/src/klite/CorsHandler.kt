@@ -13,9 +13,10 @@ open class CorsHandler(
 ): Before {
   override suspend fun before(exchange: HttpExchange) {
     val origin = exchange.header("Origin") ?: return
-    if (allowedOrigins == null || allowedOrigins.contains(origin))
+    if (allowedOrigins == null || allowedOrigins.contains(origin)) {
       exchange.header("Access-Control-Allow-Origin", origin)
-    else throw ForbiddenException()
+      if (allowCredentials) exchange.header("Access-Control-Allow-Credentials", "true")
+    } else throw ForbiddenException()
 
     exchange.header("Access-Control-Request-Headers")?.let {
       exchange.header("Access-Control-Allow-Headers", allowedHeaders?.joinToString() ?: it)
@@ -23,7 +24,6 @@ open class CorsHandler(
 
     if (exchange.method == OPTIONS) {
       exchange.header("Access-Control-Max-Age", maxAgeSec.toString())
-      if (allowCredentials) exchange.header("Access-Control-Allow-Credentials", "true")
 
       val requestedMethod = RequestMethod.valueOf(exchange.header("Access-Control-Request-Method")!!)
       if (!allowedMethods.contains(requestedMethod)) throw ForbiddenException()
