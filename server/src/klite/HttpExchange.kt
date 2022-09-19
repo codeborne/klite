@@ -42,11 +42,16 @@ open class HttpExchange(
   fun fullUrl(suffix: String): URI = URI("$protocol://$host$suffix")
 
   inline fun <reified T: Any> body(): T = body(typeOf<T>())
+
+  @Suppress("UNCHECKED_CAST")
   fun <T: Any> body(type: KType): T {
+    if (type.classifier == String::class) return rawBody as T
+    if (type.classifier == ByteArray::class) return requestStream.readBytes() as T
     val contentType = requestType ?: "text/plain"
     val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
     return requestStream.use { bodyParser.parse(requestStream, type) }
   }
+
   /** Note: this can be called only once */
   val rawBody: String get() = requestStream.reader().use { it.readText() }
 
