@@ -15,12 +15,11 @@ fun Before.toDecorator(): Decorator = { ex, next ->
 }
 
 fun interface After {
-  suspend fun after(exchange: HttpExchange, exception: Exception?)
+  suspend fun after(exchange: HttpExchange, error: Throwable?)
 }
 
 fun After.toDecorator(): Decorator = { ex, next ->
-  try { next(ex).also { after(ex, null) } }
-  catch (e: Exception) { after(ex, e) }
+  runCatching { next(ex) }.also { after(ex, it.exceptionOrNull()) }
 }
 
 fun Registry.requireAllDecorators() =
