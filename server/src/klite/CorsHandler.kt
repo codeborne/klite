@@ -14,7 +14,7 @@ open class CorsHandler(
   override suspend fun before(exchange: HttpExchange) {
     val origin = exchange.header("Origin") ?: return
     if (allowedOrigins == null || allowedOrigins.contains(origin))
-      exchange.header("Allow-Origin", origin)
+      exchange.header("Access-Control-Allow-Origin", origin)
     else throw ForbiddenException()
 
     exchange.header("Access-Control-Request-Headers")?.let {

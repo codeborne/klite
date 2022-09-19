@@ -23,14 +23,14 @@ class CorsHandlerTest {
   @Test fun `allow any origin`() {
     every { exchange.header("Origin") } returns "my.origin"
     runBlocking { cors.before(exchange) }
-    verify { exchange.header("Allow-Origin", "my.origin") }
+    verify { exchange.header("Access-Control-Allow-Origin", "my.origin") }
   }
 
   @Test fun `allow only specific origin`() {
     val cors = CorsHandler(allowedOrigins = setOf("my.origin"))
     every { exchange.header("Origin") } returns "my.origin"
     runBlocking { cors.before(exchange) }
-    verify { exchange.header("Allow-Origin", "my.origin") }
+    verify { exchange.header("Access-Control-Allow-Origin", "my.origin") }
 
     every { exchange.header("Origin") } returns "other.origin"
     runBlocking { assertThrows<ForbiddenException> { cors.before(exchange) } }
