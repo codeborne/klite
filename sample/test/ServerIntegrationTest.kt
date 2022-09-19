@@ -39,7 +39,7 @@ class ServerIntegrationTest {
       start(gracefulStopDelaySec = -1)
     }
 
-    val http = JsonHttpClient(server.registry, "http://localhost:$port")
+    val http = JsonHttpClient("http://localhost:$port", registry = server.registry)
     runBlocking {
       expect(http.get<String>("/hello")).toEqual("\"Hello\"")
       expect(http.get<MyData>("/api/hello")).toEqual(MyData("Hello"))

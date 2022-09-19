@@ -22,15 +22,15 @@ typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
  * registry.register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
  */
 class JsonHttpClient(
-  registry: Registry,
   private val urlPrefix: String = "",
   val reqModifier: RequestModifier = { this },
   val errorHandler: (HttpResponse<*>, String) -> Nothing = { res, body -> throw IOException("Failed with ${res.statusCode()}: $body") },
   val retryCount: Int = 0,
   val retryAfter: Duration = ofSeconds(1),
   private val maxLoggedLen: Int = 1000,
-  val http: HttpClient = registry.require(),
-  val json: JsonMapper = registry.require()
+  registry: Registry? = null,
+  val http: HttpClient = registry!!.require(),
+  val json: JsonMapper = registry!!.require()
 ) {
   val logger = logger(Exception().stackTrace.first { it.className !== javaClass.name }.className).apply {
     info("Using $urlPrefix")

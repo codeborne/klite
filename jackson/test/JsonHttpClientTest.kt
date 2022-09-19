@@ -5,8 +5,6 @@ import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import klite.SimpleRegistry
-import klite.register
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -19,12 +17,8 @@ import java.util.concurrent.CompletableFuture.failedFuture
 
 class JsonHttpClientTest {
   val httpClient = mockk<HttpClient>()
-  val registry = SimpleRegistry().apply {
-    register(httpClient)
-    register(kliteJsonMapper())
-  }
-  val http = JsonHttpClient(registry, "http://some.host/v1", reqModifier = { setHeader("X-Custom-API", "123") },
-    retryCount = 2, retryAfter = ofSeconds(0))
+  val http = JsonHttpClient("http://some.host/v1", reqModifier = { setHeader("X-Custom-API", "123") },
+    retryCount = 2, retryAfter = ofSeconds(0), http = httpClient, json = kliteJsonMapper())
 
   @Test fun get() {
     val response = mockResponse(200, """{"hello": "World"}""")
