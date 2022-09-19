@@ -3,7 +3,10 @@ package klite
 import klite.RequestMethod.*
 import klite.StatusCode.Companion.OK
 
-/** Currently must be registered before Server.notFoundHandler */
+/**
+ * An easy way to enable CORS (cross-origin requests).
+ * Currently, must be registered before Server.notFoundHandler, e.g. provided via the Registry.
+ */
 open class CorsHandler(
   val maxAgeSec: Int = 604800,
   val allowCredentials: Boolean = true,
