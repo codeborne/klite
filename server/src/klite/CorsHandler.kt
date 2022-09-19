@@ -1,7 +1,9 @@
 package klite
 
 import klite.RequestMethod.*
+import klite.StatusCode.Companion.OK
 
+/** Currently must be registered before Server.notFoundHandler */
 open class CorsHandler(
   val maxAgeSec: Int = 604800,
   val allowCredentials: Boolean = true,
@@ -27,7 +29,7 @@ open class CorsHandler(
       if (!allowedMethods.contains(requestedMethod)) throw ForbiddenException()
       else exchange.header("Access-Control-Allow-Methods", allowedMethods.joinToString())
 
-      throw BodyNotAllowedException()
+      exchange.send(OK)
     }
   }
 }

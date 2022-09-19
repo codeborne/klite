@@ -5,6 +5,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import klite.RequestMethod.OPTIONS
 import klite.RequestMethod.POST
+import klite.StatusCode.Companion.OK
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -41,12 +42,13 @@ class CorsHandlerTest {
     every { exchange.header("Access-Control-Request-Method") } returns POST.toString()
     every { exchange.header("Access-Control-Request-Headers") } returns "Custom-Header"
 
-    runBlocking { assertThrows<BodyNotAllowedException> { cors.before(exchange) } }
+    runBlocking { cors.before(exchange) }
 
     verify {
       exchange.header("Access-Control-Allow-Methods", cors.allowedMethods.joinToString())
       exchange.header("Access-Control-Allow-Headers", "Custom-Header")
       exchange.header("Access-Control-Max-Age", cors.maxAgeSec.toString())
+      exchange.send(OK)
     }
   }
 }
