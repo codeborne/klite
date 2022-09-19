@@ -19,7 +19,7 @@ fun interface After {
 }
 
 fun After.toDecorator(): Decorator = { ex, next ->
-  try { next(ex); after(ex, null) }
+  try { next(ex).also { after(ex, null) } }
   catch (e: Exception) { after(ex, e) }
 }
 
