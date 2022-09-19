@@ -61,7 +61,7 @@ arguments (dependencies).
 
 ## Decorators
 
-You can add both global and context-specific [decorators](src/klite/Decorator.kt), including `Before` and `After` handlers.
+You can add both global and context-specific [decorators](src/klite/Decorators.kt), including `Before` and `After` handlers.
 The order is important, and decorators apply to all *following routes* that are defined in the same context.
 
 ## Sessions
