@@ -118,11 +118,9 @@ open class HttpExchange(
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), "$contentType; charset=UTF-8")
 
-  fun redirect(url: URI, statusCode: StatusCode = Found): Nothing = redirect(url.toString(), statusCode)
-  fun redirect(location: String, statusCode: StatusCode = Found): Nothing {
-    header("Location", location)
-    throw StatusCodeException(statusCode)
-  }
+  @Suppress("NOTHING_TO_INLINE")
+  inline fun redirect(url: URI, statusCode: StatusCode = Found): Nothing = redirect(url.toString(), statusCode)
+  fun redirect(location: String, statusCode: StatusCode = Found): Nothing = throw RedirectException(location, statusCode)
 
   private val onCompleteHandlers = mutableListOf<Runnable>()
   fun onComplete(handler: Runnable) { onCompleteHandlers += handler }

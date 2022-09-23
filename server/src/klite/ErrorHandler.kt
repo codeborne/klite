@@ -31,6 +31,7 @@ open class ErrorHandler {
     else logger.error("Error after headers sent: $e")
 
   open fun toResponse(exchange: HttpExchange, e: Throwable): ErrorResponse? {
+    if (e is RedirectException) exchange.header("Location", e.location)
     if (e is StatusCodeException) return ErrorResponse(e.statusCode, e.message)
     if (e is NullPointerException && e.message?.startsWith("Parameter specified as non-null is null") == true)
       return ErrorResponse(BadRequest, e.message!!.substring(e.message!!.indexOf(", parameter ") + 12) + " is required")
