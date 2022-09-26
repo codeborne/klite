@@ -17,31 +17,31 @@ class LangTest {
 
   @Test fun `detect from cookie`() {
     every { exchange.cookie(Lang.COOKIE) } returns "en"
-    expect(Lang.lang(exchange)).toEqual("en")
+    expect(exchange.lang).toEqual("en")
   }
 
   @Test fun `detect from cookie not available`() {
     every { exchange.cookie(Lang.COOKIE) } returns "xy"
-    expect(Lang.lang(exchange)).toEqual("en")
+    expect(exchange.lang).toEqual("en")
   }
 
   @Test fun `detect from header`() {
     every { exchange.header("Accept-Language") } returns "en-US,en;q=0.9,jp"
-    expect(Lang.lang(exchange)).toEqual("en")
+    expect(exchange.lang).toEqual("en")
   }
 
   @Test fun `detect from header without country`() {
     every { exchange.header("Accept-Language") } returns "en;q=0.9,jp"
-    expect(Lang.lang(exchange)).toEqual("en")
+    expect(exchange.lang).toEqual("en")
   }
 
   @Test fun `fallback to en`() {
     every { exchange.header("Accept-Language") } returns null
-    expect(Lang.lang(exchange)).toEqual("en")
+    expect(exchange.lang).toEqual("en")
   }
 
   @Test fun remember() {
-    Lang.remember(exchange, "et")
+    exchange.lang = "et"
     verify { exchange.cookie(Lang.COOKIE, "et") }
   }
 
