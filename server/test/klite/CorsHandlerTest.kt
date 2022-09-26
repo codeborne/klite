@@ -50,7 +50,7 @@ class CorsHandlerTest {
     verify {
       exchange.header("Access-Control-Allow-Methods", cors.allowedMethods.joinToString())
       exchange.header("Access-Control-Allow-Headers", "Custom-Header")
-      exchange.header("Access-Control-Max-Age", cors.maxAgeSec.toString())
+      exchange.header("Access-Control-Max-Age", cors.maxAge.inWholeSeconds.toString())
       exchange.send(OK)
     }
   }

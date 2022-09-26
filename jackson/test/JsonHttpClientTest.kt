@@ -11,14 +11,14 @@ import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
-import java.time.Duration.ofSeconds
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.CompletableFuture.failedFuture
+import kotlin.time.Duration.Companion.ZERO
 
 class JsonHttpClientTest {
   val httpClient = mockk<HttpClient>()
   val http = JsonHttpClient("http://some.host/v1", reqModifier = { setHeader("X-Custom-API", "123") },
-    retryCount = 2, retryAfter = ofSeconds(0), http = httpClient, json = kliteJsonMapper())
+    retryCount = 2, retryAfter = ZERO, http = httpClient, json = kliteJsonMapper())
 
   @Test fun get() {
     val response = mockResponse(200, """{"hello": "World"}""")

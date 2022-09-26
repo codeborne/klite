@@ -11,9 +11,11 @@ import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers.ofString
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandlers.ofString
-import java.time.Duration
 import java.time.Duration.ofSeconds
 import kotlin.reflect.KClass
+import kotlin.time.Duration
+import kotlin.time.DurationUnit.SECONDS
+import kotlin.time.toDuration
 
 typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
 
@@ -26,7 +28,7 @@ class JsonHttpClient(
   val reqModifier: RequestModifier = { this },
   val errorHandler: (HttpResponse<*>, String) -> Nothing = { res, body -> throw IOException("Failed with ${res.statusCode()}: $body") },
   val retryCount: Int = 0,
-  val retryAfter: Duration = ofSeconds(1),
+  val retryAfter: Duration = 1.toDuration(SECONDS),
   private val maxLoggedLen: Int = 1000,
   registry: Registry? = null,
   val http: HttpClient = registry!!.require(),
@@ -69,7 +71,7 @@ class JsonHttpClient(
       } catch (e: IOException) {
         if (i < retryCount) {
           logger.error("Failed $urlSuffix, retry ${i + 1} after $retryAfter", e)
-          delay(retryAfter.toMillis())
+          delay(retryAfter.inWholeMilliseconds)
         }
         else {
           logger.error("Failed $urlSuffix: ${cut(payload)}", e)
