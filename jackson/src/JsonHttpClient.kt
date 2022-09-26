@@ -14,8 +14,7 @@ import java.net.http.HttpResponse.BodyHandlers.ofString
 import java.time.Duration.ofSeconds
 import kotlin.reflect.KClass
 import kotlin.time.Duration
-import kotlin.time.DurationUnit.SECONDS
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.seconds
 
 typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
 
@@ -28,7 +27,7 @@ class JsonHttpClient(
   val reqModifier: RequestModifier = { this },
   val errorHandler: (HttpResponse<*>, String) -> Nothing = { res, body -> throw IOException("Failed with ${res.statusCode()}: $body") },
   val retryCount: Int = 0,
-  val retryAfter: Duration = 1.toDuration(SECONDS),
+  val retryAfter: Duration = 1.seconds,
   private val maxLoggedLen: Int = 1000,
   registry: Registry? = null,
   val http: HttpClient = registry!!.require(),

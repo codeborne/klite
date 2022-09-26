@@ -5,8 +5,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.*
 import kotlin.time.Duration
-import kotlin.time.DurationUnit.DAYS
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.days
 
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!
 fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
@@ -27,7 +26,7 @@ operator fun URI.plus(params: Map<String, Any?>) = plus((if (rawQuery == null) "
 
 fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }
 
-fun Server.enforceHttps(maxAge: Duration = 365.toDuration(DAYS)) = before { e ->
+fun Server.enforceHttps(maxAge: Duration = 365.days) = before { e ->
   if (!e.isSecure) {
     e.header("Strict-Transport-Security", "max-age=${maxAge.inWholeSeconds}")
     e.redirect(e.fullUrl.toString().replace("http://", "https://"), StatusCode.PermanentRedirect)

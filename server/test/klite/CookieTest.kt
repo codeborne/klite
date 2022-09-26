@@ -5,8 +5,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import klite.Cookie.SameSite.None
 import org.junit.jupiter.api.Test
 import java.time.Instant.ofEpochSecond
-import kotlin.time.DurationUnit.SECONDS
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.seconds
 
 class CookieTest {
   @Test fun plain() {
@@ -23,7 +22,7 @@ class CookieTest {
   }
 
   @Test fun maxAge() {
-    expect(Cookie("Hello", "World", path = null, maxAge = 123.toDuration(SECONDS)).toString()).toEqual("Hello=World; Max-Age=123")
+    expect(Cookie("Hello", "World", path = null, maxAge = 123.seconds).toString()).toEqual("Hello=World; Max-Age=123")
   }
 
   @Test fun domain() {

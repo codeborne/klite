@@ -3,15 +3,14 @@ package klite
 import klite.RequestMethod.*
 import klite.StatusCode.Companion.OK
 import kotlin.time.Duration
-import kotlin.time.DurationUnit.DAYS
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.days
 
 /**
  * An easy way to enable CORS (cross-origin requests).
  * Currently, must be registered before Server.notFoundHandler, e.g. provided via the Registry.
  */
 open class CorsHandler(
-  val maxAge: Duration = 7.toDuration(DAYS),
+  val maxAge: Duration = 7.days,
   val allowCredentials: Boolean = true,
   val allowedOrigins: Set<String>? = null,
   val allowedMethods: Set<RequestMethod> = setOf(GET, POST, PUT, PATCH, DELETE),
