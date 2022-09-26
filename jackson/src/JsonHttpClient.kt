@@ -20,7 +20,8 @@ typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
 
 /**
  * Configure a default java.net.HttpClient in your registry, e.g.
- * registry.register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
+ * registry.register(HttpClient.newBuilder().connectTimeout(5.seconds).build())
+ * or provide both http and json parameters to the constructor instead
  */
 class JsonHttpClient(
   private val urlPrefix: String = "",
