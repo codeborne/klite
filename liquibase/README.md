@@ -4,6 +4,8 @@ Provides [LiquibaseModule](src/LiquibaseModule.kt) to migrate the DB on applicat
 
 As Liquibase uses java.logging module, this module will also redirect it to slf4j to be used together with `klite-jdbc`.
 
+Consider using Liquibase's [sql format](https://docs.liquibase.com/concepts/basic/sql-format.html) instead of xml.
+
 ## Use a different use for migration and application
 
 It is a best practice in terms of security to use a user with fewer right for the application.
