@@ -11,10 +11,10 @@ import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers.ofString
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandlers.ofString
-import java.time.Duration.ofSeconds
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
 
@@ -39,7 +39,7 @@ class JsonHttpClient(
 
   private fun jsonReq(urlSuffix: String) = HttpRequest.newBuilder().uri(URI("$urlPrefix$urlSuffix"))
     .setHeader("Content-Type", "application/json; charset=UTF-8").setHeader("Accept", "application/json")
-    .timeout(ofSeconds(10)).reqModifier()
+    .timeout(10.seconds).reqModifier()
 
   private suspend fun <T: Any> request(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: RequestModifier): T {
     val req = jsonReq(urlSuffix).builder().build()
@@ -98,3 +98,6 @@ class JsonHttpClient(
   private fun toJson(o: Any?) = if (o is String) o else json.stringify(o)
   private fun HttpRequest.Builder.apply(modifier: RequestModifier?) = modifier?.let { it() } ?: this
 }
+
+fun HttpClient.Builder.connectTimeout(duration: Duration): HttpClient.Builder = connectTimeout(duration.toJavaDuration())
+fun HttpRequest.Builder.timeout(duration: Duration): HttpRequest.Builder = timeout(duration.toJavaDuration())
