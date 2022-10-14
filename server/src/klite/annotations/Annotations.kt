@@ -39,9 +39,9 @@ import kotlin.reflect.jvm.javaMethod
 fun Router.annotated(routes: Any) {
   val cls = routes::class
   val path = cls.annotation<Path>()?.value ?: ""
-  var classDecorators = Decorators()
-  if (routes is Before) classDecorators += routes
-  if (routes is After) classDecorators += routes
+  val classDecorators = mutableListOf<Decorator>()
+  if (routes is Before) classDecorators += routes.toDecorator()
+  if (routes is After) classDecorators += routes.toDecorator()
   cls.functions.asSequence().mapNotNull { f ->
     val a = f.kliteAnnotation ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)

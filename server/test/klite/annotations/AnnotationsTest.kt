@@ -3,7 +3,10 @@ package klite.annotations
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.*
-import klite.*
+import klite.HttpExchange
+import klite.PathParamRegexer
+import klite.Router
+import klite.require
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.InputStream
@@ -28,7 +31,7 @@ class AnnotationsTest {
 
     @GET("/hello/inputstream") fun stream(body: InputStream) = "Hello"
   }
-  val router = spyk(Router("", mockk(), PathParamRegexer(), Decorators(), emptyList(), emptyList()))
+  val router = spyk(Router("", mockk(), PathParamRegexer(), emptyList(), emptyList(), emptyList()))
 
   @Test fun `annotated instance`() {
     router.annotated(Routes())
