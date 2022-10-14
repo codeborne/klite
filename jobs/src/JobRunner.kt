@@ -24,7 +24,7 @@ fun interface Job {
   val name get() = this::class.simpleName!!
 }
 
-class JobRunner(
+open class JobRunner(
   private val db: DataSource,
   private val requestIdGenerator: RequestIdGenerator,
   val workerPool: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_WORKERS", "3").toInt())
@@ -44,7 +44,7 @@ class JobRunner(
     return launch(threadName + TransactionContext(tx), start) {
       try {
         logger.info("$jobName started")
-        job.run()
+        run(job)
         tx.close(true)
       } catch (e: Exception) {
         logger.error("$jobName failed", e)
@@ -56,7 +56,9 @@ class JobRunner(
     }
   }
 
-  fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
+  open suspend fun run(job: Job) = job.run()
+
+  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
     val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
     logger.info("$jobName will start at $startAt and run every $period $unit")
     workerPool.scheduleAtFixedRate({ runInTransaction(jobName, job, UNDISPATCHED) }, delay, period, unit)
@@ -74,13 +76,11 @@ class JobRunner(
     }
   }
 
-  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) {
-    scheduleDaily(Job {
-      if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
-    }, at = at, job.name)
-  }
+  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) = scheduleDaily(Job {
+    if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
+  }, at = at, job.name)
 
-  private fun gracefulStop() {
+  open fun gracefulStop() {
     runBlocking {
       runningJobs.forEach { it.cancelAndJoin() }
     }
