@@ -70,11 +70,11 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
           when (val a = p.kliteAnnotation) {
             is PathParam -> path(name)?.toType()
             is QueryParam -> query(a.value.ifEmpty { name })?.toType()
-            is BodyParam -> body(a.value.ifEmpty { name })?.toType()
             is HeaderParam -> header(a.value.ifEmpty { name })?.toType()
             is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
             is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
             is AttrParam -> attr(a.value.ifEmpty { name })
+            is BodyParam -> body(a.value.ifEmpty { name })?.let { if (it is String) it.toType() else it }
             else -> body(p.type)
           }
         }
