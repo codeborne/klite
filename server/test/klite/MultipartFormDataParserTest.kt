@@ -25,7 +25,7 @@ class MultipartFormDataParserTest {
 
       <!DOCTYPE html><title>Content of a.html.</title>
 
-      -----------------------------9051914041544843365972754266
+      -----------------------------9051914041544843365972754266--
     """.trimIndent()
 
     expect(parser.parse(body.byteInputStream(), Map::class)).toEqual(mapOf(

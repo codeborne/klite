@@ -25,7 +25,7 @@ class MultipartFormDataParser(override val contentType: String = "multipart/form
           state.contentType = line.substring("content-type:".length).trim()
         }
       } else {
-        if (line == boundary) {
+        if (line.startsWith(boundary)) {
           if (state.name != null) result[state.name!!] = state.fileName?.let {
             FileUpload(it, state.contentType, state.content.removeSuffix("\n").toString())
           } ?: state.content.toString().trim()
