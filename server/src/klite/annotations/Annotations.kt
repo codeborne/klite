@@ -7,6 +7,7 @@ import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.functions
@@ -59,32 +60,33 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
   return {
     try {
-      val args = params.associateWith { p ->
-        if (p.kind == INSTANCE) instance
-        else if (p.type.classifier == HttpExchange::class) this
-        else if (p.type.classifier == Session::class) session
-        else if (p.type.classifier == InputStream::class) requestStream
-        else {
-          val name = p.name!!
-          fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
-          when (val a = p.kliteAnnotation) {
-            is PathParam -> path(name)?.toType()
-            is QueryParam -> query(a.value.ifEmpty { name })?.toType()
-            is HeaderParam -> header(a.value.ifEmpty { name })?.toType()
-            is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
-            is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
-            is AttrParam -> attr(a.value.ifEmpty { name })
-            is BodyParam -> bodyParams[a.value.ifEmpty { name }]?.let { if (it is String) it.toType() else it }
-            else -> body(p.type)
-          }
-        }
-      }.filter { !it.key.isOptional || it.value != null }
+      val args = params.associateWith { p -> paramValue(p, instance) }.filter { !it.key.isOptional || it.value != null }
       f.callSuspendBy(args)
     } catch (e: InvocationTargetException) {
       throw e.targetException
     }
   }
 }
+
+private fun HttpExchange.paramValue(p: KParameter, instance: Any) =
+  if (p.kind == INSTANCE) instance
+  else if (p.type.classifier == HttpExchange::class) this
+  else if (p.type.classifier == Session::class) session
+  else if (p.type.classifier == InputStream::class) requestStream
+  else {
+    val name = p.name!!
+    fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
+    when (val a = p.kliteAnnotation) {
+      is PathParam -> path(name)?.toType()
+      is QueryParam -> query(a.value.ifEmpty { name })?.toType()
+      is HeaderParam -> header(a.value.ifEmpty { name })?.toType()
+      is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
+      is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
+      is AttrParam -> attr(a.value.ifEmpty { name })
+      is BodyParam -> (bodyParams as Map<String, Any?>)[a.value.ifEmpty { name }]?.let { if (it is String) it.toType() else it }
+      else -> body(p.type)
+    }
+  }
 
 inline fun <reified T: Annotation> KClass<*>.annotation(): T? = java.getAnnotation(T::class.java)
 inline fun <reified T: Annotation> KFunction<*>.annotation(): T? = javaMethod!!.getAnnotation(T::class.java)

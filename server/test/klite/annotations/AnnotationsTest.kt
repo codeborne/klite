@@ -3,10 +3,7 @@ package klite.annotations
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.*
-import klite.HttpExchange
-import klite.PathParamRegexer
-import klite.Router
-import klite.require
+import klite.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.InputStream
@@ -23,9 +20,10 @@ class AnnotationsTest {
     @GET fun root() = "Hello"
 
     @GET("/hello/:world")
-    fun generic(body: String, @PathParam world: BigDecimal, @QueryParam date: LocalDate, @HeaderParam header: Long,
-      @CookieParam cookie: Locale, @AttrParam attr: BigInteger
-    ) = "Hello $body $world $date $header $cookie $attr"
+    fun generic(body: String,
+                @PathParam world: BigDecimal, @QueryParam date: LocalDate, @HeaderParam header: Long,
+                @CookieParam cookie: Locale, @AttrParam attr: BigInteger, @BodyParam file: FileUpload) =
+      "Hello $body $world $date $header $cookie $attr ${file.fileName}"
 
     @GET("/hello/specific") @CustomAnnotation("method") fun specific() = "Hello"
 
@@ -65,11 +63,12 @@ class AnnotationsTest {
   @Test fun `exchange parameter handler`() {
     val handler = toHandler(Routes(), Routes::generic)
     every { exchange.body<String>() } returns "TheBody"
+    every { exchange.bodyParams } returns mapOf("file" to FileUpload("name.txt", "text/plain")) as Map<String, String?>
     every { exchange.path("world") } returns "7.9e9"
     every { exchange.query("date") } returns "2021-10-21"
     every { exchange.header("header") } returns "42"
     every { exchange.cookie("cookie") } returns "et"
     every { exchange.attr<BigInteger>("attr") } returns BigInteger("90909")
-    runBlocking { expect(handler(exchange)).toEqual("Hello TheBody 7.9E+9 2021-10-21 42 et 90909") }
+    runBlocking { expect(handler(exchange)).toEqual("Hello TheBody 7.9E+9 2021-10-21 42 et 90909 name.txt") }
   }
 }
