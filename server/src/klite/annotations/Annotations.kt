@@ -74,7 +74,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
             is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
             is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
             is AttrParam -> attr(a.value.ifEmpty { name })
-            is BodyParam -> body(a.value.ifEmpty { name })?.let { if (it is String) it.toType() else it }
+            is BodyParam -> bodyParams[a.value.ifEmpty { name }]?.let { if (it is String) it.toType() else it }
             else -> body(p.type)
           }
         }
