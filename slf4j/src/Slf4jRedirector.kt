@@ -28,7 +28,6 @@ class Slf4jRedirector(name: String): System.Logger {
     OFF -> Unit
   }
 
-  override fun log(level: System.Logger.Level, bundle: ResourceBundle?, format: String?, params: Array<Any?>?) =
-    log(level, bundle, if (params == null) format else MessageFormat.format(format, params), null as Throwable?)
+  override fun log(level: System.Logger.Level, bundle: ResourceBundle?, format: String, params: Array<Any?>?) =
+    log(level, bundle, if (params == null) format else MessageFormat.format(format, *params), null as Throwable?)
 }
-
