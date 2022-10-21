@@ -50,7 +50,7 @@ fun SimpleModule.addConverterDeserializers() = Converter.forEach { type, convert
   })
 }
 
-class JsonBody(
+open class JsonBody(
   val json: JsonMapper = kliteJsonMapper(),
   override val contentType: String = "application/json"
 ): BodyParser, BodyRenderer, Extension {
