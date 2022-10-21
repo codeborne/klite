@@ -18,19 +18,17 @@ open class StackTraceOptimizingJsonLogger(name: String): StackTraceOptimizingLog
   private fun appendJson(sb: StringBuilder, t: Throwable) {
     sb.append("""{"error": """")
     sb.append(t.toString().replace("\"", "\\\"").replace("\n", "\\n"))
-    sb.append("""", "stack": {""")
+    sb.append("""", "stack": [""")
     val stackTrace = t.stackTrace
     val until = findUsefulStackTraceEnd(stackTrace)
     for (i in 0..until) {
-      sb.append("\""); sb.append(i); sb.append("\": \"")
-      sb.append(stackTrace[i].toString())
-      sb.append("\"")
-      if (i != until) sb.append(", ")
+      sb.append("\"").append(stackTrace[i].toString()).append("\"")
+      sb.append(if (i != until) ", " else "]")
     }
     t.cause?.let {
       sb.append(""", "cause": """)
       appendJson(sb, it)
     }
-    sb.append("}}")
+    sb.append("}")
   }
 }

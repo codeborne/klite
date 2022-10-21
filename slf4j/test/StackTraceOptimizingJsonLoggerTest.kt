@@ -17,9 +17,9 @@ class StackTraceOptimizingJsonLoggerTest {
     KliteLogger.out = PrintStream(out)
     StackTraceOptimizingJsonLogger("MyLogger").print("", Exception("Hello\n\"World\"", IllegalStateException("cause")))
     val json = out.toString("UTF-8")
-    expect(json).toStartWith("""{"error": "java.lang.Exception: Hello\n\"World\"", "stack": {"0": "${javaClass.name}""")
-      .toContain(""", "cause": {"error": "java.lang.IllegalStateException: cause", "stack": {"0": """)
-      .toEndWith("}}}}\n")
+    expect(json).toStartWith("""{"error": "java.lang.Exception: Hello\n\"World\"", "stack": ["${javaClass.name}""")
+      .toContain(""", "cause": {"error": "java.lang.IllegalStateException: cause", "stack": ["""")
+      .toEndWith("]}}\n")
     kliteJsonMapper().parse<JsonNode>(json)
     KliteLogger.out = System.out
   }
