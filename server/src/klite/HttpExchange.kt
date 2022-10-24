@@ -49,7 +49,7 @@ open class HttpExchange(
     if (type.classifier == ByteArray::class) return requestStream.readBytes() as T
     val contentType = requestType ?: "text/plain"
     val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
-    return requestStream.use { bodyParser.parse(requestStream, type) }
+    return bodyParser.parse(this, type)
   }
 
   /** Note: this can be called only once */

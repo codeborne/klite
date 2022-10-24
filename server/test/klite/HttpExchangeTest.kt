@@ -72,9 +72,7 @@ class HttpExchangeTest {
 
   @Test fun `body with specific content-type`() {
     every { exchange.requestType } returns customParser.contentType
-    val input = "{PI}".byteInputStream()
-    every { original.requestBody } answers { input }
-    every { customParser.parse<Double>(input, typeOf<Double>()) } returns Math.PI
+    every { customParser.parse<Double>(exchange, typeOf<Double>()) } returns Math.PI
     expect(exchange.body<Double>()).toEqual(Math.PI)
   }
 

@@ -21,23 +21,23 @@ class JsonBodyTest {
   val jsonBody = JsonBody()
 
   @Test fun `can create Kotlin classes`() {
-    val someData = jsonBody.parse("""{"hello":"World", "nullableValue": "Value"}""".byteInputStream(), SomeData::class)
+    val someData: SomeData = jsonBody.parse("""{"hello":"World", "nullableValue": "Value"}""".byteInputStream(), typeOf<SomeData>())
     expect(someData).toEqual(SomeData("World", nullableValue = Value("Value")))
   }
 
   @Test fun `coerces empty strings as nulls`() {
-    val someData = jsonBody.parse("""{"hello":"World", "nullable": "", "nullableValue": ""}""".byteInputStream(), SomeData::class)
+    val someData: SomeData = jsonBody.parse("""{"hello":"World", "nullable": "", "nullableValue": ""}""".byteInputStream(), typeOf<SomeData>())
     expect(someData).toEqual(SomeData("World"))
   }
 
   @Test fun `uses converter to convert values`() {
-    val value = jsonBody.parse("\"value\"".byteInputStream(), ConverterValue::class)
+    val value = jsonBody.parse<ConverterValue>("\"value\"".byteInputStream(), typeOf<ConverterValue>())
     expect(value).toEqual(ConverterValue("value"))
   }
 
   @Test fun `more meaningful error messages from MissingKotlinParameterException`() {
     try {
-      jsonBody.parse("{}".byteInputStream(), SomeData::class)
+      jsonBody.parse<SomeData>("{}".byteInputStream(), typeOf<SomeData>())
       fail("Expecting MissingKotlinParameterException")
     } catch (e: MissingKotlinParameterException) {
       expect(jsonBody.handleMissingParameter(e)).toEqual(ErrorResponse(BadRequest, "hello is required"))
@@ -46,7 +46,7 @@ class JsonBodyTest {
 
   @Test fun `more meaningful error messages from ValueInstantiationException`() {
     try {
-      jsonBody.parse("""{"hello":"Illegal stuff"}""".byteInputStream(), SomeData::class)
+      jsonBody.parse<SomeData>("""{"hello":"Illegal stuff"}""".byteInputStream(), typeOf<SomeData>())
       fail("Expecting ValueInstantiationException")
     } catch (e: ValueInstantiationException) {
       expect(jsonBody.handleValueInstantiation(e)).toEqual(ErrorResponse(BadRequest, "Illegal stuff in hello"))
