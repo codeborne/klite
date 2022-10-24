@@ -16,7 +16,7 @@ class Accept(val contentTypes: String?) {
 }
 
 interface BodyRenderer: SupportsContentType {
-  fun render(output: OutputStream, value: Any?)
+  fun render(output: OutputStream, value: Any?) { throw UnsupportedOperationException() }
   fun render(e: HttpExchange, code: StatusCode, value: Any?) {
     e.startResponse(code, contentType = contentType).use { render(it, value) }
   }
