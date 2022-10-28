@@ -29,7 +29,7 @@ open class JobRunner(
   private val requestIdGenerator: RequestIdGenerator,
   val workerPool: ScheduledExecutorService = Executors.newScheduledThreadPool(Config.optional("JOB_WORKERS", "3").toInt())
 ): Extension, CoroutineScope {
-  override val coroutineContext = workerPool.asCoroutineDispatcher()
+  override val coroutineContext = SupervisorJob() + workerPool.asCoroutineDispatcher()
   private val logger = logger()
   private val seq = AtomicLong()
   private val runningJobs = ConcurrentHashMap.newKeySet<kotlinx.coroutines.Job>()
