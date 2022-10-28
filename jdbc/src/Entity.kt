@@ -25,7 +25,7 @@ private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> {
   if (this is Persistable<*> && !hasId()) setId()
-  return props.filter { it.javaField != null }.associate { it.name to it.javaField!!.apply { trySetAccessible() }.get(this) }
+  return props.filter { it.javaField != null }.associate { it.name to it.get(this) }
 }
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *provided)
