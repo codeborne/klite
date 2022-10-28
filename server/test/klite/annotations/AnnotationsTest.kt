@@ -63,7 +63,7 @@ class AnnotationsTest {
   @Test fun `exchange parameter handler`() {
     val handler = toHandler(Routes(), Routes::generic)
     every { exchange.body<String>() } returns "TheBody"
-    every { exchange.bodyParams } returns mapOf("file" to FileUpload("name.txt", "text/plain")) as Map<String, String?>
+    every { exchange.body<FileUpload>("file") } returns FileUpload("name.txt", "text/plain")
     every { exchange.path("world") } returns "7.9e9"
     every { exchange.query("date") } returns "2021-10-21"
     every { exchange.header("header") } returns "42"

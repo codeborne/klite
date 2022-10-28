@@ -4,10 +4,7 @@ import klite.*
 import java.io.InputStream
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
-import kotlin.reflect.KAnnotatedElement
-import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
-import kotlin.reflect.KParameter
+import kotlin.reflect.*
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.functions
@@ -83,7 +80,7 @@ private fun HttpExchange.paramValue(p: KParameter, instance: Any) =
       is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
       is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
       is AttrParam -> attr(a.value.ifEmpty { name })
-      is BodyParam -> (bodyParams as Map<String, Any?>)[a.value.ifEmpty { name }]?.let { if (it is String) it.toType() else it }
+      is BodyParam -> body<Any?>(a.value.ifEmpty { name })?.let { if (it is String) it.toType() else it }
       else -> body(p.type)
     }
   }

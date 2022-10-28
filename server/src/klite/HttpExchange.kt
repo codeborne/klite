@@ -56,8 +56,8 @@ open class HttpExchange(
   val rawBody: String get() = requestStream.reader().use { it.readText() }
 
   val bodyParams: Params by lazy { body() }
-  /** e.g. form param, passed in body */
-  fun body(param: String): String? = bodyParams[param]
+  /** e.g. form param, passed in body */ @Suppress("UNCHECKED_CAST")
+  fun <T> body(param: String): T = (bodyParams as Map<String, Any>)[param] as T
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
