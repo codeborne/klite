@@ -51,7 +51,7 @@ object JdbcConverter {
       @Suppress("UNCHECKED_CAST") when {
         cls.javaPrimitiveType != null || nativeTypes.contains(cls) -> v
         converters.contains(cls) -> (converters[cls] as ToJdbcConverter<Any>).invoke(v, conn)
-        cls.annotation<JvmInline>() != null -> unwrapInline(v)
+        cls.annotation<JvmInline>() != null -> v.javaClass.getMethod("unbox-impl").invoke(v)
         Converter.supports(v::class) -> v.toString()
         else -> v
       }
@@ -63,8 +63,6 @@ object JdbcConverter {
     is Number -> "numeric"
     else -> "varchar"
   }
-
-  private fun unwrapInline(v: Any) = v.javaClass.getMethod("unbox-impl").invoke(v)
 
   fun from(v: Any?, target: KType): Any? = when {
     v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toSet()
