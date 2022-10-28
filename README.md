@@ -15,7 +15,7 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 * Zero dependencies - Java built-in **jdk.httpserver** is used under the hood
   * Perfect for microservices
   * But still possible to easily add support for other servers if needed
-  * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on number of used components
+  * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on used modules
 * 12-factor apps by default
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
