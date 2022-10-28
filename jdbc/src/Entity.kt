@@ -13,8 +13,8 @@ interface Entity {
 }
 
 fun <T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
-  val values = mapOf(*provided)
-  return toValuesSkipping() + values.mapKeys { it.key.name }
+  val values = mapOf(*provided).mapKeys { it.key.name }
+  return toValuesSkipping(values.keys) + values
 }
 
 fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.map { it.name }.toSet())
