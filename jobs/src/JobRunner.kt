@@ -19,9 +19,13 @@ import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
 
-fun interface Job {
+interface Job {
   suspend fun run()
   val name get() = this::class.simpleName!!
+}
+
+class NamedJob(override val name: String, private val job: suspend () -> Unit): Job {
+  override suspend fun run() = job()
 }
 
 open class JobRunner(
@@ -38,16 +42,16 @@ open class JobRunner(
     server.onStop(::gracefulStop)
   }
 
-  fun runInTransaction(jobName: String, job: Job, start: CoroutineStart = DEFAULT): kotlinx.coroutines.Job {
-    val threadName = ThreadNameContext("${requestIdGenerator.prefix}/$jobName#${seq.incrementAndGet()}")
+  internal fun runInTransaction(job: Job, start: CoroutineStart = DEFAULT): kotlinx.coroutines.Job {
+    val threadName = ThreadNameContext("${requestIdGenerator.prefix}/${job.name}#${seq.incrementAndGet()}")
     val tx = Transaction(db)
     return launch(threadName + TransactionContext(tx), start) {
       try {
-        logger.info("$jobName started")
+        logger.info("${job.name} started")
         run(job)
         tx.close(true)
       } catch (e: Exception) {
-        logger.error("$jobName failed", e)
+        logger.error("${job.name} failed", e)
         tx.close(false)
       }
     }.also { launched ->
@@ -58,27 +62,27 @@ open class JobRunner(
 
   open suspend fun run(job: Job) = job.run()
 
-  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit, jobName: String = job.name) {
+  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) {
     val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
-    logger.info("$jobName will start at $startAt and run every $period $unit")
-    workerPool.scheduleAtFixedRate({ runInTransaction(jobName, job, UNDISPATCHED) }, delay, period, unit)
+    logger.info("${job.name} will start at $startAt and run every $period $unit")
+    workerPool.scheduleAtFixedRate({ runInTransaction(job, UNDISPATCHED) }, delay, period, unit)
   }
 
-  fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong(), jobName: String = job.name) =
-    schedule(job, delayMinutes, 24 * 60, MINUTES, jobName)
+  fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong()) =
+    schedule(job, delayMinutes, 24 * 60, MINUTES)
 
-  fun scheduleDaily(job: Job, vararg at: LocalTime, jobName: String = job.name) {
+  fun scheduleDaily(job: Job, vararg at: LocalTime) {
     val now = LocalDateTime.now()
     for (time in at) {
       val todayAt = time.atDate(now.toLocalDate())
       val runAt = if (todayAt.isAfter(now)) todayAt else todayAt.plusDays(1)
-      scheduleDaily(job, between(now, runAt).toMinutes(), jobName)
+      scheduleDaily(job, between(now, runAt).toMinutes())
     }
   }
 
-  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) = scheduleDaily(Job {
+  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) = scheduleDaily(NamedJob(job.name) {
     if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
-  }, at = at, job.name)
+  }, at = at)
 
   open fun gracefulStop() {
     runBlocking {

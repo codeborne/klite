@@ -36,7 +36,7 @@ class JobRunnerTest {
   }
 
   @Test fun runInTransaction() {
-    runner.runInTransaction("My job", job)
+    runner.runInTransaction(job)
   }
 
   @Test fun schedule() {
@@ -57,18 +57,18 @@ class JobRunnerTest {
   @Test fun `scheduleMonthly today`() {
     val job = mockk<Job>(relaxed = true)
     runner.scheduleMonthly(job, LocalDate.now().dayOfMonth, LocalTime.of(6, 30))
-    val dailyJob = slot<Runnable>()
-    verify { executor.scheduleAtFixedRate(capture(dailyJob), match { it > 0 }, 24 * 60, MINUTES) }
-    dailyJob.captured.run()
+    val dailyRunner = slot<Runnable>()
+    verify { executor.scheduleAtFixedRate(capture(dailyRunner), match { it > 0 }, 24 * 60, MINUTES) }
+    dailyRunner.captured.run()
     coVerify { job.run() }
   }
 
   @Test fun `scheduleMonthly not today`() {
     val job = mockk<Job>(relaxed = true)
     runner.scheduleMonthly(job, LocalDate.now().dayOfMonth + 1, LocalTime.of(6, 30))
-    val dailyJob = slot<Runnable>()
-    verify { executor.scheduleAtFixedRate(capture(dailyJob), match { it > 0 }, 24 * 60, MINUTES) }
-    dailyJob.captured.run()
+    val dailyRunner = slot<Runnable>()
+    verify { executor.scheduleAtFixedRate(capture(dailyRunner), match { it > 0 }, 24 * 60, MINUTES) }
+    dailyRunner.captured.run()
     coVerify(exactly = 0) { job.run() }
   }
 }
