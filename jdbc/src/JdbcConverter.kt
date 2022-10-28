@@ -2,7 +2,6 @@ package klite.jdbc
 
 import klite.Converter
 import klite.annotations.annotation
-import java.lang.reflect.Modifier.isStatic
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
@@ -65,8 +64,7 @@ object JdbcConverter {
     else -> "varchar"
   }
 
-  private fun unwrapInline(v: Any) =
-    v.javaClass.declaredFields.first { !isStatic(it.modifiers) }.apply { isAccessible = true }.get(v)
+  private fun unwrapInline(v: Any) = v.javaClass.getMethod("unbox-impl").invoke(v)
 
   fun from(v: Any?, target: KType): Any? = when {
     v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toSet()
