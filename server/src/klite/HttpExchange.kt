@@ -5,7 +5,6 @@ import klite.RequestMethod.HEAD
 import klite.RequestMethod.OPTIONS
 import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.OK
-import sun.jvm.hotspot.oops.CellTypeState.value
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
