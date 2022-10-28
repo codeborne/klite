@@ -53,8 +53,8 @@ open class JsonBody(
   val json: JsonMapper = kliteJsonMapper(),
   override val contentType: String = "application/json"
 ): BodyParser, BodyRenderer, Extension {
-  override fun <T: Any> parse(input: InputStream, type: KType): T = json.readValue(input,
-    json.typeFactory.constructParametricType(type.java, *type.arguments.map { it.type!!.java }.toTypedArray()))
+  override fun <T: Any> parse(input: InputStream, type: KType): T = json.readValue(input, type.jackson)
+  val KType.jackson get() = json.typeFactory.constructParametricType(java, *arguments.map { it.type!!.java }.toTypedArray())
 
   override fun render(output: OutputStream, value: Any?) = json.writeValue(output, value)
 
