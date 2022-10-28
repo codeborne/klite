@@ -5,6 +5,7 @@ import klite.RequestMethod.HEAD
 import klite.RequestMethod.OPTIONS
 import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.OK
+import sun.jvm.hotspot.oops.CellTypeState.value
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -73,8 +74,9 @@ open class HttpExchange(
   val cookies: Params by lazy(NONE) { decodeCookies(header("Cookie")) }
   fun cookie(key: String) = cookies[key]
 
-  fun cookie(key: String, value: String, expires: Instant? = null) { this += Cookie(key, value, expires, secure = isSecure) }
-  operator fun plusAssign(cookie: Cookie) = responseHeaders.add("Set-Cookie", cookie.toString())
+  fun cookie(key: String, value: String, expires: Instant? = null) = cookie(Cookie(key, value, expires, secure = isSecure))
+  fun cookie(cookie: Cookie) = responseHeaders.add("Set-Cookie", cookie.toString())
+  operator fun plusAssign(cookie: Cookie) = cookie(cookie)
 
   val session: Session by lazy(NONE) { sessionStore?.load(this) ?: error("No sessionStore defined") }
 
