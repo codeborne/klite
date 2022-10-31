@@ -72,7 +72,7 @@ private fun HttpExchange.paramValue(p: KParameter, instance: Any) =
   else if (p.type.classifier == InputStream::class) requestStream
   else {
     val name = p.name!!
-    fun String.toType() = Converter.from(this, p.type.classifier as KClass<*>) // TODO: support for KType in Converter
+    fun String.toType() = Converter.from<Any>(this, p.type)
     when (val a = p.kliteAnnotation) {
       is PathParam -> path(name)?.toType()
       is QueryParam -> query(a.value.ifEmpty { name })?.toType()

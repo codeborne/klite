@@ -25,7 +25,7 @@ object Converter {
 
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
-  @Suppress("UNCHECKED_CAST")
+  @Suppress("UNCHECKED_CAST") // TODO: really support for KType in Converter
   fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
 
   @Suppress("UNCHECKED_CAST")
