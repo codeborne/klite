@@ -16,16 +16,18 @@ class Accept(val contentTypes: String?) {
 }
 
 interface BodyRenderer: SupportsContentType {
-  fun render(output: OutputStream, value: Any?)
+  fun render(output: OutputStream, value: Any?) { throw UnsupportedOperationException() }
   fun render(e: HttpExchange, code: StatusCode, value: Any?) {
     e.startResponse(code, contentType = contentType).use { render(it, value) }
   }
 }
 
 interface BodyParser: SupportsContentType {
-  fun <T: Any> parse(input: InputStream, type: KClass<T>): T
+  @Deprecated("Use/implement the KType method")
+  fun <T: Any> parse(input: InputStream, type: KClass<T>): T = throw UnsupportedOperationException()
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> parse(input: InputStream, type: KType): T = parse(input, type.classifier as KClass<T>)
+  fun <T: Any> parse(e: HttpExchange, type: KType): T = e.requestStream.use { parse(it, type) }
 }
 
 class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
@@ -36,7 +38,7 @@ class TextBodyParser(
   override val contentType: String = "text/plain"
 ): BodyParser {
   @Suppress("UNCHECKED_CAST")
-  override fun <T: Any> parse(input: InputStream, type: KClass<T>): T {
+  override fun <T: Any> parse(input: InputStream, type: KType): T {
     val s = input.reader().readText()
     return if (type == String::class) s as T else Converter.from(s, type)
   }
@@ -44,6 +46,5 @@ class TextBodyParser(
 
 class FormUrlEncodedParser(override val contentType: String = "application/x-www-form-urlencoded"): BodyParser {
   @Suppress("UNCHECKED_CAST")
-  override fun <T : Any> parse(input: InputStream, type: KClass<T>): T = urlDecodeParams(input.reader().readText()) as T
+  override fun <T : Any> parse(input: InputStream, type: KType): T = urlDecodeParams(input.reader().readText()) as T
 }
-

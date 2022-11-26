@@ -6,17 +6,20 @@ import ch.tutteli.atrium.api.verbs.expect
 import klite.ErrorResponse
 import klite.StatusCode
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.util.*
+import kotlin.reflect.typeOf
 
+@ExperimentalSerializationApi
 class JsonBodyTest {
   val jsonBody = JsonBody()
 
   @Test fun `can create data classes`() {
-    val someData = jsonBody.parse("""{"email":"a@b.ee","date":"2021-12-12","extra":123}""".byteInputStream(), SomeData::class)
+    val someData: SomeData = jsonBody.parse("""{"email":"a@b.ee","date":"2021-12-12","extra":123}""".byteInputStream(), typeOf<SomeData>())
     expect(someData).toEqual(SomeData(Email("a@b.ee"), LocalDate.parse("2021-12-12")))
   }
 
@@ -32,7 +35,7 @@ class JsonBodyTest {
     jsonBody.render(out, entity)
     expect(out.toByteArray().decodeToString()).toEqual("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""")
 
-    expect(jsonBody.parse("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""".byteInputStream(), SomeEntity::class)).toEqual(entity)
+    expect(jsonBody.parse<SomeEntity>("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""".byteInputStream(), typeOf<SomeEntity>())).toEqual(entity)
   }
 }
 

@@ -49,15 +49,15 @@ open class HttpExchange(
     if (type.classifier == ByteArray::class) return requestStream.readBytes() as T
     val contentType = requestType ?: "text/plain"
     val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
-    return requestStream.use { bodyParser.parse(requestStream, type) }
+    return bodyParser.parse(this, type)
   }
 
   /** Note: this can be called only once */
   val rawBody: String get() = requestStream.reader().use { it.readText() }
 
-  val bodyParams: Params by lazy { body() }
-  /** e.g. form param, passed in body */
-  fun body(param: String): String? = bodyParams[param]
+  val bodyParams: Map<String, Any?> by lazy { body() }
+  /** e.g. form param, passed in body */ @Suppress("UNCHECKED_CAST")
+  fun <T> body(param: String): T = bodyParams[param] as T
 
   val attrs: MutableMap<Any, Any?> = mutableMapOf()
   @Suppress("UNCHECKED_CAST")
@@ -73,8 +73,9 @@ open class HttpExchange(
   val cookies: Params by lazy(NONE) { decodeCookies(header("Cookie")) }
   fun cookie(key: String) = cookies[key]
 
-  fun cookie(key: String, value: String, expires: Instant? = null) { this += Cookie(key, value, expires, secure = isSecure) }
-  operator fun plusAssign(cookie: Cookie) = responseHeaders.add("Set-Cookie", cookie.toString())
+  fun cookie(key: String, value: String, expires: Instant? = null) = cookie(Cookie(key, value, expires, secure = isSecure))
+  fun cookie(cookie: Cookie) = responseHeaders.add("Set-Cookie", cookie.toString())
+  operator fun plusAssign(cookie: Cookie) = cookie(cookie)
 
   val session: Session by lazy(NONE) { sessionStore?.load(this) ?: error("No sessionStore defined") }
 

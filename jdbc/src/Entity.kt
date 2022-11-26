@@ -13,8 +13,8 @@ interface Entity {
 }
 
 fun <T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
-  val values = mapOf(*provided)
-  return toValuesSkipping() + values.mapKeys { it.key.name }
+  val values = mapOf(*provided).mapKeys { it.key.name }
+  return toValuesSkipping(values.keys) + values
 }
 
 fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.map { it.name }.toSet())
@@ -25,7 +25,7 @@ private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> {
   if (this is Persistable<*> && !hasId()) setId()
-  return props.filter { it.javaField != null }.associate { it.name to it.javaField!!.apply { trySetAccessible() }.get(this) }
+  return props.filter { it.javaField != null }.associate { it.name to it.get(this) }
 }
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *provided)

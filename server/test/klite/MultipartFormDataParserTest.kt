@@ -3,6 +3,7 @@ package klite
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
+import kotlin.reflect.typeOf
 
 class MultipartFormDataParserTest {
   val parser = MultipartFormDataParser()
@@ -28,7 +29,7 @@ class MultipartFormDataParserTest {
       -----------------------------9051914041544843365972754266--
     """.trimIndent()
 
-    expect(parser.parse(body.byteInputStream(), Map::class)).toEqual(mapOf(
+    expect(parser.parse<Any>(body.byteInputStream(), typeOf<Map<String, Any>>())).toEqual(mapOf(
       "text" to "text default",
       "file1" to FileUpload("a.txt", "text/plain", "Content of a.txt.\n"),
       "file2" to FileUpload("a.html", "text/html", "<!DOCTYPE html><title>Content of a.html.</title>\n")

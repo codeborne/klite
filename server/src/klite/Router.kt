@@ -60,7 +60,7 @@ class Router(
     routes += it.apply { logger.info("$method $prefix$path") }
   }
 
-  // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-50200
+  // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-32208 (set as fixed in 1.8.0)
   private fun anonymousHandlerAnnotations(handler: Handler) = handler.javaClass.methods.first { !it.isSynthetic }.annotations.toList()
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler = handler))
@@ -94,8 +94,8 @@ data class Route(val method: RequestMethod, val path: Regex, val annotations: Li
 }
 
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
-open class PathParamRegexer(private val paramConverter: Regex = "/:([^/]+)".toRegex()) {
-  open fun from(path: String) = paramConverter.replace(path, "/(?<$1>[^/]+)").toRegex()
+open class PathParamRegexer(private val paramConverter: Regex = "(^|/):([^/]+)".toRegex()) {
+  open fun from(path: String) = paramConverter.replace(path, "$1(?<$2>[^/]+)").toRegex()
 }
 
 class PathParams(val groups: MatchGroupCollection): Params {

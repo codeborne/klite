@@ -17,7 +17,6 @@ import klite.*
 import klite.StatusCode.Companion.BadRequest
 import java.io.InputStream
 import java.io.OutputStream
-import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonMapper.Builder.() -> Unit = {}) = jsonMapper {
@@ -50,13 +49,12 @@ fun SimpleModule.addConverterDeserializers() = Converter.forEach { type, convert
   })
 }
 
-class JsonBody(
+open class JsonBody(
   val json: JsonMapper = kliteJsonMapper(),
   override val contentType: String = "application/json"
 ): BodyParser, BodyRenderer, Extension {
-  override fun <T: Any> parse(input: InputStream, type: KClass<T>): T = json.readValue(input, type.java)
-  override fun <T: Any> parse(input: InputStream, type: KType): T = json.readValue(input,
-    json.typeFactory.constructParametricType(type.java, *type.arguments.map { it.type!!.java }.toTypedArray()))
+  override fun <T: Any> parse(input: InputStream, type: KType): T = json.readValue(input, type.jackson)
+  val KType.jackson get() = json.typeFactory.constructParametricType(java, *arguments.map { it.type!!.java }.toTypedArray())
 
   override fun render(output: OutputStream, value: Any?) = json.writeValue(output, value)
 

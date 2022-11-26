@@ -29,4 +29,11 @@ class PathParamRegexerTest {
     expect(match.groups["p1"]!!.value).toEqual("123")
     expect(match.groups["p2"]!!.value).toEqual("456")
   }
+
+  @Test fun noSlashPrefix() {
+    val plainPath = paramRegexer.from(":p1/:p2")
+    val match = plainPath.matchEntire("123/456")!!
+    expect(match.groups["p1"]!!.value).toEqual("123")
+    expect(match.groups["p2"]!!.value).toEqual("456")
+  }
 }
