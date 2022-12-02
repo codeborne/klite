@@ -5,11 +5,11 @@ import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KClass
 
-interface IdEntity<ID> {
+interface BaseEntity<ID> {
   val id: ID
 }
 
-interface Entity: IdEntity<UUID>
+interface Entity: BaseEntity<UUID>
 
 abstract class BaseRepository(protected val db: DataSource, val table: String) {
   protected open val orderAsc get() = "order by createdAt"
@@ -18,9 +18,9 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   open fun count(where: Map<String, Any?> = emptyMap()): Int = db.select("select count(*) from $table", where) { getInt(1) }.first()
 }
 
-abstract class CrudRepository<E: Entity>(db: DataSource, table: String): IdCrudRepository<UUID, E>(db, table)
+abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<UUID, E>(db, table)
 
-abstract class IdCrudRepository<ID, E: IdEntity<ID>>(db: DataSource, table: String): BaseRepository(db, table) {
+abstract class BaseCrudRepository<ID, E: BaseEntity<ID>>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
   private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
 
