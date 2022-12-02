@@ -8,12 +8,6 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
-interface IdEntity<ID> {
-  val id: ID
-}
-
-interface Entity: IdEntity<UUID>
-
 fun <T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
   val values = mapOf(*provided).mapKeys { it.key.name }
   return toValuesSkipping(values.keys) + values
