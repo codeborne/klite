@@ -12,8 +12,8 @@ interface IdEntity<ID> {
 interface Entity: IdEntity<UUID>
 
 abstract class BaseRepository(protected val db: DataSource, val table: String) {
-  protected val orderAsc = "order by createdAt"
-  protected val orderDesc = "$orderAsc desc"
+  protected open val orderAsc get() = "order by createdAt"
+  protected open val orderDesc get() = "$orderAsc desc"
 
   open fun count(where: Map<String, Any?> = emptyMap()): Int = db.select("select count(*) from $table", where) { getInt(1) }.first()
 }
