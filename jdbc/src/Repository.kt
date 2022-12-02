@@ -18,9 +18,9 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   open fun count(where: Map<String, Any?> = emptyMap()): Int = db.select("select count(*) from $table", where) { getInt(1) }.first()
 }
 
-abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<UUID, E>(db, table)
+abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table)
 
-abstract class BaseCrudRepository<ID, E: BaseEntity<ID>>(db: DataSource, table: String): BaseRepository(db, table) {
+abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
   private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
 
