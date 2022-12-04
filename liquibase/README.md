@@ -6,9 +6,9 @@ As Liquibase uses java.logging module, this module will also redirect it to slf4
 
 Consider using Liquibase's [sql format](https://docs.liquibase.com/concepts/basic/sql-format.html) instead of xml.
 
-## Use a different use for migration and application
+## Different DB user for migration and running
 
-It is a best practice in terms of security to use a user with fewer right for the application.
+It is a best practice in terms of security to use a user with fewer rights for the running application.
 
 Your Liquibase scripts can actually create this user without the "create table" and "drop table" permissions.
 
