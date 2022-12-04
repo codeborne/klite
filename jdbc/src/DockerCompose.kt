@@ -5,7 +5,7 @@ import java.lang.ProcessBuilder.Redirect.INHERIT
 import java.lang.Thread.sleep
 import kotlin.system.measureTimeMillis
 
-fun dockerCompose(vararg args: String) = ProcessBuilder("docker-compose", *args)
+fun dockerCompose(vararg args: String) = ProcessBuilder(Config.optional("DOCKER_COMPOSE", "docker-compose"), *args)
   .redirectErrorStream(true).redirectOutput(INHERIT).start().waitFor()
 
 fun startDevDB(service: String = Config.optional("DB_START", "db")) {
