@@ -97,6 +97,7 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
     "xls" to "application/vnd.ms-excel",
     "xlsx" to "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "zip" to "application/zip",
+    "jar" to "application/java-archive",
     "gz" to "application/gzip",
     "ics" to "text/calendar",
     "asice" to "application/vnd.etsi.asic-e+zip"
