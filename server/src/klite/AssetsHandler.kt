@@ -62,7 +62,7 @@ class AssetsHandler(
       gzFile
     } else file
 
-    val out = startResponse(OK, fileToSend.fileSize(), contentType)
+    val out = startResponse(OK, fileToSend.fileSize().takeIf { it <= 1024 * 1024 }, contentType)
     fileToSend.inputStream(READ).use { it.transferTo(out) }
   }
 }
