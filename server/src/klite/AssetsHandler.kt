@@ -19,6 +19,7 @@ class AssetsHandler(
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val mimeTypes: MimeTypes = MimeTypes(),
   val textCharset: Charset = UTF_8,
+  val useChunkedResponseForFilesLargerThan: Long = 30 * (1L shl 20),
   val headerModifier: HttpExchange.() -> Unit = {}
 ): Handler {
   private val logger = logger()
@@ -62,7 +63,7 @@ class AssetsHandler(
       gzFile
     } else file
 
-    val out = startResponse(OK, fileToSend.fileSize().takeIf { it <= 1024 * 1024 }, contentType)
+    val out = startResponse(OK, fileToSend.fileSize().takeIf { it <= useChunkedResponseForFilesLargerThan }, contentType)
     fileToSend.inputStream(READ).use { it.transferTo(out) }
   }
 }
