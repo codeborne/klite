@@ -52,7 +52,10 @@ class AssetsHandler(
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType: String? = mimeTypes.typeFor(file)
 
-    if (contentType == null) logger.warn("Cannot detect content-type for $file")
+    if (contentType == null) {
+      logger.warn("Cannot detect content-type for $file")
+      contentType = mimeTypes.unknown
+    }
     else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
 
     headerModifier()
@@ -69,6 +72,7 @@ class AssetsHandler(
 }
 
 class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
+  val unknown = "application/octet-stream"
   private val typesByExtension = mapOf(
     "html" to "text/html",
     "txt" to "text/plain",
