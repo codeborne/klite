@@ -4,6 +4,7 @@ import java.sql.ResultSet
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
 interface BaseEntity<ID> {
   val id: ID
@@ -29,6 +30,6 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
 
   open fun get(id: ID): E = db.query(table, id) { mapper() }
   open fun save(entity: E) = db.upsert(table, entity.persister())
-  open fun list(where: Map<String, Any?> = emptyMap(), order: String = orderDesc): List<E> =
-    db.query(table, where, order) { mapper() }
+  open fun list(vararg where: Pair<KProperty1<E, *>, Any?>, order: String = orderDesc): List<E> =
+    db.query(table, where.associate { it.first.name to it.second }, order) { mapper() }
 }

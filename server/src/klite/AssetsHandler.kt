@@ -19,6 +19,7 @@ class AssetsHandler(
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val mimeTypes: MimeTypes = MimeTypes(),
   val textCharset: Charset = UTF_8,
+  val useChunkedResponseForFilesLargerThan: Long = 30 * (1L shl 20),
   val headerModifier: HttpExchange.() -> Unit = {}
 ): Handler {
   private val logger = logger()
@@ -51,7 +52,10 @@ class AssetsHandler(
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType: String? = mimeTypes.typeFor(file)
 
-    if (contentType == null) logger.warn("Cannot detect content-type for $file")
+    if (contentType == null) {
+      logger.warn("Cannot detect content-type for $file")
+      contentType = mimeTypes.unknown
+    }
     else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
 
     headerModifier()
@@ -62,12 +66,13 @@ class AssetsHandler(
       gzFile
     } else file
 
-    val out = startResponse(OK, fileToSend.fileSize(), contentType)
+    val out = startResponse(OK, fileToSend.fileSize().takeIf { it <= useChunkedResponseForFilesLargerThan }, contentType)
     fileToSend.inputStream(READ).use { it.transferTo(out) }
   }
 }
 
 class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
+  val unknown = "application/octet-stream"
   private val typesByExtension = mapOf(
     "html" to "text/html",
     "txt" to "text/plain",
@@ -97,6 +102,7 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
     "xls" to "application/vnd.ms-excel",
     "xlsx" to "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "zip" to "application/zip",
+    "jar" to "application/java-archive",
     "gz" to "application/gzip",
     "ics" to "text/calendar",
     "asice" to "application/vnd.etsi.asic-e+zip"
