@@ -25,12 +25,13 @@ fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, An
     executeQuery().map(mapper)
   }
 
-fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int = withStatement(expr) {
-  setAll(values)
-  executeUpdate().also {
-    if (callback != null) callback()
+fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int =
+  withStatement(expr) {
+    setAll(values)
+    executeUpdate().also {
+      if (callback != null) callback()
+    }
   }
-}
 
 fun <R> DataSource.withStatement(sql: String, block: PreparedStatement.() -> R): R = withConnection {
   try {
