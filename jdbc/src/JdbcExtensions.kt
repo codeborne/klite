@@ -14,28 +14,32 @@ import javax.sql.DataSource
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
-  query(table, mapOf("id" to id), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
+  query(table, mapOf("id" to id)).first(mapper)
 
-fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
-  select("select * from $table", where, suffix, into, mapper)
+fun DataSource.query(table: String, where: Map<String, Any?>, suffix: String = ""): ResultSet =
+  select("select * from $table", where, suffix)
 
-// backwards-compatibility
 fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
-  query(table, where, suffix, mutableListOf(), mapper) as List<R>
+  mutableListOf<R>().also { query(table, where, suffix).process(it::add, mapper) }
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
+fun DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = ""): ResultSet =
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
-    executeQuery().map(into, mapper)
+    executeQuery()
   }
 
-// backwards-compatibility
 fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
-  select(select, where, suffix, mutableListOf(), mapper) as List<R>
+  mutableListOf<R>().also { select(select, where, suffix).process(it::add, mapper) }
 
-internal fun <R> ResultSet.map(into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> = into.also {
-  while (next()) it += mapper()
+internal fun <T> ResultSet.process(add: (T) -> Unit = {}, mapper: ResultSet.() -> T) {
+  while (next()) add(mapper())
 }
+
+fun <T> ResultSet.firstOrNull(mapper: ResultSet.() -> T): T? =
+  if (next()) mapper() else null
+
+fun <T> ResultSet.first(mapper: ResultSet.() -> T): T =
+  firstOrNull(mapper) ?: throw NoSuchElementException("Empty result")
 
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int =
   withStatement(expr) {
