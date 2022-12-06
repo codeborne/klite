@@ -14,7 +14,7 @@ import javax.sql.DataSource
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
-  query(table, mapOf("id" to id), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
+  query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
 fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
   select("select * from $table", where, suffix, into, mapper)
