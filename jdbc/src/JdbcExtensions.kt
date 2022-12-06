@@ -13,33 +13,46 @@ import javax.sql.DataSource
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
-fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
+fun <T, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> T): T =
   query(table, mapOf("id" to id)).first(mapper)
 
-fun DataSource.query(table: String, where: Map<String, Any?>, suffix: String = ""): ResultSet =
+fun DataSource.query(table: String, where: Map<String, Any?>, suffix: String = ""): QueryResult =
   select("select * from $table", where, suffix)
 
-fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
-  mutableListOf<R>().also { query(table, where, suffix).process(it::add, mapper) }
+// backwards-compatibility
+fun <T> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> T): List<T> =
+  query(table, where, suffix).map(mapper = mapper) as List<T>
 
-fun DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = ""): ResultSet =
-  withStatement("$select${whereExpr(where)} $suffix") {
+fun DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = ""): QueryResult =
+  statement("$select${whereExpr(where)} $suffix").run {
     setAll(whereValues(where))
-    executeQuery()
+    QueryResult(executeQuery())
   }
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
-  mutableListOf<R>().also { select(select, where, suffix).process(it::add, mapper) }
+// backwards-compatibility
+fun <T> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> T): List<T> =
+  select(select, where, suffix).map(mapper = mapper) as List<T>
 
-internal fun <T> ResultSet.process(add: (T) -> Unit = {}, mapper: ResultSet.() -> T) {
-  while (next()) add(mapper())
+class QueryResult(private val rs: ResultSet): AutoCloseable {
+  fun <T> first(mapper: ResultSet.() -> T): T = firstOrNull(mapper) ?: throw NoSuchElementException("Empty result")
+  fun <T> firstOrNull(mapper: ResultSet.() -> T): T? = use {
+    if (rs.next()) rs.mapper() else null
+  }
+
+  fun <T> map(into: MutableCollection<T> = mutableListOf(), mapper: ResultSet.() -> T) = use {
+    into.also { rs.process(it::add, mapper) }
+  }
+
+  override fun close() = try {
+    rs.statement.close()
+  } finally {
+    if (Transaction.current() == null) rs.statement.connection.close()
+  }
 }
 
-fun <T> ResultSet.firstOrNull(mapper: ResultSet.() -> T): T? =
-  if (next()) mapper() else null
-
-fun <T> ResultSet.first(mapper: ResultSet.() -> T): T =
-  firstOrNull(mapper) ?: throw NoSuchElementException("Empty result")
+internal inline fun <T> ResultSet.process(add: (T) -> Unit = {}, mapper: ResultSet.() -> T) {
+  while (next()) add(mapper())
+}
 
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int =
   withStatement(expr) {
@@ -49,14 +62,17 @@ fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = empt
     }
   }
 
-fun <R> DataSource.withStatement(sql: String, block: PreparedStatement.() -> R): R = withConnection {
+internal fun DataSource.statement(sql: String) = withConnection {
   try {
-    prepareStatement(sql, RETURN_GENERATED_KEYS).use { it.block() }
+    prepareStatement(sql, RETURN_GENERATED_KEYS)
   } catch (e: SQLException) {
     throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e)
-          else SQLException(e.message + "\nSQL: $sql", e.sqlState, e.errorCode, e)
+    else SQLException(e.message + "\nSQL: $sql", e.sqlState, e.errorCode, e)
   }
 }
+
+fun <R> DataSource.withStatement(sql: String, block: PreparedStatement.() -> R): R =
+  statement(sql).use { it.block() }
 
 fun DataSource.insert(table: String, values: Map<String, *>): Int {
   val valuesToSet = values.filter { it.value !is GeneratedKey<*> }
