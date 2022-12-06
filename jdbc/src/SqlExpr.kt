@@ -16,12 +16,12 @@ open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if
 }
 
 val notNull = SqlOp("is not null")
-infix fun String.eq(value: Any) = this to value
-infix fun String.neq(value: Any) = this to SqlOp("!=", value)
-infix fun String.gt(value: Any) = this to SqlOp(">", value)
-infix fun String.gte(value: Any) = this to SqlOp(">=", value)
-infix fun String.lt(value: Any) = this to SqlOp("<", value)
-infix fun String.lte(value: Any) = this to SqlOp("<=", value)
+infix fun Column.eq(value: Any) = this to value
+infix fun Column.neq(value: Any) = this to SqlOp("!=", value)
+infix fun Column.gt(value: Any) = this to SqlOp(">", value)
+infix fun Column.gte(value: Any) = this to SqlOp(">=", value)
+infix fun Column.lt(value: Any) = this to SqlOp("<", value)
+infix fun Column.lte(value: Any) = this to SqlOp("<=", value)
 
 class Between(from: Any, to: Any): SqlExpr("", from, to) {
   override fun expr(key: String) = q(key) + " between ? and ?"

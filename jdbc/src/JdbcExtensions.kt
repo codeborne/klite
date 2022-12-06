@@ -14,7 +14,8 @@ import kotlin.reflect.KProperty1
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
-typealias Where = Map<out Any, Any?>
+typealias Column = Any // String | KProperty1
+typealias Where = Map<out Column, Any?>
 
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
