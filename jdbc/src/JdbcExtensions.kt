@@ -27,7 +27,7 @@ fun <R> DataSource.query(table: String, where: Where, suffix: String = "", mappe
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
 
 fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
-  withStatement("$select${whereExpr(where)} $suffix") {
+  withStatement("$select${where.expr} $suffix") {
     setAll(whereValues(where))
     into.also { executeQuery().process(it::add, mapper) }
   }
@@ -72,18 +72,16 @@ private fun insertExpr(table: String, values: Map<String, *>) = """
     values (${values.entries.joinToString { (it.value as? SqlExpr)?.expr(it.key) ?: "?" }})""".trimIndent()
 
 fun DataSource.update(table: String, where: Where, values: Map<String, *>): Int =
-  exec("update $table set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where))
+  exec("update $table set ${setExpr(values)}${where.expr}", setValues(values) + whereValues(where))
 
 fun DataSource.delete(table: String, where: Where): Int =
-  exec("delete from $table${whereExpr(where)}", whereValues(where))
+  exec("delete from $table${where.expr}", whereValues(where))
 
 private fun setExpr(values: Map<String, *>) = values.entries.joinToString { q(it.key) + " = " + ((it.value as? SqlExpr)?.expr(it.key) ?: "?") }
 
-private fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " +
-  where.entries.joinToString(" and ") { (k, v) -> whereExpr(k, v) }
-
-private fun whereExpr(k: Any, v: Any?) = name(k).let { n ->
-  when(v) {
+private val Where.expr get() = if (isEmpty()) "" else " where " + entries.joinToString(" and ") { (k, v) ->
+  val n = name(k)
+  when (v) {
     null -> q(n) + " is null"
     is SqlExpr -> v.expr(n)
     is Iterable<*> -> inExpr(n, v)
