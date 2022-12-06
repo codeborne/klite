@@ -16,7 +16,7 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   protected open val orderAsc get() = "order by createdAt"
   protected open val orderDesc get() = "$orderAsc desc"
 
-  open fun count(where: Map<String, Any?> = emptyMap()): Int = db.select("select count(*) from $table", where) { getInt(1) }.first()
+  open fun count(where: Where = emptyMap()): Int = db.select("select count(*) from $table", where) { getInt(1) }.first()
 }
 
 abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table)
@@ -31,5 +31,5 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun get(id: ID): E = db.query(table, id) { mapper() }
   open fun save(entity: E) = db.upsert(table, entity.persister())
   open fun list(vararg where: Pair<KProperty1<E, *>, Any?>, order: String = orderDesc): List<E> =
-    db.query(table, where.associate { it.first.name to it.second }, order) { mapper() }
+    db.query(table, where.toMap(), order) { mapper() }
 }

@@ -10,27 +10,30 @@ import java.sql.Statement.RETURN_GENERATED_KEYS
 import java.time.Period
 import java.util.*
 import javax.sql.DataSource
+import kotlin.reflect.KProperty1
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
+
+typealias Where = Map<out Any, Any?>
 
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
+fun <R> DataSource.query(table: String, where: Where, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
   select("select * from $table", where, suffix, into, mapper)
 
 // backwards-compatibility
-fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+fun <R> DataSource.query(table: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
+fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
     into.also { executeQuery().process(it::add, mapper) }
   }
 
 // backwards-compatibility
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
   select(select, where, suffix, mutableListOf(), mapper) as List<R>
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: ResultSet.() -> R) {
@@ -68,33 +71,41 @@ private fun insertExpr(table: String, values: Map<String, *>) = """
   insert into $table (${values.keys.joinToString { q(it) }})
     values (${values.entries.joinToString { (it.value as? SqlExpr)?.expr(it.key) ?: "?" }})""".trimIndent()
 
-fun DataSource.update(table: String, where: Map<String, Any?>, values: Map<String, *>): Int =
+fun DataSource.update(table: String, where: Where, values: Map<String, *>): Int =
   exec("update $table set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where))
 
-fun DataSource.delete(table: String, where: Map<String, Any?>): Int =
+fun DataSource.delete(table: String, where: Where): Int =
   exec("delete from $table${whereExpr(where)}", whereValues(where))
 
 private fun setExpr(values: Map<String, *>) = values.entries.joinToString { q(it.key) + " = " + ((it.value as? SqlExpr)?.expr(it.key) ?: "?") }
 
-private fun whereExpr(where: Map<String, Any?>) = if (where.isEmpty()) "" else " where " +
+private fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " +
   where.entries.joinToString(" and ") { (k, v) -> whereExpr(k, v) }
 
-private fun whereExpr(k: String, v: Any?) = when(v) {
-  null -> q(k) + " is null"
-  is SqlExpr -> v.expr(k)
-  is Iterable<*> -> inExpr(k, v)
-  is Array<*> -> inExpr(k, v.toList())
-  else -> q(k) + " = ?"
+private fun whereExpr(k: Any, v: Any?) = name(k).let { n ->
+  when(v) {
+    null -> q(n) + " is null"
+    is SqlExpr -> v.expr(n)
+    is Iterable<*> -> inExpr(n, v)
+    is Array<*> -> inExpr(n, v.toList())
+    else -> q(n) + " = ?"
+  }
 }
 
-internal fun q(name: String) = if (namesToQuote.contains(name)) "\"$name\"" else name
+private fun name(key: Any) = when(key) {
+  is KProperty1<*, *> -> key.name
+  is String -> key
+  else -> throw UnsupportedOperationException("$key should be a KProperty1 or String")
+}
+
+internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun inExpr(k: String, v: Iterable<*>) = q(k) + " in (${v.joinToString { "?" }})"
 
 private fun setValues(values: Map<String, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
 private fun Any?.flatExpr(): Iterable<Any?> = if (this is SqlExpr) values else listOf(this)
 
-private fun whereValues(where: Map<String, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
+private fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = when (this) {
   is Array<*> -> toList()
   is Iterable<*> -> this
