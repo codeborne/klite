@@ -9,7 +9,7 @@ class GeneratedKey<T: Any>(val convertTo: KClass<T>? = null) {
 
 @Suppress("UNCHECKED_CAST")
 internal fun Statement.processGeneratedKeys(values: Map<String, *>) =
-  generatedKeys.map {
+  generatedKeys.process {
     values.forEach { e ->
       (e.value as? GeneratedKey<Any>)?.let {
         val value = if (it.convertTo != null) getString(e.key) else getObject(e.key)

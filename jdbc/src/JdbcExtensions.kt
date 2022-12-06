@@ -23,18 +23,18 @@ fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String
 fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
+fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
-    executeQuery().map(into, mapper)
+    into.also { executeQuery().process(it::add, mapper) }
   }
 
 // backwards-compatibility
 fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
   select(select, where, suffix, mutableListOf(), mapper) as List<R>
 
-internal fun <R> ResultSet.map(into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> = into.also {
-  while (next()) it += mapper()
+internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: ResultSet.() -> R) {
+  while (next()) consumer(mapper())
 }
 
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int =
