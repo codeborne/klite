@@ -29,7 +29,7 @@ open class LiquibaseModule(
   }
 
   override fun install(server: Server) {
-    migrate(Config.active, server.optional<DataSource>()?.connection)
+    migrate(connection = server.optional<DataSource>()?.connection)
   }
 
   fun exec(connection: Connection? = null, block: Liquibase.() -> Unit) {
@@ -43,7 +43,7 @@ open class LiquibaseModule(
     }
   }
 
-  fun migrate(contexts: List<String>, connection: Connection? = null) = exec(connection) {
+  fun migrate(contexts: List<String> = Config.active, connection: Connection? = null) = exec(connection) {
     if (dropAllBeforeUpdate) dropAll()
     update(this, Contexts(contexts))
   }
