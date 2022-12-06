@@ -16,14 +16,26 @@ val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
   query(table, mapOf("id" to id), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
-  select("select * from $table", where, suffix, mapper)
+fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
+  select("select * from $table", where, suffix, into, mapper)
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+// backwards-compatibility
+fun <R> DataSource.query(table: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+  query(table, where, suffix, mutableListOf(), mapper) as List<R>
+
+fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
-    executeQuery().map(mapper)
+    executeQuery().map(into, mapper)
   }
+
+// backwards-compatibility
+fun <R> DataSource.select(@Language("SQL") select: String, where: Map<String, Any?>, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+  select(select, where, suffix, mutableListOf(), mapper) as List<R>
+
+internal fun <R> ResultSet.map(into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> = into.also {
+  while (next()) it += mapper()
+}
 
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int =
   withStatement(expr) {
@@ -94,10 +106,6 @@ operator fun PreparedStatement.set(i: Int, value: Any?) {
   else setObject(i, JdbcConverter.to(value, connection))
 }
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
-
-internal fun <R> ResultSet.map(mapper: ResultSet.() -> R): List<R> = mutableListOf<R>().also {
-  while (next()) it += mapper()
-}
 
 fun ResultSet.getId(column: String = "id") = getString(column).toId()
 fun ResultSet.getIdOrNull(column: String) = getString(column)?.toId()
