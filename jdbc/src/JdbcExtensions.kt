@@ -45,7 +45,7 @@ fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = empt
     }
   }
 
-fun <R> DataSource.withStatement(sql: String, block: PreparedStatement.() -> R): R = withConnection {
+fun <R> DataSource.withStatement(@Language("SQL") sql: String, block: PreparedStatement.() -> R): R = withConnection {
   try {
     prepareStatement(sql, RETURN_GENERATED_KEYS).use { it.block() }
   } catch (e: SQLException) {
