@@ -25,12 +25,12 @@ infix fun String.gte(value: Any) = this to SqlOp(">=", value)
 infix fun String.lt(value: Any) = this to SqlOp("<", value)
 infix fun String.lte(value: Any) = this to SqlOp("<=", value)
 
-infix fun <V> KProperty1<*, V>.eq(value: V) = this to value
-infix fun <V> KProperty1<*, V>.neq(value: V) = this to SqlOp("!=", value)
-infix fun <V> KProperty1<*, V>.gt(value: V) = this to SqlOp(">", value)
-infix fun <V> KProperty1<*, V>.gte(value: V) = this to SqlOp(">=", value)
-infix fun <V> KProperty1<*, V>.lt(value: V) = this to SqlOp("<", value)
-infix fun <V> KProperty1<*, V>.lte(value: V) = this to SqlOp("<=", value)
+infix fun <T, V> KProperty1<T, V>.eq(value: V) = this to value
+infix fun <T, V> KProperty1<T, V>.neq(value: V) = this to SqlOp("!=", value)
+infix fun <T, V> KProperty1<T, V>.gt(value: V) = this to SqlOp(">", value)
+infix fun <T, V> KProperty1<T, V>.gte(value: V) = this to SqlOp(">=", value)
+infix fun <T, V> KProperty1<T, V>.lt(value: V) = this to SqlOp("<", value)
+infix fun <T, V> KProperty1<T, V>.lte(value: V) = this to SqlOp("<=", value)
 
 infix fun Column.like(value: String) = this to SqlOp("like", value)
 infix fun Column.ilike(value: String) = this to SqlOp("ilike", value)
