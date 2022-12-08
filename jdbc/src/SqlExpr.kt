@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import org.intellij.lang.annotations.Language
+import kotlin.reflect.KProperty1
 
 open class SqlExpr(@Language("SQL") protected val expr: String, val values: Collection<*> = emptyList<Any>()) {
   constructor(@Language("SQL") expr: String, vararg values: Any?): this(expr, values.toList())
@@ -16,12 +17,23 @@ open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if
 }
 
 val notNull = SqlOp("is not null")
-infix fun Column.eq(value: Any) = this to value
-infix fun Column.neq(value: Any) = this to SqlOp("!=", value)
-infix fun Column.gt(value: Any) = this to SqlOp(">", value)
-infix fun Column.gte(value: Any) = this to SqlOp(">=", value)
-infix fun Column.lt(value: Any) = this to SqlOp("<", value)
-infix fun Column.lte(value: Any) = this to SqlOp("<=", value)
+
+infix fun String.eq(value: Any) = this to value
+infix fun String.neq(value: Any) = this to SqlOp("!=", value)
+infix fun String.gt(value: Any) = this to SqlOp(">", value)
+infix fun String.gte(value: Any) = this to SqlOp(">=", value)
+infix fun String.lt(value: Any) = this to SqlOp("<", value)
+infix fun String.lte(value: Any) = this to SqlOp("<=", value)
+
+infix fun <V> KProperty1<*, V>.eq(value: V) = this to value
+infix fun <V> KProperty1<*, V>.neq(value: V) = this to SqlOp("!=", value)
+infix fun <V> KProperty1<*, V>.gt(value: V) = this to SqlOp(">", value)
+infix fun <V> KProperty1<*, V>.gte(value: V) = this to SqlOp(">=", value)
+infix fun <V> KProperty1<*, V>.lt(value: V) = this to SqlOp("<", value)
+infix fun <V> KProperty1<*, V>.lte(value: V) = this to SqlOp("<=", value)
+
+infix fun Column.like(value: String) = this to SqlOp("like", value)
+infix fun Column.ilike(value: String) = this to SqlOp("ilike", value)
 
 class Between(from: Any, to: Any): SqlExpr("", from, to) {
   override fun expr(key: String) = q(key) + " between ? and ?"
