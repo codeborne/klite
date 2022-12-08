@@ -27,9 +27,12 @@ Usage:
 
   // basic query from a table (mapper runs in context of ResultSet)
   db.query("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
-
+  // or if all entity properties are contained in the result set
+  db.query("table", mapOf("column" to value)) { fromValues<MyEntity>() }
   // if you need to add several criteria for a single column (map key), use SqlExpr and friends
   db.query("table", mapOf("column" to SqlExpr("(column is null or column >= 10)")))
+  // where can also be written in a type-safe way, and some common operators are available
+  db.query("table", mapOf(MyEntity::column gte 123)) { fromValues<MyEntity>() }
 
   // more advanced query with suffix and fromValues() auto-mapper
   db.query("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
