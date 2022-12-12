@@ -11,14 +11,19 @@ import java.sql.ResultSet
 class ValuesTest {
   @Test fun toValues() {
     val data = SomeData("Hello", 123)
-    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123, "nullable" to null))
-    expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124, "nullable" to null))
+    expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123, "nullable" to null, "list" to listOf(1, 2)))
+    expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124, "nullable" to null, "list" to listOf(1, 2)))
+  }
+
+  @Test fun `toValues persists empty collection component type`() {
+    val array = SomeData("", 1, list = emptyList()).toValues()["list"]!!
+    expect(array.javaClass.componentType).toEqual(Int::class.java)
   }
 
   @Test fun toValuesSkipping() {
     val data = SomeData("Hello", 123)
-    expect(data.toValuesSkipping(SomeData::hello, SomeData::nullable)).toEqual(mapOf("world" to 123))
-    expect(data.toValuesSkipping(SomeData::hello, SomeData::world, SomeData::nullable)).toBeEmpty()
+    expect(data.toValuesSkipping(SomeData::nullable, SomeData::list)).toEqual(mapOf("hello" to "Hello", "world" to 123))
+    expect(data.toValuesSkipping(SomeData::hello, SomeData::world, SomeData::nullable, SomeData::list)).toBeEmpty()
   }
 
   @Test fun fromValues() {
@@ -26,14 +31,15 @@ class ValuesTest {
       every { getObject("hello") } returns "Hello"
       every { getObject("world") } returns 42
       every { getObject("nullable") } returns null
+      every { getObject("list") } returns mockk<java.sql.Array> { every { array } returns arrayOf(4, 5)}
     }
-    expect(rs.fromValues<SomeData>()).toEqual(SomeData("Hello", 42))
+    expect(rs.fromValues<SomeData>()).toEqual(SomeData("Hello", 42, list = listOf(4, 5)))
   }
 
   @Test fun `fromValues with some values provided`() {
     val rs = mockk<ResultSet>()
-    expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null)).toEqual(SomeData("Hello", 42))
+    expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null, SomeData::list to listOf(9))).toEqual(SomeData("Hello", 42, list = listOf(9)))
   }
 
-  data class SomeData(val hello: String, val world: Int, val nullable: String? = null)
+  data class SomeData(val hello: String, val world: Int, val nullable: String? = null, val list: List<Int> = listOf(1, 2))
 }

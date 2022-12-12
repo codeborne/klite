@@ -15,7 +15,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
 
 typealias ToJdbcConverter<T> = (T, Connection?) -> Any
@@ -65,11 +64,14 @@ object JdbcConverter {
     else -> "varchar"
   }
 
-  fun from(v: Any?, target: KType): Any? = when {
-    v is java.sql.Array && target.jvmErasure == Set::class -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toSet()
-    v is java.sql.Array && target.jvmErasure.isSubclassOf(Iterable::class) -> (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }.toList()
-    else -> from(v, target.jvmErasure)
-  }
+  fun from(v: Any?, target: KType): Any? = if (v is java.sql.Array) {
+    val targetClass = target.jvmErasure
+    if (targetClass.java.isArray) v.array else {
+      val list = (v.array as Array<*>).map { from(it, target.arguments[0].type!!) }
+      if (targetClass == Set::class) list.toSet()
+      else list
+    }
+  } else from(v, target.jvmErasure)
 
   fun from(v: Any?, target: KClass<*>?): Any? = when(target) {
     Instant::class -> (v as? Timestamp)?.toInstant()
