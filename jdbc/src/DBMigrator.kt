@@ -10,6 +10,7 @@ import javax.sql.DataSource
 /** Work in progress replacement for Liquibase SQL format */
 open class DBMigrator(
   private val db: DataSource,
+  private val filePaths: List<String> = listOf("db.sql"),
   private val substitutions: Map<String, String> = emptyMap()
 ) {
   private val log = logger()
@@ -22,6 +23,7 @@ open class DBMigrator(
 
   fun migrate() = tx.attachToThread().use {
     executed = readExecuted()
+    filePaths.forEach { migrateFile(it) }
   }
 
   private fun readExecuted() = (try { repository.list() } catch (e: SQLException) {
