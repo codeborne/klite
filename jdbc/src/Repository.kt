@@ -24,12 +24,13 @@ abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCru
 abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
   private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
+  open val defaultOrder get() = orderDesc
 
   protected open fun ResultSet.mapper(): E = fromValues(entityClass)
   protected open fun E.persister() = toValues()
 
   open fun get(id: ID): E = db.query(table, id) { mapper() }
   open fun save(entity: E) = db.upsert(table, entity.persister())
-  open fun list(vararg where: Pair<KProperty1<E, *>, Any?>, order: String = orderDesc): List<E> =
+  open fun list(vararg where: Pair<KProperty1<E, *>, Any?>, order: String = defaultOrder): List<E> =
     db.query(table, where.toMap(), order) { mapper() }
 }
