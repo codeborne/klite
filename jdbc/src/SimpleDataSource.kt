@@ -7,10 +7,10 @@ import java.sql.DriverManager
 import java.sql.SQLFeatureNotSupportedException
 import javax.sql.DataSource
 
-class SimplePoolDataSource(
+class SimpleDataSource(
   val url: String = Config["DB_URL"],
   val user: String? = Config.optional("DB_USER"),
-  private val pass: String? = Config.optional("DB_PASS")
+  private val pass: String? = Config.optional("DB_PASS"),
 ): DataSource {
   override fun getConnection() = getConnection(user, pass)
   override fun getConnection(user: String?, pass: String?): Connection = DriverManager.getConnection(url, user, pass)

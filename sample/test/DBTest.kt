@@ -1,13 +1,15 @@
 package klite.sample
 
 import klite.Config
-import klite.liquibase.LiquibaseModule
+import klite.jdbc.DBMigrator
+import klite.jdbc.SimpleDataSource
 
 abstract class DBTest: klite.jdbc.DBTest() {
   companion object {
     init {
+      Config["ENV"] = "test,test-data"
       Config["DB_URL"] += "_test"
-      LiquibaseModule().migrate(listOf("test", "test-data"))
+      DBMigrator(SimpleDataSource()).migrate()
     }
   }
 }

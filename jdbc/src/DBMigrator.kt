@@ -4,33 +4,39 @@ import klite.info
 import klite.logger
 import java.io.Reader
 import java.lang.Thread.currentThread
-import java.sql.Connection
+import java.sql.SQLException
+import javax.sql.DataSource
 
 /** Work in progress replacement for Liquibase SQL format */
-open class Migrator(
-  private val conn: Connection,
+open class DBMigrator(
+  private val db: DataSource,
   private val substitutions: Map<String, String> = emptyMap()
 ) {
   private val log = logger()
   private val commentRegex = "--.*".toRegex()
   private val substRegex = "\\\$\\{(\\w*)}".toRegex()
+  private val repository = ChangeSetRepository(db)
 
-  fun migrate() {
-    migrateFile("users.sql")
+  private val tx = Transaction(db)
+  private lateinit var executed: Map<String, ChangeSet>
+
+  fun migrate() = tx.attachToThread().use {
+    executed = readExecuted()
   }
+
+  private fun readExecuted() = (try { repository.list() } catch (e: SQLException) {
+    tx.rollback()
+    migrateFile("db_changelog.sql")
+    repository.list()
+  }).associateBy { it.id }
 
   open fun readFile(path: String) = currentThread().contextClassLoader.getResourceAsStream(path) ?: throw MigrationException("$path not found in classpath")
   fun migrateFile(path: String) = readFile(path).reader().use { migrate(path, it) }
 
   private fun migrate(path: String, reader: Reader) {
-    log.info("Migrating $path")
-    val input = reader.buffered()
-    val header = input.readLine()
-    val expectedHeader = "--liquibase formatted sql"
-    if (header != expectedHeader) throw MigrationException("Changeset file should start with `$expectedHeader` instead of `$header`")
-
+    log.info("Reading $path")
     var changeSet = ChangeSet("", path)
-    input.lineSequence().map { it.trim() }.filter { it.isNotEmpty() }.forEach { line ->
+    reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
       if (line.startsWith("--changeset")) {
         exec(changeSet)
         val parts = line.split("\\s+".toRegex())
@@ -49,22 +55,24 @@ open class Migrator(
       return
     }
     try {
-      conn.createStatement().use { stmt ->
-        changeSet.statements.forEach { stmt.execute(it) }
-      }
-      conn.commit()
+      log.info("Executing $changeSet")
+      changeSet.statements.forEach { db.exec(it) }
+      repository.save(changeSet)
+      tx.commit()
+      log.info("Executed $changeSet")
     } catch (e: Exception) {
-      conn.rollback()
+      tx.rollback()
       throw MigrationException(changeSet, e)
     }
   }
 }
 
 data class ChangeSet(
-  val id: String,
+  override val id: String,
   val filePath: String,
-  val separator: String = ";"
-) {
+  val context: String? = null,
+): BaseEntity<String> {
+  val separator: String? = ";"
   val sql = StringBuilder()
 
   operator fun plusAssign(line: String) {
@@ -72,9 +80,17 @@ data class ChangeSet(
     if (line.isNotEmpty()) sql.append("\n")
   }
 
-  val statements get() = sql.split(separator)
+  val statements get() = (separator?.let { sql.split(it).asSequence() } ?: sequenceOf(sql.toString()))
+    .map { it.trimEnd() }.filter { it.isNotEmpty() }
+
+  val checksum: Long get() = statements.fold(0) { r, s -> r + s.hashCode() * 89 }
+}
+
+class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
+  override val defaultOrder = "$orderAsc for update"
+  override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql)
 }
 
 class MigrationException(message: String, cause: Throwable? = null): RuntimeException(message, cause) {
-  constructor(changeSet: ChangeSet, cause: Throwable? = null): this("Failed $changeSet\n" + changeSet.sql, cause)
+  constructor(changeSet: ChangeSet, cause: Throwable? = null): this("Failed $changeSet", cause)
 }

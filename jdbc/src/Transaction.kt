@@ -6,7 +6,7 @@ import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
-class Transaction(private val db: DataSource) {
+class Transaction(private val db: DataSource): AutoCloseable {
   companion object {
     private val threadLocal = ThreadLocal<Transaction>()
     fun current(): Transaction? = threadLocal.get()
@@ -16,6 +16,7 @@ class Transaction(private val db: DataSource) {
   val connection: Connection
     get() = conn ?: db.connection.also { it.autoCommit = false; conn = it }
 
+  override fun close() = close(true)
   fun close(commit: Boolean = true) {
     try {
       conn?.apply {
