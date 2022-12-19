@@ -33,4 +33,5 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun save(entity: E) = db.upsert(table, entity.persister())
   open fun list(vararg where: Pair<KProperty1<E, *>, Any?>, order: String = defaultOrder): List<E> =
     db.query(table, where.toMap(), order) { mapper() }
+  open fun by(vararg where: Pair<KProperty1<E, *>, Any?>): E? = list(*where).firstOrNull()
 }
