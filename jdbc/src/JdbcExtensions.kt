@@ -13,36 +13,37 @@ import kotlin.reflect.KProperty1
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
-typealias Column = Any // String | KProperty1
-typealias Where = Map<out Column, Any?>
+typealias Mapper<R> = ResultSet.() -> R
+private typealias Column = Any // String | KProperty1
+private typealias Where = Map<out Column, Any?>
 
-fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): R =
+fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R> DataSource.query(table: String, where: Where, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
+fun <R> DataSource.query(table: String, where: Where, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: Mapper<R>): Collection<R> =
   select("select * from $table", where, suffix, into, mapper)
 
 // backwards-compatibility
-fun <R> DataSource.query(table: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R) =
+fun <R> DataSource.query(table: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
 
 inline fun <reified R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
   query(table, where, suffix) { fromValues() }
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
+fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", into: MutableCollection<R>, mapper: Mapper<R>): MutableCollection<R> =
   withStatement("$select${where.expr} $suffix") {
     setAll(whereValues(where))
     into.also { executeQuery().process(it::add, mapper) }
   }
 
 @Suppress("UNCHECKED_CAST") // backwards-compatibility
-fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R) =
+fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
   select(select, where, suffix, mutableListOf(), mapper) as List<R>
 
 inline fun <reified R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = ""): List<R> =
   select(select, where, suffix) { fromValues() }
 
-internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: ResultSet.() -> R) {
+internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Mapper<R>) {
   while (next()) consumer(mapper())
 }
 
