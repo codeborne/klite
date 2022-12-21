@@ -44,7 +44,8 @@ fun Router.annotated(routes: Any) {
     val a = f.kliteAnnotation ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, classDecorators.wrap(toHandler(routes, f)))
+    val handler = classDecorators.wrap(toHandler(routes, f))
+    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, handler)
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
@@ -58,7 +59,7 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters.map(::Param)
   return {
     try {
-      val args = params.associate { p -> p.param to paramValue(p, instance) }.filter { !it.key.isOptional || it.value != null }
+      val args = params.associate { p -> p.param to p.valueFrom(this, instance) }.filter { !it.key.isOptional || it.value != null }
       f.callSuspendBy(args)
     } catch (e: InvocationTargetException) {
       throw e.targetException
@@ -71,27 +72,27 @@ private class Param(val param: KParameter) {
   val annotation: Annotation? = param.kliteAnnotation
   val name: String = annotation?.takeIf { it !is PathParam }?.value ?: param.name ?: ""
 
-  val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
-}
-
-private fun HttpExchange.paramValue(p: Param, instance: Any) =
-  if (p.param.kind == INSTANCE) instance
-  else if (p.cls == HttpExchange::class) this
-  else if (p.cls == Session::class) session
-  else if (p.cls == InputStream::class) requestStream
-  else {
-    fun String.toType() = Converter.from<Any>(this, p.param.type)
-    when (p.annotation) {
-      is PathParam -> path(p.name)?.toType()
-      is QueryParam -> query(p.name)?.toType()
-      is HeaderParam -> header(p.name)?.toType()
-      is CookieParam -> cookie(p.name)?.toType()
-      is SessionParam -> session[p.name]?.toType()
-      is AttrParam -> attr(p.name)
-      is BodyParam -> body<Any?>(p.name)?.let { if (it is String) it.toType() else it }
-      else -> body(p.param.type)
+  fun valueFrom(e: HttpExchange, instance: Any) =
+    if (param.kind == INSTANCE) instance
+    else if (cls == HttpExchange::class) e
+    else if (cls == Session::class) e.session
+    else if (cls == InputStream::class) e.requestStream
+    else {
+      when (annotation) {
+        is PathParam -> e.path(name)?.toType()
+        is QueryParam -> e.query(name)?.toType()
+        is HeaderParam -> e.header(name)?.toType()
+        is CookieParam -> e.cookie(name)?.toType()
+        is SessionParam -> e.session[name]?.toType()
+        is AttrParam -> e.attr(name)
+        is BodyParam -> e.body<Any?>(name)?.let { if (it is String) it.toType() else it }
+        else -> e.body(param.type)
+      }
     }
-  }
+
+  private val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
+  private fun String.toType() = Converter.from<Any>(this, param.type)
+}
 
 inline fun <reified T: Annotation> KClass<*>.annotation(): T? = java.getAnnotation(T::class.java)
 inline fun <reified T: Annotation> KFunction<*>.annotation(): T? = javaMethod!!.getAnnotation(T::class.java)
