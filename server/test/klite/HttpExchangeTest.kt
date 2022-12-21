@@ -17,7 +17,7 @@ import kotlin.reflect.typeOf
 class HttpExchangeTest {
   abstract class MockableHttpExchange: OriginalHttpExchange()
   val original = mockk<MockableHttpExchange>(relaxed = true) {
-    every { requestMethod } returns "GET"
+    every { requestMethod } returns "POST"
     every { requestURI } returns URI("/hello?hello=world")
     every { responseCode } returns -1
   }
@@ -32,7 +32,7 @@ class HttpExchangeTest {
   val exchange = HttpExchange(original, routerConfig, null, "req-id")
 
   @Test fun path() {
-    expect(exchange.method).toEqual(RequestMethod.GET)
+    expect(exchange.method).toEqual(RequestMethod.POST)
     expect(exchange.path).toEqual("/hello")
   }
 
