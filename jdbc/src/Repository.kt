@@ -35,3 +35,4 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
     db.select("select count(*) from $table", where.toMap()) { getInt(1) }.first()
   open fun by(vararg where: Pair<KProperty1<E, *>, Any?>): E? = list(*where).firstOrNull()
 }
+
