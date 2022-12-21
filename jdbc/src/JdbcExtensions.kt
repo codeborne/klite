@@ -11,6 +11,8 @@ import java.time.Period
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KProperty1
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
@@ -119,6 +121,10 @@ operator fun PreparedStatement.set(i: Int, value: Any?) {
   else setObject(i, JdbcConverter.to(value, connection))
 }
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
+
+@Suppress("UNCHECKED_CAST")
+fun <T> ResultSet.get(column: String, type: KType): T = JdbcConverter.from(getObject(column), type) as T
+inline operator fun <reified T> ResultSet.get(column: String): T = get(column, typeOf<T>())
 
 fun ResultSet.getId(column: String = "id") = getString(column).toId()
 fun ResultSet.getIdOrNull(column: String) = getString(column)?.toId()
