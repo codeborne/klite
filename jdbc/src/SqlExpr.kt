@@ -52,3 +52,6 @@ class NotIn(values: Collection<*>): SqlExpr("", values) {
   constructor(vararg values: Any?): this(values.toList())
   override fun expr(key: String) = inExpr(key, values).replace(" in ", " not in ")
 }
+
+fun or(vararg where: Pair<Column, Any?>): SqlExpr =
+  where.toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }

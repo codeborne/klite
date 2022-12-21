@@ -14,8 +14,8 @@ import kotlin.reflect.KProperty1
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
 typealias Mapper<R> = ResultSet.() -> R
-private typealias Column = Any // String | KProperty1
-private typealias Where = Map<out Column, Any?>
+internal typealias Column = Any // String | KProperty1
+typealias Where = Map<out Column, Any?>
 
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
@@ -89,7 +89,7 @@ private fun setExpr(values: Map<String, *>) = values.entries.joinToString { q(it
 
 private val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
 
-private fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
+internal fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
   val n = name(k)
   when (v) {
     null -> q(n) + " is null"
@@ -99,8 +99,6 @@ private fun Where.join(separator: String) = entries.joinToString(separator) { (k
     else -> q(n) + " = ?"
   }
 }
-
-fun or(vararg where: Pair<Any, Any?>) = where.toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
 
 private fun name(key: Any) = when(key) {
   is KProperty1<*, *> -> key.name
@@ -112,10 +110,10 @@ internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun inExpr(k: String, v: Iterable<*>) = q(k) + " in (${v.joinToString { "?" }})"
 
-private fun setValues(values: Map<String, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
+private fun setValues(values: Map<*, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
 private fun Any?.flatExpr(): Iterable<Any?> = if (this is SqlExpr) values else listOf(this)
 
-private fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
+internal fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = when (this) {
   is Array<*> -> toList()
   is Iterable<*> -> this
