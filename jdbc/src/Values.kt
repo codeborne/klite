@@ -33,5 +33,8 @@ fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProper
   val args = constructor.parameters.associateWith {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name] else get(it.name!!, it.type)
   }
-  constructor.callBy(args)
+  try { constructor.callBy(args)}
+  catch (e: IllegalArgumentException) {
+    throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name })
+  }
 }
