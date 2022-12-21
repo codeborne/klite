@@ -142,7 +142,11 @@ fun ResultSet.getLocalDate(column: String) = getDate(column).toLocalDate()
 fun ResultSet.getLocalDateOrNull(column: String) = getDate(column)?.toLocalDate()
 fun ResultSet.getPeriod(column: String) = Period.parse(getString(column))
 fun ResultSet.getPeriodOrNull(column: String) = getString(column)?.let { Period.parse(it) }
-fun ResultSet.getIntOrNull(column: String) = getObject(column)?.let { (it as Number).toInt() }
+
+fun ResultSet.getIntOrNull(column: String) = getInt(column).takeUnless { wasNull() }
+fun ResultSet.getLongOrNull(column: String) = getLong(column).takeUnless { wasNull() }
+fun ResultSet.getFloatOrNull(column: String) = getFloat(column).takeUnless { wasNull() }
+fun ResultSet.getDoubleOrNull(column: String) = getDouble(column).takeUnless { wasNull() }
 
 fun String.toId(): UUID = UUID.fromString(this)
 
