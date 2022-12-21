@@ -51,7 +51,8 @@ fun Router.annotated(routes: Any) {
 inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
 
 private val packageName = GET::class.java.packageName
-private val KAnnotatedElement.kliteAnnotation get() = annotations.find { it.annotationClass.java.packageName == packageName }
+private val KAnnotatedElement.kliteAnnotation get() = annotations.filter { it.annotationClass.java.packageName == packageName }
+  .let { if (it.size > 1) error("$this cannot have multiple klite annotations: $it") else it.firstOrNull() }
 
 internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   val params = f.parameters
