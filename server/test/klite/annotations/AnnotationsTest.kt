@@ -1,6 +1,8 @@
 package klite.annotations
 
+import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.*
 import klite.*
@@ -71,5 +73,11 @@ class AnnotationsTest {
     every { exchange.cookie("cookie") } returns "et"
     every { exchange.attr<BigInteger>("attr") } returns BigInteger("90909")
     runBlocking { expect(handler(exchange)).toEqual("Hello TheBody 7.9E+9 2021-10-21 42 et 90909 name.txt") }
+  }
+
+  @Test fun `nicer exception if getting parameter value fails`() {
+    val handler = toHandler(Routes(), Routes::generic)
+    expect { runBlocking { handler(exchange) } }.toThrow<IllegalArgumentException>()
+      .messageToContain("Cannot get value for parameter #1 body of ")
   }
 }

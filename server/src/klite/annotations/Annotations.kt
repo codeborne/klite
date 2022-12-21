@@ -72,7 +72,7 @@ private class Param(val param: KParameter) {
   val annotation: Annotation? = param.kliteAnnotation
   val name: String = annotation?.takeIf { it !is PathParam }?.value ?: param.name ?: ""
 
-  fun valueFrom(e: HttpExchange, instance: Any) =
+  fun valueFrom(e: HttpExchange, instance: Any) = try {
     if (param.kind == INSTANCE) instance
     else if (cls == HttpExchange::class) e
     else if (cls == Session::class) e.session
@@ -89,6 +89,9 @@ private class Param(val param: KParameter) {
         else -> e.body(param.type)
       }
     }
+  } catch (e: Exception) {
+    throw IllegalArgumentException("Cannot get value for $param", e)
+  }
 
   private val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
   private fun String.toType() = Converter.from<Any>(this, param.type)
