@@ -23,8 +23,7 @@ fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): 
 fun <R> DataSource.query(table: String, where: Where, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
   select("select * from $table", where, suffix, into, mapper)
 
-// backwards-compatibility
-fun <R> DataSource.query(table: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+inline fun <reified R: Any> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", noinline mapper: ResultSet.() -> R = { fromValues() }): List<R> =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
 
 fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
