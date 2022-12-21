@@ -7,12 +7,9 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 import java.sql.Statement.RETURN_GENERATED_KEYS
-import java.time.Period
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KProperty1
-import kotlin.reflect.KType
-import kotlin.reflect.typeOf
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
@@ -129,26 +126,3 @@ operator fun PreparedStatement.set(i: Int, value: Any?) {
   else setObject(i, JdbcConverter.to(value, connection))
 }
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
-
-@Suppress("UNCHECKED_CAST")
-fun <T> ResultSet.get(column: String, type: KType): T = JdbcConverter.from(getObject(column), type) as T
-inline operator fun <reified T> ResultSet.get(column: String): T = get(column, typeOf<T>())
-
-fun ResultSet.getId(column: String = "id") = getString(column).toId()
-fun ResultSet.getIdOrNull(column: String) = getString(column)?.toId()
-fun ResultSet.getInstant(column: String) = getTimestamp(column).toInstant()
-fun ResultSet.getInstantOrNull(column: String) = getTimestamp(column)?.toInstant()
-fun ResultSet.getLocalDate(column: String) = getDate(column).toLocalDate()
-fun ResultSet.getLocalDateOrNull(column: String) = getDate(column)?.toLocalDate()
-fun ResultSet.getPeriod(column: String) = Period.parse(getString(column))
-fun ResultSet.getPeriodOrNull(column: String) = getString(column)?.let { Period.parse(it) }
-
-fun ResultSet.getIntOrNull(column: String) = getInt(column).takeUnless { wasNull() }
-fun ResultSet.getLongOrNull(column: String) = getLong(column).takeUnless { wasNull() }
-fun ResultSet.getFloatOrNull(column: String) = getFloat(column).takeUnless { wasNull() }
-fun ResultSet.getDoubleOrNull(column: String) = getDouble(column).takeUnless { wasNull() }
-
-fun String.toId(): UUID = UUID.fromString(this)
-
-inline fun <reified T: Enum<T>> ResultSet.getEnum(column: String) = enumValueOf<T>(getString(column))
-inline fun <reified T: Enum<T>> ResultSet.getEnumOrNull(column: String) = getString(column)?.let { enumValueOf<T>(it) }
