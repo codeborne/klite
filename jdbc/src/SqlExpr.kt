@@ -13,7 +13,7 @@ class SqlComputed(@Language("SQL") expr: String): SqlExpr(expr) {
 }
 
 open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if (value != null) listOf(value) else emptyList()) {
-  override fun expr(key: String) = q(key) + " $operator" + ("?".takeIf { values.isNotEmpty() } ?: "")
+  override fun expr(key: String) = q(key) + " $operator " + ("?".takeIf { values.isNotEmpty() } ?: "")
 }
 
 val notNull = SqlOp("is not null")

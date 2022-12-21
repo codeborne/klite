@@ -80,7 +80,9 @@ fun DataSource.delete(table: String, where: Where): Int =
 
 private fun setExpr(values: Map<String, *>) = values.entries.joinToString { q(it.key) + " = " + ((it.value as? SqlExpr)?.expr(it.key) ?: "?") }
 
-private val Where.expr get() = if (isEmpty()) "" else " where " + entries.joinToString(" and ") { (k, v) ->
+private val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
+
+private fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
   val n = name(k)
   when (v) {
     null -> q(n) + " is null"
@@ -90,6 +92,8 @@ private val Where.expr get() = if (isEmpty()) "" else " where " + entries.joinTo
     else -> q(n) + " = ?"
   }
 }
+
+fun or(vararg where: Pair<Any, Any?>) = where.toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
 
 private fun name(key: Any) = when(key) {
   is KProperty1<*, *> -> key.name
