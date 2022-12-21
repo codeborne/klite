@@ -4,6 +4,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.*
 import klite.*
+import klite.test.CustomAnnotation
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.InputStream
@@ -12,10 +13,9 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
 
-annotation class CustomAnnotation(val hello: String)
-
 class AnnotationsTest {
   val exchange = mockk<HttpExchange>()
+
   @Path("/context") @CustomAnnotation("class") class Routes {
     @GET fun root() = "Hello"
 
@@ -29,6 +29,7 @@ class AnnotationsTest {
 
     @GET("/hello/inputstream") fun stream(body: InputStream) = "Hello"
   }
+
   val router = spyk(Router("", mockk(), PathParamRegexer(), emptyList(), emptyList(), emptyList()))
 
   @Test fun `annotated instance`() {
