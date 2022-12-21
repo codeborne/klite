@@ -83,7 +83,7 @@ open class HttpExchange(
   val isResponseStarted get() = original.responseCode >= 0
 
   val requestType: String? get() = header("Content-Type")
-  val requestStream: InputStream get() = original.requestBody
+  val requestStream: InputStream get() = if (method.hasBody) original.requestBody else error("$method should not have body")
 
   var responseType: String?
     get() = responseHeaders["Content-type"]?.firstOrNull()
