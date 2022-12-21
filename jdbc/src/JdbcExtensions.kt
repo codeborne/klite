@@ -66,6 +66,7 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, block: PreparedSt
   }
 }
 
+// TODO: add insert with mapper that returns the generated keys
 fun DataSource.insert(table: String, values: Map<String, *>): Int {
   val valuesToSet = values.filter { it.value !is GeneratedKey<*> }
   return exec(insertExpr(table, valuesToSet), setValues(valuesToSet)) {
