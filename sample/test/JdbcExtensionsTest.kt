@@ -20,6 +20,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     expect(db.query(table, id) { getId() }).toEqual(id)
 
     expect(db.query(table, mapOf("hello" to "Hello")) { getId() }).toContain(id)
+    expect(db.query<SomeData>(table)).toContain(SomeData("Hello", 42, id))
     expect(db.query(table, mapOf("hello" to "World")) { getId() }).toBeEmpty()
 
     expect(db.query(table, mapOf("hello" to SqlOp(">", "Hello"))) { getId() }).toContain(id2)
@@ -64,5 +65,5 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     expect { db.query(table, data.id) { } }.toThrow<NoSuchElementException>()
   }
 
-  data class SomeData(val hello: String, val world: Int, val id: UUID = randomUUID())
+  data class SomeData(val hello: String, val world: Int?, val id: UUID = randomUUID())
 }

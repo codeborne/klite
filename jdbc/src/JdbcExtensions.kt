@@ -25,8 +25,12 @@ fun <R, ID> DataSource.query(table: String, id: ID, mapper: ResultSet.() -> R): 
 fun <R> DataSource.query(table: String, where: Where, suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: ResultSet.() -> R): Collection<R> =
   select("select * from $table", where, suffix, into, mapper)
 
-inline fun <reified R: Any> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", noinline mapper: ResultSet.() -> R = { fromValues() }): List<R> =
+// backwards-compatibility
+fun <R> DataSource.query(table: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R) =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
+
+inline fun <reified R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
+  query(table, where, suffix) { fromValues() }
 
 fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", into: MutableCollection<R>, mapper: ResultSet.() -> R): MutableCollection<R> =
   withStatement("$select${where.expr} $suffix") {
@@ -34,9 +38,12 @@ fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix:
     into.also { executeQuery().process(it::add, mapper) }
   }
 
-// backwards-compatibility
-fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R): List<R> =
+@Suppress("UNCHECKED_CAST") // backwards-compatibility
+fun <R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: ResultSet.() -> R) =
   select(select, where, suffix, mutableListOf(), mapper) as List<R>
+
+inline fun <reified R> DataSource.select(@Language("SQL") select: String, where: Where, suffix: String = ""): List<R> =
+  select(select, where, suffix) { fromValues() }
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: ResultSet.() -> R) {
   while (next()) consumer(mapper())
