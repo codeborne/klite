@@ -55,10 +55,10 @@ private val KAnnotatedElement.kliteAnnotation get() = annotations.filter { it.an
   .let { if (it.size > 1) error("$this cannot have multiple klite annotations: $it") else it.firstOrNull() }
 
 internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
-  val params = f.parameters
+  val params = f.parameters.map(::Param)
   return {
     try {
-      val args = params.associateWith { p -> paramValue(p, instance) }.filter { !it.key.isOptional || it.value != null }
+      val args = params.associate { p -> p.param to paramValue(p, instance) }.filter { !it.key.isOptional || it.value != null }
       f.callSuspendBy(args)
     } catch (e: InvocationTargetException) {
       throw e.targetException
@@ -66,23 +66,30 @@ internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
   }
 }
 
-private fun HttpExchange.paramValue(p: KParameter, instance: Any) =
-  if (p.kind == INSTANCE) instance
-  else if (p.type.classifier == HttpExchange::class) this
-  else if (p.type.classifier == Session::class) session
-  else if (p.type.classifier == InputStream::class) requestStream
+private class Param(val param: KParameter) {
+  val cls = param.type.classifier as KClass<*>
+  val annotation: Annotation? = param.kliteAnnotation
+  val name: String = annotation?.takeIf { it !is PathParam }?.value ?: param.name ?: ""
+
+  val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
+}
+
+private fun HttpExchange.paramValue(p: Param, instance: Any) =
+  if (p.param.kind == INSTANCE) instance
+  else if (p.cls == HttpExchange::class) this
+  else if (p.cls == Session::class) session
+  else if (p.cls == InputStream::class) requestStream
   else {
-    val name = p.name!!
-    fun String.toType() = Converter.from<Any>(this, p.type)
-    when (val a = p.kliteAnnotation) {
-      is PathParam -> path(name)?.toType()
-      is QueryParam -> query(a.value.ifEmpty { name })?.toType()
-      is HeaderParam -> header(a.value.ifEmpty { name })?.toType()
-      is CookieParam -> cookie(a.value.ifEmpty { name })?.toType()
-      is SessionParam -> session[a.value.ifEmpty { name }]?.toType()
-      is AttrParam -> attr(a.value.ifEmpty { name })
-      is BodyParam -> body<Any?>(a.value.ifEmpty { name })?.let { if (it is String) it.toType() else it }
-      else -> body(p.type)
+    fun String.toType() = Converter.from<Any>(this, p.param.type)
+    when (p.annotation) {
+      is PathParam -> path(p.name)?.toType()
+      is QueryParam -> query(p.name)?.toType()
+      is HeaderParam -> header(p.name)?.toType()
+      is CookieParam -> cookie(p.name)?.toType()
+      is SessionParam -> session[p.name]?.toType()
+      is AttrParam -> attr(p.name)
+      is BodyParam -> body<Any?>(p.name)?.let { if (it is String) it.toType() else it }
+      else -> body(p.param.type)
     }
   }
 
