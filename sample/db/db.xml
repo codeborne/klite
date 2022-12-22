@@ -5,12 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd"
     objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
 
-  <property name="id" value="id uuid default uuid_generate_v4() primary key"/>
+  <property name="id" value="id uuid default gen_random_uuid() primary key"/>
   <property name="createdAt" value="createdAt timestamptz default current_timestamp"/>
-
-  <changeSet id="pgsql-uuid-support" author="Codeborne" dbms="PostgreSql">
-    <sql>create extension if not exists "uuid-ossp"</sql>
-  </changeSet>
 
   <!-- https://docs.liquibase.com/concepts/basic/sql-format.html -->
   <include file="users.sql" relativeToChangelogFile="true"/>

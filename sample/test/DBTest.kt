@@ -10,7 +10,7 @@ abstract class DBTest: klite.jdbc.DBTest() {
       Config["ENV"] = "test,test-data"
       Config["DB_URL"] += "_test"
       DBMigrator(SimpleDataSource(), listOf("db.sql", "users.sql"), mapOf(
-        "id" to "id uuid default uuid_generate_v4() primary key",
+        "id" to "id uuid default gen_random_uuid() primary key",
         "createdAt" to "createdAt timestamptz default current_timestamp"
       )).migrate()
     }
