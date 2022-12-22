@@ -19,7 +19,7 @@ open class DBMigrator(
   private val repository = ChangeSetRepository(db)
 
   private val tx = Transaction(db)
-  private lateinit var executed: Map<String, ChangeSet>
+  private var executed: Map<String, ChangeSet> = emptyMap()
 
   fun migrate() = tx.attachToThread().use {
     executed = readExecuted()
@@ -60,6 +60,7 @@ open class DBMigrator(
       if (changeSet.sql.isNotEmpty()) error("Cannot execute dangling SQL without a changeset:\n" + changeSet.sql)
       return
     }
+    if (executed[changeSet.id] != null) return
     try {
       log.info("Executing $changeSet")
       changeSet.statements.forEach { db.exec(it) }
