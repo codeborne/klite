@@ -82,8 +82,8 @@ class Router(
   fun options(path: String = "", handler: Handler) = options(pathParamRegexer.from(path), handler)
 }
 
-enum class RequestMethod {
-  GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD
+enum class RequestMethod(val hasBody: Boolean = true) {
+  GET(false), POST, PUT, PATCH, DELETE(false), OPTIONS, HEAD(false)
 }
 
 data class Route(val method: RequestMethod, val path: Regex, val annotations: List<Annotation> = emptyList(), val handler: Handler) {

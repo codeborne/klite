@@ -31,7 +31,10 @@ inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty
 fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProperty1<T, *>, Any?>) = type.primaryConstructor!!.let { constructor ->
   val extraArgs = provided.associate { it.first.name to it.second }
   val args = constructor.parameters.associateWith {
-    if (extraArgs.containsKey(it.name)) extraArgs[it.name] else JdbcConverter.from(getObject(it.name), it.type)
+    if (extraArgs.containsKey(it.name)) extraArgs[it.name] else get(it.name!!, it.type)
   }
-  constructor.callBy(args)
+  try { constructor.callBy(args)}
+  catch (e: IllegalArgumentException) {
+    throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name })
+  }
 }

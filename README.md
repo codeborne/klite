@@ -79,3 +79,10 @@ Jitpack builds requested versions on the fly, so it is also good if you want to 
 you will still be able to add your fork as a Maven/Gradle dependency in your apps.
 
 But pull-requests are welcome if you want to improve something for everybody!
+
+
+### Depending on a local build
+
+Publish to `~/.m2/repository` by running `./gradlew publishToMavenLocal`
+
+Then add `mavenLocal()` repository to your project and use Klite version of `master-SNAPSHOT`.
