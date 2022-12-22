@@ -5,7 +5,7 @@ plugins {
 }
 
 allprojects {
-  group = rootProject.name
+  group = "com.github.codeborne.klite"
   version = "1.0-SNAPSHOT"
 }
 
