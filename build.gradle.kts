@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
   group = "com.github.codeborne.klite"
-  version = "1.0-SNAPSHOT"
+  version = "master-SNAPSHOT"
 }
 
 subprojects {
@@ -80,4 +80,3 @@ subprojects {
     }
   }
 }
-
