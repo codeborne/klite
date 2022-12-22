@@ -39,7 +39,11 @@ open class DBMigrator(
     log.info("Reading $path")
     var changeSet = ChangeSet("", path)
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
-      if (line.startsWith("--changeset")) {
+      if (line.startsWith("--include")) {
+        exec(changeSet)
+        migrateFile(line.substringAfter("--include").trim())
+      }
+      else if (line.startsWith("--changeset")) {
         exec(changeSet)
         val parts = line.split("\\s+".toRegex())
         changeSet = ChangeSet(parts[1], path)
