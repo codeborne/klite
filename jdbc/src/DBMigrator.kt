@@ -57,10 +57,15 @@ open class DBMigrator(
 
   fun exec(changeSet: ChangeSet) {
     if (changeSet.id.isEmpty()) {
-      if (changeSet.sql.isNotEmpty()) error("Cannot execute dangling SQL without a changeset:\n" + changeSet.sql)
+      if (changeSet.sql.isNotEmpty())
+        throw MigrationException("Cannot execute dangling SQL without a changeset:\n" + changeSet.sql)
       return
     }
-    if (executed[changeSet.id] != null) return
+    executed[changeSet.id]?.let {
+      if (it.checksum != changeSet.checksum)
+        throw MigrationException(changeSet, "has changed, add runOnChange:true or skipOnChange:true TODO")
+      return
+    }
     try {
       log.info("Executing $changeSet")
       changeSet.statements.forEach { db.exec(it) }
@@ -100,4 +105,5 @@ class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>
 
 class MigrationException(message: String, cause: Throwable? = null): RuntimeException(message, cause) {
   constructor(changeSet: ChangeSet, cause: Throwable? = null): this("Failed $changeSet", cause)
+  constructor(changeSet: ChangeSet, message: String): this("$changeSet $message")
 }
