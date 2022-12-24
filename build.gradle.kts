@@ -67,6 +67,11 @@ subprojects {
     useJUnitPlatform()
   }
 
+  // disable publishing gradle .modules files as JitPack omits excludes from there: https://github.com/jitpack/jitpack.io/issues/5349
+  tasks.withType<GenerateModuleMetadata> {
+    enabled = false
+  }
+
   configure<PublishingExtension> {
     publications {
       if (project.name != "sample") {
