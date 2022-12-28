@@ -30,7 +30,6 @@ class ValuesTest {
     val rs = mockk<ResultSet> {
       every { getObject("hello") } returns "Hello"
       every { getObject("world") } returns 42
-      every { getObject("nullable") } returns null
       every { getObject("list") } returns mockk<java.sql.Array> { every { array } returns arrayOf(4, 5)}
     }
     expect(rs.fromValues<SomeData>()).toEqual(SomeData("Hello", 42, list = listOf(4, 5)))

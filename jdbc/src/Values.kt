@@ -32,8 +32,10 @@ inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty
 fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProperty1<T, *>, Any?>) = type.primaryConstructor!!.let { constructor ->
   val extraArgs = provided.associate { it.first.name to it.second }
   val args = constructor.parameters.associateWith {
-    if (extraArgs.containsKey(it.name)) extraArgs[it.name] else get(it.name!!, it.type)
-  }
+    if (extraArgs.containsKey(it.name)) extraArgs[it.name]
+    else if (it.isOptional) getOptional(it.name!!, it.type)
+    else get(it.name!!, it.type)
+  }.filterNot { it.key.isOptional && it.value == null }
   try { constructor.callBy(args)}
   catch (e: IllegalArgumentException) {
     throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name })
