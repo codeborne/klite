@@ -80,7 +80,7 @@ open class DBMigrator(
         FAIL -> throw MigrationException(changeSet, "has changed, old checksum=${it.checksum}, use onChange to override")
         SKIP -> return log.warn("Skipping changed $changeSet")
         MARK_RAN -> {
-          log.warn("Marking changed $changeSet as ran")
+          log.warn("$changeSet - marking as ran")
           run = false
         }
         RUN -> {}
