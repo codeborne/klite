@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.info
+import klite.jdbc.ChangeSet.OnChange
 import klite.jdbc.ChangeSet.OnChange.*
 import klite.logger
 import klite.warn
@@ -48,7 +49,11 @@ open class DBMigrator(
       else if (line.startsWith("--changeset")) {
         exec(changeSet)
         val parts = line.split("\\s+".toRegex())
-        changeSet = ChangeSet(parts[1], filePath = path)
+        val args = parts.drop(2).associate { it.split(":", limit = 2).let { it[0] to it[1] } }
+        changeSet = ChangeSet(parts[1], filePath = path,
+          context = args["context"], separator = args["separator"] ?: ";",
+          onChange = args["onChange"]?.let { OnChange.valueOf(it) } ?: FAIL)
+        // TODO: use Constructor.callBy() to fail on unsupported params or create Map.fromValues()
       }
       else changeSet += line.replace(commentRegex, "").substitute()
     }
@@ -108,9 +113,9 @@ data class ChangeSet(
     if (separator != null) {
       val pos = sql.indexOf(separator, lastPos)
       if (pos >= 0) {
-        val stmt = sql.substring(lastPos, pos).trim()
+        val stmt = sql.substring(lastPos, pos)
         statements += stmt
-        checksum = (checksum ?: 0) * 89 + stmt.hashCode()
+        checksum = (checksum ?: 0) * 89 + stmt.replace("\\s*\n\\s*".toRegex(), "\n").hashCode()
         lastPos = pos + separator.length
       }
     }
