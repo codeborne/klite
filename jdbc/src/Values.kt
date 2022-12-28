@@ -5,6 +5,7 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.KVisibility.PUBLIC
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
@@ -21,7 +22,7 @@ private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any
   toValues((this::class.memberProperties as Iterable<KProperty1<T, *>>).filter { !skipNames.contains(it.name) })
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> =
-  props.filter { it.javaField != null }.associate { it.name to persistEmptyCollectionType(it.get(this), it.returnType) }
+  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to persistEmptyCollectionType(it.get(this), it.returnType) }
 
 private fun persistEmptyCollectionType(v: Any?, type: KType) =
   if (v is Collection<*> && v.isEmpty()) java.lang.reflect.Array.newInstance((type.arguments.first().type!!.classifier as KClass<*>).java, 0) else v
