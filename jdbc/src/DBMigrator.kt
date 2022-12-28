@@ -67,7 +67,7 @@ open class DBMigrator(
     executed[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
       when (changeSet.onChange) {
-        FAIL -> throw MigrationException(changeSet, "has changed, use onChange: options")
+        FAIL -> throw MigrationException(changeSet, "has changed, old checksum=${it.checksum}, use onChange to override")
         SKIP -> return log.warn("Skipping changed $changeSet")
         MARK_RAN -> {
           log.warn("Marking changed $changeSet as ran")
@@ -104,20 +104,18 @@ data class ChangeSet(
 
   private var lastPos = 0
   operator fun plusAssign(line: String) {
-    (sql as StringBuilder).append(line)
-    if (line.isNotEmpty()) sql.append("\n")
+    if ((sql as StringBuilder).isNotEmpty()) sql.append("\n")
+    sql.append(line)
     if (separator != null) {
       val pos = sql.indexOf(separator, lastPos)
       if (pos >= 0) {
         val stmt = sql.substring(lastPos, pos).trim()
         statements += stmt
+        checksum = (checksum ?: 0) * 89 + stmt.hashCode()
         lastPos = pos + separator.length
       }
     }
   }
-
-//  val statements get() = (separator?.let { sql.split(it).asSequence() } ?: sequenceOf(sql.toString()))
-//    .map { it.trimEnd() }.filter { it.isNotEmpty() }.also { checksum = it.fold(0) { r, s -> r + s.hashCode() * 89 } }
 
   enum class OnChange { FAIL, RUN, SKIP, MARK_RAN }
 }
@@ -129,5 +127,5 @@ class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>
 
 class MigrationException(message: String, cause: Throwable? = null): RuntimeException(message, cause) {
   constructor(changeSet: ChangeSet, cause: Throwable? = null): this("Failed $changeSet", cause)
-  constructor(changeSet: ChangeSet, message: String): this("$changeSet $message")
+  constructor(changeSet: ChangeSet, message: String): this("$changeSet\n - $message")
 }
