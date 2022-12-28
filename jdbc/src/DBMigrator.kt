@@ -77,13 +77,12 @@ open class DBMigrator(
       }
     }
     try {
-      if (run) {
-        log.info("Executing $changeSet")
-        changeSet.statements.forEach { db.exec(it) }
+      if (run) changeSet.statements.forEach {
+        log.info("Executing ${changeSet.copy(sql = it)}")
+        db.exec(it)
       }
       repository.save(changeSet)
       tx.commit()
-      log.info("Executed $changeSet")
     } catch (e: Exception) {
       tx.rollback()
       throw MigrationException(changeSet, e)
