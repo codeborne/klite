@@ -29,14 +29,14 @@ class ChangeSetTest {
 
   @Test fun `no trailing separator`() {
     changeSet.addLine("hello")
-    changeSet.ready()
+    changeSet.finish()
     expect(changeSet.statements).toContainExactly("hello")
   }
 
   @Test fun `no separator`() {
     val changeSet = changeSet.copy(separator = null)
     changeSet.addLine("hello")
-    changeSet.ready()
+    changeSet.finish()
     expect(changeSet.statements).toContainExactly("hello")
   }
 }

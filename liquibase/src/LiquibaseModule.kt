@@ -43,7 +43,7 @@ open class LiquibaseModule(
     }
   }
 
-  fun migrate(contexts: List<String> = Config.active, connection: Connection? = null) = exec(connection) {
+  fun migrate(contexts: Collection<String> = Config.active, connection: Connection? = null) = exec(connection) {
     if (dropAllBeforeUpdate) dropAll()
     update(this, Contexts(contexts))
   }

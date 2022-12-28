@@ -13,13 +13,13 @@ object Config {
   fun required(env: String) = optional(env) ?: error("$env should be provided as system property or env var")
 
   /** For dot-separated inheritance, e.g. logger level */
-  fun inherited(env: String): String? = optional(env) ?: if (env.contains(".")) inherited(env.substringBeforeLast(".")) else null
+  fun inherited(env: String): String? = optional(env) ?: if ("." in env) inherited(env.substringBeforeLast(".")) else null
   fun inherited(env: String, default: String): String = inherited(env) ?: default
 
   /** List of active configurations, e.g. dev or prod, from ENV var */
-  val active: List<String> by lazy { optional("ENV", "dev").split(",").map { it.trim() } }
-  fun isActive(conf: String) = active.contains(conf)
-  fun isAnyActive(vararg confs: String) = active.any { confs.contains(it) }
+  val active: Set<String> by lazy { optional("ENV", "dev").split(",").map { it.trim() }.toSet() }
+  fun isActive(conf: String) = conf in active
+  fun isAnyActive(vararg confs: String) = confs.any { it in active }
 
   operator fun get(env: String) = required(env)
   operator fun set(env: String, value: String): String? = System.setProperty(env, value)

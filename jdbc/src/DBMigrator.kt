@@ -1,5 +1,6 @@
 package klite.jdbc
 
+import klite.Config
 import klite.info
 import klite.jdbc.ChangeSet.OnChange
 import klite.jdbc.ChangeSet.OnChange.*
@@ -15,6 +16,7 @@ import javax.sql.DataSource
 open class DBMigrator(
   private val db: DataSource,
   private val filePaths: List<String> = listOf("db.sql"),
+  private val contexts: Set<String> = Config.active,
   private val substitutions: Map<String, String> = emptyMap()
 ) {
   private val log = logger()
@@ -64,12 +66,13 @@ open class DBMigrator(
   private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }
 
   fun exec(changeSet: ChangeSet) {
-    changeSet.ready()
+    changeSet.finish()
     if (changeSet.id.isEmpty()) {
       if (changeSet.sql.isNotEmpty())
         throw MigrationException("Cannot execute dangling SQL without a changeset:\n" + changeSet.sql)
       return
     }
+    if (changeSet.context != null && changeSet.context !in contexts) return
     var run = true
     executed[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
@@ -100,7 +103,7 @@ open class DBMigrator(
 data class ChangeSet(
   override val id: String,
   @Language("SQL") val sql: CharSequence = StringBuilder(),
-  val context: String? = null, // TODO
+  val context: String? = null,
   val onChange: OnChange = FAIL,
   val separator: String? = ";",
   val filePath: String? = null,
@@ -117,14 +120,14 @@ data class ChangeSet(
   }
 
   private fun addNextStatement(pos: Int = sql.indexOf(separator ?: "", lastPos)) {
-    if (pos < 0) return
+    if (pos <= lastPos) return
     val stmt = sql.substring(lastPos, pos)
     statements += stmt
     checksum = (checksum ?: 0) * 89 + stmt.replace("\\s*\n\\s*".toRegex(), "\n").hashCode()
     lastPos = pos + (separator ?: "").length
   }
 
-  internal fun ready() = addNextStatement(sql.length)
+  internal fun finish() = addNextStatement(sql.length)
 
   enum class OnChange { FAIL, RUN, SKIP, MARK_RAN }
 }
