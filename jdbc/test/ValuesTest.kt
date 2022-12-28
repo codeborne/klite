@@ -16,8 +16,9 @@ class ValuesTest {
   }
 
   @Test fun `toValues persists empty collection component type`() {
-    val array = SomeData("", 1, list = emptyList()).toValues()["list"]!!
-    expect(array.javaClass.componentType).toEqual(Int::class.java)
+    val empty = SomeData("", 1, list = emptyList()).toValues()["list"]
+    expect(empty).toEqual(EmptyOf(Int::class))
+    expect(empty as Collection<*>).toBeEmpty()
   }
 
   @Test fun toValuesSkipping() {

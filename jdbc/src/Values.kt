@@ -24,7 +24,9 @@ fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> =
   props.filter { it.javaField != null }.associate { it.name to persistEmptyCollectionType(it.get(this), it.returnType) }
 
 private fun persistEmptyCollectionType(v: Any?, type: KType) =
-  if (v is Collection<*> && v.isEmpty()) java.lang.reflect.Array.newInstance((type.arguments.first().type!!.classifier as KClass<*>).java, 0) else v
+  if (v is Collection<*> && v.isEmpty()) EmptyOf(type.arguments.first().type!!.classifier as KClass<*>) else v
+
+data class EmptyOf<T: Any>(val type: KClass<T>): Collection<T> by emptyList()
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *provided)
 

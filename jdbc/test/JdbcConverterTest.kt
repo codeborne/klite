@@ -4,6 +4,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.mockk
 import io.mockk.verify
+import klite.jdbc.EmptyOf
 import klite.jdbc.JdbcConverter
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal.ONE
@@ -49,6 +50,12 @@ class JdbcConverterTest {
     val uuid = randomUUID()
     expect(JdbcConverter.to(listOf(uuid, uuid), conn)).toBeAnInstanceOf<java.sql.Array>()
     verify { conn.createArrayOf("uuid", arrayOf(uuid, uuid)) }
+  }
+
+  @Test fun `empty array of uuid`() {
+    val conn = mockk<Connection>(relaxed = true)
+    expect(JdbcConverter.to(EmptyOf(UUID::class), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("uuid", emptyArray()) }
   }
 
   @Test fun `to array of BigDecimal`() {
