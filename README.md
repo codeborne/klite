@@ -80,9 +80,25 @@ you will still be able to add your fork as a Maven/Gradle dependency in your app
 
 But pull-requests are welcome if you want to improve something for everybody!
 
-
 ### Depending on a local build
 
 Publish to `~/.m2/repository` by running `./gradlew publishToMavenLocal`
 
 Then add `mavenLocal()` repository to your project and use Klite version of `master-SNAPSHOT`.
+
+### Depenending on the Git repository (source) directly
+
+If there is a problem with Jitpack, then it's possible to add the following to your `settings.gradle.kts`:
+
+```kotlin
+sourceControl {
+  gitRepository(java.net.URI("https://github.com/codeborne/klite.git")) {
+    producesModule("com.github.codeborne.klite:server")
+    producesModule("com.github.codeborne.klite:jdbc")
+    // list all subprojects you depend on in build.gradle.kts, use their unprefixed names, e.g. server, not klite-server
+  }
+}
+```
+
+Gradle will clone and build Klite for you automatically during your project's build.
+*Tagged version numbers* are supported this way, but *not commit hashes*.
