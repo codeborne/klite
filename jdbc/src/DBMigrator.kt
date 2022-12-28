@@ -17,7 +17,7 @@ open class DBMigrator(
   private val substitutions: Map<String, String> = emptyMap()
 ) {
   private val log = logger()
-  private val commentRegex = "--.*".toRegex()
+  private val commentRegex = "\\s*--.*".toRegex()
   private val substRegex = "\\\$\\{(\\w*)}".toRegex()
   private val repository = ChangeSetRepository(db)
 
@@ -55,7 +55,7 @@ open class DBMigrator(
           onChange = args["onChange"]?.let { OnChange.valueOf(it) } ?: FAIL)
         // TODO: use Constructor.callBy() to fail on unsupported params or create Map.fromValues()
       }
-      else changeSet += line.replace(commentRegex, "").substitute()
+      else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
     exec(changeSet)
   }
@@ -107,7 +107,7 @@ data class ChangeSet(
   val statements = mutableListOf<String>()
 
   private var lastPos = 0
-  operator fun plusAssign(line: String) {
+  internal fun addLine(line: String) {
     if ((sql as StringBuilder).isNotEmpty()) sql.append("\n")
     sql.append(line)
     if (separator != null) {
