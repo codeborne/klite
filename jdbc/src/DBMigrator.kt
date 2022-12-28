@@ -39,7 +39,7 @@ open class DBMigrator(
 
   private fun migrate(path: String, reader: Reader) {
     log.info("Reading $path")
-    var changeSet = ChangeSet("", path)
+    var changeSet = ChangeSet("")
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
       if (line.startsWith("--include")) {
         exec(changeSet)
@@ -48,7 +48,7 @@ open class DBMigrator(
       else if (line.startsWith("--changeset")) {
         exec(changeSet)
         val parts = line.split("\\s+".toRegex())
-        changeSet = ChangeSet(parts[1], path)
+        changeSet = ChangeSet(parts[1], filePath = path)
       }
       else changeSet += line.replace(commentRegex, "").substitute()
     }
@@ -93,28 +93,38 @@ open class DBMigrator(
 
 data class ChangeSet(
   override val id: String,
-  val filePath: String,
+  val sql: CharSequence = StringBuilder(),
   val context: String? = null,
-  var checksum: Long = 0
+  val onChange: OnChange = FAIL,
+  val separator: String? = ";",
+  val filePath: String? = null,
+  var checksum: Long? = null
 ): BaseEntity<String> {
-  val separator: String? = ";"
-  val onChange: OnChange = FAIL
-  val sql = StringBuilder()
+  val statements = mutableListOf<String>()
 
+  private var lastPos = 0
   operator fun plusAssign(line: String) {
-    sql.append(line)
+    (sql as StringBuilder).append(line)
     if (line.isNotEmpty()) sql.append("\n")
+    if (separator != null) {
+      val pos = sql.indexOf(separator, lastPos)
+      if (pos >= 0) {
+        val stmt = sql.substring(lastPos, pos).trim()
+        statements += stmt
+        lastPos = pos + separator.length
+      }
+    }
   }
 
-  val statements get() = (separator?.let { sql.split(it).asSequence() } ?: sequenceOf(sql.toString()))
-    .map { it.trimEnd() }.filter { it.isNotEmpty() }.also { checksum = it.fold(0) { r, s -> r + s.hashCode() * 89 } }
+//  val statements get() = (separator?.let { sql.split(it).asSequence() } ?: sequenceOf(sql.toString()))
+//    .map { it.trimEnd() }.filter { it.isNotEmpty() }.also { checksum = it.fold(0) { r, s -> r + s.hashCode() * 89 } }
 
   enum class OnChange { FAIL, RUN, SKIP, MARK_RAN }
 }
 
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
   override val defaultOrder = "$orderAsc for update"
-  override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql)
+  override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange)
 }
 
 class MigrationException(message: String, cause: Throwable? = null): RuntimeException(message, cause) {
