@@ -5,6 +5,7 @@ import klite.jdbc.ChangeSet.OnChange
 import klite.jdbc.ChangeSet.OnChange.*
 import klite.logger
 import klite.warn
+import org.intellij.lang.annotations.Language
 import java.io.Reader
 import java.lang.Thread.currentThread
 import java.sql.SQLException
@@ -63,6 +64,7 @@ open class DBMigrator(
   private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }
 
   fun exec(changeSet: ChangeSet) {
+    changeSet.ready()
     if (changeSet.id.isEmpty()) {
       if (changeSet.sql.isNotEmpty())
         throw MigrationException("Cannot execute dangling SQL without a changeset:\n" + changeSet.sql)
@@ -97,8 +99,8 @@ open class DBMigrator(
 
 data class ChangeSet(
   override val id: String,
-  val sql: CharSequence = StringBuilder(),
-  val context: String? = null,
+  @Language("SQL") val sql: CharSequence = StringBuilder(),
+  val context: String? = null, // TODO
   val onChange: OnChange = FAIL,
   val separator: String? = ";",
   val filePath: String? = null,
@@ -108,18 +110,21 @@ data class ChangeSet(
 
   private var lastPos = 0
   internal fun addLine(line: String) {
-    if ((sql as StringBuilder).isNotEmpty()) sql.append("\n")
+    sql as StringBuilder
+    if (sql.isNotEmpty()) sql.append("\n")
     sql.append(line)
-    if (separator != null) {
-      val pos = sql.indexOf(separator, lastPos)
-      if (pos >= 0) {
-        val stmt = sql.substring(lastPos, pos)
-        statements += stmt
-        checksum = (checksum ?: 0) * 89 + stmt.replace("\\s*\n\\s*".toRegex(), "\n").hashCode()
-        lastPos = pos + separator.length
-      }
-    }
+    if (separator != null) addNextStatement()
   }
+
+  private fun addNextStatement(pos: Int = sql.indexOf(separator ?: "", lastPos)) {
+    if (pos < 0) return
+    val stmt = sql.substring(lastPos, pos)
+    statements += stmt
+    checksum = (checksum ?: 0) * 89 + stmt.replace("\\s*\n\\s*".toRegex(), "\n").hashCode()
+    lastPos = pos + (separator ?: "").length
+  }
+
+  internal fun ready() = addNextStatement(sql.length)
 
   enum class OnChange { FAIL, RUN, SKIP, MARK_RAN }
 }

@@ -1,13 +1,19 @@
 package klite.jdbc
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
 import ch.tutteli.atrium.api.fluent.en_GB.toContainExactly
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 
 class ChangeSetTest {
+  val changeSet = ChangeSet("id")
+
+  @Test fun empty() {
+    expect(changeSet.statements).toBeEmpty()
+  }
+
   @Test fun `multiple statements`() {
-    val changeSet = ChangeSet("id")
     val sql = """
       create table blah(
         id number
@@ -19,5 +25,18 @@ class ChangeSetTest {
     expect(changeSet.sql.toString()).toEqual(sql)
     expect(changeSet.statements).toContainExactly(sql.substringBefore(";"), sql.substringAfter(";").substringBefore(";"))
     expect(changeSet.checksum).toEqual(-105362483148)
+  }
+
+  @Test fun `no trailing separator`() {
+    changeSet.addLine("hello")
+    changeSet.ready()
+    expect(changeSet.statements).toContainExactly("hello")
+  }
+
+  @Test fun `no separator`() {
+    val changeSet = changeSet.copy(separator = null)
+    changeSet.addLine("hello")
+    changeSet.ready()
+    expect(changeSet.statements).toContainExactly("hello")
   }
 }
