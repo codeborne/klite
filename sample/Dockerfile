@@ -15,8 +15,8 @@ COPY build/libs /app
 # Run under non-privileged user with minimal write permissions
 USER user
 
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=80"
-CMD jre/bin/java $JAVA_OPTS -jar *.jar
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=80"
+CMD jre/bin/java -jar *.jar
 
 # Heroku redefines exposed port
 ENV PORT=8080
