@@ -25,14 +25,14 @@ open class DBMigrator(
   private val repository = ChangeSetRepository(db)
 
   private val tx = Transaction(db)
-  private var executed: Map<String, ChangeSet> = emptyMap()
+  private var history: Map<String, ChangeSet> = emptyMap()
 
   fun migrate() = tx.attachToThread().use {
-    executed = readExecuted()
+    history = readHistory()
     filePaths.forEach { migrateFile(it) }
   }
 
-  private fun readExecuted() = (try { repository.list() } catch (e: SQLException) {
+  private fun readHistory() = (try { repository.list() } catch (e: SQLException) {
     tx.rollback()
     migrateFile("db_changelog.sql")
     repository.list()
@@ -46,11 +46,11 @@ open class DBMigrator(
     var changeSet = ChangeSet("")
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
       if (line.startsWith("--include")) {
-        exec(changeSet)
+        run(changeSet)
         migrateFile(line.substringAfter("--include").trim())
       }
       else if (line.startsWith("--changeset")) {
-        exec(changeSet)
+        run(changeSet)
         val parts = line.split("\\s+".toRegex())
         val args = parts.drop(2).associate { it.split(":", limit = 2).let { it[0] to it[1] } }
         changeSet = ChangeSet(parts[1], filePath = path,
@@ -60,21 +60,21 @@ open class DBMigrator(
       }
       else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
-    exec(changeSet)
+    run(changeSet)
   }
 
   private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }
 
-  fun exec(changeSet: ChangeSet) {
+  fun run(changeSet: ChangeSet) {
     changeSet.finish()
     if (changeSet.id.isEmpty()) {
       if (changeSet.sql.isNotEmpty())
-        throw MigrationException("Cannot execute dangling SQL without a changeset:\n" + changeSet.sql)
+        throw MigrationException("Cannot run dangling SQL without a changeset:\n" + changeSet.sql)
       return
     }
     if (changeSet.context != null && changeSet.context !in contexts) return
     var run = true
-    executed[changeSet.id]?.let {
+    history[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
       when (changeSet.onChange) {
         FAIL -> throw MigrationException(changeSet, "has changed, old checksum=${it.checksum}, use onChange to override")
@@ -88,7 +88,7 @@ open class DBMigrator(
     }
     try {
       if (run) changeSet.statements.forEach {
-        log.info("Executing ${changeSet.copy(sql = it)}")
+        log.info("Running ${changeSet.copy(sql = it)}")
         changeSet.rowsAffected += db.exec(it)
       }
       repository.save(changeSet)
