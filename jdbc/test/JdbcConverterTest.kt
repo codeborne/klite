@@ -54,7 +54,7 @@ class JdbcConverterTest {
 
   @Test fun `empty array of uuid`() {
     val conn = mockk<Connection>(relaxed = true)
-    expect(JdbcConverter.to(EmptyOf(UUID::class), conn)).toBeAnInstanceOf<java.sql.Array>()
+    expect(JdbcConverter.to(EmptyOf(UUID::class.java), conn)).toBeAnInstanceOf<java.sql.Array>()
     verify { conn.createArrayOf("uuid", emptyArray()) }
   }
 

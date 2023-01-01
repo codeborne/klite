@@ -17,7 +17,7 @@ class ValuesTest {
 
   @Test fun `toValues persists empty collection component type`() {
     val empty = SomeData("", 1, list = emptyList()).toValues()["list"]
-    expect(empty).toEqual(EmptyOf(Int::class))
+    expect(empty).toEqual(EmptyOf(Int::class.javaObjectType))
     expect(empty as Collection<*>).toBeEmpty()
   }
 
