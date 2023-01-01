@@ -8,8 +8,8 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
-fun <T: Any> T.toValues(vararg provided: Pair<KProperty1<T, *>, Any?>): Map<String, Any?> {
-  val values = mapOf(*provided).mapKeys { it.key.name }
+fun <T: Any> T.toValues(vararg provided: PropValue<T, *>): Map<String, Any?> {
+  val values = provided.associate { it.property.name to it.value }
   return toValuesSkipping(values.keys) + values
 }
 
@@ -50,4 +50,4 @@ fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter
 }
 
 data class PropValue<T, out V>(val property: KProperty1<T, V>, val value: V)
-infix fun <T, V> KProperty1<T, V>.v(value: V) = PropValue(this, value)
+infix fun <T, V> KProperty1<T, V>.to(value: V) = PropValue(this, value)
