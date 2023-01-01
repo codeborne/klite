@@ -27,11 +27,11 @@ private fun persistEmptyCollectionType(v: Any?, type: KType) =
 
 data class EmptyOf<T: Any>(val type: Class<T>): Collection<T> by emptyList()
 
-inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *provided)
+inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T, *>) = fromValues(T::class, *provided)
 inline fun <reified T: Any> Map<String, Any?>.fromValues() = fromValues(T::class)
 
-fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProperty1<T, *>, Any?>): T {
-  val extraArgs = provided.associate { it.first.name to it.second }
+fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T, *>): T {
+  val extraArgs = provided.associate { it.property.name to it.value }
   return extraArgs.fromValues(type) {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
     else if (it.isOptional) getOptional(it.name!!, it.type)
@@ -45,6 +45,9 @@ fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter
   return try {
     constructor.callBy(args)
   } catch (e: IllegalArgumentException) {
-    throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name })
+    throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name }, e)
   }
 }
+
+data class PropValue<T, out V>(val property: KProperty1<T, V>, val value: V)
+infix fun <T, V> KProperty1<T, V>.v(value: V) = PropValue(this, value)
