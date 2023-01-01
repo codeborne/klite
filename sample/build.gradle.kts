@@ -5,9 +5,8 @@ dependencies {
   implementation(project(":jackson"))
   implementation(project(":i18n"))
   implementation(project(":jdbc"))
-  implementation(project(":liquibase"))
   implementation(project(":slf4j"))
-  implementation("org.postgresql:postgresql:42.5.0")
+  implementation("org.postgresql:postgresql:42.5.1")
   testImplementation(project(":jdbc-test"))
 }
 

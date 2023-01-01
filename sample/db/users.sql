@@ -1,5 +1,3 @@
---liquibase formatted sql
-
 --changeset klite:users
 create table users(
   ${id},
