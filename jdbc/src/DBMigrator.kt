@@ -2,7 +2,6 @@ package klite.jdbc
 
 import klite.Config
 import klite.info
-import klite.jdbc.ChangeSet.OnChange
 import klite.jdbc.ChangeSet.OnChange.*
 import klite.logger
 import klite.warn
@@ -52,11 +51,9 @@ open class DBMigrator(
       else if (line.startsWith("--changeset")) {
         run(changeSet)
         val parts = line.split("\\s+".toRegex())
-        val args = parts.drop(2).associate { it.split(":", limit = 2).let { it[0] to it[1] } }
-        changeSet = ChangeSet(parts[1], filePath = path,
-          context = args["context"], separator = args["separator"] ?: ";",
-          onChange = args["onChange"]?.let { OnChange.valueOf(it) } ?: FAIL)
-        // TODO: use Constructor.callBy() to fail on unsupported params or create Map.fromValues()
+        val args = mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
+          parts.drop(2).associate { it.split(":", limit = 2).let { it[0] to it[1] } }
+        changeSet = args.fromValues()
       }
       else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
