@@ -27,7 +27,7 @@ class ValuesTest {
     expect(data.toValuesSkipping(SomeData::hello, SomeData::world, SomeData::nullable, SomeData::list)).toBeEmpty()
   }
 
-  @Test fun fromValues() {
+  @Test fun `ResultSet fromValues`() {
     val rs = mockk<ResultSet> {
       every { getObject("hello") } returns "Hello"
       every { getObject("world") } returns 42
@@ -39,6 +39,11 @@ class ValuesTest {
   @Test fun `fromValues with some values provided`() {
     val rs = mockk<ResultSet>()
     expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null, SomeData::list to listOf(9))).toEqual(SomeData("Hello", 42, list = listOf(9)))
+  }
+
+  @Test fun `Map fromValues`() {
+    val data = mapOf("hello" to "Hello", "world" to 34).fromValues<SomeData>()
+    expect(data).toEqual(SomeData("Hello", 34))
   }
 
   data class SomeData(val hello: String, val world: Int, val nullable: String? = null, val list: List<Int> = listOf(1, 2))

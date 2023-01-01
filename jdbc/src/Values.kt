@@ -2,9 +2,7 @@ package klite.jdbc
 
 import java.sql.ResultSet
 import java.util.*
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
-import kotlin.reflect.KType
+import kotlin.reflect.*
 import kotlin.reflect.KVisibility.PUBLIC
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -30,16 +28,23 @@ private fun persistEmptyCollectionType(v: Any?, type: KType) =
 data class EmptyOf<T: Any>(val type: Class<T>): Collection<T> by emptyList()
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: Pair<KProperty1<T, *>, Any?>) = fromValues(T::class, *provided)
+inline fun <reified T: Any> Map<String, Any?>.fromValues() = fromValues(T::class)
 
-fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProperty1<T, *>, Any?>) = type.primaryConstructor!!.let { constructor ->
+fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: Pair<KProperty1<T, *>, Any?>): T {
   val extraArgs = provided.associate { it.first.name to it.second }
-  val args = constructor.parameters.associateWith {
-    if (extraArgs.containsKey(it.name)) extraArgs[it.name]
+  return extraArgs.fromValues(type) {
+    if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
     else if (it.isOptional) getOptional(it.name!!, it.type)
     else get(it.name!!, it.type)
-  }.filterNot { it.key.isOptional && it.value == null }
-  try { constructor.callBy(args)}
-  catch (e: IllegalArgumentException) {
+  }
+}
+
+fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter) -> Any? = { get(it.name) }): T {
+  val constructor = type.primaryConstructor!!
+  val args = constructor.parameters.associateWith { getValue(it) }.filterNot { it.key.isOptional && it.value == null }
+  return try {
+    constructor.callBy(args)
+  } catch (e: IllegalArgumentException) {
     throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name })
   }
 }
