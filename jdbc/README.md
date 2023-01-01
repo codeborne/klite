@@ -57,3 +57,7 @@ conversion of entities to Maps for use with insert/update/upsert.
 [JdbcConverter](src/JdbcConverter.kt) can be used to register conversion of custom types to be sent to the DB.
 
 [BaseRepository](src/Repository.kt) and [CrudRepository](src/Repository.kt) are also provided for convenience.
+
+## Migrations
+
+[DBMigrator](src/DBMigrator.kt) is provided for simple SQL-based DB migrations, it supports a very similar syntax to [Liquibase SQL Format](https://docs.liquibase.com/concepts/basic/sql-format.html), see [sample](../sample/db/db.sql).
