@@ -14,7 +14,7 @@ import javax.sql.DataSource
 /** Work in progress replacement for Liquibase SQL format */
 open class DBMigrator(
   private val db: DataSource,
-  private val filePaths: List<String> = listOf("db.sql"),
+  private val filePaths: List<String> = listOf(Config.optional("DB_MIGRATE", "db.sql")),
   private val contexts: Set<String> = Config.active,
   private val substitutions: Map<String, String> = emptyMap()
 ) {
