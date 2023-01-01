@@ -16,7 +16,7 @@ open class DBMigrator(
   private val db: DataSource,
   private val filePaths: List<String> = listOf(Config.optional("DB_MIGRATE", "db.sql")),
   private val contexts: Set<String> = Config.active,
-  private val substitutions: Map<String, String> = emptyMap()
+  private val substitutions: MutableMap<String, String> = mutableMapOf()
 ) {
   private val log = logger()
   private val commentRegex = "\\s*--.*".toRegex()
@@ -47,6 +47,11 @@ open class DBMigrator(
       if (line.startsWith("--include")) {
         run(changeSet)
         migrateFile(line.substringAfter("--include").trim())
+      }
+      else if (line.startsWith("--substitute")) {
+        run(changeSet)
+        val (key, value) = line.substringAfter("--substitute").trim().split('=', limit = 2)
+        substitutions[key] = value
       }
       else if (line.startsWith("--changeset")) {
         run(changeSet)
