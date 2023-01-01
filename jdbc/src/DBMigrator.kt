@@ -89,7 +89,7 @@ open class DBMigrator(
     try {
       if (run) changeSet.statements.forEach {
         log.info("Executing ${changeSet.copy(sql = it)}")
-        db.exec(it)
+        changeSet.rowsAffected += db.exec(it)
       }
       repository.save(changeSet)
       tx.commit()
@@ -110,6 +110,7 @@ data class ChangeSet(
   var checksum: Long? = null
 ): BaseEntity<String> {
   val statements = mutableListOf<String>()
+  var rowsAffected = 0
 
   private var lastPos = 0
   internal fun addLine(line: String) {
