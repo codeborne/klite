@@ -4,13 +4,15 @@ import java.nio.file.Path
 import kotlin.io.path.extension
 
 object MimeTypes {
-  var unknown = "application/octet-stream"
   val html = "text/html"
   val text = "text/plain"
   val json = "application/json"
   val xml = "text/xml"
   val pdf = "application/pdf"
   val wwwForm = "application/x-www-form-urlencoded"
+  val formData = "multipart/form-data"
+
+  var unknown = "application/octet-stream"
   var textCharset = Charsets.UTF_8
   val byExtension = mutableMapOf(
     "html" to html,
