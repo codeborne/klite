@@ -1,5 +1,6 @@
 import klite.*
 import klite.annotations.annotated
+import klite.jdbc.DBMigrator
 import klite.jdbc.DBModule
 import klite.jdbc.RequestTransactionHandler
 import klite.jdbc.startDevDB
@@ -20,6 +21,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
 
   if (Config.isDev) startDevDB() // start docker-compose db automatically
   use<DBModule>() // configure a DataSource
+  use<DBMigrator>() //  migrate the DB
   use<RequestTransactionHandler>() // runs each request in a transaction
 
   assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))

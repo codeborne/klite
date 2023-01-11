@@ -1,10 +1,7 @@
 package klite.jdbc
 
-import klite.Config
-import klite.info
+import klite.*
 import klite.jdbc.ChangeSet.OnChange.*
-import klite.logger
-import klite.warn
 import org.intellij.lang.annotations.Language
 import java.io.Reader
 import java.lang.Thread.currentThread
@@ -17,7 +14,7 @@ open class DBMigrator(
   private val filePaths: List<String> = listOf(Config.optional("DB_MIGRATE", "db.sql")),
   private val contexts: Set<String> = Config.active,
   private val substitutions: MutableMap<String, String> = mutableMapOf()
-) {
+): Extension {
   private val log = logger()
   private val commentRegex = "\\s*--.*".toRegex()
   private val substRegex = "\\\$\\{(\\w*)}".toRegex()
@@ -25,6 +22,8 @@ open class DBMigrator(
 
   private val tx = Transaction(db)
   private var history: Map<String, ChangeSet> = emptyMap()
+
+  override fun install(server: Server) = migrate()
 
   fun migrate() = tx.attachToThread().use {
     history = readHistory()
