@@ -68,6 +68,7 @@ class AssetsHandler(
 
 object MimeTypes {
   var unknown = "application/octet-stream"
+  val wwwForm = "application/x-www-form-urlencoded"
   var textCharset = UTF_8
   val typesByExtension = mutableMapOf(
     "html" to "text/html",

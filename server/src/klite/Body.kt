@@ -44,7 +44,7 @@ class TextBodyParser(
   }
 }
 
-class FormUrlEncodedParser(override val contentType: String = "application/x-www-form-urlencoded"): BodyParser {
+class FormUrlEncodedParser(override val contentType: String = MimeTypes.wwwForm): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T : Any> parse(input: InputStream, type: KType): T = urlDecodeParams(input.reader().readText()) as T
 }
