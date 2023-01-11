@@ -5,16 +5,21 @@ import kotlin.io.path.extension
 
 object MimeTypes {
   var unknown = "application/octet-stream"
+  val html = "text/html"
+  val text = "text/plain"
+  val json = "application/json"
+  val xml = "text/xml"
+  val pdf = "application/pdf"
   val wwwForm = "application/x-www-form-urlencoded"
   var textCharset = Charsets.UTF_8
-  val typesByExtension = mutableMapOf(
-    "html" to "text/html",
-    "txt" to "text/plain",
-    "xml" to "text/xml",
-    "xsd" to "text/xml",
+  val byExtension = mutableMapOf(
+    "html" to html,
+    "txt" to text,
+    "xml" to xml,
+    "xsd" to xml,
     "js" to "text/javascript",
     "mjs" to "text/javascript",
-    "json" to "application/json",
+    "json" to json,
     "css" to "text/css",
     "csv" to "text/csv",
     "ico" to "image/vnd.microsoft.icon",
@@ -32,7 +37,7 @@ object MimeTypes {
     "otf" to "font/otf",
     "woff" to "font/woff",
     "woff2" to "font/woff2",
-    "pdf" to "application/pdf",
+    "pdf" to pdf,
     "xls" to "application/vnd.ms-excel",
     "xlsx" to "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "zip" to "application/zip",
@@ -42,7 +47,7 @@ object MimeTypes {
     "asice" to "application/vnd.etsi.asic-e+zip"
   )
 
-  fun typeFor(file: Path) = typesByExtension[file.extension]
+  fun typeFor(file: Path) = byExtension[file.extension]
   fun typeFor(fileName: String) = typeFor(Path.of(fileName))
 
   fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml")
