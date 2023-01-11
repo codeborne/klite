@@ -3,7 +3,6 @@ package klite
 import klite.StatusCode.Companion.NotModified
 import klite.StatusCode.Companion.OK
 import java.io.IOException
-import java.nio.charset.Charset
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.READ
 import java.time.ZoneOffset.UTC
@@ -17,8 +16,6 @@ class AssetsHandler(
   val useIndexForUnknownPaths: Boolean = false,
   val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=604800"),
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
-  val mimeTypes: MimeTypes = MimeTypes(),
-  val textCharset: Charset = UTF_8,
   val useChunkedResponseForFilesLargerThan: Long = 30 * (1L shl 20),
   val headerModifier: HttpExchange.() -> Unit = {}
 ): Handler {
@@ -50,13 +47,11 @@ class AssetsHandler(
 
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
-    var contentType: String? = mimeTypes.typeFor(file)
-
+    var contentType = MimeTypes.typeFor(file)
     if (contentType == null) {
       logger.warn("Cannot detect content-type for $file")
-      contentType = mimeTypes.unknown
+      contentType = MimeTypes.unknown
     }
-    else if (mimeTypes.isText(contentType)) contentType += "; charset=$textCharset"
 
     headerModifier()
 
@@ -71,9 +66,10 @@ class AssetsHandler(
   }
 }
 
-class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
-  val unknown = "application/octet-stream"
-  private val typesByExtension = mapOf(
+object MimeTypes {
+  var unknown = "application/octet-stream"
+  var textCharset = UTF_8
+  val typesByExtension = mutableMapOf(
     "html" to "text/html",
     "txt" to "text/plain",
     "xml" to "text/xml",
@@ -106,9 +102,11 @@ class MimeTypes(moreTypesByFileExtension: Map<String, String> = emptyMap()) {
     "gz" to "application/gzip",
     "ics" to "text/calendar",
     "asice" to "application/vnd.etsi.asic-e+zip"
-  ) + moreTypesByFileExtension
+  )
 
   fun typeFor(file: Path) = typesByExtension[file.extension]
   fun typeFor(fileName: String) = typeFor(Path.of(fileName))
+
   fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml")
+  fun withCharset(contentType: String) = if (!contentType.contains("charset") && isText(contentType)) "$contentType; charset=$textCharset" else contentType
 }

@@ -104,7 +104,7 @@ open class HttpExchange(
    */
   fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null): OutputStream {
     sessionStore?.save(this, session)
-    responseType = contentType
+    if (contentType != null) responseType = MimeTypes.withCharset(contentType)
     val bodyNotAllowed = method == HEAD || method == OPTIONS
     original.sendResponseHeaders(code.value, if (length == 0L || bodyNotAllowed) -1 else length ?: 0)
     if (bodyNotAllowed) throw BodyNotAllowedException()
