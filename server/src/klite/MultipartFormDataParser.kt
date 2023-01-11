@@ -3,7 +3,7 @@ package klite
 import java.io.InputStream
 import kotlin.reflect.KClass
 
-class MultipartFormDataParser(override val contentType: String = "multipart/form-data"): BodyParser {
+class MultipartFormDataParser(override val contentType: String = MimeTypes.formData): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T : Any> parse(input: InputStream, type: KClass<T>): T {
     val reader = input.bufferedReader()

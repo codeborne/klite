@@ -47,7 +47,7 @@ open class HttpExchange(
   fun <T: Any> body(type: KType): T {
     if (type.classifier == String::class) return rawBody as T
     if (type.classifier == ByteArray::class) return requestStream.readBytes() as T
-    val contentType = requestType ?: "text/plain"
+    val contentType = requestType ?: MimeTypes.text
     val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
     return bodyParser.parse(this, type)
   }
@@ -87,7 +87,7 @@ open class HttpExchange(
 
   var responseType: String?
     get() = responseHeaders["Content-type"]?.firstOrNull()
-    set(value) { value?.let { header("Content-type", it) } }
+    set(value) { value?.let { header("Content-type", MimeTypes.withCharset(it)) } }
 
   val accept get() = Accept(header("Accept"))
 
