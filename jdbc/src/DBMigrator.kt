@@ -77,6 +77,10 @@ open class DBMigrator(
     var run = true
     history[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
+      if (it.checksum == null) {
+        log.info("Storing new checksum for ${changeSet.id}")
+        return markRan(changeSet)
+      }
       when (changeSet.onChange) {
         FAIL -> throw MigrationException(changeSet, "has changed, old checksum=${it.checksum}, use onChange to override")
         SKIP -> return log.warn("Skipping changed $changeSet")
