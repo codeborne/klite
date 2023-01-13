@@ -1,7 +1,9 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 package klite.jdbc
 
 import java.sql.ResultSet
 import java.util.*
+import kotlin.internal.OnlyInputTypes
 import kotlin.reflect.*
 import kotlin.reflect.KVisibility.PUBLIC
 import kotlin.reflect.full.memberProperties
@@ -50,4 +52,4 @@ fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter
 }
 
 data class PropValue<T, out V>(val property: KProperty1<T, V>, val value: V)
-infix fun <T, V> KProperty1<T, V>.to(value: V) = PropValue(this, value)
+infix fun <T, @OnlyInputTypes V> KProperty1<T, V>.to(value: V) = PropValue(this, value)
