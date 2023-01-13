@@ -61,6 +61,10 @@ object JdbcConverter {
     c == null -> "varchar"
     UUID::class.java.isAssignableFrom(c) -> "uuid"
     Number::class.java.isAssignableFrom(c) -> "numeric"
+    LocalDate::class.java.isAssignableFrom(c) -> "date"
+    LocalTime::class.java.isAssignableFrom(c) -> "time"
+    LocalDateTime::class.java.isAssignableFrom(c) -> "timestamp"
+    Instant::class.java.isAssignableFrom(c) -> "timestamptz"
     else -> "varchar"
   }
 
