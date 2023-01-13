@@ -92,12 +92,23 @@ open class DBMigrator(
         log.info("Running ${changeSet.copy(sql = it)}")
         changeSet.rowsAffected += db.exec(it)
       }
-      repository.save(changeSet)
-      tx.commit()
+      markRan(changeSet)
     } catch (e: Exception) {
       tx.rollback()
-      throw MigrationException(changeSet, e)
+      when (changeSet.onFail) {
+        SKIP -> log.warn("Skipping failed $changeSet: $e")
+        MARK_RAN -> {
+          log.warn("Marking as ran failed $changeSet: $e")
+          markRan(changeSet)
+        }
+        else -> throw MigrationException(changeSet, e)
+      }
     }
+  }
+
+  private fun markRan(changeSet: ChangeSet) {
+    repository.save(changeSet)
+    tx.commit()
   }
 }
 
@@ -106,6 +117,7 @@ data class ChangeSet(
   @Language("SQL") val sql: CharSequence = StringBuilder(),
   val context: String? = null,
   val onChange: OnChange = FAIL,
+  val onFail: OnChange = FAIL,
   val separator: String? = ";",
   val filePath: String? = null,
   var checksum: Long? = null
@@ -136,7 +148,7 @@ data class ChangeSet(
 
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
   override val defaultOrder = "$orderAsc for update"
-  override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange)
+  override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange, ChangeSet::onFail)
 }
 
 class MigrationException(message: String, cause: Throwable? = null): RuntimeException(message, cause) {
