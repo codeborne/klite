@@ -8,3 +8,7 @@ create table db_changelog(
   rowsAffected integer not null default 0,
   createdAt timestamptz not null default current_timestamp
 );
+
+--changeset try-migrate-from-liquibase onFail:SKIP
+insert into db_changelog (id, filePath, context, createdAt)
+  select author || ':' || id, filename, contexts, dateexecuted from databasechangelog;
