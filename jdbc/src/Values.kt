@@ -39,7 +39,7 @@ fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T,
   }
 }
 
-fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter) -> Any? = { get(it.name) }): T {
+fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter) -> Any? = { JdbcConverter.from(get(it.name), it.type) }): T {
   val constructor = type.primaryConstructor!!
   val args = constructor.parameters.associateWith { getValue(it) }.filterNot { it.key.isOptional && it.value == null }
   return try {
