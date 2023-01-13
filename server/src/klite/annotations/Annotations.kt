@@ -85,7 +85,7 @@ private class Param(val param: KParameter) {
         is CookieParam -> e.cookie(name)?.toType()
         is SessionParam -> e.session[name]?.toType()
         is AttrParam -> e.attr(name)
-        is BodyParam -> e.body<Any?>(name)?.let { if (it is String) it.toType() else it }
+        is BodyParam -> e.body<Any?>(name)?.let { if (it is String) it.trimToNull()?.toType() else it }
         else -> e.body(param.type)
       }
     }
