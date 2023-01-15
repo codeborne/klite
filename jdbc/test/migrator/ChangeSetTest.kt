@@ -39,4 +39,11 @@ class ChangeSetTest {
     changeSet.finish()
     expect(changeSet.statements).toContainExactly("hello")
   }
+
+  @Test fun matches() {
+    expect(changeSet.matches(setOf("anything"))).toEqual(true)
+    expect(changeSet.copy(context = "something").matches(setOf("anything"))).toEqual(false)
+    expect(changeSet.copy(context = "!prod").matches(setOf("anything"))).toEqual(true)
+    expect(changeSet.copy(context = "!prod").matches(setOf("x", "prod"))).toEqual(false)
+  }
 }

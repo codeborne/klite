@@ -35,6 +35,11 @@ data class ChangeSet(
 
   internal fun finish() = addNextStatement(sql.length)
 
+  fun matches(contexts: Set<String>) =
+    if (context == null) true
+    else if (context.startsWith("!")) context.substring(1) !in contexts
+    else context in contexts
+
   enum class On { FAIL, RUN, SKIP, MARK_RAN }
 }
 

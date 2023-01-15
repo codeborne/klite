@@ -57,7 +57,7 @@ open class DBMigrator(
         throw MigrationException("Cannot run dangling SQL without a changeset:\n" + changeSet.sql)
       return
     }
-    if (changeSet.context != null && changeSet.context !in contexts) return
+    if (!changeSet.matches(contexts)) return
 
     var run = true
     history[changeSet.id]?.let {
