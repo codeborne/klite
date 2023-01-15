@@ -1,11 +1,11 @@
+package klite.jdbc
+
 import ch.tutteli.atrium.api.fluent.en_GB.toBeAnInstanceOf
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.mockk
 import io.mockk.verify
-import klite.jdbc.EmptyOf
-import klite.jdbc.JdbcConverter
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal.ONE
 import java.math.BigDecimal.TEN

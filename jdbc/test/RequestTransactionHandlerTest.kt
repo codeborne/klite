@@ -1,3 +1,5 @@
+package klite.jdbc
+
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
@@ -5,12 +7,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.HttpExchange
-import klite.StatusCode
 import klite.StatusCode.Companion.Found
 import klite.StatusCodeException
-import klite.jdbc.NoTransaction
-import klite.jdbc.RequestTransactionHandler
-import klite.jdbc.Transaction
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import javax.sql.DataSource
