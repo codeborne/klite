@@ -46,7 +46,7 @@ open class DBMigrator(
 
   private fun readHistory() = (try { repository.list() } catch (e: SQLException) {
     tx.rollback()
-    ChangeSetFileReader("migrator/db_changelog.sql").forEach(::run)
+    ChangeSetFileReader("migrator/init.sql").forEach(::run)
     repository.list()
   }).associateBy { it.id }
 

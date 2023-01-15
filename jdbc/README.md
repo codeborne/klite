@@ -70,4 +70,4 @@ Advantages over Liquibase:
 * Every team can structure their IDs in any way, even prefixing with author or using date-time notation, to minimize conflicts.
 * Provides simpler way to treat changes and failures with onChange and onFail attributes.
 * Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
-* Migration from Liquibase is done automatically, see [db_changelog.sql](src/migrator/db_changelog.sql)
+* Migration from Liquibase is done automatically, see [init.sql](src/migrator/init.sql)
