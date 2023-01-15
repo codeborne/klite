@@ -30,6 +30,12 @@ open class DBMigrator(
     filePaths.forEach { migrateFile(it) }
   }
 
+  fun dropAll(schema: String? = null) = tx.attachToThread().use {
+    val schema = schema ?: db.withConnection { this.schema }
+    db.exec("drop schema $schema cascade")
+    db.exec("create schema $schema")
+  }
+
   private fun readHistory() = (try { repository.list() } catch (e: SQLException) {
     tx.rollback()
     migrateFile("db_changelog.sql")
