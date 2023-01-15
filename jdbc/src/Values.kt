@@ -1,18 +1,16 @@
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 package klite.jdbc
 
 import java.sql.ResultSet
 import java.util.*
-import kotlin.internal.OnlyInputTypes
 import kotlin.reflect.*
 import kotlin.reflect.KVisibility.PUBLIC
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
-typealias PropValue<T, @OnlyInputTypes V> = Pair<KProperty1<T, V>, V>
+typealias PropValue<T> = Pair<KProperty1<T, *>, *>
 
-fun <T: Any> T.toValues(vararg provided: PropValue<T, *>): Map<String, Any?> {
+fun <T: Any> T.toValues(vararg provided: PropValue<T>): Map<String, Any?> {
   val values = provided.associate { it.first.name to it.second }
   return toValuesSkipping(values.keys) + values
 }
@@ -31,10 +29,10 @@ private fun persistEmptyCollectionType(v: Any?, type: KType) =
 
 data class EmptyOf<T: Any>(val type: Class<T>): Collection<T> by emptyList()
 
-inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T, *>) = fromValues(T::class, *provided)
+inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = fromValues(T::class, *provided)
 inline fun <reified T: Any> Map<String, Any?>.fromValues() = fromValues(T::class)
 
-fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T, *>): T {
+fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T>): T {
   val extraArgs = provided.associate { it.first.name to it.second }
   return extraArgs.fromValues(type) {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
