@@ -5,7 +5,9 @@ import klite.jdbc.ChangeSet.OnChange.*
 import java.sql.SQLException
 import javax.sql.DataSource
 
-/** Work in progress replacement for Liquibase SQL format */
+/**
+ * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
+ */
 open class DBMigrator(
   private val db: DataSource,
   private val changeSets: Sequence<ChangeSet> = ChangeSetFileReader(Config.optional("DB_MIGRATE", "db.sql")),
@@ -44,7 +46,7 @@ open class DBMigrator(
 
   private fun readHistory() = (try { repository.list() } catch (e: SQLException) {
     tx.rollback()
-    ChangeSetFileReader("db_changelog.sql").forEach(::run)
+    ChangeSetFileReader("migrator/db_changelog.sql").forEach(::run)
     repository.list()
   }).associateBy { it.id }
 
@@ -56,6 +58,7 @@ open class DBMigrator(
       return
     }
     if (changeSet.context != null && changeSet.context !in contexts) return
+
     var run = true
     history[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
@@ -73,6 +76,7 @@ open class DBMigrator(
         RUN -> {}
       }
     }
+
     try {
       if (run) changeSet.statements.forEach {
         log.info("Running ${changeSet.copy(sql = it)}")

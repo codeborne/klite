@@ -8,6 +8,7 @@ Registration with Server instance:
 
 ```kotlin
   use<DBModule>() // to register a DataSource and connection pool using Config variables.
+  use<DBMigrator>() // to migrate the DB using .sql files or changesets in code, see below
   use<RequestTransactionHandler>() // to enable per-request transactions
 ```
 
@@ -60,4 +61,13 @@ conversion of entities to Maps for use with insert/update/upsert.
 
 ## Migrations
 
-[DBMigrator](src/DBMigrator.kt) is provided for simple SQL-based DB migrations, it supports a very similar syntax to [Liquibase SQL Format](https://docs.liquibase.com/concepts/basic/sql-format.html), see [sample](../sample/db/db.sql).
+[DBMigrator](src/migrator/DBMigrator.kt) is provided for simple SQL-based DB migrations, it supports a very similar syntax to [Liquibase SQL Format](https://docs.liquibase.com/concepts/basic/sql-format.html), see [sample](../sample/db/db.sql).
+
+Advantages over Liquibase:
+* Small and simple, doesn't include vulnerable dependencies nor requires java.desktop module
+* No mandatory author name, which can be useless when pair programming or caring about collective code ownership
+* Filepath is not part of changeset unique ID, enabling moving changesets between files easily (refactoring)
+* Every team can structure their IDs in any way, even prefixing with author or using date-time notation, to minimize conflicts.
+* Provides simpler way to treat changes and failures with onChange and onFail attributes.
+* Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
+* Migration from Liquibase is done automatically, see [db_changelog.sql](src/migrator/db_changelog.sql)
