@@ -13,7 +13,8 @@ open class DBMigrator(
   private val db: DataSource,
   private val filePaths: List<String> = listOf(Config.optional("DB_MIGRATE", "db.sql")),
   private val contexts: Set<String> = Config.active,
-  private val substitutions: MutableMap<String, String> = mutableMapOf()
+  private val substitutions: MutableMap<String, String> = mutableMapOf(),
+  private val dropAllOnFailure: Boolean = Config.isTest
 ): Extension {
   private val log = logger()
   private val commentRegex = "\\s*--.*".toRegex()
@@ -25,13 +26,24 @@ open class DBMigrator(
 
   override fun install(server: Server) = migrate()
 
-  fun migrate() = tx.attachToThread().use {
+  fun migrate() = try {
+    doMigrate()
+  } catch (e: MigrationException) {
+    if (dropAllOnFailure) {
+      log.error("Migration failed, dropping and retrying from scratch", e)
+      dropAll()
+      doMigrate()
+    } else throw e
+  }
+
+  private fun doMigrate() = tx.attachToThread().use {
     history = readHistory()
     filePaths.forEach { migrateFile(it) }
   }
 
   fun dropAll(schema: String? = null) = tx.attachToThread().use {
     val schema = schema ?: db.withConnection { this.schema }
+    log.warn("Dropping and recreating schema $schema")
     db.exec("drop schema $schema cascade")
     db.exec("create schema $schema")
   }
