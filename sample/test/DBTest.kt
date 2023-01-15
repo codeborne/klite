@@ -1,7 +1,7 @@
 package klite.sample
 
 import klite.Config
-import klite.jdbc.DBMigrator
+import klite.jdbc.migrator.DBMigrator
 
 abstract class DBTest: klite.jdbc.DBTest() {
   companion object {
