@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.info
+import klite.jdbc.ChangeSetFileReader.keywords.*
 import klite.logger
 import java.io.FileNotFoundException
 import java.io.Reader
@@ -30,21 +31,28 @@ open class ChangeSetFileReader(
 
   private suspend fun SequenceScope<ChangeSet>.readFile(path: String) = resolveFile(path).reader().use { read(it, path) }
 
+  enum class keywords { include, substitute, changeset }
+
   private suspend fun SequenceScope<ChangeSet>.read(reader: Reader, path: String) {
     log.info("Reading $path")
     var changeSet = ChangeSet("")
+
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
-      if (line.startsWith("--include")) {
+      val keyword = if (line.startsWith("--")) keywords.values().find { line.startsWith("--$it") } else null
+      if (keyword != null) {
+        changeSet.finish()
         yield(changeSet)
+        changeSet = ChangeSet("")
+      }
+
+      if (keyword == include) {
         readFile(line.substringAfter("--include").trim())
       }
-      else if (line.startsWith("--substitute")) {
-        yield(changeSet)
+      else if (keyword == substitute) {
         val (key, value) = line.substringAfter("--substitute").trim().split('=', limit = 2)
         substitutions[key] = value
       }
-      else if (line.startsWith("--changeset")) {
-        yield(changeSet)
+      else if (keyword == changeset) {
         val parts = line.split(whitespace)
         val args = mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
           parts.drop(2).associate { it.split(":", limit = 2).let { it[0] to it[1] } }
@@ -52,6 +60,7 @@ open class ChangeSetFileReader(
       }
       else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
+    changeSet.finish()
     yield(changeSet)
   }
 

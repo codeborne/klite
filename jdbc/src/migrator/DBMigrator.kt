@@ -8,6 +8,7 @@ import javax.sql.DataSource
 /**
  * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
  * TODO: locking during run
+ * TODO: read existing changesets on the fly, so that it is possible to modify changelog table
  */
 open class DBMigrator(
   private val db: DataSource = ConfigDataSource(),
@@ -52,7 +53,6 @@ open class DBMigrator(
   }).associateBy { it.id }
 
   fun run(changeSet: ChangeSet) {
-    changeSet.finish()
     if (changeSet.id.isEmpty()) {
       if (changeSet.sql.isNotEmpty())
         throw MigrationException("Cannot run dangling SQL without a changeset:\n" + changeSet.sql)
