@@ -53,7 +53,7 @@ open class LiquibaseModule(
       liquibase.update(contexts)
     } catch (e: LiquibaseException) {
       if (dropAllOnUpdateFailure) {
-        logger().warn("DB Updated failed, dropping all to retry")
+        logger().warn("DB update failed, dropping all to retry")
         liquibase.dropAll()
         liquibase.update(contexts)
       }
