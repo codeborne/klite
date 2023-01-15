@@ -6,6 +6,7 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
+import java.sql.Statement.NO_GENERATED_KEYS
 import java.sql.Statement.RETURN_GENERATED_KEYS
 import java.util.*
 import javax.sql.DataSource
@@ -47,17 +48,17 @@ internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Ma
   while (next()) consumer(mapper())
 }
 
-fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), callback: (Statement.() -> Unit)? = null): Int =
-  withStatement(expr) {
+fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): Int =
+  withStatement(expr, keys) {
     setAll(values)
     executeUpdate().also {
       if (callback != null) callback()
     }
   }
 
-fun <R> DataSource.withStatement(@Language("SQL") sql: String, block: PreparedStatement.() -> R): R = withConnection {
+fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GENERATED_KEYS, block: PreparedStatement.() -> R): R = withConnection {
   try {
-    prepareStatement(sql, RETURN_GENERATED_KEYS).use { it.block() }
+    prepareStatement(sql, keys).use { it.block() }
   } catch (e: SQLException) {
     throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e)
           else SQLException(e.message + "\nSQL: $sql", e.sqlState, e.errorCode, e)
@@ -67,8 +68,9 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, block: PreparedSt
 // TODO: add insert with mapper that returns the generated keys
 fun DataSource.insert(table: String, values: Map<String, *>): Int {
   val valuesToSet = values.filter { it.value !is GeneratedKey<*> }
-  return exec(insertExpr(table, valuesToSet), setValues(valuesToSet)) {
-    if (valuesToSet.size != values.size) processGeneratedKeys(values)
+  val hasGeneratedKeys = valuesToSet.size != values.size
+  return exec(insertExpr(table, valuesToSet), setValues(valuesToSet), if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
+    if (hasGeneratedKeys) processGeneratedKeys(values)
   }
 }
 

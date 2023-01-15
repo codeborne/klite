@@ -7,6 +7,7 @@ import javax.sql.DataSource
 
 /**
  * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
+ * TODO: locking during run
  */
 open class DBMigrator(
   private val db: DataSource = ConfigDataSource(),
