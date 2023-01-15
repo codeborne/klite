@@ -2,7 +2,6 @@ package klite.jdbc
 
 import org.intellij.lang.annotations.Language
 import kotlin.reflect.KProperty1
-import kotlin.to
 
 open class SqlExpr(@Language("SQL") protected val expr: String, val values: Collection<*> = emptyList<Any>()) {
   constructor(@Language("SQL") expr: String, vararg values: Any?): this(expr, values.toList())

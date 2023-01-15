@@ -10,8 +10,10 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
+typealias PropValue<T, @OnlyInputTypes V> = Pair<KProperty1<T, V>, V>
+
 fun <T: Any> T.toValues(vararg provided: PropValue<T, *>): Map<String, Any?> {
-  val values = provided.associate { it.property.name to it.value }
+  val values = provided.associate { it.first.name to it.second }
   return toValuesSkipping(values.keys) + values
 }
 
@@ -33,7 +35,7 @@ inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T, *
 inline fun <reified T: Any> Map<String, Any?>.fromValues() = fromValues(T::class)
 
 fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T, *>): T {
-  val extraArgs = provided.associate { it.property.name to it.value }
+  val extraArgs = provided.associate { it.first.name to it.second }
   return extraArgs.fromValues(type) {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
     else if (it.isOptional) getOptional(it.name!!, it.type)
@@ -50,6 +52,3 @@ fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter
     throw IllegalArgumentException("Cannot create $type using " + args.mapKeys { it.key.name }, e)
   }
 }
-
-data class PropValue<T, @OnlyInputTypes V>(val property: KProperty1<T, V>, val value: V)
-infix fun <T, @OnlyInputTypes V> KProperty1<T, V>.to(value: V) = PropValue(this, value)
