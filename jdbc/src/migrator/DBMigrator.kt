@@ -1,7 +1,7 @@
 package klite.jdbc
 
 import klite.*
-import klite.jdbc.ChangeSet.OnChange.*
+import klite.jdbc.ChangeSet.On.*
 import java.sql.SQLException
 import javax.sql.DataSource
 

@@ -1,6 +1,6 @@
 package klite.jdbc
 
-import klite.jdbc.ChangeSet.OnChange.FAIL
+import klite.jdbc.ChangeSet.On.FAIL
 import org.intellij.lang.annotations.Language
 import javax.sql.DataSource
 
@@ -8,8 +8,8 @@ data class ChangeSet(
   override val id: String,
   @Language("SQL") val sql: CharSequence = StringBuilder(),
   val context: String? = null,
-  val onChange: OnChange = FAIL,
-  val onFail: OnChange = FAIL,
+  val onChange: On = FAIL,
+  val onFail: On = FAIL,
   val separator: String? = ";",
   val filePath: String? = null,
   var checksum: Long? = null
@@ -35,7 +35,7 @@ data class ChangeSet(
 
   internal fun finish() = addNextStatement(sql.length)
 
-  enum class OnChange { FAIL, RUN, SKIP, MARK_RAN }
+  enum class On { FAIL, RUN, SKIP, MARK_RAN }
 }
 
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
