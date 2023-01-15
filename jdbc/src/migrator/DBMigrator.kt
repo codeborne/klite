@@ -9,7 +9,7 @@ import javax.sql.DataSource
  * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
  */
 open class DBMigrator(
-  private val db: DataSource,
+  private val db: DataSource = ConfigDataSource(),
   private val changeSets: Sequence<ChangeSet> = ChangeSetFileReader(Config.optional("DB_MIGRATE", "db.sql")),
   private val contexts: Set<String> = Config.active,
   private val dropAllOnFailure: Boolean = Config.isTest
