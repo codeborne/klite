@@ -46,4 +46,5 @@ data class ChangeSet(
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
   override val defaultOrder = "$orderAsc for update"
   override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange, ChangeSet::onFail)
+  fun lock(id: String) = db.query(table, mapOf("id" to id), " for update", ArrayList(1)) { mapper() }.firstOrNull()
 }

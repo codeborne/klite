@@ -8,7 +8,6 @@ import javax.sql.DataSource
 /**
  * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
  * TODO: locking during run
- * TODO: read existing changesets on the fly, so that it is possible to modify changelog table
  */
 open class DBMigrator(
   private val db: DataSource = ConfigDataSource(),
@@ -18,9 +17,7 @@ open class DBMigrator(
 ): Extension {
   private val log = logger()
   private val repository = ChangeSetRepository(db)
-
   private val tx = Transaction(db)
-  private var history: Map<String, ChangeSet> = emptyMap()
 
   override fun install(server: Server) = migrate()
 
@@ -35,7 +32,6 @@ open class DBMigrator(
   }
 
   private fun doMigrate() = tx.attachToThread().use {
-    history = readHistory()
     changeSets.forEach(::run)
   }
 
@@ -46,11 +42,10 @@ open class DBMigrator(
     db.exec("create schema $schema")
   }
 
-  private fun readHistory() = (try { repository.list() } catch (e: SQLException) {
-    tx.rollback()
+  private fun loadPrevious(id: String) = try { repository.lock(id) } catch (e: SQLException) {
     ChangeSetFileReader("migrator/init.sql").forEach(::run)
-    repository.list()
-  }).associateBy { it.id }
+    repository.lock(id)
+  }
 
   fun run(changeSet: ChangeSet) {
     if (changeSet.id.isEmpty()) {
@@ -61,7 +56,8 @@ open class DBMigrator(
     if (!changeSet.matches(contexts)) return
 
     var run = true
-    history[changeSet.id]?.let {
+
+    loadPrevious(changeSet.id)?.let {
       if (it.checksum == changeSet.checksum) return
       if (it.checksum == null) {
         log.info("Storing new checksum for ${changeSet.id}")
