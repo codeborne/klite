@@ -1,7 +1,7 @@
 --changeset db_changelog
 create table db_changelog(
   id text not null primary key,
-  filePath text not null,
+  filePath text,
   context text,
   checksum bigint,
   statements text[],

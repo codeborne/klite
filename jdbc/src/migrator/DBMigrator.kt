@@ -2,12 +2,12 @@ package klite.jdbc
 
 import klite.*
 import klite.jdbc.ChangeSet.On.*
+import java.lang.Thread.sleep
 import java.sql.SQLException
 import javax.sql.DataSource
 
 /**
  * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
- * TODO: locking during run
  */
 open class DBMigrator(
   private val db: DataSource = ConfigDataSource(),
@@ -17,7 +17,9 @@ open class DBMigrator(
 ): Extension {
   private val log = logger()
   private val repository = ChangeSetRepository(db)
+
   private val tx = Transaction(db)
+  private var history: Map<String, ChangeSet> = emptyMap()
 
   override fun install(server: Server) = migrate()
 
@@ -32,7 +34,31 @@ open class DBMigrator(
   }
 
   private fun doMigrate() = tx.attachToThread().use {
-    changeSets.forEach(::run)
+    try {
+      lock()
+      readHistory()
+      changeSets.forEach(::run)
+    } finally {
+      repository.unlock()
+      log.info("Unlocked")
+    }
+  }
+
+  private fun readHistory() {
+    history = repository.list().associateBy { it.id }
+  }
+
+  private fun lock() {
+    while (true) {
+      log.info("Locking")
+      try { repository.lock(); break }
+      catch (e: AlreadyExistsException) { sleep(1500) }
+      catch (e: SQLException) {
+        log.warn(e.toString())
+        tx.rollback()
+        ChangeSetFileReader("migrator/init.sql").forEach(::run)
+      }
+    }
   }
 
   fun dropAll(schema: String? = null) = tx.attachToThread().use {
@@ -40,11 +66,6 @@ open class DBMigrator(
     log.warn("Dropping and recreating schema $schema")
     db.exec("drop schema $schema cascade")
     db.exec("create schema $schema")
-  }
-
-  private fun loadPrevious(id: String) = try { repository.lock(id) } catch (e: SQLException) {
-    ChangeSetFileReader("migrator/init.sql").forEach(::run)
-    repository.lock(id)
   }
 
   fun run(changeSet: ChangeSet) {
@@ -57,7 +78,7 @@ open class DBMigrator(
 
     var run = true
 
-    loadPrevious(changeSet.id)?.let {
+    history[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
       if (it.checksum == null) {
         log.info("Storing new checksum for ${changeSet.id}")
@@ -90,6 +111,10 @@ open class DBMigrator(
         }
         else -> throw MigrationException(changeSet, e)
       }
+    }
+    if (changeSet.sql.contains(repository.table)) {
+      log.info(repository.table + " was modified, re-reading history")
+      readHistory()
     }
   }
 
