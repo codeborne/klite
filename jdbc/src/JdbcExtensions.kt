@@ -119,6 +119,9 @@ internal fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filter
 private fun Any?.toIterable(): Iterable<Any?> = when (this) {
   is Array<*> -> toList()
   is Iterable<*> -> this
+  // TODO: convert where to avoid duplication here and it Where.expr
+  is ClosedRange<*> -> Between(this).values
+  is OpenEndRange<*> -> BetweenExcl(this).values
   else -> flatExpr()
 }
 
