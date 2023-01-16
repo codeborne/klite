@@ -11,7 +11,7 @@ Consider using Liquibase's [sql format](https://docs.liquibase.com/concepts/basi
 
 It is a best practice in terms of security to use a user with fewer rights for the running application.
 
-Your Liquibase scripts can actually create this user without the "create table" and "drop table" permissions.
+Your Liquibase scripts can actually create this user with only *insert/update/select* permissions.
 
 ```kotlin
   // start dev db, for developer convenience
