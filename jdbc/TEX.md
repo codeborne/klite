@@ -128,4 +128,4 @@ db.insert(table, mapOf("id" to generatedId, "hello" to "Hello"))
 
 `db is DataSource`
 
-Caller is responsible for starting/closing, e.g. klite request handler or JobRunner
+Caller is responsible for starting/closing transactions, e.g. klite request handler or JobRunner
