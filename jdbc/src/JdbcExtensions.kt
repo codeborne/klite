@@ -96,6 +96,8 @@ internal fun Where.join(separator: String) = entries.joinToString(separator) { (
     is SqlExpr -> v.expr(n)
     is Iterable<*> -> inExpr(n, v)
     is Array<*> -> inExpr(n, v.toList())
+    is ClosedRange<*> -> Between(v).expr(n)
+    is OpenEndRange<*> -> BetweenExcl(v).expr(n)
     else -> q(n) + " = ?"
   }
 }
