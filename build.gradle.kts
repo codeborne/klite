@@ -42,7 +42,6 @@ subprojects {
   tasks.withType<KotlinCompile> {
     kotlinOptions {
       jvmTarget = "11"
-      languageVersion = "1.8"
       freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
     }
   }
