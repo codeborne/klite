@@ -40,11 +40,13 @@ infix fun <T, V> KProperty1<T, V>.like(value: String) = this to SqlOp("like", va
 infix fun <T, V> KProperty1<T, V>.ilike(value: String) = this to SqlOp("ilike", value)
 infix fun <T, V> KProperty1<T, V>.any(value: Any) = this to SqlExpr("? = any($name)", value)
 
-class Between(from: Any, to: Any): SqlExpr("", from, to) {
+class Between(from: Comparable<*>, to: Comparable<*>): SqlExpr("", from, to) {
+  constructor(range: ClosedRange<*>): this(range.start, range.endInclusive)
   override fun expr(key: String) = q(key) + " between ? and ?"
 }
 
-class BetweenExcl(from: Any, to: Any): SqlExpr("", from, to) {
+class BetweenExcl(from: Comparable<*>, to: Comparable<*>): SqlExpr("", from, to) {
+  constructor(range: OpenEndRange<*>): this(range.start, range.endExclusive)
   override fun expr(key: String) = "${q(key)} >= ? and ${q(key)} < ?"
 }
 
