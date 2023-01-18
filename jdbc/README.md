@@ -89,3 +89,21 @@ It's more convenient to treat DB objects as maintainable code, e.g.
 * Backwards-compatible changesets between deploys, allowing for rollback of the app with already updated DB
 * You can add destructive changesets for future right away with some non-existent context, e.g. `context:TODO`
 * Run the same changesets before DB-related unit tests
+
+#### Different DB user for migration and running
+
+It is better for security to use a user with fewer rights for the running application.
+
+Your changesets can actually create this user and grant only *select/insert/update* permissions, but not e.g. *create/drop table*.
+
+```kotlin
+  // start dev db, for developer convenience
+  if (Config.isDev) startDevDB()
+  // migrate with the default all-rights user
+  use<DBMigrator>()
+  // use app user for the application DataSource and connection pool
+  useAppDBUser()
+  use(DBModule {
+    // override any other connection pool settings
+  })
+```
