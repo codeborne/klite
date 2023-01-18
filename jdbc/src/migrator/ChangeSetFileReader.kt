@@ -5,6 +5,7 @@ import klite.jdbc.ChangeSetFileReader.keywords.*
 import klite.logger
 import java.io.FileNotFoundException
 import java.io.Reader
+import kotlin.reflect.full.primaryConstructor
 
 /**
  * Reads DB changesets from sql files, similar to [Liquibase SQL format](https://docs.liquibase.com/concepts/changelogs/sql-format.html).
@@ -20,6 +21,7 @@ open class ChangeSetFileReader(
   private val substitutions: MutableMap<String, String> = mutableMapOf(),
 ): Sequence<ChangeSet> {
   private val log = logger()
+  private val changeSetAttrs = ChangeSet::class.primaryConstructor!!.parameters.map { it.name }.toSet()
   private val commentRegex = "\\s*--.*".toRegex()
   private val substRegex = "\\\$\\{(\\w*)}".toRegex()
   private val whitespace = "\\s+".toRegex()
@@ -54,9 +56,11 @@ open class ChangeSetFileReader(
       }
       else if (keyword == changeset) {
         val parts = line.split(whitespace)
-        val args = mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
-          parts.drop(2).associate { it.split(":", limit = 2).let { it[0] to it[1] } }
-        changeSet = args.fromValues()
+        changeSet = (mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
+          parts.drop(2).associate { it.split(":", limit = 2).let { (k, v) ->
+            require(k in changeSetAttrs) { "Unknown $changeset attribute $k, supported: $changeSetAttrs" }
+            k to v
+          }}).fromValues()
       }
       else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
