@@ -70,8 +70,7 @@ open class DBMigrator(
 
   fun run(changeSet: ChangeSet) {
     if (changeSet.id.isEmpty()) {
-      if (changeSet.sql.isNotEmpty())
-        throw MigrationException("Cannot run dangling SQL without a changeset:\n" + changeSet.sql)
+      if (changeSet.sql.isNotEmpty()) error("Cannot run dangling SQL without a --changeset declaration: " + changeSet.sql)
       return
     }
     if (!changeSet.matches(contexts)) return
