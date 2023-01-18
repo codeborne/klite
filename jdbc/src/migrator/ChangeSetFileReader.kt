@@ -1,7 +1,6 @@
 package klite.jdbc
 
 import klite.info
-import klite.jdbc.ChangeSetFileReader.keywords.*
 import klite.logger
 import java.io.FileNotFoundException
 import java.io.Reader
@@ -33,36 +32,34 @@ open class ChangeSetFileReader(
 
   private suspend fun SequenceScope<ChangeSet>.readFile(path: String) = resolveFile(path).reader().use { read(it, path) }
 
-  enum class keywords { include, substitute, changeset }
+  private val keywords = setOf("include", "substitute", "changeset")
 
   private suspend fun SequenceScope<ChangeSet>.read(reader: Reader, path: String) {
     log.info("Reading $path")
     var changeSet = ChangeSet("")
 
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotEmpty() }.forEach { line ->
-      val keyword = if (line.startsWith("--")) keywords.values().find { line.startsWith("--$it") } else null
-      val rest = if (keyword != null) {
-        if (changeSet.isNotEmpty()) yield(changeSet.finish())
-        changeSet = ChangeSet("")
-        line.substring(keyword.name.length + 3).trim()
-      } else line
-
-      when (keyword) {
-        include -> readFile(rest)
-        substitute -> {
-          val (key, value) = rest.split('=')
-          substitutions[key] = value
+      if (line.startsWith("--")) {
+        val parts = line.substring(2).split(whitespace)
+        if (parts[0] in keywords) {
+          if (changeSet.isNotEmpty()) yield(changeSet.finish())
+          changeSet = ChangeSet("")
         }
-        changeset -> {
-          val parts = rest.split(whitespace)
-          changeSet = (mapOf(ChangeSet::id.name to parts[0], ChangeSet::filePath.name to path) +
-            parts.drop(1).associate { it.split(":", limit = 2).let { (k, v) ->
-              require(k in changeSetParams) { "Unknown $changeset param $k, supported: $changeSetParams" }
-              k to v
-            }}).fromValues()
+        when (parts[0]) {
+          "include" -> readFile(parts[1])
+          "substitute" -> {
+            val (key, value) = parts.drop(1).joinToString(" ").split(':', '=')
+            substitutions[key] = value
+          }
+          "changeset" -> {
+            changeSet = (mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
+              parts.drop(2).associate { it.split(':').let { (k, v) ->
+                require(k in changeSetParams) { "Unknown changeset param $k, supported: $changeSetParams" }
+                k to v
+              }}).fromValues()
+          }
         }
-        else -> changeSet.addLine(line.replace(commentRegex, "").substitute())
-      }
+      } else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
     if (changeSet.isNotEmpty()) yield(changeSet.finish())
   }
