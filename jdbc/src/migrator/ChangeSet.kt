@@ -27,7 +27,8 @@ data class ChangeSet(
 
   private fun addNextStatement(pos: Int = sql.indexOf(separator ?: "", lastPos)) {
     if (pos <= lastPos) return
-    val stmt = sql.substring(lastPos, pos)
+    val stmt = sql.substring(lastPos, pos).trim()
+    if (stmt.isEmpty()) return
     statements += stmt
     checksum = (checksum ?: 0) * 89 + stmt.replace("\\s*\n\\s*".toRegex(), "\n").hashCode()
     lastPos = pos + (separator ?: "").length
