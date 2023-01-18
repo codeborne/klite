@@ -1,9 +1,6 @@
 package klite.jdbc
 
-import ch.tutteli.atrium.api.fluent.en_GB.toEndWith
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.fluent.en_GB.toHaveSize
-import ch.tutteli.atrium.api.fluent.en_GB.toStartWith
+import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
 import klite.jdbc.ChangeSet.On.RUN
 import klite.jdbc.ChangeSet.On.SKIP
@@ -29,5 +26,10 @@ class ChangeSetFileReaderTest {
     val test2 = list.last()
     expect(test2.copy(sql = test2.sql.toString())).toEqual(
       ChangeSet("test2", "checksum overridden;", filePath = "migrator/test.sql", checksum = 123))
+  }
+
+  @Test fun invalid() {
+    expect { ChangeSetFileReader("migrator/invalid.sql").toList() }
+      .toThrow<IllegalArgumentException>().messageToContain("Unknown changeset param invalid")
   }
 }
