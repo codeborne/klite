@@ -8,6 +8,7 @@ import javax.sql.DataSource
 
 /**
  * Applies changesets to the DB that haven't been applied yet, a simpler Liquibase replacement.
+ * Either provide [ChangeSet] instances in code or use [ChangeSetFileReader] for loading them from .sql files.
  */
 open class DBMigrator(
   private val db: DataSource = ConfigDataSource(),
