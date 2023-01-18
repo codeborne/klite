@@ -39,7 +39,7 @@ open class ChangeSetFileReader(
     log.info("Reading $path")
     var changeSet = ChangeSet("")
 
-    reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
+    reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotEmpty() }.forEach { line ->
       val keyword = if (line.startsWith("--")) keywords.values().find { line.startsWith("--$it") } else null
       if (keyword != null) {
         if (changeSet.isNotEmpty()) yield(changeSet.finish())
@@ -60,7 +60,7 @@ open class ChangeSetFileReader(
               k to v
             }}).fromValues()
         }
-        else -> changeSet.addLine(line.replace(commentRegex, "").substitute().trimEnd())
+        else -> changeSet.addLine(line.replace(commentRegex, "").substitute())
       }
     }
     if (changeSet.isNotEmpty()) yield(changeSet.finish())
