@@ -73,9 +73,13 @@ Advantages over Liquibase:
 * Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
 * For simple Liquibase migration, use `--include` [migrator/liquibase.sql](src/migrator/liquibase.sql), or modify the changeset for your own needs
 
+Advantages over Flyway:
+* Multiple changesets per file, convenient to work with
+* Can structure changesets as maintainable code
+
 Not supported:
 * Non-sql file formats
-* No undo changesets (usually you don't undo a prod DB)
+* No undo (usually you don't undo a prod DB)
 
 ### Best practices
 
