@@ -71,4 +71,4 @@ Advantages over Liquibase:
 * Provides simpler way to treat changes and failures with onChange and onFail attributes.
 * Allows changesets to modify the db_changelog table for refactoring (it is re-read if changes are detected).
 * Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
-* Migration from Liquibase is done automatically, see [init.sql](src/migrator/init.sql)
+* For simple Liquibase migration, use `--include` [migrator/liquibase.sql](src/migrator/liquibase.sql), or modify the changeset for your own needs
