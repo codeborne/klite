@@ -42,30 +42,28 @@ open class ChangeSetFileReader(
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
       val keyword = if (line.startsWith("--")) keywords.values().find { line.startsWith("--$it") } else null
       if (keyword != null) {
-        changeSet.finish()
-        yield(changeSet)
+        if (changeSet.isNotEmpty()) yield(changeSet)
         changeSet = ChangeSet("")
       }
 
-      if (keyword == include) {
-        readFile(line.substringAfter("--include").trim())
+      when (keyword) {
+        include -> readFile(line.substringAfter("--include").trim())
+        substitute -> {
+          val (key, value) = line.substringAfter("--substitute").trim().split('=', limit = 2)
+          substitutions[key] = value
+        }
+        changeset -> {
+          val parts = line.split(whitespace)
+          changeSet = (mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
+            parts.drop(2).associate { it.split(":", limit = 2).let { (k, v) ->
+              require(k in changeSetAttrs) { "Unknown $changeset attribute $k, supported: $changeSetAttrs" }
+              k to v
+            }}).fromValues()
+        }
+        else -> changeSet.addLine(line.replace(commentRegex, "").substitute().trimEnd())
       }
-      else if (keyword == substitute) {
-        val (key, value) = line.substringAfter("--substitute").trim().split('=', limit = 2)
-        substitutions[key] = value
-      }
-      else if (keyword == changeset) {
-        val parts = line.split(whitespace)
-        changeSet = (mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
-          parts.drop(2).associate { it.split(":", limit = 2).let { (k, v) ->
-            require(k in changeSetAttrs) { "Unknown $changeset attribute $k, supported: $changeSetAttrs" }
-            k to v
-          }}).fromValues()
-      }
-      else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
-    changeSet.finish()
-    yield(changeSet)
+    if (changeSet.isNotEmpty()) yield(changeSet)
   }
 
   private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }

@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.jdbc.ChangeSet.On.FAIL
+import klite.trimToNull
 import org.intellij.lang.annotations.Language
 import javax.sql.DataSource
 
@@ -14,32 +15,24 @@ data class ChangeSet(
   val filePath: String? = null,
   var checksum: Long? = null
 ): BaseEntity<String> {
-  val statements = mutableListOf<String>()
   var rowsAffected = 0
-
-  private var lastPos = 0
-  internal fun addLine(line: String) {
-    sql as StringBuilder
-    if (sql.isNotEmpty()) sql.append("\n")
-    sql.append(line)
-    if (separator != null) addNextStatement()
+  val statements: List<String> by lazy {
+    (if (separator != null) sql.split(separator) else listOf(sql.toString())).mapNotNull { it.trimToNull() }.also {
+      checksum = it.fold(0) { r, s -> r!! * 89 + s.replace("\\s*\n\\s*".toRegex(), "\n").hashCode() }
+    }
   }
 
-  private fun addNextStatement(pos: Int = sql.indexOf(separator ?: "", lastPos)) {
-    if (pos <= lastPos) return
-    val stmt = sql.substring(lastPos, pos).trim()
-    if (stmt.isEmpty()) return
-    statements += stmt
-    checksum = (checksum ?: 0) * 89 + stmt.replace("\\s*\n\\s*".toRegex(), "\n").hashCode()
-    lastPos = pos + (separator ?: "").length
-  }
-
-  internal fun finish() = addNextStatement(sql.length)
+  fun isNotEmpty() = id.isNotEmpty() || sql.isNotEmpty()
 
   fun matches(contexts: Set<String>) =
     if (context == null) true
     else if (context.startsWith("!")) context.substring(1) !in contexts
     else context in contexts
+
+  internal fun addLine(line: String) {
+    if ((sql as StringBuilder).isNotEmpty()) sql.append("\n")
+    sql.append(line)
+  }
 
   enum class On { FAIL, RUN, SKIP, MARK_RAN }
 }
