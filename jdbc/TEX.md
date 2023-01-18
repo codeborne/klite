@@ -120,9 +120,8 @@ db.insert(table, mapOf("id" to generatedId, "hello" to "Hello"))
 
 ## Migrations
 
-* Liquibase, SQL format
+* DBMigrator vs Liquibase, SQL format
 * Treat DB objects as maintainable code
-* Experimental replacement DBMigrator
 
 # Transactions
 

@@ -72,3 +72,16 @@ Advantages over Liquibase:
 * Allows changesets to modify the db_changelog table for refactoring (it is re-read if changes are detected).
 * Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
 * For simple Liquibase migration, use `--include` [migrator/liquibase.sql](src/migrator/liquibase.sql), or modify the changeset for your own needs
+
+Not supported:
+* Non-sql file formats
+* No undo changesets (usually you don't undo a prod DB)
+
+### Best practices
+
+It's more convenient to treat DB objects as maintainable code, e.g.
+* Create a separate .sql file for an entity like [users.sql](../sample/db/users.sql)
+* Use a dot notation for changeset names, like `users.personalCode`, which adds users.personalCode column
+* Backwards-compatible changesets between deploys, allowing for rollback of the app with already updated DB
+* You can add destructive changesets for future right away with some non-existent context, e.g. `context:TODO`
+* Run the same changesets before DB-related unit tests
