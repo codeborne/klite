@@ -21,10 +21,11 @@ class ChangeSetTest {
       create index on blah(id);
     """.trimIndent()
     sql.split("\n").forEach(changeSet::addLine)
+    changeSet.finish()
 
     expect(changeSet.sql.toString()).toEqual(sql)
-    expect(changeSet.statements).toContainExactly(sql.substringBefore(";"), sql.substringAfter(";").substringBefore(";"))
-    expect(changeSet.checksum).toEqual(-105362483148)
+    expect(changeSet.statements).toContainExactly(sql.substringBefore(";"), sql.substringAfter(";").substringBefore(";").trim())
+    expect(changeSet.checksum).toEqual(-106065226198)
   }
 
   @Test fun `no trailing separator`() {
