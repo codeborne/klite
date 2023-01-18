@@ -30,9 +30,11 @@ data class ChangeSet(
     sql.append(line)
   }
 
+  private fun calcChecksum() = statements.fold(0L) { r, s -> r * 89 + s.replace("\\s*\n\\s*".toRegex(), "\n").hashCode() }
+
   internal fun finish() = apply {
     statements = (if (separator != null) sql.split(separator) else listOf(sql.toString())).mapNotNull { it.trimToNull() }
-    if (checksum == null) checksum = statements.fold(0L) { r, s -> r * 89 + s.replace("\\s*\n\\s*".toRegex(), "\n").hashCode() }
+    if (checksum == null) checksum = calcChecksum()
   }
 
   enum class On { FAIL, RUN, SKIP, MARK_RAN }
