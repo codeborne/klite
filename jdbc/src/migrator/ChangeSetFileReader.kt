@@ -21,7 +21,7 @@ open class ChangeSetFileReader(
   private val substitutions: MutableMap<String, String> = mutableMapOf(),
 ): Sequence<ChangeSet> {
   private val log = logger()
-  private val changeSetAttrs = ChangeSet::class.primaryConstructor!!.parameters.map { it.name }.toSet()
+  private val changeSetParams = ChangeSet::class.primaryConstructor!!.parameters.map { it.name }.toSet()
   private val commentRegex = "\\s*--.*".toRegex()
   private val substRegex = "\\\$\\{(\\w*)}".toRegex()
   private val whitespace = "\\s+".toRegex()
@@ -41,22 +41,23 @@ open class ChangeSetFileReader(
 
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotEmpty() }.forEach { line ->
       val keyword = if (line.startsWith("--")) keywords.values().find { line.startsWith("--$it") } else null
-      if (keyword != null) {
+      val rest = if (keyword != null) {
         if (changeSet.isNotEmpty()) yield(changeSet.finish())
         changeSet = ChangeSet("")
-      }
+        line.substring(keyword.name.length + 3).trim()
+      } else line
 
       when (keyword) {
-        include -> readFile(line.substringAfter("--include").trim())
+        include -> readFile(rest)
         substitute -> {
-          val (key, value) = line.substringAfter("--substitute").trim().split('=', limit = 2)
+          val (key, value) = rest.split('=')
           substitutions[key] = value
         }
         changeset -> {
-          val parts = line.split(whitespace)
-          changeSet = (mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
-            parts.drop(2).associate { it.split(":", limit = 2).let { (k, v) ->
-              require(k in changeSetAttrs) { "Unknown $changeset attribute $k, supported: $changeSetAttrs" }
+          val parts = rest.split(whitespace)
+          changeSet = (mapOf(ChangeSet::id.name to parts[0], ChangeSet::filePath.name to path) +
+            parts.drop(1).associate { it.split(":", limit = 2).let { (k, v) ->
+              require(k in changeSetParams) { "Unknown $changeset param $k, supported: $changeSetParams" }
               k to v
             }}).fromValues()
         }
