@@ -76,10 +76,12 @@ Advantages over Liquibase:
 Advantages over Flyway:
 * Multiple changesets per file, convenient to work with
 * Can structure changesets as maintainable code
+* Can refactor/control handling of changes
 
 Not supported:
 * Non-sql file formats
 * No undo (usually you don't undo a prod DB)
+* No preconditions, but e.g. `onFail:SKIP` can be easier to use
 
 ### Best practices
 
