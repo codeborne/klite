@@ -62,6 +62,7 @@ open class DBMigrator(
     }
   }
 
+  @Suppress("NAME_SHADOWING")
   fun dropAll(schema: String? = null) = tx.attachToThread().use {
     val schema = schema ?: db.withConnection { this.schema }
     log.warn("Dropping and recreating schema $schema")
@@ -70,14 +71,9 @@ open class DBMigrator(
   }
 
   fun run(changeSet: ChangeSet) {
-    if (changeSet.id.isEmpty()) {
-      if (changeSet.sql.isNotEmpty()) error("Cannot run dangling SQL without a --changeset declaration: " + changeSet.sql)
-      return
-    }
     if (!changeSet.matches(contexts)) return
 
     var run = true
-
     history[changeSet.id]?.let {
       if (it.checksum == changeSet.checksum) return
       if (it.checksum == null) {

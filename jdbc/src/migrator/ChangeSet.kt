@@ -23,8 +23,6 @@ data class ChangeSet(
 
   init { if (sql is String) finish() }
 
-  fun isNotEmpty() = id.isNotEmpty() || sql.isNotEmpty()
-
   fun matches(contexts: Set<String>) =
     if (context == null) true
     else if (context.startsWith("!")) context.substring(1) !in contexts
@@ -43,9 +41,10 @@ data class ChangeSet(
 }
 
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
-  private val lock = ChangeSet("klite:lock")
   override val defaultOrder = ""
   override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange, ChangeSet::onFail)
+
+  private val lock = ChangeSet("klite:lock")
   fun lock() = db.insert(table, lock.persister())
   fun unlock() = db.delete(table, mapOf("id" to lock.id))
 }

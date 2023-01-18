@@ -20,6 +20,7 @@ open class ChangeSetFileReader(
   private val substitutions: MutableMap<String, String> = mutableMapOf(),
 ): Sequence<ChangeSet> {
   private val log = logger()
+  private val keywords = setOf("include", "substitute", "changeset")
   private val changeSetParams = ChangeSet::class.primaryConstructor!!.parameters.map { it.name }.toSet()
   private val commentRegex = "\\s*--.*".toRegex()
   private val substRegex = "\\\$\\{(\\w*)}".toRegex()
@@ -32,18 +33,16 @@ open class ChangeSetFileReader(
 
   private suspend fun SequenceScope<ChangeSet>.readFile(path: String) = resolveFile(path).reader().use { read(it, path) }
 
-  private val keywords = setOf("include", "substitute", "changeset")
-
   private suspend fun SequenceScope<ChangeSet>.read(reader: Reader, path: String) {
     log.info("Reading $path")
-    var changeSet = ChangeSet("")
+    var changeSet: ChangeSet? = null
 
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotEmpty() }.forEach { line ->
       if (line.startsWith("--")) {
         val parts = line.substring(2).split(whitespace)
-        if (parts[0] in keywords) {
-          if (changeSet.isNotEmpty()) yield(changeSet.finish())
-          changeSet = ChangeSet("")
+        if (parts[0] in keywords && changeSet != null) {
+          yield(changeSet!!.finish())
+          changeSet = null
         }
         when (parts[0]) {
           "include" -> readFile(parts[1])
@@ -59,9 +58,11 @@ open class ChangeSetFileReader(
               }}).fromValues()
           }
         }
-      } else changeSet.addLine(line.replace(commentRegex, "").substitute())
+      }
+      else if (changeSet == null) error("No --changeset declaration preceding: $line")
+      else changeSet!!.addLine(line.replace(commentRegex, "").substitute())
     }
-    if (changeSet.isNotEmpty()) yield(changeSet.finish())
+    if (changeSet != null) yield(changeSet!!.finish())
   }
 
   private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }
