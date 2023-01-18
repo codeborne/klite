@@ -21,6 +21,7 @@ class ChangeSetTest {
       create index on blah(id);
     """.trimIndent()
     sql.split("\n").forEach(changeSet::addLine)
+    changeSet.finish()
 
     expect(changeSet.sql.toString()).toEqual(sql)
     expect(changeSet.statements).toContainExactly(sql.substringBefore(";"), sql.substringAfter(";").substringBefore(";").trim())
@@ -29,12 +30,14 @@ class ChangeSetTest {
 
   @Test fun `no trailing separator`() {
     changeSet.addLine("hello")
+    changeSet.finish()
     expect(changeSet.statements).toContainExactly("hello")
   }
 
   @Test fun `no separator`() {
     val changeSet = changeSet.copy(separator = null)
     changeSet.addLine("hello")
+    changeSet.finish()
     expect(changeSet.statements).toContainExactly("hello")
   }
 

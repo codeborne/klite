@@ -16,11 +16,7 @@ data class ChangeSet(
   var checksum: Long? = null
 ): BaseEntity<String> {
   var rowsAffected = 0
-  val statements: List<String> by lazy {
-    (if (separator != null) sql.split(separator) else listOf(sql.toString())).mapNotNull { it.trimToNull() }.also {
-      checksum = it.fold(0) { r, s -> r!! * 89 + s.replace("\\s*\n\\s*".toRegex(), "\n").hashCode() }
-    }
-  }
+  var statements: List<String> = emptyList()
 
   fun isNotEmpty() = id.isNotEmpty() || sql.isNotEmpty()
 
@@ -32,6 +28,11 @@ data class ChangeSet(
   internal fun addLine(line: String) {
     if ((sql as StringBuilder).isNotEmpty()) sql.append("\n")
     sql.append(line)
+  }
+
+  internal fun finish() = apply {
+    statements = (if (separator != null) sql.split(separator) else listOf(sql.toString())).mapNotNull { it.trimToNull() }
+    checksum = statements.fold(0L) { r, s -> r * 89 + s.replace("\\s*\n\\s*".toRegex(), "\n").hashCode() }
   }
 
   enum class On { FAIL, RUN, SKIP, MARK_RAN }

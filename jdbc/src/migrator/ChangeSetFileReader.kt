@@ -42,7 +42,7 @@ open class ChangeSetFileReader(
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotBlank() }.forEach { line ->
       val keyword = if (line.startsWith("--")) keywords.values().find { line.startsWith("--$it") } else null
       if (keyword != null) {
-        if (changeSet.isNotEmpty()) yield(changeSet)
+        if (changeSet.isNotEmpty()) yield(changeSet.finish())
         changeSet = ChangeSet("")
       }
 
@@ -63,7 +63,7 @@ open class ChangeSetFileReader(
         else -> changeSet.addLine(line.replace(commentRegex, "").substitute().trimEnd())
       }
     }
-    if (changeSet.isNotEmpty()) yield(changeSet)
+    if (changeSet.isNotEmpty()) yield(changeSet.finish())
   }
 
   private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }
