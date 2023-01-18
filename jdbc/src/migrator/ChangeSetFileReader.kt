@@ -12,7 +12,7 @@ import kotlin.reflect.full.primaryConstructor
  * Default implementation reads files from classpath.
  *
  * Lines starting with the following are treated specially:
- * * `--include path/file.sql` includes another sql file
+ * * `--include path/file.sql` includes another sql file from classpath
  * * `--substitute a=b` can be used to substitute ${a} on subsequent lines with b
  * * `--changeset some-id onChange:SKIP` - changeset declarations themselves, starting with its unique id and optional attributes
  */
