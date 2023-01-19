@@ -23,24 +23,24 @@ open class DBMigrator(
 
   override fun install(server: Server) = migrate()
 
-  fun migrate() = tx.attachToThread().use {
+  fun migrate() = try {
+    doMigrate()
+  } catch (e: MigrationException) {
+    if (dropAllOnFailure) {
+      log.error("Migration failed, dropping and retrying from scratch", e)
+      dropAll()
+      doMigrate()
+    } else throw e
+  }
+
+  private fun doMigrate() = tx.attachToThread().use {
     try {
       log.info("Locking"); lock()
-      doMigrate()
-    } catch (e: MigrationException) {
-      if (dropAllOnFailure) {
-        log.error("Migration failed, dropping and retrying from scratch", e)
-        dropAll()
-        doMigrate()
-      } else throw e
+      readHistory()
+      changeSets.forEach(::run)
     } finally {
       unlock(); log.info("Unlocked")
     }
-  }
-
-  private fun doMigrate() {
-    readHistory()
-    changeSets.forEach(::run)
   }
 
   private fun readHistory() = try {
