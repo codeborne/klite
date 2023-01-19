@@ -2,7 +2,6 @@ package klite.jdbc
 
 import klite.*
 import klite.jdbc.ChangeSet.On.*
-import java.lang.Thread.sleep
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -24,43 +23,36 @@ open class DBMigrator(
 
   override fun install(server: Server) = migrate()
 
-  fun migrate() = try {
-    doMigrate()
-  } catch (e: MigrationException) {
-    if (dropAllOnFailure) {
-      log.error("Migration failed, dropping and retrying from scratch", e)
-      dropAll()
-      doMigrate()
-    } else throw e
-  }
-
-  private fun doMigrate() = tx.attachToThread().use {
+  fun migrate() = tx.attachToThread().use {
     try {
-      lock()
-      readHistory()
-      changeSets.forEach(::run)
+      log.info("Locking"); lock()
+      doMigrate()
+    } catch (e: MigrationException) {
+      if (dropAllOnFailure) {
+        log.error("Migration failed, dropping and retrying from scratch", e)
+        dropAll()
+        doMigrate()
+      } else throw e
     } finally {
-      repository.unlock()
-      log.info("Unlocked")
+      unlock(); log.info("Unlocked")
     }
   }
 
-  private fun readHistory() {
+  private fun doMigrate() {
+    readHistory()
+    changeSets.forEach(::run)
+  }
+
+  private fun readHistory() = try {
     history = repository.list().associateBy { it.id }
+  } catch (e: SQLException) {
+    log.warn(e.toString())
+    tx.rollback()
+    ChangeSetFileReader("migrator/init.sql").forEach(::run)
   }
 
-  private fun lock() {
-    while (true) {
-      log.info("Locking")
-      try { repository.lock(); break }
-      catch (e: AlreadyExistsException) { sleep(1500) }
-      catch (e: SQLException) {
-        log.warn(e.toString())
-        tx.rollback()
-        ChangeSetFileReader("migrator/init.sql").forEach(::run)
-      }
-    }
-  }
+  open fun lock() = db.exec("select pg_advisory_lock(576945)")
+  open fun unlock() = db.exec("select pg_advisory_unlock(576945)")
 
   @Suppress("NAME_SHADOWING")
   fun dropAll(schema: String? = null) = tx.attachToThread().use {
@@ -109,7 +101,7 @@ open class DBMigrator(
       }
     }
     if (changeSet.sql.contains(repository.table)) {
-      log.info(repository.table + " was modified, re-reading history")
+      log.info(repository.table + " was accessed, re-reading history")
       readHistory()
     }
   }

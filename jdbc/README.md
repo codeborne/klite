@@ -79,6 +79,7 @@ Advantages over Flyway:
 * Can refactor/control handling of changes
 
 Not supported:
+* Only tested with PostgreSQL, PRs for other DBs welcome
 * Non-sql file formats
 * No undo (usually you don't undo a prod DB)
 * No preconditions, but e.g. `onFail:SKIP` can be easier to use

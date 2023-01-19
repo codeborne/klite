@@ -43,8 +43,4 @@ data class ChangeSet(
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
   override val defaultOrder = ""
   override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange, ChangeSet::onFail)
-
-  private val lock = ChangeSet("klite:lock")
-  fun lock() = db.insert(table, lock.persister())
-  fun unlock() = db.delete(table, mapOf("id" to lock.id))
 }
