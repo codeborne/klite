@@ -21,23 +21,22 @@ typealias Where = Map<out Column, Any?>
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", into: MutableCollection<R> = mutableListOf(), mapper: Mapper<R>): Collection<R> =
+fun <R, C: MutableCollection<R>> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   select("select * from $table", where, suffix, into, mapper)
 
-// backwards-compatibility
 fun <R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
 
 inline fun <reified R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
   query(table, where, suffix) { fromValues() }
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: MutableCollection<R>, mapper: Mapper<R>): MutableCollection<R> =
+fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   withStatement("$select${where.expr} $suffix") {
     setAll(whereValues(where))
     into.also { executeQuery().process(it::add, mapper) }
   }
 
-@Suppress("UNCHECKED_CAST") // backwards-compatibility
+@Suppress("UNCHECKED_CAST")
 fun <R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
   select(select, where, suffix, mutableListOf(), mapper) as List<R>
 
