@@ -68,6 +68,7 @@ Advantages over Liquibase:
 * No mandatory author name, which can be useless when pair programming or caring about collective code ownership
 * Filepath is not part of changeset unique ID, enabling moving changesets between files easily (refactoring)
 * Every team can structure their IDs in any way, even prefixing with author or using date-time notation, to minimize conflicts.
+* More reliable locking that will not be left due to crash (PG advisory lock)
 * Provides simpler way to treat changes and failures with onChange and onFail attributes.
 * Allows changesets to modify the db_changelog table for refactoring (it is re-read if changes are detected).
 * Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
