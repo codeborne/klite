@@ -55,7 +55,7 @@ open class DBMigrator(
   open fun unlock() = db.select("select pg_advisory_unlock(576945)") { getBoolean(1) }.first()
 
   @Suppress("NAME_SHADOWING")
-  fun dropAll(schema: String? = null) = tx.attachToThread().use {
+  open fun dropAll(schema: String? = null) = tx.attachToThread().use {
     val schema = schema ?: db.withConnection { this.schema }
     log.warn("Dropping and recreating schema $schema")
     db.exec("drop schema $schema cascade")
