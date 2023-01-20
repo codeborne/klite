@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.cfg.CoercionAction
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -29,10 +31,10 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonM
     addDeserializer(String::class.java, EmptyStringToNullDeserializer)
     addConverterDeserializers()
   })
-//  withCoercionConfigDefaults {
-//    it.acceptBlankAsEmpty = true
-//    it.setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull)
-//  }
+  withCoercionConfigDefaults {
+    it.acceptBlankAsEmpty = true
+    it.setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull)
+  }
   modifier()
 }
 
