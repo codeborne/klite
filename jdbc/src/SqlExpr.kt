@@ -29,6 +29,7 @@ infix fun String.lte(value: Any) = this to SqlOp("<=", value)
 infix fun String.like(value: String) = this to SqlOp("like", value)
 infix fun String.ilike(value: String) = this to SqlOp("ilike", value)
 infix fun String.any(value: Any) = this to SqlExpr("? = any($this)", value)
+fun sql(expr: String, vararg values: Any?) = Math.random().toString() to SqlExpr(expr, *values)
 
 infix fun <T, V> KProperty1<T, V>.eq(value: V) = this to value
 infix fun <T, V> KProperty1<T, V>.neq(value: V) = this to SqlOp("!=", value)
@@ -59,5 +60,8 @@ class NotIn(values: Collection<*>): SqlExpr("", values) {
   override fun expr(key: String) = inExpr(key, values).replace(" in ", " not in ")
 }
 
-fun or(vararg where: Pair<Column, Any?>): SqlExpr =
+fun orExpr(vararg where: Pair<Column, Any?>): SqlExpr =
   where.toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
+
+fun or(vararg where: Pair<String, Any?>) = where[0].first to orExpr(*where)
+fun <T, V> or(vararg where: Pair<KProperty1<T, V>, Any?>) = where[0].first to orExpr(*where)
