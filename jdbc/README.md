@@ -67,12 +67,12 @@ Advantages over Liquibase:
 * Small and simple, doesn't include vulnerable dependencies nor requires java.desktop module
 * No mandatory author name, which can be useless when pair programming or caring about collective code ownership
 * Filepath is not part of changeset unique ID, enabling moving changesets between files easily (refactoring)
-* Every team can structure their IDs in any way, even prefixing with author or using date-time notation, to minimize conflicts.
+* To minimize conflicts, every team can structure their IDs in their own way, e.g. prefixing with author or using date-time notation
 * More reliable locking that will not be left due to crash (PG advisory lock)
-* Provides simpler way to treat changes and failures with onChange and onFail attributes.
-* Allows changesets to modify the db_changelog table for refactoring (it is re-read if changes are detected).
-* Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor.
-* For simple Liquibase migration, use `--include` [migrator/liquibase.sql](src/migrator/liquibase.sql), or modify the changeset for your own needs
+* Provides simpler way to treat changes and failures with onChange and onFail attributes
+* Allows changesets to modify the db_changelog table for refactoring (it is re-read if changes are detected)
+* Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor
+* To migrate from Liquibase, use `--include` [migrator/liquibase.sql](src/migrator/liquibase.sql), or copy the changeset with your modifications to your `db.sql`
 
 Advantages over Flyway:
 * Multiple changesets per file, convenient to work with
@@ -80,10 +80,11 @@ Advantages over Flyway:
 * Can refactor/control handling of changes
 
 Not supported:
-* Only tested with PostgreSQL, PRs for other DBs welcome
-* Non-sql file formats
+* Non-sql file formats, but can use Kotlin code
 * No undo (usually you don't undo a prod DB)
 * No preconditions, but e.g. `onFail:SKIP` can be easier to use
+* No generation of scripts for existing DB schema - this is best to be done manually, or just existing tools like pg_dump
+* Only tested with PostgreSQL, PRs for other DBs welcome
 
 ### Best practices
 
