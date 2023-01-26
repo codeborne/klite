@@ -19,7 +19,7 @@ open class DBMigrator(
   private val repository = ChangeSetRepository(db)
 
   private val tx = Transaction(db)
-  private var history: Map<String, ChangeSet> = emptyMap()
+  private var history = mutableMapOf<String, ChangeSet>()
 
   override fun install(server: Server) = migrate()
 
@@ -44,10 +44,11 @@ open class DBMigrator(
   }
 
   private fun readHistory() = try {
-    history = repository.list().associateBy { it.id }
+    history = repository.list().associateByTo(HashMap()) { it.id }
   } catch (e: SQLException) {
     log.warn(e.toString())
     tx.rollback()
+    history = mutableMapOf()
     ChangeSetFileReader("migrator/init.sql").forEach(::run)
   }
 
@@ -103,7 +104,7 @@ open class DBMigrator(
     if (changeSet.sql.contains(repository.table)) {
       log.info(repository.table + " was accessed, re-reading history")
       readHistory()
-    }
+    } else history[changeSet.id] = changeSet
   }
 
   private fun markRan(changeSet: ChangeSet) {

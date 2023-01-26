@@ -1,8 +1,9 @@
-package klite.sample
+package klite.sample.klite.jdbc
 
 import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
 import klite.jdbc.*
+import klite.sample.TempTableDBTest
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO

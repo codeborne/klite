@@ -26,6 +26,6 @@ abstract class DBTest {
   }
 
   @AfterEach open fun rollbackTx() {
-    Transaction.current()!!.close(commit = false)
+    Transaction.current()?.close(commit = false)
   }
 }
