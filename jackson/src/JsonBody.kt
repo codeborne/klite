@@ -21,9 +21,9 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlin.reflect.KType
 
-fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), modifier: JsonMapper.Builder.() -> Unit = {}) = jsonMapper {
+fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), javaTimeModule: JavaTimeModule = JavaTimeModule(), modifier: JsonMapper.Builder.() -> Unit = {}) = jsonMapper {
   addModule(kotlinModule)
-  addModule(JavaTimeModule())
+  addModule(javaTimeModule)
   disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
   disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
   serializationInclusion(JsonInclude.Include.NON_NULL)
