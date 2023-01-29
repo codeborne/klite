@@ -1,7 +1,7 @@
 package klite
 
 typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String?
-val defaultRequestLogFormatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode${failure?.let { " ($it)" } ?: ""} in $ms ms - $browser" }
+val defaultRequestLogFormatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode in $ms ms - $browser" + (failure?.let { " - $it" } ?: "")}
 
 open class RequestLogger(
   val formatter: RequestLogFormatter = defaultRequestLogFormatter
