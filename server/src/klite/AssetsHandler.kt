@@ -35,7 +35,7 @@ class AssetsHandler(
       }
       exchange.send(file)
     } catch (e: IOException) {
-      throw NotFoundException(e.message)
+      throw NotFoundException(e.message, e)
     }
   }
 
