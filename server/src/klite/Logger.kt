@@ -4,6 +4,7 @@ package klite
 import java.lang.System.Logger.Level.*
 
 fun Any.logger(name: String = javaClass.name): System.Logger = System.getLogger(name)
+inline fun System.Logger.debug(msg: String) = log(DEBUG, msg)
 inline fun System.Logger.info(msg: String) = log(INFO, msg)
 inline fun System.Logger.warn(msg: String) = log(WARNING, msg)
 inline fun System.Logger.error(msg: String, e: Throwable? = null) = log(ERROR, msg, e)

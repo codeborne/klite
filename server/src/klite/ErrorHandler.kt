@@ -28,7 +28,8 @@ open class ErrorHandler {
 
   fun handle(exchange: HttpExchange, e: Throwable) =
     if (!exchange.isResponseStarted) toResponse(exchange, e)?.let { exchange.render(it.statusCode, it) }
-    else logger.error("Error after headers sent: $e")
+    else if (e.message?.let { "Broken pipe" in it || "Connection reset" in it } == true) logger.debug(e.toString())
+    else logger.error("Error after headers sent", e)
 
   open fun toResponse(exchange: HttpExchange, e: Throwable): ErrorResponse? {
     if (e is RedirectException) exchange.header("Location", e.location)
