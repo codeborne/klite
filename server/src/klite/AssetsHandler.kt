@@ -2,7 +2,7 @@ package klite
 
 import klite.StatusCode.Companion.NotModified
 import klite.StatusCode.Companion.OK
-import java.io.IOException
+import java.io.FileNotFoundException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.READ
 import java.time.ZoneOffset.UTC
@@ -34,7 +34,7 @@ class AssetsHandler(
         else throw NotFoundException(exchange.path)
       }
       exchange.send(file)
-    } catch (e: IOException) {
+    } catch (e: FileNotFoundException) {
       throw NotFoundException(e.message, e)
     }
   }
