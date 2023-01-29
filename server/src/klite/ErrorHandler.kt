@@ -26,10 +26,12 @@ open class ErrorHandler {
   fun <T: Throwable> on(e: KClass<out T>, handler: ThrowableHandler<T>) { handlers[e] = handler as ThrowableHandler<Throwable> }
   fun on(e: KClass<out Throwable>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
-  fun handle(exchange: HttpExchange, e: Throwable) =
+  fun handle(exchange: HttpExchange, e: Throwable) {
+    exchange.failure = e
     if (!exchange.isResponseStarted) toResponse(exchange, e)?.let { exchange.render(it.statusCode, it) }
-    else if (e.message?.let { "Broken pipe" in it || "Connection reset" in it } == true) logger.debug(e.toString())
-    else logger.error("Error after headers sent", e)
+    else if (e.message?.let { "Broken pipe" in it || "Connection reset" in it } == false)
+      logger.error("Error after headers sent", e)
+  }
 
   open fun toResponse(exchange: HttpExchange, e: Throwable): ErrorResponse? {
     if (e is RedirectException) exchange.header("Location", e.location)

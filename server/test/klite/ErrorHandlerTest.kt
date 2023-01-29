@@ -38,13 +38,19 @@ class ErrorHandlerTest {
 
   @Test fun `handle broken pipe - client closed connection`() {
     every { exchange.isResponseStarted } returns true
-    errorHandler.handle(exchange, IOException("Broken pipe"))
+    val e = IOException("Broken pipe")
+    errorHandler.handle(exchange, e)
+    verify { exchange.failure = e }
     verify(exactly = 0) { exchange.render(any(), any()) }
   }
 
   @Test fun `render error`() {
     every { exchange.isResponseStarted } returns false
-    errorHandler.handle(exchange, IOException("Any exception"))
-    verify { exchange.render(InternalServerError, ErrorResponse(InternalServerError, "Any exception")) }
+    val e = IOException("Any exception")
+    errorHandler.handle(exchange, e)
+    verify {
+      exchange.failure = e
+      exchange.render(InternalServerError, ErrorResponse(InternalServerError, "Any exception"))
+    }
   }
 }

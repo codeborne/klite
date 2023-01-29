@@ -81,6 +81,7 @@ open class HttpExchange(
 
   val statusCode: StatusCode? get() = StatusCode(original.responseCode).takeIf { isResponseStarted }
   val isResponseStarted get() = original.responseCode >= 0
+  var failure: Throwable? = null
 
   val requestType: String? get() = header("Content-Type")
   val requestStream: InputStream get() = if (method.hasBody) original.requestBody else error("$method should not have body")
