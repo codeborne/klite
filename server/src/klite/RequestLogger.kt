@@ -3,9 +3,12 @@ package klite
 typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String?
 
 open class RequestLogger(
-  val formatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode${failure?.let { " ($it)" } ?: ""} in $ms ms - $browser" }
+  val formatter: RequestLogFormatter = defaultFormatter
 ): Decorator {
-  private val logger = logger()
+  companion object {
+    val defaultFormatter: RequestLogFormatter = { ms -> "$remoteAddress $method $path$query: $statusCode${failure?.let { " ($it)" } ?: ""} in $ms ms - $browser" }
+    private val logger = logger()
+  }
 
   override suspend fun invoke(exchange: HttpExchange, handler: Handler): Any? {
     val start = System.nanoTime()
