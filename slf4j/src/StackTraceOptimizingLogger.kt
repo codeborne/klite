@@ -23,8 +23,8 @@ open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
   }
 
   protected fun findUsefulStackTraceEnd(it: Array<out StackTraceElement>): Int {
-    var until = 0
-    for (i in it.lastIndex downTo 0) {
+    var until = it.lastIndex
+    for (i in until downTo 0) {
       if (it[i].className.run { startsWith("klite") || until > 0 && startsWith("kotlinx.coroutines") }) until = i
       else if (until > 0) break
     }

@@ -22,7 +22,14 @@ open class StackTraceOptimizingJsonLogger(name: String): StackTraceOptimizingLog
     val stackTrace = t.stackTrace
     val until = findUsefulStackTraceEnd(stackTrace)
     for (i in 0..until) {
-      sb.append("\"").append(stackTrace[i].toString()).append("\"")
+      var line = stackTrace[i].toString()
+      if (i < until - 1) {
+        val prev = stackTrace[i + 1]
+        line = line.substringAfter(prev.className)
+        val prevPackage = prev.className.substringBeforeLast(".")
+        line = line.substringAfter(prevPackage)
+      }
+      sb.append("\"").append(line).append("\"")
       sb.append(if (i != until) ", " else "]")
     }
     t.cause?.let {
