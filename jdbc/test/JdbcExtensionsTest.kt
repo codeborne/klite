@@ -21,4 +21,10 @@ class JdbcExtensionsTest {
   @Test fun setExpr() {
     expect(setExpr(values)).toEqual("hello=?, nullable=?, array=?, emptyArray='{}', date=current_date")
   }
+
+  @Test fun whereExpr() {
+    val where = values + sql("exists (subselect)") + or("a" to "b", "array" any 123, "something" like "x%", "num" gte 1)
+    expect(where.expr).toEqual(" where hello=? and nullable is null and array in (?, ?, ?) and emptyArray='{}'" +
+      " and date=current_date and exists (subselect) and (a=? or ?=any(array) or something like ? or num >= ?)")
+  }
 }

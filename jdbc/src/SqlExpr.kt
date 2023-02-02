@@ -29,7 +29,7 @@ infix fun String.lt(value: Any) = this to SqlOp("<", value)
 infix fun String.lte(value: Any) = this to SqlOp("<=", value)
 infix fun String.like(value: String) = this to SqlOp("like", value)
 infix fun String.ilike(value: String) = this to SqlOp("ilike", value)
-infix fun String.any(value: Any) = this to SqlExpr("? = any($this)", value)
+infix fun String.any(value: Any) = this to SqlExpr("?=any($this)", value)
 fun <K: Column> sql(@Language("SQL") expr: String, vararg values: Any?): Pair<K, SqlExpr> = (expr as K) to SqlExpr(expr, *values)
 
 infix fun <T, V> KProperty1<T, V>.eq(value: V) = this to value
@@ -40,7 +40,7 @@ infix fun <T, V> KProperty1<T, V>.lt(value: V) = this to SqlOp("<", value)
 infix fun <T, V> KProperty1<T, V>.lte(value: V) = this to SqlOp("<=", value)
 infix fun <T, V> KProperty1<T, V>.like(value: String) = this to SqlOp("like", value)
 infix fun <T, V> KProperty1<T, V>.ilike(value: String) = this to SqlOp("ilike", value)
-infix fun <T, V> KProperty1<T, V>.any(value: Any) = this to SqlExpr("? = any($name)", value)
+infix fun <T, V> KProperty1<T, V>.any(value: Any) = this to SqlExpr("?=any($name)", value)
 
 class Between(from: Comparable<*>, to: Comparable<*>): SqlExpr("", from, to) {
   constructor(range: ClosedRange<*>): this(range.start, range.endInclusive)

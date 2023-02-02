@@ -83,7 +83,7 @@ internal fun insertExpr(table: String, values: Map<String, *>) =
 
 private fun insertValues(values: Collection<*>) = values.joinToString { v ->
   if (v is SqlExpr) v.expr
-  else if (v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()) emptyArray.expr
+  else if (isEmptyCollection(v)) emptyArray.expr
   else "?"
 }
 
@@ -96,15 +96,18 @@ fun DataSource.delete(table: String, where: Where): Int =
 internal fun setExpr(values: Map<out Column, *>) = values.entries.joinToString { (k, v) ->
   val n = name(k)
   if (v is SqlExpr) v.expr(n)
-  else if (v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()) emptyArray.expr(n)
+  else if (isEmptyCollection(v)) emptyArray.expr(n)
   else q(n) + "=?"
 }
 
-private val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
+private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()
+
+internal val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
 
 internal fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
   val n = name(k)
-  when (v) {
+  if (isEmptyCollection(v)) emptyArray.expr(n)
+  else when (v) {
     null -> q(n) + " is null"
     is SqlExpr -> v.expr(n)
     is Iterable<*> -> inExpr(n, v)
