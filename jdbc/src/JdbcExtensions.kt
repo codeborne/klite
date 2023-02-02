@@ -128,8 +128,8 @@ internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun inExpr(k: String, v: Iterable<*>) = q(k) + " in (${v.joinToString { "?" }})"
 
-private fun setValues(values: Map<*, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
-private fun Any?.flatExpr(): Iterable<Any?> = if (this is SqlExpr) values else listOf(this)
+internal fun setValues(values: Map<*, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
+private fun Any?.flatExpr(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
 
 internal fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = when (this) {
