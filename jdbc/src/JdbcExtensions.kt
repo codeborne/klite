@@ -109,6 +109,7 @@ private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v 
 internal fun Where.convert() = mapValues { (_, v) ->
   if (isEmptyCollection(v)) emptyArray
   else when (v) {
+    null -> isNull
     is Iterable<*> -> In(v)
     is Array<*> -> In(*v)
     is ClosedRange<*> -> Between(v)
@@ -121,11 +122,7 @@ internal val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
 
 internal fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
   val n = name(k)
-  when (v) {
-    null -> q(n) + " is null"
-    is SqlExpr -> v.expr(n)
-    else -> q(n) + "=?"
-  }
+  if (v is SqlExpr) v.expr(n) else q(n) + "=?"
 }
 
 private fun name(key: Any) = when(key) {
