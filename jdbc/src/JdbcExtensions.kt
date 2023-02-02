@@ -24,7 +24,7 @@ fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
 fun <R, C: MutableCollection<R>> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
-  select("select * from $table", where, suffix, into, mapper)
+  select("select * from " + q(table), where, suffix, into, mapper)
 
 fun <R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
   query(table, where, suffix, mutableListOf(), mapper) as List<R>
@@ -78,19 +78,25 @@ fun DataSource.insert(table: String, values: Map<String, *>): Int {
 fun DataSource.upsert(table: String, values: Map<String, *>, uniqueFields: String = "id"): Int =
   exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
 
-private fun insertExpr(table: String, values: Map<String, *>) = """
-  insert into $table (${values.keys.joinToString { q(it) }})
-    values (${values.entries.joinToString { (it.value as? SqlExpr)?.expr(it.key) ?: "?" }})""".trimIndent()
+internal fun insertExpr(table: String, values: Map<String, *>) =
+  "insert into ${q(table)} (${values.keys.joinToString { q(it) }}) values (${insertValues(values.values)})"
+
+private fun insertValues(values: Collection<*>) = values.joinToString { v ->
+  if (v is SqlExpr) v.expr
+  else if (v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()) emptyArray.expr
+  else "?"
+}
 
 fun DataSource.update(table: String, where: Where, values: Map<out Column, *>): Int =
-  exec("update $table set ${setExpr(values)}${where.expr}", setValues(values) + whereValues(where))
+  exec("update ${q(table)} set ${setExpr(values)}${where.expr}", setValues(values) + whereValues(where))
 
 fun DataSource.delete(table: String, where: Where): Int =
-  exec("delete from $table${where.expr}", whereValues(where))
+  exec("delete from ${q(table)}${where.expr}", whereValues(where))
 
-private fun setExpr(values: Map<out Column, *>) = values.entries.joinToString { (k, v) ->
+internal fun setExpr(values: Map<out Column, *>) = values.entries.joinToString { (k, v) ->
   val n = name(k)
   if (v is SqlExpr) v.expr(n)
+  else if (v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()) emptyArray.expr(n)
   else q(n) + "=?"
 }
 

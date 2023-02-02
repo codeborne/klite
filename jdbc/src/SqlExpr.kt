@@ -3,15 +3,15 @@ package klite.jdbc
 import org.intellij.lang.annotations.Language
 import kotlin.reflect.KProperty1
 
-open class SqlExpr(@Language("SQL") protected val expr: String, val values: Collection<*> = emptyList<Any>()) {
+open class SqlExpr(@Language("SQL") internal val expr: String, val values: Collection<*> = emptyList<Any>()) {
   constructor(@Language("SQL") expr: String, vararg values: Any?): this(expr, values.toList())
   open fun expr(key: String) = expr
   override fun equals(other: Any?) = other === this || other is SqlExpr && other.expr == this.expr && other.values == this.values
   override fun hashCode() = expr.hashCode() + values.hashCode()
 }
 
-class SqlComputed(@Language("SQL") expr: String): SqlExpr(expr) {
-  override fun expr(key: String) = q(key) + " = " + expr
+class SqlComputed(expr: String): SqlExpr(expr) {
+  override fun expr(key: String) = q(key) + "=" + expr
 }
 
 open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if (value != null) listOf(value) else emptyList()) {
@@ -19,7 +19,7 @@ open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if
 }
 
 val notNull = SqlOp("is not null")
-val emptyArray = SqlComputed("'{}'") // TODO: maybe we can use it instead of EmptyOf
+val emptyArray = SqlComputed("'{}'")
 
 infix fun String.eq(value: Any) = this to value
 infix fun String.neq(value: Any) = this to SqlOp("!=", value)
