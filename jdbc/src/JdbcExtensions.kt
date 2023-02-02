@@ -18,6 +18,8 @@ typealias Mapper<R> = ResultSet.() -> R
 internal typealias Column = Any // String | KProperty1
 typealias Where = Map<out Column, Any?>
 
+// TODO: maybe replace query<>select
+
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
@@ -80,13 +82,17 @@ private fun insertExpr(table: String, values: Map<String, *>) = """
   insert into $table (${values.keys.joinToString { q(it) }})
     values (${values.entries.joinToString { (it.value as? SqlExpr)?.expr(it.key) ?: "?" }})""".trimIndent()
 
-fun DataSource.update(table: String, where: Where, values: Map<String, *>): Int =
+fun DataSource.update(table: String, where: Where, values: Map<out Column, *>): Int =
   exec("update $table set ${setExpr(values)}${where.expr}", setValues(values) + whereValues(where))
 
 fun DataSource.delete(table: String, where: Where): Int =
   exec("delete from $table${where.expr}", whereValues(where))
 
-private fun setExpr(values: Map<String, *>) = values.entries.joinToString { q(it.key) + " = " + ((it.value as? SqlExpr)?.expr(it.key) ?: "?") }
+private fun setExpr(values: Map<out Column, *>) = values.entries.joinToString { (k, v) ->
+  val n = name(k)
+  if (v is SqlExpr) v.expr(n)
+  else q(n) + "=?"
+}
 
 private val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
 
@@ -99,7 +105,7 @@ internal fun Where.join(separator: String) = entries.joinToString(separator) { (
     is Array<*> -> inExpr(n, v.toList())
     is ClosedRange<*> -> Between(v).expr(n)
     is OpenEndRange<*> -> BetweenExcl(v).expr(n)
-    else -> q(n) + " = ?"
+    else -> q(n) + "=?"
   }
 }
 
