@@ -109,6 +109,8 @@ private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v 
 internal fun Where.convert() = mapValues { (_, v) ->
   if (isEmptyCollection(v)) emptyArray
   else when (v) {
+    is Iterable<*> -> In(v)
+    is Array<*> -> In(*v)
     is ClosedRange<*> -> Between(v)
     is OpenEndRange<*> -> BetweenExcl(v)
     else -> v
@@ -122,8 +124,6 @@ internal fun Where.join(separator: String) = entries.joinToString(separator) { (
   when (v) {
     null -> q(n) + " is null"
     is SqlExpr -> v.expr(n)
-    is Iterable<*> -> inExpr(n, v)
-    is Array<*> -> inExpr(n, v.toList())
     else -> q(n) + "=?"
   }
 }
@@ -136,17 +136,10 @@ private fun name(key: Any) = when(key) {
 
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
-internal fun inExpr(k: String, v: Iterable<*>) = q(k) + " in (${v.joinToString { "?" }})"
-
-internal fun setValues(values: Map<*, Any?>) = values.values.asSequence().flatMap { it.flatExpr() }
-private fun Any?.flatExpr(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
+internal fun setValues(values: Map<*, Any?>) = values.values.asSequence().flatMap { it.toIterable() }
 
 internal fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
-private fun Any?.toIterable(): Iterable<Any?> = when (this) {
-  is Array<*> -> toList()
-  is Iterable<*> -> this
-  else -> flatExpr()
-}
+private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
 
 operator fun PreparedStatement.set(i: Int, value: Any?) {
   if (value is InputStream) setBinaryStream(i, value)
