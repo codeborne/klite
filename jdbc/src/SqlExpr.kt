@@ -19,6 +19,7 @@ open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if
 }
 
 val notNull = SqlOp("is not null")
+val emptyArray = SqlComputed("'{}'")
 
 infix fun String.eq(value: Any) = this to value
 infix fun String.neq(value: Any) = this to SqlOp("!=", value)
