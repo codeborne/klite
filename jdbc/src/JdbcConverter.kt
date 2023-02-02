@@ -43,7 +43,7 @@ object JdbcConverter {
   fun to(v: Any?, conn: Connection? = null) = when (v) {
     null -> null
     is Enum<*> -> v.name
-    is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass ?: (v as? EmptyOf<*>)?.type), v.toTypedArray())
+    is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass), v.toTypedArray())
     is Array<*> -> conn!!.createArrayOf(arrayType(v.javaClass.componentType), v)
     else -> {
       val cls = v::class

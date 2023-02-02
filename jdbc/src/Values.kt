@@ -19,15 +19,10 @@ fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkippin
 
 @Suppress("UNCHECKED_CAST")
 private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> =
-  toValues((this::class.memberProperties as Iterable<KProperty1<T, *>>).filter { !skipNames.contains(it.name) })
+  toValues((this::class.memberProperties as Iterable<KProperty1<T, *>>).filter { it.name !in skipNames })
 
 fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> =
-  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to persistEmptyCollectionType(it.get(this), it.returnType) }
-
-private fun persistEmptyCollectionType(v: Any?, type: KType) =
-  if (v is Collection<*> && v.isEmpty()) EmptyOf((type.arguments.first().type!!.classifier as KClass<*>).javaObjectType) else v
-
-data class EmptyOf<T: Any>(val type: Class<T>): Collection<T> by emptyList()
+  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to it.get(this) }
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = fromValues(T::class, *provided)
 inline fun <reified T: Any> Map<String, Any?>.fromValues() = fromValues(T::class)

@@ -52,12 +52,6 @@ class JdbcConverterTest {
     verify { conn.createArrayOf("uuid", arrayOf(uuid, uuid)) }
   }
 
-  @Test fun `empty array of uuid`() {
-    val conn = mockk<Connection>(relaxed = true)
-    expect(JdbcConverter.to(EmptyOf(UUID::class.java), conn)).toBeAnInstanceOf<java.sql.Array>()
-    verify { conn.createArrayOf("uuid", emptyArray()) }
-  }
-
   @Test fun `to array of BigDecimal`() {
     val conn = mockk<Connection>(relaxed = true)
     expect(JdbcConverter.to(listOf(ONE, TEN), conn)).toBeAnInstanceOf<java.sql.Array>()

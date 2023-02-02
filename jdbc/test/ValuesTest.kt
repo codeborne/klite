@@ -15,12 +15,6 @@ class ValuesTest {
     expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124, "nullable" to null, "list" to listOf(1, 2)))
   }
 
-  @Test fun `toValues persists empty collection component type`() {
-    val empty = SomeData("", 1, list = emptyList()).toValues()["list"]
-    expect(empty).toEqual(EmptyOf(Int::class.javaObjectType))
-    expect(empty as Collection<*>).toBeEmpty()
-  }
-
   @Test fun toValuesSkipping() {
     val data = SomeData("Hello", 123)
     expect(data.toValuesSkipping(SomeData::nullable, SomeData::list)).toEqual(mapOf("hello" to "Hello", "world" to 123))
