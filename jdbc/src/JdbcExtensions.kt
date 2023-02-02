@@ -1,3 +1,4 @@
+@file:Suppress("NAME_SHADOWING")
 package klite.jdbc
 
 import org.intellij.lang.annotations.Language
