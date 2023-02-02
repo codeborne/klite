@@ -10,7 +10,7 @@ open class SqlExpr(@Language("SQL") internal val expr: String, val values: Colle
   override fun hashCode() = expr.hashCode() + values.hashCode()
 }
 
-class SqlComputed(expr: String): SqlExpr(expr) {
+class SqlComputed(expr: String, vararg values: Any?): SqlExpr(expr, *values) {
   override fun expr(key: String) = q(key) + "=" + expr
 }
 
