@@ -28,7 +28,7 @@ class JdbcExtensionsTest {
   }
 
   @Test fun whereExpr() {
-    val where = values + sql("exists (subselect)") + or("a" to "b", "array" any 123, "something" like "x%", "num" gte 1)
+    val where = values.convert() + sql("exists (subselect)") + or("a" to "b", "array" any 123, "something" like "x%", "num" gte 1)
     expect(where.expr).toEqual(" where hello=? and nullable is null and array in (?, ?, ?) and emptyArray='{}'" +
       " and date=current_date and json=?::jsonb and exists (subselect) and (a=? or ?=any(array) or something like ? or num >= ?)")
     expect(whereValues(where).toList()).toContainExactly("world", 1, 2, 3, "{}", "b", 123, "x%", 1)

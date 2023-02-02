@@ -33,10 +33,12 @@ inline fun <reified R> DataSource.query(table: String, where: Where = emptyMap()
   query(table, where, suffix) { fromValues() }
 
 fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
+  where.convert().let { where ->
   withStatement("$select${where.expr} $suffix") {
     setAll(whereValues(where))
     into.also { executeQuery().process(it::add, mapper) }
   }
+}
 
 @Suppress("UNCHECKED_CAST")
 fun <R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
@@ -87,11 +89,13 @@ private fun insertValues(values: Collection<*>) = values.joinToString { v ->
   else "?"
 }
 
-fun DataSource.update(table: String, where: Where, values: Map<out Column, *>): Int =
+fun DataSource.update(table: String, where: Where, values: Map<out Column, *>): Int = where.convert().let { where ->
   exec("update ${q(table)} set ${setExpr(values)}${where.expr}", setValues(values) + whereValues(where))
+}
 
-fun DataSource.delete(table: String, where: Where): Int =
+fun DataSource.delete(table: String, where: Where): Int = where.convert().let { where ->
   exec("delete from ${q(table)}${where.expr}", whereValues(where))
+}
 
 internal fun setExpr(values: Map<out Column, *>) = values.entries.joinToString { (k, v) ->
   val n = name(k)
@@ -102,18 +106,24 @@ internal fun setExpr(values: Map<out Column, *>) = values.entries.joinToString {
 
 private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()
 
+internal fun Where.convert() = mapValues { (_, v) ->
+  if (isEmptyCollection(v)) emptyArray
+  else when (v) {
+    is ClosedRange<*> -> Between(v)
+    is OpenEndRange<*> -> BetweenExcl(v)
+    else -> v
+  }
+}
+
 internal val Where.expr get() = if (isEmpty()) "" else " where " + join(" and ")
 
 internal fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
   val n = name(k)
-  if (isEmptyCollection(v)) emptyArray.expr(n)
-  else when (v) {
+  when (v) {
     null -> q(n) + " is null"
     is SqlExpr -> v.expr(n)
     is Iterable<*> -> inExpr(n, v)
     is Array<*> -> inExpr(n, v.toList())
-    is ClosedRange<*> -> Between(v).expr(n)
-    is OpenEndRange<*> -> BetweenExcl(v).expr(n)
     else -> q(n) + "=?"
   }
 }
@@ -135,9 +145,6 @@ internal fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filter
 private fun Any?.toIterable(): Iterable<Any?> = when (this) {
   is Array<*> -> toList()
   is Iterable<*> -> this
-  // TODO: convert where to avoid duplication here and it Where.expr
-  is ClosedRange<*> -> Between(this).values
-  is OpenEndRange<*> -> BetweenExcl(this).values
   else -> flatExpr()
 }
 
