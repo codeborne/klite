@@ -18,6 +18,7 @@ val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "
 typealias Mapper<R> = ResultSet.() -> R
 internal typealias Column = Any // String | KProperty1
 typealias Where = Map<out Column, Any?>
+typealias Values = Map<out Column, *>
 
 // TODO: maybe replace query<>select
 
@@ -70,7 +71,7 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
 }
 
 // TODO: add insert with mapper that returns the generated keys
-fun DataSource.insert(table: String, values: Map<String, *>): Int {
+fun DataSource.insert(table: String, values: Values): Int {
   val valuesToSet = values.filter { it.value !is GeneratedKey<*> }
   val hasGeneratedKeys = valuesToSet.size != values.size
   return exec(insertExpr(table, valuesToSet), setValues(valuesToSet), if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
@@ -78,19 +79,19 @@ fun DataSource.insert(table: String, values: Map<String, *>): Int {
   }
 }
 
-fun DataSource.upsert(table: String, values: Map<String, *>, uniqueFields: String = "id"): Int =
+fun DataSource.upsert(table: String, values: Values, uniqueFields: String = "id"): Int =
   exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
 
-internal fun insertExpr(table: String, values: Map<String, *>) =
-  "insert into ${q(table)} (${values.keys.joinToString { q(it) }}) values (${insertValues(values.values)})"
+internal fun insertExpr(table: String, values: Values) =
+  "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${insertValues(values.values)})"
 
-private fun insertValues(values: Collection<*>) = values.joinToString { v ->
+private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
   if (v is SqlExpr) v.expr
   else if (isEmptyCollection(v)) emptyArray.expr
   else "?"
 }
 
-fun DataSource.update(table: String, where: Where, values: Map<out Column, *>): Int = where.convert().let { where ->
+fun DataSource.update(table: String, where: Where, values: Values): Int = where.convert().let { where ->
   exec("update ${q(table)} set ${setExpr(values)}${where.expr}", setValues(values) + whereValues(where))
 }
 
@@ -98,7 +99,7 @@ fun DataSource.delete(table: String, where: Where): Int = where.convert().let { 
   exec("delete from ${q(table)}${where.expr}", whereValues(where))
 }
 
-internal fun setExpr(values: Map<out Column, *>) = values.entries.joinToString { (k, v) ->
+internal fun setExpr(values: Values) = values.entries.joinToString { (k, v) ->
   val n = name(k)
   if (v is SqlExpr) v.expr(n)
   else if (isEmptyCollection(v)) emptyArray.expr(n)
@@ -126,7 +127,7 @@ internal fun Where.join(separator: String) = entries.joinToString(separator) { (
   if (v is SqlExpr) v.expr(n) else q(n) + "=?"
 }
 
-private fun name(key: Any) = when(key) {
+internal fun name(key: Any) = when(key) {
   is KProperty1<*, *> -> key.name
   is String -> key
   else -> throw UnsupportedOperationException("$key should be a KProperty1 or String")
@@ -134,9 +135,9 @@ private fun name(key: Any) = when(key) {
 
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
-internal fun setValues(values: Map<*, Any?>) = values.values.asSequence().flatMap { it.toIterable() }
+internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
 
-internal fun whereValues(where: Map<*, Any?>) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
+internal fun whereValues(where: Values) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
 
 operator fun PreparedStatement.set(i: Int, value: Any?) {

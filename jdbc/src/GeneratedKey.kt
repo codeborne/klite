@@ -8,11 +8,12 @@ class GeneratedKey<T: Any>(val convertTo: KClass<T>? = null) {
 }
 
 @Suppress("UNCHECKED_CAST")
-internal fun Statement.processGeneratedKeys(values: Map<String, *>) =
+internal fun Statement.processGeneratedKeys(values: Values) =
   generatedKeys.process {
-    values.forEach { e ->
-      (e.value as? GeneratedKey<Any>)?.let {
-        val value = if (it.convertTo != null) getString(e.key) else getObject(e.key)
+    values.forEach { (k, v) ->
+      val n = name(k)
+      (v as? GeneratedKey<Any>)?.let {
+        val value = if (it.convertTo != null) getString(n) else getObject(n)
         it.value = JdbcConverter.from(value, it.convertTo) as Any
       }
     }
