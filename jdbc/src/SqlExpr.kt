@@ -67,7 +67,7 @@ class NotIn(values: Iterable<*>): In(values) {
   override fun expr(key: String) = super.expr(key).replace(" in ", " not in ")
 }
 
-fun orExpr(vararg where: Pair<Column, Any?>): SqlExpr =
-  where.toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
+fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr =
+  where.filterNotNull().toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
 
-fun <K: Column> or(vararg where: Pair<K, Any?>) = where[0].first to orExpr(*where)
+fun <K: Column> or(vararg where: Pair<K, Any?>?) = where[0]!!.first to orExpr(*where)
