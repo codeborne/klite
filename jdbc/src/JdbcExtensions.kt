@@ -46,7 +46,6 @@ fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL") select: Stri
   }
 }
 
-@Suppress("UNCHECKED_CAST")
 fun <R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
   select(select, where, suffix, mutableListOf(), mapper) as List<R>
 
