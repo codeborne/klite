@@ -22,6 +22,10 @@ typealias Values = Map<out Column, *>
 
 // TODO: maybe replace query<>select
 
+fun DataSource.lock(on: String) = select("select pg_advisory_lock(${on.hashCode()})") {}.first()
+fun DataSource.tryLock(on: String): Boolean = select("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
+fun DataSource.unlock(on: String): Boolean = select("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
+
 fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
   query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 

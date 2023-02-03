@@ -52,8 +52,8 @@ open class DBMigrator(
     ChangeSetFileReader("migrator/init.sql").forEach(::run)
   }
 
-  open fun lock() = db.select("select pg_advisory_lock(576945)") {}.first()
-  open fun unlock() = db.select("select pg_advisory_unlock(576945)") { getBoolean(1) }.first()
+  open fun lock() = db.lock(javaClass.name)
+  open fun unlock() = db.unlock(javaClass.name)
 
   @Suppress("NAME_SHADOWING")
   open fun dropAll(schema: String? = null) = tx.attachToThread().use {

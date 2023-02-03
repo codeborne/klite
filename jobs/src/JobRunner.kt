@@ -3,6 +3,8 @@ package klite.jobs
 import klite.*
 import klite.jdbc.Transaction
 import klite.jdbc.TransactionContext
+import klite.jdbc.tryLock
+import klite.jdbc.unlock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
@@ -22,6 +24,7 @@ import javax.sql.DataSource
 interface Job {
   suspend fun run()
   val name get() = this::class.simpleName!!
+  val allowParallelRun get() = false
 }
 
 class NamedJob(override val name: String, private val job: suspend () -> Unit): Job {
@@ -46,14 +49,17 @@ open class JobRunner(
     val threadName = ThreadNameContext("${requestIdGenerator.prefix}/${job.name}#${seq.incrementAndGet()}")
     val tx = Transaction(db)
     return launch(threadName + TransactionContext(tx), start) {
+      var commit = true
       try {
+        if (!job.allowParallelRun && !db.tryLock(job.name)) return@launch logger.info("${job.name} locked, skipping")
         logger.info("${job.name} started")
         run(job)
-        tx.close(true)
       } catch (e: Exception) {
+        commit = false
         logger.error("${job.name} failed", e)
-        tx.close(false)
       }
+      if (!job.allowParallelRun) db.unlock(job.name)
+      tx.close(commit)
     }.also { launched ->
       runningJobs += launched
       launched.invokeOnCompletion { runningJobs -= launched }
