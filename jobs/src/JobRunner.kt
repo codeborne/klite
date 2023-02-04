@@ -27,7 +27,7 @@ interface Job {
   val allowParallelRun get() = false
 }
 
-class NamedJob(override val name: String, private val job: suspend () -> Unit): Job {
+class NamedJob(override val name: String, override val allowParallelRun: Boolean, private val job: suspend () -> Unit): Job {
   override suspend fun run() = job()
 }
 
@@ -86,7 +86,7 @@ open class JobRunner(
     }
   }
 
-  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) = scheduleDaily(NamedJob(job.name) {
+  fun scheduleMonthly(job: Job, dayOfMonth: Int, vararg at: LocalTime) = scheduleDaily(NamedJob(job.name, job.allowParallelRun) {
     if (LocalDate.now().dayOfMonth == dayOfMonth) job.run()
   }, at = at)
 
