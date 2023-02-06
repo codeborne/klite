@@ -90,7 +90,8 @@ private class Param(val param: KParameter) {
       }
     }
   } catch (e: Exception) {
-    throw IllegalArgumentException("Cannot get value for $param", e)
+    if (e.message?.contains(name) == true) throw e
+    throw IllegalArgumentException("Cannot get $name: ${e.message}", e)
   }
 
   private val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
