@@ -1,3 +1,6 @@
+# 1.5.0-unreleased
+* jdbc: replace db.select <-> db.query methods
+
 # 1.4.2
 * server: fallback to `docker compose` without dash
 * server: shorten json stack traces by cutting repeating class/package names
