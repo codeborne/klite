@@ -18,20 +18,20 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val id2 = randomUUID()
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
 
-    expect(db.query(table, id) { getId() }).toEqual(id)
+    expect(db.select(table, id) { getId() }).toEqual(id)
 
-    expect(db.query(table, mapOf("hello" to "Hello")) { getId() }).toContain(id)
-    expect(db.query<SomeData>(table)).toContain(SomeData("Hello", 42, id))
-    expect(db.query(table, mapOf("hello" to "World")) { getId() }).toBeEmpty()
+    expect(db.select(table, mapOf("hello" to "Hello")) { getId() }).toContain(id)
+    expect(db.select<SomeData>(table)).toContain(SomeData("Hello", 42, id))
+    expect(db.select(table, mapOf("hello" to "World")) { getId() }).toBeEmpty()
 
-    expect(db.query(table, mapOf("hello" to SqlOp(">", "Hello"))) { getId() }).toContain(id2)
-    expect(db.query(table, mapOf("hello" to listOf("Hello", "Hello2"))) { getId() }).toContain(id, id2)
-    expect(db.query(table, mapOf("hello" to listOf("Hello", "Hello2")), "order by hello desc") { getId() }).toContainExactly(id2, id)
-    expect(db.query(table, mapOf("hello" to listOf("Hello", "Hello2")), "limit 1") { getId() }).toContainExactly(id)
-    expect(db.query(table, mapOf("hello" to NotIn("Hello2"))) { getId() }).toContainExactly(id)
+    expect(db.select(table, mapOf("hello" to SqlOp(">", "Hello"))) { getId() }).toContain(id2)
+    expect(db.select(table, mapOf("hello" to listOf("Hello", "Hello2"))) { getId() }).toContain(id, id2)
+    expect(db.select(table, mapOf("hello" to listOf("Hello", "Hello2")), "order by hello desc") { getId() }).toContainExactly(id2, id)
+    expect(db.select(table, mapOf("hello" to listOf("Hello", "Hello2")), "limit 1") { getId() }).toContainExactly(id)
+    expect(db.select(table, mapOf("hello" to NotIn("Hello2"))) { getId() }).toContainExactly(id)
 
-    expect(db.query(table, emptyMap(), "where world is null") { getId() }).toContainExactly(id2)
-    expect(db.query("$table a join $table b on a.id = b.id", emptyMap()) { getId() }).toContain(id, id2)
+    expect(db.select(table, emptyMap(), "where world is null") { getId() }).toContainExactly(id2)
+    expect(db.select("$table a join $table b on a.id = b.id", emptyMap()) { getId() }).toContain(id, id2)
   }
 
   @Test fun generatedKey() {
@@ -51,7 +51,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     db.upsert(table, data.toValues())
     db.upsert(table, data.toValues())
 
-    val loaded: SomeData = db.query(table, data.id) { fromValues() }
+    val loaded: SomeData = db.select(table, data.id) { fromValues() }
     expect(loaded).toEqual(data)
   }
 
@@ -60,10 +60,10 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     db.insert(table, data.toValues())
 
     db.update(table, mapOf("id" to data.id), mapOf("world" to 39))
-    expect(db.query(table, data.id) { fromValues<SomeData>() }).toEqual(data.copy(world = 39))
+    expect(db.select(table, data.id) { fromValues<SomeData>() }).toEqual(data.copy(world = 39))
 
     db.delete(table, mapOf("world" to 39))
-    expect { db.query(table, data.id) { } }.toThrow<NoSuchElementException>()
+    expect { db.select(table, data.id) { } }.toThrow<NoSuchElementException>()
   }
 
   data class SomeData(val hello: String, val world: Int?, val id: UUID = randomUUID())

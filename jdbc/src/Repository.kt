@@ -26,11 +26,11 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   protected open fun ResultSet.mapper(): E = fromValues(entityClass)
   protected open fun E.persister() = toValues()
 
-  open fun get(id: ID): E = db.query(table, id) { mapper() }
+  open fun get(id: ID): E = db.select(table, id) { mapper() }
   open fun save(entity: E) = db.upsert(table, entity.persister())
   open fun list(vararg where: PropValue<E>?, order: String = defaultOrder): List<E> =
-    db.query(table, where.filterNotNull().toMap(), order) { mapper() }
+    db.select(table, where.filterNotNull().toMap(), order) { mapper() }
   open fun count(vararg where: PropValue<E>): Int =
-    db.select("select count(*) from $table", where.toMap()) { getInt(1) }.first()
+    db.query("select count(*) from $table", where.toMap()) { getInt(1) }.first()
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
 }

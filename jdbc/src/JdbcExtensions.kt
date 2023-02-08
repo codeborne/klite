@@ -20,25 +20,23 @@ internal typealias Column = Any // String | KProperty1
 typealias Where = Map<out Column, Any?>
 typealias Values = Map<out Column, *>
 
-// TODO: maybe replace query<>select
+fun DataSource.lock(on: String) = query("select pg_advisory_lock(${on.hashCode()})") {}.first()
+fun DataSource.tryLock(on: String): Boolean = query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
+fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
 
-fun DataSource.lock(on: String) = select("select pg_advisory_lock(${on.hashCode()})") {}.first()
-fun DataSource.tryLock(on: String): Boolean = select("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
-fun DataSource.unlock(on: String): Boolean = select("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
+fun <R, ID> DataSource.select(table: String, id: ID, mapper: Mapper<R>): R =
+  select(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R, ID> DataSource.query(table: String, id: ID, mapper: Mapper<R>): R =
-  query(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
+fun <R, C: MutableCollection<R>> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
+  query("select * from " + q(table), where, suffix, into, mapper)
 
-fun <R, C: MutableCollection<R>> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
-  select("select * from " + q(table), where, suffix, into, mapper)
+fun <R> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
+  select(table, where, suffix, mutableListOf(), mapper) as List<R>
 
-fun <R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
-  query(table, where, suffix, mutableListOf(), mapper) as List<R>
+inline fun <reified R> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
+  select(table, where, suffix) { fromValues() }
 
-inline fun <reified R> DataSource.query(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
-  query(table, where, suffix) { fromValues() }
-
-fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
+fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   whereConvert(where).let { where ->
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
@@ -46,11 +44,11 @@ fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL") select: Stri
   }
 }
 
-fun <R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
-  select(select, where, suffix, mutableListOf(), mapper) as List<R>
+fun <R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
+  query(select, where, suffix, mutableListOf(), mapper) as List<R>
 
-inline fun <reified R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
-  select(select, where, suffix) { fromValues() }
+inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
+  query(select, where, suffix) { fromValues() }
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Mapper<R>) {
   while (next()) consumer(mapper())

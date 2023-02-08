@@ -27,23 +27,25 @@ Usage:
   db.upsert("table", entity.toValues(Entity::field to "another value"))
 
   // basic query from a table (mapper runs in context of ResultSet)
-  db.query("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
+  db.select("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
   // or if all entity properties are contained in the result set
-  db.query("table", mapOf("column" to value)) { fromValues<MyEntity>() }
+  db.select("table", mapOf("column" to value)) { fromValues<MyEntity>() }
   // if you need to add several criteria for a single column (map key), use SqlExpr and friends
-  db.query("table", mapOf("column" to SqlExpr("(column is null or column >= 10)")))
+  db.select("table", mapOf("column" to SqlExpr("(column is null or column >= 10)")))
   // where can also be written in a type-safe way, and some common operators are available
-  db.query("table", mapOf(MyEntity::column gte 123)) { fromValues<MyEntity>() }
+  db.select("table", mapOf(MyEntity::column gte 123)) { fromValues<MyEntity>() }
 
   // more advanced query with suffix and fromValues() auto-mapper
-  db.query("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
+  db.select("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
   // single row, with joins, etc
-  db.query("table1 left join table2 on table1.id = table2.megaId", mapOf("table2.field" to value), "limit 1") {
+  db.select("table1 left join table2 on table1.id = table2.megaId", mapOf("table2.field" to value), "limit 1") {
     fromValues<MyEntity>(MyEntity::other to fromValues<OtherEntity>())
   }.first()
 
-  // or you can write full sql manually using db.exec() and db.select()
+  // or you can write full sql manually using db.query() and db.exec()
 ```
+
+Note: before Klite 1.5 query/select functions had the opposite meaning.
 
 See [all available functions](src/JdbcExtensions.kt).
 
