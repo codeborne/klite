@@ -16,6 +16,7 @@ import java.time.*
 import java.time.ZoneOffset.UTC
 import java.util.*
 import java.util.UUID.randomUUID
+import kotlin.reflect.typeOf
 
 class JdbcConverterTest {
   @Test fun `null`() {
@@ -88,4 +89,12 @@ class JdbcConverterTest {
     expect(JdbcConverter.from("et", Locale::class)).toEqual(Locale("et"))
     expect(JdbcConverter.from("P3D", Period::class)).toEqual(Period.ofDays(3))
   }
+
+  @Test fun `inline class`() {
+    val email = Email("hello@example.com")
+    expect(JdbcConverter.to(email)).toEqual(email.email)
+    expect(JdbcConverter.from(email.email, typeOf<Email>())).toEqual(email)
+  }
+
+  @JvmInline value class Email(val email: String)
 }
