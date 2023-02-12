@@ -21,7 +21,7 @@ private class JsonReader(private val reader: Reader) {
 
   fun readValue(): Any? {
     val next = readNonWhitespace()
-    return if (next == '"') readUntil('"') // TODO escaped \" or \\u stuff
+    return if (next == '"') readString() // TODO escaped \" or \\u stuff
     else if (next == '{') readObject()
     else if (next == '[') readArray()
     else if (next.isDigit()) readWhile(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
@@ -30,13 +30,15 @@ private class JsonReader(private val reader: Reader) {
     else fail("Unexpected char: $next")
   }
 
+  private fun readString() = readUntil('"')
+
   private fun readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()
     while (true) {
       var next = readNonWhitespace()
       if (next == '}') return o else next.shouldBe('"')
 
-      val key = readUntil('"')
+      val key = readString()
       readNonWhitespace().shouldBe(':')
       o[key] = readValue()
 
