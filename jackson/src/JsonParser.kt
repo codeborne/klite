@@ -1,0 +1,65 @@
+package klite.json
+
+import java.io.BufferedReader
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.Reader
+import java.text.ParseException
+
+class JsonParser {
+  fun parse(json: Reader): Any? = json.readValue()
+  fun parse(json: String) = parse(json.reader())
+  fun parse(json: InputStream) = parse(BufferedReader(InputStreamReader(json)))
+
+  private fun Reader.readValue(): Any? {
+    val next = nextNonWhitespace()
+    return if (next == '"') readUntil('"') // TODO escaped \" or \\u stuff
+    else if (next == '{') readObject()
+    else if (next == '[') TODO()
+    else if (next.isDigit()) readFrom(next) { it.isDigit() || it == '.' }.let { if (it.contains(".")) it.toDouble() else it.toLong() }
+    else if (next == 't' || next == 'f') readFrom(next) { it.isLetter() }.toBoolean()
+    else if (next == 'n') readFrom(next) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
+    else fail("Unexpected char: $next")
+  }
+
+  private fun Reader.readObject(): Map<String, Any?> {
+    val o = mutableMapOf<String, Any?>()
+    while (true) {
+      nextNonWhitespace().shouldBe('"')
+      val key = readUntil('"')
+      nextNonWhitespace().shouldBe(':')
+      o[key] = readValue()
+      val next = nextNonWhitespace()
+      if (next == '}') return o
+      else next.shouldBe(',')
+    }
+  }
+
+  private fun Reader.nextNonWhitespace(): Char {
+    var char: Char
+    do { char = read().toChar() } while (char.isWhitespace())
+    return char
+  }
+
+  private fun Char.shouldBe(char: Char) {
+    if (this != char) fail("Expecting $char, but got $this")
+  }
+
+  private fun fail(msg: String): Nothing = throw ParseException(msg, 0)
+
+  private fun Reader.readUntil(until: Char) = readFrom { it != until }
+
+  private fun Reader.readFrom(include: Char? = null, cont: (Char) -> Boolean): String {
+    val into = StringBuilder()
+    val reset = include != null
+    if (reset) into.append(include)
+    while (true) {
+      if (reset) mark(1)
+      val char = read()
+      if (char < 0 || !cont(char.toChar())) return into.toString().also { if (reset) reset() }
+      else into.append(char.toChar())
+    }
+  }
+
+  // inline fun <reified T: Any> parse(json: String) = parse(Scanner(json), T::class)
+}
