@@ -22,9 +22,9 @@ private class JsonReader(private val reader: Reader) {
     return if (next == '"') readUntil('"') // TODO escaped \" or \\u stuff
     else if (next == '{') readObject()
     else if (next == '[') readArray()
-    else if (next.isDigit()) readFrom(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
-    else if (next == 't' || next == 'f') readFrom(next) { it.isLetter() }.toBoolean()
-    else if (next == 'n') readFrom(next) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
+    else if (next.isDigit()) readWhile(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
+    else if (next == 't' || next == 'f') readWhile(next) { it.isLetter() }.toBoolean()
+    else if (next == 'n') readWhile(next) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
     else fail("Unexpected char: $next")
   }
 
@@ -60,15 +60,9 @@ private class JsonReader(private val reader: Reader) {
     return char
   }
 
-  private fun Char.shouldBe(char: Char) {
-    if (this != char) fail("Expecting $char, but got $this")
-  }
+  private fun readUntil(until: Char) = readWhile { it != until }
 
-  private fun fail(msg: String): Nothing = throw ParseException(msg, pos)
-
-  private fun readUntil(until: Char) = readFrom { it != until }
-
-  private fun readFrom(include: Char? = null, cont: (Char) -> Boolean): String {
+  private fun readWhile(include: Char? = null, cont: (Char) -> Boolean): String {
     val into = StringBuilder()
     nextChar = include
     while (true) {
@@ -79,4 +73,12 @@ private class JsonReader(private val reader: Reader) {
   }
 
   private fun read(): Int = nextChar?.code?.also { nextChar = null } ?: reader.read().also { pos++ }
+
+  private fun fail(msg: String): Nothing = throw JsonParseException(msg, pos - 1)
+
+  private fun Char.shouldBe(char: Char) {
+    if (this != char) fail("Expecting $char but got $this")
+  }
 }
+
+class JsonParseException(msg: String, pos: Int): ParseException("$msg at index $pos", pos)
