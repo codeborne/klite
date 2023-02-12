@@ -20,8 +20,8 @@ private class JsonReader(private val reader: Reader) {
   private var nextChar: Char? = null
 
   fun readValue(): Any? {
-    val next = readNonWhitespace()
-    return if (next == '"') readString() // TODO escaped \" or \\u stuff
+    val next = nextNonSpace()
+    return if (next == '"') readString()
     else if (next == '{') readObject()
     else if (next == '[') readArray()
     else if (next.isDigit() || next == '-' || next == '+') readWhile(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
@@ -35,30 +35,30 @@ private class JsonReader(private val reader: Reader) {
   private fun readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()
     while (true) {
-      var next = readNonWhitespace()
-      if (next == '}') return o else next.shouldBe('"')
+      var next = nextNonSpace()
+      if (next == '}') return o else next.expect('"')
 
       val key = readString()
-      readNonWhitespace().shouldBe(':')
+      nextNonSpace().expect(':')
       o[key] = readValue()
 
-      next = readNonWhitespace()
-      if (next == '}') return o else next.shouldBe(',')
+      next = nextNonSpace()
+      if (next == '}') return o else next.expect(',')
     }
   }
 
   private fun readArray(): List<Any?> {
     val a = mutableListOf<Any?>()
     while (true) {
-      var char = readNonWhitespace()
+      var char = nextNonSpace()
       if (char == ']') return a else nextChar = char
       a += readValue()
-      char = readNonWhitespace()
-      if (char == ']') return a else char.shouldBe(',')
+      char = nextNonSpace()
+      if (char == ']') return a else char.expect(',')
     }
   }
 
-  private fun readNonWhitespace(): Char {
+  private fun nextNonSpace(): Char {
     var char: Char
     do { char = read() } while (char.isWhitespace())
     return char
@@ -78,7 +78,7 @@ private class JsonReader(private val reader: Reader) {
 
   private fun fail(msg: String): Nothing = throw JsonParseException(msg, pos - 1)
 
-  private fun Char.shouldBe(char: Char) {
+  private fun Char.expect(char: Char) {
     if (this != char) fail("Expecting $char but got ${if (this == EOF) "EOF" else this}")
   }
 }
