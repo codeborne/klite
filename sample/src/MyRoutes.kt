@@ -3,6 +3,8 @@ import klite.StatusCode
 import klite.annotations.*
 import klite.i18n.translate
 import kotlinx.coroutines.delay
+import users.Id
+import users.User
 import users.UserRepository
 import java.util.*
 
@@ -12,7 +14,7 @@ class MyRoutes(private val userRepository: UserRepository) {
   @GET("2") fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
   @GET("3") fun HttpExchange.asContext() = "${translate("hello")} $method $path"
 
-  @GET("/user/:id") fun user(@PathParam id: UUID) = userRepository.get(id)
+  @GET("/user/:id") fun user(@PathParam id: Id<User>) = userRepository.get(id)
 
   @GET("/suspend") suspend fun suspend(exchange: HttpExchange): String {
     delay(100)
