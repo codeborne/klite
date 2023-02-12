@@ -8,11 +8,15 @@ import java.io.Reader
 import java.text.ParseException
 
 class JsonParser {
-  fun parse(json: Reader): Any? = json.readValue()
+  fun parse(json: Reader): Any? = JsonReader(json).readValue()
   fun parse(@Language("JSON") json: String) = parse(json.reader())
   fun parse(json: InputStream) = parse(BufferedReader(InputStreamReader(json)))
 
-  private fun Reader.readValue(): Any? {
+  // inline fun <reified T: Any> parse(json: String) = parse(Scanner(json), T::class)
+}
+
+private class JsonReader(val reader: Reader) {
+  fun readValue(): Any? {
     val next = nextNonWhitespace()
     return if (next == '"') readUntil('"') // TODO escaped \" or \\u stuff
     else if (next == '{') readObject()
@@ -23,7 +27,7 @@ class JsonParser {
     else fail("Unexpected char: $next")
   }
 
-  private fun Reader.readObject(): Map<String, Any?> {
+  private fun readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()
     while (true) {
       var next = nextNonWhitespace()
@@ -38,21 +42,21 @@ class JsonParser {
     }
   }
 
-  private fun Reader.readArray(): List<Any?> {
+  private fun readArray(): List<Any?> {
     val a = mutableListOf<Any?>()
     while (true) {
-      mark(100)
+      reader.mark(100)
       var next = nextNonWhitespace()
-      if (next == ']') return a else reset()
+      if (next == ']') return a else reader.reset()
       a += readValue()
       next = nextNonWhitespace()
       if (next == ']') return a else next.shouldBe(',')
     }
   }
 
-  private fun Reader.nextNonWhitespace(): Char {
+  private fun nextNonWhitespace(): Char {
     var char: Char
-    do { char = read().toChar() } while (char.isWhitespace())
+    do { char = reader.read().toChar() } while (char.isWhitespace())
     return char
   }
 
@@ -62,19 +66,17 @@ class JsonParser {
 
   private fun fail(msg: String): Nothing = throw ParseException(msg, 0)
 
-  private fun Reader.readUntil(until: Char) = readFrom { it != until }
+  private fun readUntil(until: Char) = readFrom { it != until }
 
-  private fun Reader.readFrom(include: Char? = null, cont: (Char) -> Boolean): String {
+  private fun readFrom(include: Char? = null, cont: (Char) -> Boolean): String {
     val into = StringBuilder()
     val reset = include != null
     if (reset) into.append(include)
     while (true) {
-      if (reset) mark(1)
-      val char = read()
-      if (char < 0 || !cont(char.toChar())) return into.toString().also { if (reset) reset() }
+      if (reset) reader.mark(1)
+      val char = reader.read()
+      if (char < 0 || !cont(char.toChar())) return into.toString().also { if (reset) reader.reset() }
       else into.append(char.toChar())
     }
   }
-
-  // inline fun <reified T: Any> parse(json: String) = parse(Scanner(json), T::class)
 }
