@@ -2,6 +2,7 @@ package klite.json
 
 import klite.Converter
 import klite.fromValues
+import klite.trimToNull
 import org.intellij.lang.annotations.Language
 import java.io.InputStream
 import java.io.Reader
@@ -10,20 +11,24 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.primaryConstructor
 
-class JsonParser {
-  fun parse(json: Reader, type: KType? = null): Any? = JsonReader(json).readValue(type)
+class JsonParser(val opts: JsonOptions = JsonOptions()) {
+  fun parse(json: Reader, type: KType? = null): Any? = JsonReader(json, opts).readValue(type)
   fun parse(@Language("JSON") json: String, type: KType? = null) = parse(json.reader(), type)
   fun parse(json: InputStream, type: KType? = null) = parse(json.reader(), type)
 }
 
+data class JsonOptions(
+  val trimToNull: Boolean = false
+)
+
 private const val EOF = '\uFFFF'
 
-private class JsonReader(private val reader: Reader) {
+private class JsonReader(private val reader: Reader, private val opts: JsonOptions) {
   private var pos: Int = 0
   private var nextChar: Char? = null
 
   fun readValue(type: KType?): Any? = when (val c = nextNonSpace()) {
-    '"' -> type.from(readString())
+    '"' -> type.from(readString().let { if (opts.trimToNull) it.trimToNull() else it })
     '{' -> readObject(type)
     '[' -> readArray(type)
     '-', '+', in '0'..'9' -> readNumber(c, type)
@@ -58,7 +63,7 @@ private class JsonReader(private val reader: Reader) {
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
-      val key = readString()
+      val key = readString()!!
       nextNonSpace().expect(':')
       this[key] = readValue((type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.find { it.name == key }?.type)
 
@@ -101,7 +106,7 @@ private class JsonReader(private val reader: Reader) {
   }
 
   // TODO: puzzler: remove <Any>
-  private fun KType?.from(s: String) = if (this != null) Converter.from<Any>(s, this) else s
+  private fun KType?.from(s: String?) = if (this != null && s != null) Converter.from<Any>(s, this) else s
 }
 
 class JsonParseException(msg: String, pos: Int): ParseException("$msg at index $pos", pos)
