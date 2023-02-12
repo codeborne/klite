@@ -24,13 +24,13 @@ private class JsonReader(private val reader: Reader) {
     return if (next == '"') readString() // TODO escaped \" or \\u stuff
     else if (next == '{') readObject()
     else if (next == '[') readArray()
-    else if (next.isDigit()) readWhile(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
+    else if (next.isDigit() || next == '-' || next == '+') readWhile(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
     else if (next == 't' || next == 'f') readWhile(next) { it.isLetter() }.toBoolean()
     else if (next == 'n') readWhile(next) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
     else fail("Unexpected char: $next")
   }
 
-  private fun readString() = readUntil('"')
+  private fun readString() = readWhile { it != '"' }
 
   private fun readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()
@@ -64,11 +64,9 @@ private class JsonReader(private val reader: Reader) {
     return char
   }
 
-  private fun readUntil(until: Char) = readWhile { it != until }
-
   private fun readWhile(include: Char? = null, cont: (Char) -> Boolean): String {
     val into = StringBuilder()
-    nextChar = include
+    if (include != null) into.append(include)
     while (true) {
       val char = read()
       if (char == EOF || !cont(char)) return into.toString().also { if (include != null) nextChar = char }

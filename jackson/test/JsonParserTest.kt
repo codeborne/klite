@@ -10,8 +10,8 @@ class JsonParserTest {
   val parser = JsonParser()
 
   @Test fun parse() {
-    expect(parser.parse("""  {  "hello" : "world", "blah": 123, "xxx": true, "zzz" : null, "nested":{"a":[],"c":{}}, "array": [1,2,3.14]}""")).toEqual(
-      mapOf("hello" to "world", "blah" to 123, "xxx" to true, "zzz" to null, "nested" to mapOf("a" to emptyList<Any>(), "c" to emptyMap<String, Any>()), "array" to listOf(1, 2, 3.14)))
+    expect(parser.parse("""  {  "hello" : "world", "blah": 123, "xxx": true, "zzz" : null, "nested":{"a":[],"c":{}}, "array": [+1,-2,3.14]}""")).toEqual(
+      mapOf("hello" to "world", "blah" to 123, "xxx" to true, "zzz" to null, "nested" to mapOf("a" to emptyList<Any>(), "c" to emptyMap<String, Any>()), "array" to listOf(1, -2, 3.14)))
   }
 
   @Test fun `parse invalid`() {
@@ -19,6 +19,7 @@ class JsonParserTest {
     expect { parser.parse("""{"hello": x""") }.toThrow<JsonParseException>().messageToContain("Unexpected char: x at index 10")
     expect { parser.parse("""{"hello": 123""") }.toThrow<JsonParseException>().messageToContain("Expecting , but got EOF at index 13")
     expect { parser.parse("""nulls""") }.toThrow<JsonParseException>().messageToContain("Unexpected nulls at index 5")
+    expect { parser.parse("""123.12.12""") }.toThrow<NumberFormatException>().messageToContain("multiple points")
   }
 
   data class Hello(val hello: String)
