@@ -47,29 +47,27 @@ private class JsonReader(private val reader: Reader) {
 
   private fun readNumber(c: Char) = readWhile(c) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
 
-  private fun readObject(): Map<String, Any?> {
-    val o = mutableMapOf<String, Any?>()
+  private fun readObject() = mutableMapOf<String, Any?>().apply {
     while (true) {
       var next = nextNonSpace()
-      if (next == '}') return o else next.expect('"')
+      if (next == '}') break else next.expect('"')
 
       val key = readString()
       nextNonSpace().expect(':')
-      o[key] = readValue()
+      this[key] = readValue()
 
       next = nextNonSpace()
-      if (next == '}') return o else next.expect(',')
+      if (next == '}') break else next.expect(',')
     }
   }
 
-  private fun readArray(): List<Any?> {
-    val a = mutableListOf<Any?>()
+  private fun readArray() = mutableListOf<Any?>().apply {
     while (true) {
-      var char = nextNonSpace()
-      if (char == ']') return a else nextChar = char
-      a += readValue()
-      char = nextNonSpace()
-      if (char == ']') return a else char.expect(',')
+      var c = nextNonSpace()
+      if (c == ']') break else nextChar = c
+      add(readValue())
+      c = nextNonSpace()
+      if (c == ']') break else c.expect(',')
     }
   }
 
