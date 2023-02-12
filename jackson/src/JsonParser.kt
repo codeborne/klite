@@ -19,33 +19,33 @@ private class JsonReader(private val reader: Reader) {
   private var pos: Int = 0
   private var nextChar: Char? = null
 
-  fun readValue(): Any? {
-    val next = nextNonSpace()
-    return if (next == '"') readString()
-    else if (next == '{') readObject()
-    else if (next == '[') readArray()
-    else if (next.isDigit() || next == '-' || next == '+') readWhile(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
-    else if (next == 't' || next == 'f') readWhile(next) { it.isLetter() }.toBoolean()
-    else if (next == 'n') readWhile(next) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
-    else fail("Unexpected char: $next")
+  fun readValue(): Any? = when (val c = nextNonSpace()) {
+    '"' -> readString()
+    '{' -> readObject()
+    '[' -> readArray()
+    '-', '+', in '0'..'9' -> readNumber(c)
+    't', 'f' -> readWhile(c) { it.isLetter() }.toBoolean()
+    'n' -> readWhile(c) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
+    else -> fail("Unexpected char: $c")
   }
 
-  private fun readString(): String {
-    val sb = StringBuilder()
+  private fun readString(): String = StringBuilder().apply {
     while (true) {
       when (val c = read()) {
-        '\\' -> sb.append(readEscapedChar())
-        '"' -> return sb.toString()
-        else -> sb.append(c)
+        '"' -> break
+        '\\' -> append(readEscapedChar())
+        else -> append(c)
       }
     }
-  }
+  }.toString()
 
   private fun readEscapedChar() = when (val c = read()) {
     'n' -> '\n'; 'r' -> '\r'; 't' -> '\t'; 'b' -> '\b'; 'f' -> '\u000C'
     'u' -> (1..4).map { read() }.joinToString("").toInt(16).toChar()
     else -> c
   }
+
+  private fun readNumber(c: Char) = readWhile(c) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
 
   private fun readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()
@@ -79,15 +79,14 @@ private class JsonReader(private val reader: Reader) {
     return char
   }
 
-  private fun readWhile(include: Char? = null, cont: (Char) -> Boolean): String {
-    val into = StringBuilder()
-    if (include != null) into.append(include)
+  private fun readWhile(include: Char? = null, cont: (Char) -> Boolean): String = StringBuilder().apply {
+    if (include != null) append(include)
     while (true) {
-      val char = read()
-      if (char == EOF || !cont(char)) return into.toString().also { if (include != null) nextChar = char }
-      else into.append(char)
+      val c = read()
+      if (c == EOF || !cont(c)) { if (include != null) { nextChar = c }; break }
+      else append(c)
     }
-  }
+  }.toString()
 
   private fun read(): Char = nextChar?.also { nextChar = null } ?: reader.read().toChar().also { pos++ }
 
