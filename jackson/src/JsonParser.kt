@@ -30,7 +30,22 @@ private class JsonReader(private val reader: Reader) {
     else fail("Unexpected char: $next")
   }
 
-  private fun readString() = readWhile { it != '"' }
+  private fun readString(): String {
+    val sb = StringBuilder()
+    while (true) {
+      when (val c = read()) {
+        '\\' -> sb.append(readEscapedChar())
+        '"' -> return sb.toString()
+        else -> sb.append(c)
+      }
+    }
+  }
+
+  private fun readEscapedChar() = when (val c = read()) {
+    'n' -> '\n'; 'r' -> '\r'; 't' -> '\t'; 'b' -> '\b'; 'f' -> '\u000C'
+    'u' -> (read().digitToInt(16) shl 12 or read().digitToInt(16) shl 8 or read().digitToInt(16) shl 4 or read().digitToInt(16)).toChar()
+    else -> c
+  }
 
   private fun readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()

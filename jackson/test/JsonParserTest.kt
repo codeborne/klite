@@ -14,6 +14,10 @@ class JsonParserTest {
       mapOf("hello" to "world", "blah" to 123, "xxx" to true, "zzz" to null, "nested" to mapOf("a" to emptyList<Any>(), "c" to emptyMap<String, Any>()), "array" to listOf(1, -2, 3.14)))
   }
 
+  @Test fun escaping() {
+    expect(parser.parse("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
+  }
+
   @Test fun `parse invalid`() {
     expect { parser.parse("""z""") }.toThrow<JsonParseException>().messageToContain("Unexpected char: z at index 0")
     expect { parser.parse("""{"hello": x""") }.toThrow<JsonParseException>().messageToContain("Unexpected char: x at index 10")
