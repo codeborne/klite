@@ -43,7 +43,7 @@ private class JsonReader(private val reader: Reader) {
 
   private fun readEscapedChar() = when (val c = read()) {
     'n' -> '\n'; 'r' -> '\r'; 't' -> '\t'; 'b' -> '\b'; 'f' -> '\u000C'
-    'u' -> (read().digitToInt(16) shl 12 or read().digitToInt(16) shl 8 or read().digitToInt(16) shl 4 or read().digitToInt(16)).toChar()
+    'u' -> (1..4).map { read() }.joinToString("").toInt(16).toChar()
     else -> c
   }
 
