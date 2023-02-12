@@ -18,8 +18,16 @@ class JsonParser(val opts: JsonOptions = JsonOptions()) {
 }
 
 data class JsonOptions(
-  val trimToNull: Boolean = false
-)
+  val trimToNull: Boolean = false,
+  val keyConverter: String.() -> String = { this },
+  val valueConverter: (Any?) -> Any? = { it }
+) {
+  companion object {
+    private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
+    val TO_SNAKE_CASE: String.() -> String = { replace(humps, "_").lowercase() }
+    val FROM_SNAKE_CASE: String.() -> String = { split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() } }
+  }
+}
 
 private const val EOF = '\uFFFF'
 
@@ -27,7 +35,7 @@ private class JsonReader(private val reader: Reader, private val opts: JsonOptio
   private var pos: Int = 0
   private var nextChar: Char? = null
 
-  fun readValue(type: KType?): Any? = when (val c = nextNonSpace()) {
+  fun readValue(type: KType?): Any? = opts.valueConverter(when (val c = nextNonSpace()) {
     '"' -> type.from(readString().let { if (opts.trimToNull) it.trimToNull() else it })
     '{' -> readObject(type)
     '[' -> readArray(type)
@@ -35,7 +43,7 @@ private class JsonReader(private val reader: Reader, private val opts: JsonOptio
     't', 'f' -> readLettersOrDigits(c).toBoolean()
     'n' -> readLettersOrDigits(c).let { if (it == "null") null else fail("Unexpected $it") }
     else -> fail("Unexpected char: $c")
-  }
+  })
 
   private fun readString(): String = StringBuilder().apply {
     while (true) {
@@ -63,7 +71,7 @@ private class JsonReader(private val reader: Reader, private val opts: JsonOptio
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
-      val key = readString()!!
+      val key = opts.keyConverter(readString())
       nextNonSpace().expect(':')
       this[key] = readValue((type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.find { it.name == key }?.type)
 

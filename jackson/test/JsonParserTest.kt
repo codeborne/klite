@@ -3,6 +3,8 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import klite.json.JsonOptions
+import klite.json.JsonOptions.Companion.FROM_SNAKE_CASE
+import klite.json.JsonOptions.Companion.TO_SNAKE_CASE
 import klite.json.JsonParseException
 import klite.json.JsonParser
 import org.junit.jupiter.api.Test
@@ -45,6 +47,14 @@ class JsonParserTest {
   @Test fun trimToNull() {
     val parser = JsonParser(JsonOptions(trimToNull = true))
     expect(parser.parse("""{"x": "", "unknown": 123}""", typeOf<Nullable>())).toEqual(Nullable())
+  }
+
+  @Test fun `snake case`() {
+    var parser = JsonParser(JsonOptions(keyConverter = FROM_SNAKE_CASE))
+    expect(parser.parse("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))
+
+    parser = JsonParser(JsonOptions(keyConverter = TO_SNAKE_CASE))
+    expect(parser.parse("""{"helloWorldIsGood": 0}""")).toEqual(mapOf("hello_world_is_good" to 0))
   }
 
   data class Nullable(val x: String? = null)
