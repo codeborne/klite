@@ -27,6 +27,7 @@ object Converter {
 
   @Suppress("UNCHECKED_CAST") // TODO: really support for KType in Converter
   fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
+  internal fun from(o: Any?, type: KType): Any? = if (o is String) from(o, type) else o
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> from(s: String, type: KClass<T>): T =

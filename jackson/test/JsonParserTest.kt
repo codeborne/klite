@@ -27,5 +27,9 @@ class JsonParserTest {
     expect { parser.parse("""123.12.12""") }.toThrow<NumberFormatException>().messageToContain("multiple points")
   }
 
+  @Test fun `parse into class`() {
+    expect(parser.parse("""{"hello": "world"}""", Hello::class)).toEqual(Hello("world"))
+  }
+
   data class Hello(val hello: String)
 }

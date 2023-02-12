@@ -1,14 +1,16 @@
 package klite.json
 
+import klite.fromValues
 import org.intellij.lang.annotations.Language
 import java.io.InputStream
 import java.io.Reader
 import java.text.ParseException
+import kotlin.reflect.KClass
 
 class JsonParser {
-  fun parse(json: Reader): Any? = JsonReader(json).readValue()
-  fun parse(@Language("JSON") json: String) = parse(json.reader())
-  fun parse(json: InputStream) = parse(json.reader())
+  fun parse(json: Reader, type: KClass<*>? = null): Any? = JsonReader(json).readValue(type)
+  fun parse(@Language("JSON") json: String, type: KClass<*>? = null) = parse(json.reader(), type)
+  fun parse(json: InputStream, type: KClass<*>? = null) = parse(json.reader(), type)
 
   // inline fun <reified T: Any> parse(json: String) = parse(Scanner(json), T::class)
 }
@@ -19,9 +21,9 @@ private class JsonReader(private val reader: Reader) {
   private var pos: Int = 0
   private var nextChar: Char? = null
 
-  fun readValue(): Any? = when (val c = nextNonSpace()) {
+  fun readValue(type: KClass<*>?): Any? = when (val c = nextNonSpace()) {
     '"' -> readString()
-    '{' -> readObject()
+    '{' -> readObject().let { if (type != null) it.fromValues(type) else it }
     '[' -> readArray()
     '-', '+', in '0'..'9' -> readNumber(c)
     't', 'f' -> readLettersOrDigits(c).toBoolean()
@@ -55,7 +57,7 @@ private class JsonReader(private val reader: Reader) {
 
       val key = readString()
       nextNonSpace().expect(':')
-      this[key] = readValue()
+      this[key] = readValue(null)
 
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
@@ -66,7 +68,7 @@ private class JsonReader(private val reader: Reader) {
     while (true) {
       var c = nextNonSpace()
       if (c == ']') break else nextChar = c
-      add(readValue())
+      add(readValue(null))
       c = nextNonSpace()
       if (c == ']') break else c.expect(',')
     }
