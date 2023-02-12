@@ -13,6 +13,8 @@ class JsonParser {
   // inline fun <reified T: Any> parse(json: String) = parse(Scanner(json), T::class)
 }
 
+private const val EOF = '\uFFFF'
+
 private class JsonReader(private val reader: Reader) {
   private var pos: Int = 0
   private var nextChar: Char? = null
@@ -56,7 +58,7 @@ private class JsonReader(private val reader: Reader) {
 
   private fun readNonWhitespace(): Char {
     var char: Char
-    do { char = read().toChar() } while (char.isWhitespace())
+    do { char = read() } while (char.isWhitespace())
     return char
   }
 
@@ -67,17 +69,17 @@ private class JsonReader(private val reader: Reader) {
     nextChar = include
     while (true) {
       val char = read()
-      if (char < 0 || !cont(char.toChar())) return into.toString().also { if (include != null) nextChar = char.toChar() }
-      else into.append(char.toChar())
+      if (char == EOF || !cont(char)) return into.toString().also { if (include != null) nextChar = char }
+      else into.append(char)
     }
   }
 
-  private fun read(): Int = nextChar?.code?.also { nextChar = null } ?: reader.read().also { pos++ }
+  private fun read(): Char = nextChar?.also { nextChar = null } ?: reader.read().toChar().also { pos++ }
 
   private fun fail(msg: String): Nothing = throw JsonParseException(msg, pos - 1)
 
   private fun Char.shouldBe(char: Char) {
-    if (this != char) fail("Expecting $char but got $this")
+    if (this != char) fail("Expecting $char but got ${if (this == EOF) "EOF" else this}")
   }
 }
 

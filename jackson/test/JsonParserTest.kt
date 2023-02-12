@@ -17,7 +17,7 @@ class JsonParserTest {
   @Test fun `parse invalid`() {
     expect { parser.parse("""z""") }.toThrow<JsonParseException>().messageToContain("Unexpected char: z at index 0")
     expect { parser.parse("""{"hello": x""") }.toThrow<JsonParseException>().messageToContain("Unexpected char: x at index 10")
-    expect { parser.parse("""{"hello": 123""") }.toThrow<JsonParseException>().messageToContain("Expecting , but got \uFFFF at index 13")
+    expect { parser.parse("""{"hello": 123""") }.toThrow<JsonParseException>().messageToContain("Expecting , but got EOF at index 13")
   }
 
   data class Hello(val hello: String)
