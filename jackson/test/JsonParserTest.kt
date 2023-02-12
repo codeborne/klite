@@ -5,6 +5,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import klite.json.JsonParseException
 import klite.json.JsonParser
 import org.junit.jupiter.api.Test
+import java.util.*
 
 class JsonParserTest {
   val parser = JsonParser()
@@ -28,8 +29,9 @@ class JsonParserTest {
   }
 
   @Test fun `parse into class`() {
-    expect(parser.parse("""{"hello": "world"}""", Hello::class)).toEqual(Hello("world"))
+    expect(parser.parse("""{"hello": "world", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14"}""", Hello::class))
+      .toEqual(Hello("world", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14")))
   }
 
-  data class Hello(val hello: String)
+  data class Hello(val hello: String, val id: UUID)
 }

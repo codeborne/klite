@@ -11,8 +11,6 @@ class JsonParser {
   fun parse(json: Reader, type: KClass<*>? = null): Any? = JsonReader(json).readValue(type)
   fun parse(@Language("JSON") json: String, type: KClass<*>? = null) = parse(json.reader(), type)
   fun parse(json: InputStream, type: KClass<*>? = null) = parse(json.reader(), type)
-
-  // inline fun <reified T: Any> parse(json: String) = parse(Scanner(json), T::class)
 }
 
 private const val EOF = '\uFFFF'
