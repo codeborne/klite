@@ -34,6 +34,7 @@ private class JsonReader(private val reader: Reader) {
       when (val c = read()) {
         '"' -> break
         '\\' -> append(readEscapedChar())
+        EOF -> fail("Unfinished string, EOF")
         else -> append(c)
       }
     }
