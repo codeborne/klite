@@ -16,6 +16,8 @@ class JsonParser {
 }
 
 private class JsonReader(val reader: Reader) {
+  private var pos: Int = 0
+
   fun readValue(): Any? {
     val next = nextNonWhitespace()
     return if (next == '"') readUntil('"') // TODO escaped \" or \\u stuff
@@ -56,7 +58,7 @@ private class JsonReader(val reader: Reader) {
 
   private fun nextNonWhitespace(): Char {
     var char: Char
-    do { char = reader.read().toChar() } while (char.isWhitespace())
+    do { char = read().toChar() } while (char.isWhitespace())
     return char
   }
 
@@ -64,7 +66,7 @@ private class JsonReader(val reader: Reader) {
     if (this != char) fail("Expecting $char, but got $this")
   }
 
-  private fun fail(msg: String): Nothing = throw ParseException(msg, 0)
+  private fun fail(msg: String): Nothing = throw ParseException(msg, pos)
 
   private fun readUntil(until: Char) = readFrom { it != until }
 
@@ -74,9 +76,11 @@ private class JsonReader(val reader: Reader) {
     if (reset) into.append(include)
     while (true) {
       if (reset) reader.mark(1)
-      val char = reader.read()
+      val char = read()
       if (char < 0 || !cont(char.toChar())) return into.toString().also { if (reset) reader.reset() }
       else into.append(char.toChar())
     }
   }
+
+  private fun read(): Int = reader.read().also { pos++ }
 }
