@@ -8,6 +8,8 @@ import klite.json.JsonParser
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
+import java.time.Instant
+import java.time.LocalDate
 import java.util.*
 import kotlin.reflect.typeOf
 
@@ -33,16 +35,16 @@ class JsonParserTest {
   }
 
   @Test fun `parse into class`() {
-    expect(parser.parse("""{"hello": "", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "nested": {"x": 567}, "array": [{}, {}]}""", typeOf<Hello>()))
-      .toEqual(Hello("", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), Nested(567.toBigDecimal()), listOf(Nested(), Nested())))
+    expect(parser.parse("""{"hello": "", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z", "nested": {"x": 567}, "array": [{}, {}]}""", typeOf<Hello>()))
+      .toEqual(Hello("", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()), listOf(Nested(), Nested())))
   }
 
-  data class Hello(val hello: String, val id: UUID, val nested: Nested, val array: List<Nested> = emptyList())
+  data class Hello(val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested, val array: List<Nested> = emptyList())
   data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
 
   @Test fun trimToNull() {
     val parser = JsonParser(JsonOptions(trimToNull = true))
-    expect(parser.parse("""{"x": ""}""", typeOf<Nullable>())).toEqual(Nullable())
+    expect(parser.parse("""{"x": "", "unknown": 123}""", typeOf<Nullable>())).toEqual(Nullable())
   }
 
   data class Nullable(val x: String? = null)
