@@ -1,5 +1,6 @@
 package klite.json
 
+import org.intellij.lang.annotations.Language
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -8,7 +9,7 @@ import java.text.ParseException
 
 class JsonParser {
   fun parse(json: Reader): Any? = json.readValue()
-  fun parse(json: String) = parse(json.reader())
+  fun parse(@Language("JSON") json: String) = parse(json.reader())
   fun parse(json: InputStream) = parse(BufferedReader(InputStreamReader(json)))
 
   private fun Reader.readValue(): Any? {
@@ -25,13 +26,15 @@ class JsonParser {
   private fun Reader.readObject(): Map<String, Any?> {
     val o = mutableMapOf<String, Any?>()
     while (true) {
-      nextNonWhitespace().shouldBe('"')
+      var next = nextNonWhitespace()
+      if (next == '}') return o else next.shouldBe('"')
+
       val key = readUntil('"')
       nextNonWhitespace().shouldBe(':')
       o[key] = readValue()
-      val next = nextNonWhitespace()
-      if (next == '}') return o
-      else next.shouldBe(',')
+
+      next = nextNonWhitespace()
+      if (next == '}') return o else next.shouldBe(',')
     }
   }
 
