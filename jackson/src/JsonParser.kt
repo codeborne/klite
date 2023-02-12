@@ -16,8 +16,8 @@ class JsonParser {
     val next = nextNonWhitespace()
     return if (next == '"') readUntil('"') // TODO escaped \" or \\u stuff
     else if (next == '{') readObject()
-    else if (next == '[') TODO()
-    else if (next.isDigit()) readFrom(next) { it.isDigit() || it == '.' }.let { if (it.contains(".")) it.toDouble() else it.toLong() }
+    else if (next == '[') readArray()
+    else if (next.isDigit()) readFrom(next) { it.isDigit() || it == '.' }.let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
     else if (next == 't' || next == 'f') readFrom(next) { it.isLetter() }.toBoolean()
     else if (next == 'n') readFrom(next) { it.isLetter() }.let { if (it == "null") null else fail("Unexpected $it") }
     else fail("Unexpected char: $next")
@@ -35,6 +35,18 @@ class JsonParser {
 
       next = nextNonWhitespace()
       if (next == '}') return o else next.shouldBe(',')
+    }
+  }
+
+  private fun Reader.readArray(): List<Any?> {
+    val a = mutableListOf<Any?>()
+    while (true) {
+      mark(100)
+      var next = nextNonWhitespace()
+      if (next == ']') return a else reset()
+      a += readValue()
+      next = nextNonWhitespace()
+      if (next == ']') return a else next.shouldBe(',')
     }
   }
 
