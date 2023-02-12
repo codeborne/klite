@@ -5,6 +5,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import klite.json.JsonParseException
 import klite.json.JsonParser
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.util.*
 
 class JsonParserTest {
@@ -29,9 +30,10 @@ class JsonParserTest {
   }
 
   @Test fun `parse into class`() {
-    expect(parser.parse("""{"hello": "world", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14"}""", Hello::class))
-      .toEqual(Hello("world", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14")))
+    expect(parser.parse("""{"hello": "world", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "nested": {"x": 567}}""", Hello::class))
+      .toEqual(Hello("world", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), Nested(567.toBigDecimal())))
   }
 
-  data class Hello(val hello: String, val id: UUID)
+  data class Hello(val hello: String, val id: UUID, val nested: Nested)
+  data class Nested(val x: BigDecimal, val y: Int = 123)
 }

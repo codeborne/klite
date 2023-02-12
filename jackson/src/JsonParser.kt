@@ -1,11 +1,13 @@
 package klite.json
 
+import klite.Converter
 import klite.fromValues
 import org.intellij.lang.annotations.Language
 import java.io.InputStream
 import java.io.Reader
 import java.text.ParseException
 import kotlin.reflect.KClass
+import kotlin.reflect.full.primaryConstructor
 
 class JsonParser {
   fun parse(json: Reader, type: KClass<*>? = null): Any? = JsonReader(json).readValue(type)
@@ -20,10 +22,10 @@ private class JsonReader(private val reader: Reader) {
   private var nextChar: Char? = null
 
   fun readValue(type: KClass<*>?): Any? = when (val c = nextNonSpace()) {
-    '"' -> readString()
-    '{' -> readObject().let { if (type != null) it.fromValues(type) else it }
+    '"' -> type.from(readString())
+    '{' -> readObject(type)
     '[' -> readArray()
-    '-', '+', in '0'..'9' -> readNumber(c)
+    '-', '+', in '0'..'9' -> readNumber(c, type)
     't', 'f' -> readLettersOrDigits(c).toBoolean()
     'n' -> readLettersOrDigits(c).let { if (it == "null") null else fail("Unexpected $it") }
     else -> fail("Unexpected char: $c")
@@ -46,27 +48,29 @@ private class JsonReader(private val reader: Reader) {
     else -> c
   }
 
-  private fun readNumber(c: Char) = readLettersOrDigits(c).let { it.toIntOrNull() ?: it.toLongOrNull() ?: it.toDouble() }
+  private fun readNumber(c: Char, type: KClass<*>?) = readLettersOrDigits(c).let { s ->
+    type?.from(s) ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
+  }
 
-  private fun readObject() = mutableMapOf<String, Any?>().apply {
+  private fun readObject(type: KClass<*>?) = mutableMapOf<String, Any?>().apply {
     while (true) {
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
       val key = readString()
       nextNonSpace().expect(':')
-      this[key] = readValue(null)
+      this[key] = readValue(type?.primaryConstructor?.parameters?.find { it.name == key }?.type?.classifier as? KClass<*>)
 
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
     }
-  }
+  }.let { if (type != null) it.fromValues(type) else it }
 
   private fun readArray() = mutableListOf<Any?>().apply {
     while (true) {
       var c = nextNonSpace()
       if (c == ']') break else nextChar = c
-      add(readValue(null))
+      add(readValue(null)) // TODO
       c = nextNonSpace()
       if (c == ']') break else c.expect(',')
     }
@@ -94,6 +98,8 @@ private class JsonReader(private val reader: Reader) {
   private fun Char.expect(char: Char) {
     if (this != char) fail("Expecting $char but got ${if (this == EOF) "EOF" else this}")
   }
+
+  private fun KClass<*>?.from(s: String) = if (this != null) Converter.from(s, this) else s
 }
 
 class JsonParseException(msg: String, pos: Int): ParseException("$msg at index $pos", pos)
