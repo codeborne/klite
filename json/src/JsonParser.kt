@@ -3,39 +3,15 @@ package klite.json
 import klite.Converter
 import klite.fromValues
 import klite.trimToNull
-import org.intellij.lang.annotations.Language
-import java.io.InputStream
 import java.io.Reader
 import java.text.ParseException
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.primaryConstructor
 
-// TODO: support these
-annotation class JsonIgnore
-annotation class JsonProperty(val value: String = "")
-
-class JsonParser(val opts: JsonOptions = JsonOptions()) {
-  fun parse(json: Reader, type: KType? = null): Any? = JsonReader(json, opts).readValue(type)
-  fun parse(@Language("JSON") json: String, type: KType? = null) = parse(json.reader(), type)
-  fun parse(json: InputStream, type: KType? = null) = parse(json.reader(), type)
-}
-
-data class JsonOptions(
-  val trimToNull: Boolean = false,
-  val keyConverter: String.() -> String = { this },
-  val valueConverter: (Any?) -> Any? = { it }
-) {
-  companion object {
-    private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
-    val TO_SNAKE_CASE: String.() -> String = { replace(humps, "_").lowercase() }
-    val FROM_SNAKE_CASE: String.() -> String = { split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() } }
-  }
-}
-
 private const val EOF = '\uFFFF'
 
-private class JsonReader(private val reader: Reader, private val opts: JsonOptions) {
+internal class JsonReader(private val reader: Reader, private val opts: JsonOptions) {
   private var pos: Int = 0
   private var nextChar: Char? = null
 
