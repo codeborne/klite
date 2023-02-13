@@ -11,6 +11,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.primaryConstructor
 
+// TODO: support these
+annotation class JsonIgnore
+annotation class JsonProperty(val value: String = "")
+
 class JsonParser(val opts: JsonOptions = JsonOptions()) {
   fun parse(json: Reader, type: KType? = null): Any? = JsonReader(json, opts).readValue(type)
   fun parse(@Language("JSON") json: String, type: KType? = null) = parse(json.reader(), type)
