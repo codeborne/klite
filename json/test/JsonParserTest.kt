@@ -1,12 +1,11 @@
+package klite.json
+
 import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
-import klite.json.JsonOptions
 import klite.json.JsonOptions.Companion.FROM_SNAKE_CASE
 import klite.json.JsonOptions.Companion.TO_SNAKE_CASE
-import klite.json.JsonParseException
-import klite.json.JsonParser
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
@@ -37,8 +36,12 @@ class JsonParserTest {
   }
 
   @Test fun `parse into class`() {
-    expect(parser.parse("""{"hello": "", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z", "nested": {"x": 567}, "array": [{}, {}]}""", typeOf<Hello>()))
-      .toEqual(Hello("", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()), listOf(Nested(), Nested())))
+    expect(parser.parse("""{
+      "hello": "", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z",
+      "nested": {"x": 567}, "array": [{}, {}]}
+    """, typeOf<Hello>())).toEqual(
+      Hello("", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
+        listOf(Nested(), Nested())))
   }
 
   data class Hello(val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested, val array: List<Nested> = emptyList())

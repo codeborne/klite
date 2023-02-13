@@ -1,3 +1,4 @@
+// TODO: document how to use without klite-server
 dependencies {
   implementation(project(":server"))
   api(project(":slf4j"))
