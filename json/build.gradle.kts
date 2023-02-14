@@ -1,3 +1,3 @@
 dependencies {
-  api(project(":server"))
+  api(project(":core"))
 }
