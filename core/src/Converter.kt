@@ -10,6 +10,11 @@ import kotlin.reflect.full.isSubclassOf
 
 typealias FromStringConverter<T> = (s: String) -> T
 
+/**
+ * Converts Strings to value types.
+ * Supports enums, constructor invocation, parse() methods (e.g. java.time).
+ * Can register custom converters with `use` method.
+ */
 object Converter {
   private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
@@ -65,5 +70,3 @@ object Converter {
     }
   }
 }
-
-val KType.java get() = (classifier as KClass<*>).java
