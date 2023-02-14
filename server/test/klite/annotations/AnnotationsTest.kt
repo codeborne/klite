@@ -9,11 +9,14 @@ import klite.*
 import klite.test.CustomAnnotation
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.io.InputStream
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 class AnnotationsTest {
   val exchange = mockk<HttpExchange>()
@@ -77,7 +80,9 @@ class AnnotationsTest {
 
   @Test fun `nicer exception if getting parameter value fails`() {
     val handler = toHandler(Routes(), Routes::generic)
-    expect { runBlocking { handler(exchange) } }.toThrow<IllegalArgumentException>()
-      .messageToContain("Cannot get value for parameter #1 body of ")
+    expect { runBlocking { handler(exchange) } }.toThrow<MockKException>().messageToContain("no answer found for: HttpExchange")
+
+    every { exchange.body<Any>(any<KType>()) } throws IOException("Kaboom!")
+    expect { runBlocking { handler(exchange) } }.toThrow<IllegalArgumentException>().messageToContain("Cannot get body: Kaboom!")
   }
 }
