@@ -11,7 +11,7 @@ import kotlin.reflect.full.primaryConstructor
 
 private const val EOF = '\uFFFF'
 
-internal class JsonReader(private val reader: Reader, private val opts: JsonOptions) {
+internal class JsonParser(private val reader: Reader, private val opts: JsonOptions) {
   private var pos: Int = 0
   private var nextChar: Char? = null
 

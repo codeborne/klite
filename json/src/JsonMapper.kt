@@ -10,7 +10,7 @@ annotation class JsonIgnore
 annotation class JsonProperty(val value: String = "")
 
 class JsonMapper(val opts: JsonOptions = JsonOptions()) {
-  fun <T> parse(json: Reader, type: KType? = null): T? = JsonReader(json, opts).readValue(type) as T
+  fun <T> parse(json: Reader, type: KType? = null): T? = JsonParser(json, opts).readValue(type) as T
   fun <T> parse(@Language("JSON") json: String, type: KType? = null) = parse(json.reader(), type) as T?
   fun <T> parse(json: InputStream, type: KType? = null) = parse(json.reader(), type) as T?
 }
