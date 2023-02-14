@@ -31,6 +31,7 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 
 # Modules
 
+* [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
 * [jackson](jackson) - adds json parsing/rendering using Jackson
 * [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization

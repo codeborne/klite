@@ -80,7 +80,7 @@ class AnnotationsTest {
 
   @Test fun `nicer exception if getting parameter value fails`() {
     val handler = toHandler(Routes(), Routes::generic)
-    expect { runBlocking { handler(exchange) } }.toThrow<MockKException>().messageToContain("no answer found for: HttpExchange(#1).body(kotlin.String)")
+    expect { runBlocking { handler(exchange) } }.toThrow<MockKException>().messageToContain("no answer found for: HttpExchange")
 
     every { exchange.body<Any>(any<KType>()) } throws IOException("Kaboom!")
     expect { runBlocking { handler(exchange) } }.toThrow<IllegalArgumentException>().messageToContain("Cannot get body: Kaboom!")

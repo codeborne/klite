@@ -47,7 +47,7 @@ For SPA client-side routing support, create AssetsHandler with `useIndexForUnkno
 
 ## Config
 
-[Config](src/klite/Config.kt) object is provided for an easy way to read System properties or env vars.
+[Config](../core/src/Config.kt) object is provided for an easy way to read System properties or env vars.
 
 Use `Config.fromEnvFile()` if you want to load default config from an `.env`. This is useful for local development.
 
