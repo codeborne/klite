@@ -14,7 +14,7 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.reflect.typeOf
 
-class JsonReaderTest {
+class JsonParserTest {
   val mapper = JsonMapper()
 
   @Test fun parse() {
