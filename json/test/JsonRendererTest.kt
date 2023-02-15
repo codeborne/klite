@@ -1,6 +1,7 @@
+package klite.json
+
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
-import klite.json.JsonMapper
 import org.junit.jupiter.api.Test
 
 class JsonRendererTest {
@@ -15,5 +16,11 @@ class JsonRendererTest {
 
   @Test fun string() {
     expect(mapper.render("Hello")).toEqual("\"Hello\"")
+  }
+
+  @Test fun array() {
+    expect(mapper.render(emptyList<Any>())).toEqual("[]")
+    expect(mapper.render(listOf("a", 1, 3))).toEqual("[\"a\",1,3]")
+    expect(mapper.render(arrayOf(1, null))).toEqual("[1,null]")
   }
 }
