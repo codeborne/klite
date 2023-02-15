@@ -12,4 +12,8 @@ class JsonRendererTest {
     expect(mapper.render(false)).toEqual("false")
     expect(mapper.render(123.45)).toEqual("123.45")
   }
+
+  @Test fun string() {
+    expect(mapper.render("Hello")).toEqual("\"Hello\"")
+  }
 }
