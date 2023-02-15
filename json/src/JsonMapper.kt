@@ -1,8 +1,7 @@
 package klite.json
 
 import org.intellij.lang.annotations.Language
-import java.io.InputStream
-import java.io.Reader
+import java.io.*
 import kotlin.reflect.KType
 
 // TODO: support these
@@ -13,6 +12,10 @@ class JsonMapper(val opts: JsonOptions = JsonOptions()) {
   fun <T> parse(json: Reader, type: KType? = null): T? = JsonParser(json, opts).readValue(type) as T
   fun <T> parse(@Language("JSON") json: String, type: KType? = null) = parse(json.reader(), type) as T?
   fun <T> parse(json: InputStream, type: KType? = null) = parse(json.reader(), type) as T?
+
+  fun render(o: Any?, out: Writer) = JsonRenderer(opts).render(o, out)
+  fun render(o: Any?, out: OutputStream) = render(o, OutputStreamWriter(out))
+  @Language("JSON") fun render(o: Any?): String = StringWriter().apply { use { render(o, it) } }.toString()
 }
 
 data class JsonOptions(
