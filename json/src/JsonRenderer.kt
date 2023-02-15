@@ -29,7 +29,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
   }
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
-    writeValue(it.key.toString())
+    writeValue(opts.keyConverter(it.key.toString()))
     write(':')
     writeValue(it.value)
   }

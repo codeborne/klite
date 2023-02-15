@@ -2,6 +2,7 @@ package klite.json
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import klite.json.JsonOptions.Companion.TO_SNAKE_CASE
 import org.junit.jupiter.api.Test
 
 class JsonRendererTest {
@@ -29,5 +30,10 @@ class JsonRendererTest {
     expect(mapper.render(emptyMap<Any, Any>())).toEqual("{}")
     expect(mapper.render(mapOf("x" to 123, "y" to "abc"))).toEqual("""{"x":123,"y":"abc"}""")
     expect(mapper.render(mapOf(1 to mapOf(2 to arrayOf(1, 2, 3))))).toEqual("""{"1":{"2":[1,2,3]}}""")
+  }
+
+  @Test fun snakeCase() {
+    val mapper = JsonMapper(JsonOptions(keyConverter = TO_SNAKE_CASE))
+    expect(mapper.render(mapOf("snakeCase" to 123))).toEqual("""{"snake_case":123}""")
   }
 }
