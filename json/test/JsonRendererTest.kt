@@ -4,6 +4,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import klite.json.JsonOptions.Companion.TO_SNAKE_CASE
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class JsonRendererTest {
   val mapper = JsonMapper()
@@ -35,5 +36,13 @@ class JsonRendererTest {
   @Test fun snakeCase() {
     val mapper = JsonMapper(JsonOptions(keyConverter = TO_SNAKE_CASE))
     expect(mapper.render(mapOf("snakeCase" to 123))).toEqual("""{"snake_case":123}""")
+  }
+
+  @Test fun valueConverter() {
+    val mapper = JsonMapper(JsonOptions(valueConverter = {
+      if (it is LocalDate) it.year
+      else it
+    }))
+    expect(mapper.render(mapOf("date" to LocalDate.of(2022, 10, 21)))).toEqual("""{"date":2022}""")
   }
 }
