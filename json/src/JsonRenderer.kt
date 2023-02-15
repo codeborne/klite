@@ -4,20 +4,34 @@ import java.io.Writer
 import java.util.*
 
 class JsonRenderer(private val out: Writer, private val opts: JsonOptions): AutoCloseable {
-  fun render(o: Any?) = renderValue(o)
+  fun render(o: Any?) = writeValue(o)
 
-  private fun renderValue(o: Any?) {
+  private fun writeValue(o: Any?) {
     when (o) {
       is String -> { write('\"'); write(o); write('\"') }
       is Iterable<*> -> {
         write('[')
-        o.firstOrNull()?.let { renderValue(it) }
-        o.drop(1).forEach { write(','); renderValue(it) }
+        o.firstOrNull()?.let { writeValue(it) }
+        o.drop(1).forEach { write(','); writeValue(it) }
         write(']')
       }
-      is Array<*> -> renderValue(Arrays.asList(*o))
+      is Array<*> -> writeValue(Arrays.asList(*o))
+      is Map<*, *> -> {
+        write('{')
+        o.entries.apply {
+          firstOrNull()?.let(::writeEntry)
+          drop(1).forEach { write(','); writeEntry(it) }
+        }
+        write('}')
+      }
       else -> write(o.toString())
     }
+  }
+
+  private fun writeEntry(it: Map.Entry<Any?, Any?>) {
+    writeValue(it.key.toString())
+    write(':')
+    writeValue(it.value)
   }
 
   private fun write(c: Char) = out.write(c.code)
