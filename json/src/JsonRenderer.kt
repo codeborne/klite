@@ -8,7 +8,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
 
   private fun writeValue(o: Any?) {
     when (o) {
-      is String -> { write('\"'); write(o); write('\"') }
+      is String -> { write('\"'); write(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")); write('\"') }
       is Iterable<*> -> {
         write('[')
         o.firstOrNull()?.let { writeValue(it) }
