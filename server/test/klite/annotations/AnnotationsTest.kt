@@ -16,7 +16,6 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
 import kotlin.reflect.KType
-import kotlin.reflect.typeOf
 
 class AnnotationsTest {
   val exchange = mockk<HttpExchange>()

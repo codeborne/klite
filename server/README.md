@@ -53,7 +53,7 @@ Use `Config.fromEnvFile()` if you want to load default config from an `.env`. Th
 
 ## Registry
 
-[Registry](src/klite/Registry.kt) and it's default implementation - `DependencyInjectingRegistry` - provide
+[Registry](../core/src/Registry.kt) and it's default implementation - `DependencyInjectingRegistry` - provide
 a simple way to register and require both Klite components and repositories/services of your application.
 
 `DependencyInjectingRegistry` is used by default and can create any classes by recursively creating their constructor
