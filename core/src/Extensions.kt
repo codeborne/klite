@@ -6,6 +6,6 @@ import kotlin.reflect.KType
 fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }
 
 @Suppress("UNCHECKED_CAST")
-fun <V> mapOfNotNull(vararg pairs: Pair<String, V?>) = mapOf(*pairs).filterValues { it != null } as Map<String, V>
+fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V?>) = mapOf(*pairs).filterValues { it != null } as Map<K, V>
 
 val KType.java get() = (classifier as KClass<*>).java
