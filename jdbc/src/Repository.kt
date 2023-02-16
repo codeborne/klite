@@ -30,7 +30,6 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun save(entity: E) = db.upsert(table, entity.persister())
   open fun list(vararg where: PropValue<E>?, order: String = defaultOrder): List<E> =
     db.query(table, where.filterNotNull().toMap(), order) { mapper() }
-  open fun count(vararg where: PropValue<E>): Int =
-    db.select("select count(*) from $table", where.toMap()) { getInt(1) }.first()
+  open fun count(vararg where: PropValue<E>): Long = db.count(table, where.toMap())
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
 }
