@@ -20,7 +20,10 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
         write('{')
         o.entries.apply {
           firstOrNull()?.let(::writeEntry)
-          drop(1).forEach { write(','); writeEntry(it) }
+          drop(1).forEach {
+            // TODO: JsonIgnore, JsonProperty
+            write(','); writeEntry(it)
+          }
         }
         write('}')
       }
