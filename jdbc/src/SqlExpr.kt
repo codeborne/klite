@@ -68,6 +68,6 @@ class NotIn(values: Iterable<*>): In(values) {
 }
 
 fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr =
-  where.filterNotNull().toMap().let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
+  whereConvert(where.filterNotNull().toMap()).let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it).toList()) }
 
 fun <K: Column> or(vararg where: Pair<K, Any?>?) = where[0]!!.first to orExpr(*where)
