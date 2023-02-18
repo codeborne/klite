@@ -17,6 +17,8 @@ val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "
 
 typealias Mapper<R> = ResultSet.() -> R
 internal typealias Column = Any // String | KProperty1
+
+// TODO: replace Map with vararg Pair<Column, Any?
 typealias Where = Map<out Column, Any?>
 typealias Values = Map<out Column, *>
 
@@ -51,6 +53,8 @@ fun <R> DataSource.select(@Language("SQL") select: String, where: Where = emptyM
 
 inline fun <reified R> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
   select(select, where, suffix) { fromValues() }
+
+fun DataSource.count(table: String, where: Where = emptyMap()) = select("select count(*) from $table", where.toMap()) { getLong(1) }.first()
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Mapper<R>) {
   while (next()) consumer(mapper())
@@ -111,21 +115,19 @@ internal fun setExpr(values: Values) = values.entries.joinToString { (k, v) ->
 
 private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()
 
-internal fun whereConvert(where: Where) = where.mapValues { (_, v) ->
-  if (isEmptyCollection(v)) emptyArray
-  else when (v) {
-    null -> isNull
-    is Iterable<*> -> In(v)
-    is Array<*> -> In(*v)
-    is ClosedRange<*> -> Between(v)
-    is OpenEndRange<*> -> BetweenExcl(v)
-    else -> v
-  }
+internal fun whereConvert(where: Where) = where.mapValues { (_, v) -> whereValueConvert(v) }
+internal fun whereValueConvert(v: Any?) = if (isEmptyCollection(v)) emptyArray else when (v) {
+  null -> isNull
+  is Iterable<*> -> In(v)
+  is Array<*> -> In(*v)
+  is ClosedRange<*> -> Between(v)
+  is OpenEndRange<*> -> BetweenExcl(v)
+  else -> v
 }
 
-internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.join(" and ")
+internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.entries.map { (k, v) -> k to v }.join(" and ")
 
-internal fun Where.join(separator: String) = entries.joinToString(separator) { (k, v) ->
+internal fun Iterable<Pair<Column, Any?>>.join(separator: String) = joinToString(separator) { (k, v) ->
   val n = name(k)
   if (v is SqlExpr) v.expr(n) else q(n) + "=?"
 }
@@ -139,8 +141,8 @@ internal fun name(key: Any) = when(key) {
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
-
-internal fun whereValues(where: Values) = where.values.asSequence().filterNotNull().flatMap { it.toIterable() }
+internal fun whereValues(where: Where) = where.values.asSequence().flatValues()
+internal fun Sequence<Any?>.flatValues() = filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
 
 operator fun PreparedStatement.set(i: Int, value: Any?) {
