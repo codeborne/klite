@@ -53,8 +53,9 @@ class BetweenExcl(from: Comparable<*>, to: Comparable<*>): SqlExpr("", from, to)
   override fun expr(key: String) = "${q(key)} >= ? and ${q(key)} < ?"
 }
 
+@Deprecated("use or() instead")
 class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
-  override fun expr(key: String) = "(${q(key)} is null or $key $operator ?)"
+  override fun expr(key: String) = "(${q(key)} is null or ${q(key)} $operator ?)"
 }
 
 open class In(values: Iterable<*>): SqlExpr("", values) {
@@ -67,7 +68,8 @@ class NotIn(values: Iterable<*>): In(values) {
   override fun expr(key: String) = super.expr(key).replace(" in ", " not in ")
 }
 
-fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr =
-  where.filterNotNull().map { (k, v) -> k to whereValueConvert(v) }.let { SqlExpr("(" + it.join(" or ") + ")", whereValues(it.map { it.second }).toList()) }
+fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr = where.asSequence().filterNotNull().map { (k, v) -> k to whereValueConvert(v) }.let {
+  SqlExpr("(" + it.asIterable().join(" or ") + ")", it.map { it.second }.flatValues().toList())
+}
 
 fun <K: Column> or(vararg where: Pair<K, Any?>?) = where[0]!!.first to orExpr(*where)

@@ -41,7 +41,7 @@ inline fun <reified R> DataSource.query(table: String, where: Where = emptyMap()
 fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   whereConvert(where).let { where ->
   withStatement("$select${whereExpr(where)} $suffix") {
-    setAll(whereValues(where.values))
+    setAll(whereValues(where))
     into.also { executeQuery().process(it::add, mapper) }
   }
 }
@@ -97,11 +97,11 @@ private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
 }
 
 fun DataSource.update(table: String, where: Where, values: Values): Int = whereConvert(where).let { where ->
-  exec("update ${q(table)} set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where.values))
+  exec("update ${q(table)} set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where))
 }
 
 fun DataSource.delete(table: String, where: Where): Int = whereConvert(where).let { where ->
-  exec("delete from ${q(table)}${whereExpr(where)}", whereValues(where.values))
+  exec("delete from ${q(table)}${whereExpr(where)}", whereValues(where))
 }
 
 internal fun setExpr(values: Values) = values.entries.joinToString { (k, v) ->
@@ -140,7 +140,8 @@ internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
 
-internal fun whereValues(where: Iterable<Any?>) = where.asSequence().filterNotNull().flatMap { it.toIterable() }
+internal fun whereValues(where: Where) = where.values.asSequence().flatValues()
+internal fun Sequence<Any?>.flatValues() = filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
 
 operator fun PreparedStatement.set(i: Int, value: Any?) {
