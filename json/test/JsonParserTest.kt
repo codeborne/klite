@@ -4,8 +4,6 @@ import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
-import klite.json.JsonOptions.Companion.FROM_SNAKE_CASE
-import klite.json.JsonOptions.Companion.TO_SNAKE_CASE
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
@@ -53,11 +51,8 @@ class JsonParserTest {
   }
 
   @Test fun `snake case`() {
-    var parser = JsonMapper(JsonOptions(keyConverter = FROM_SNAKE_CASE))
-    expect(parser.parse<Any>("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))
-
-    parser = JsonMapper(JsonOptions(keyConverter = TO_SNAKE_CASE))
-    expect(parser.parse<Any>("""{"helloWorldIsGood": 0}""")).toEqual(mapOf("hello_world_is_good" to 0))
+    val mapper = JsonMapper(JsonOptions(keys = SnakeCase()))
+    expect(mapper.parse<Any>("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))
   }
 
   data class Nullable(val x: String? = null)

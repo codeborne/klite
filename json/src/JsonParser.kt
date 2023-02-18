@@ -51,7 +51,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
-      val key = opts.keyConverter(readString())
+      val key = opts.keys.fromJson(readString())
       nextNonSpace().expect(':')
       this[key] = readValue((type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.find { it.name == key }?.type)
 

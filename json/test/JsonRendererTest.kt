@@ -2,7 +2,6 @@ package klite.json
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
-import klite.json.JsonOptions.Companion.TO_SNAKE_CASE
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -34,7 +33,7 @@ class JsonRendererTest {
   }
 
   @Test fun snakeCase() {
-    val mapper = JsonMapper(JsonOptions(keyConverter = TO_SNAKE_CASE))
+    val mapper = JsonMapper(JsonOptions(keys = SnakeCase()))
     expect(mapper.render(mapOf("snakeCase" to 123))).toEqual("""{"snake_case":123}""")
   }
 
