@@ -20,17 +20,17 @@ class JsonMapper(val opts: JsonOptions = JsonOptions()) {
 
 data class JsonOptions(
   val trimToNull: Boolean = false,
-  val keys: KeyConverter = KeyConverter(),
-  val valueConverter: (Any?) -> Any? = { it }
+  val keys: JsonConverter<String> = JsonConverter(),
+  val values: JsonConverter<Any?> = JsonConverter()
 )
 
-open class KeyConverter {
-  open fun toJson(key: String): String = key
-  open fun fromJson(key: String): String = key
+open class JsonConverter<T> {
+  open fun toJson(o: T) = o
+  open fun fromJson(o: T) = o
 }
 
-class SnakeCase: KeyConverter() {
+class SnakeCase: JsonConverter<String>() {
   private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
-  override fun toJson(key: String) = key.replace(humps, "_").lowercase()
-  override fun fromJson(key: String) = key.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
+  override fun toJson(o: String) = o.replace(humps, "_").lowercase()
+  override fun fromJson(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
 }

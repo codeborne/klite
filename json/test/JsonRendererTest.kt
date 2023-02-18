@@ -38,9 +38,8 @@ class JsonRendererTest {
   }
 
   @Test fun valueConverter() {
-    val mapper = JsonMapper(JsonOptions(valueConverter = {
-      if (it is LocalDate) it.year
-      else it
+    val mapper = JsonMapper(JsonOptions(values = object: JsonConverter<Any?>() {
+      override fun toJson(o: Any?) = if (o is LocalDate) o.year else o
     }))
     expect(mapper.render(mapOf("date" to LocalDate.of(2022, 10, 21)))).toEqual("""{"date":2022}""")
   }
