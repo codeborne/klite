@@ -1,3 +1,11 @@
+# 1.4.3 (unreleased)
+* core: the new core module, to make it possible to use jdbc module without the server
+* core: mapOfNotNull() now accepts keys of any type
+* jdbc: db.count() introduced
+* jdbc: box @JvmInline classes when loading from DB
+* jdbc: allow same column multiple times in or() and deprecate NullOrOp()
+* server: do not wrap exceptions already containing parameter name in annotated routes
+
 # 1.4.2
 * server: fallback to `docker compose` without dash
 * server: shorten json stack traces by cutting repeating class/package names

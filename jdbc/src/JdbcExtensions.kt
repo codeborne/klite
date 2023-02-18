@@ -17,6 +17,8 @@ val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "
 
 typealias Mapper<R> = ResultSet.() -> R
 internal typealias Column = Any // String | KProperty1
+
+// TODO: replace Map with vararg Pair<Column, Any?
 typealias Where = Map<out Column, Any?>
 typealias Values = Map<out Column, *>
 
@@ -139,7 +141,6 @@ internal fun name(key: Any) = when(key) {
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
-
 internal fun whereValues(where: Where) = where.values.asSequence().flatValues()
 internal fun Sequence<Any?>.flatValues() = filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
