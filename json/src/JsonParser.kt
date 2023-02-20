@@ -47,13 +47,15 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
   }
 
   private fun readObject(type: KType?) = mutableMapOf<String, Any?>().apply {
+    val props = (type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.associateBy { it.name }
     while (true) {
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
       val key = opts.keys.from(readString())
+      val prop = props?.get(key)
       nextNonSpace().expect(':')
-      this[key] = readValue((type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.find { it.name == key }?.type)
+      this[key] = readValue(prop?.type)
 
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
