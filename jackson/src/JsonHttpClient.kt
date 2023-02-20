@@ -2,16 +2,14 @@ package klite.json
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import klite.*
+import klite.http.RequestModifier
 import klite.http.TypedHttpClient
 import java.io.IOException
 import java.net.http.HttpClient
-import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import kotlin.reflect.KClass
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-
-typealias RequestModifier =  HttpRequest.Builder.() -> HttpRequest.Builder
 
 /**
  * Configure a default java.net.HttpClient in your registry, e.g.
