@@ -10,7 +10,6 @@ import java.math.BigDecimal.ZERO
 import java.time.Instant
 import java.time.LocalDate
 import java.util.*
-import kotlin.reflect.typeOf
 
 class JsonParserTest {
   val mapper = JsonMapper()
@@ -21,7 +20,7 @@ class JsonParserTest {
   }
 
   @Test fun escaping() {
-    expect(mapper.parse<Map<String, Any?>>("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
+    expect(mapper.parse<Any>("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
   }
 
   @Test fun `parse invalid`() {
@@ -37,14 +36,14 @@ class JsonParserTest {
     expect(mapper.parse<Hello>("""{
       "hello": "", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z",
       "nested": {"x": 567}, "array": [{}, {}]}
-    """, typeOf<Hello>())).toEqual(
+    """)).toEqual(
       Hello("", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
         listOf(Nested(), Nested())))
   }
 
   @Test fun trimToNull() {
     val parser = JsonMapper(JsonOptions(trimToNull = true))
-    expect(parser.parse<Nullable>("""{"x": "", "unknown": 123}""", typeOf<Nullable>())).toEqual(Nullable())
+    expect(parser.parse<Nullable>("""{"x": "", "unknown": 123}""")).toEqual(Nullable())
   }
 
   @Test fun `snake case`() {
