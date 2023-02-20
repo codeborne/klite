@@ -26,16 +26,17 @@ fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != 
 
 data class JsonOptions(
   val trimToNull: Boolean = false,
-  val keys: JsonConverter<String> = JsonConverter(),
-  val values: JsonConverter<Any?> = JsonConverter()
+  val keys: NameConverter = NameConverter(),
+  val values: ValueConverter<Any?> = ValueConverter()
 )
 
-open class JsonConverter<T> {
+typealias NameConverter = ValueConverter<String>
+open class ValueConverter<T> {
   open fun to(o: T) = o
   open fun from(o: T) = o
 }
 
-class SnakeCase: JsonConverter<String>() {
+class SnakeCase: NameConverter() {
   private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
   override fun to(o: String) = o.replace(humps, "_").lowercase()
   override fun from(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
