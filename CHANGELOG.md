@@ -6,6 +6,7 @@
 * jdbc: box @JvmInline classes when loading from DB
 * jdbc: allow same column multiple times in or() and deprecate NullOrOp()
 * server: do not wrap exceptions already containing parameter name in annotated routes
+* server: TypedHttpClient introduced as a more generic foundation for JsonHttpClient
 
 # 1.4.2
 * server: fallback to `docker compose` without dash
