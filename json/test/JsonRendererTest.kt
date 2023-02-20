@@ -55,8 +55,12 @@ class JsonRendererTest {
 
   @Test fun valueConverter() {
     val mapper = JsonMapper(JsonOptions(values = object: JsonConverter<Any?>() {
-      override fun toJson(o: Any?) = if (o is LocalDate) o.year else o
+      override fun toJson(o: Any?) = when (o) {
+        is LocalDate -> o.year
+        is Nested -> o.x + o.y.toBigDecimal()
+        else -> o
+      }
     }))
-    expect(mapper.render(mapOf("date" to LocalDate.of(2022, 10, 21)))).toEqual("""{"date":2022}""")
+    expect(mapper.render(mapOf("date" to LocalDate.of(2022, 10, 21), "custom" to Nested()))).toEqual("""{"date":2022,"custom":123}""")
   }
 }

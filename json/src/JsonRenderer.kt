@@ -30,7 +30,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
         write('}')
       }
       null, is Number, is Boolean -> write(o.toString())
-      else -> if (Converter.supports(o::class)) writeValue(opts.values.toJson(o).toString())
+      else -> if (Converter.supports(o::class)) writeValue(opts.values.toJson(o).let { if (it !== o) it else it.toString() })
               else writeValue(opts.values.toJson(o).let { if (it !== o) it else it.toValues() })
     }
   }
