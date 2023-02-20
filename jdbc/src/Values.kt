@@ -1,28 +1,15 @@
 package klite.jdbc
 
+import klite.PropValue
 import klite.fromValues
+import klite.toValues
+import klite.toValuesSkipping
 import java.sql.ResultSet
-import java.util.*
-import kotlin.reflect.*
-import kotlin.reflect.KVisibility.PUBLIC
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
-typealias PropValue<T> = Pair<KProperty1<T, *>, *>
-
-fun <T: Any> T.toValues(vararg provided: PropValue<T>): Map<String, Any?> {
-  val values = provided.associate { it.first.name to it.second }
-  return toValuesSkipping(values.keys) + values
-}
-
-fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.map { it.name }.toSet())
-
-@Suppress("UNCHECKED_CAST")
-private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> =
-  toValues((this::class.memberProperties as Iterable<KProperty1<T, *>>).filter { it.name !in skipNames })
-
-fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> =
-  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to it.get(this) }
+inline fun <T: Any> T.toValues(vararg provided: PropValue<T>) = toValues(*provided)
+inline fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(*skip)
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = fromValues(T::class, *provided)
 inline fun <reified T: Any> Map<String, Any?>.fromValues() = fromValues(T::class) { JdbcConverter.from(get(it.name), it.type) }
