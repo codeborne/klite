@@ -7,7 +7,7 @@ import klite.http.TypedHttpClient
 import java.io.IOException
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -30,9 +30,9 @@ class JsonHttpClient(
   override fun render(o: Any?) = if (o is String) o else json.stringify(o)
 
   @Suppress("UNCHECKED_CAST")
-  override fun <T: Any> parse(body: String, type: KClass<T>): T = when (type) {
+  override fun <T: Any> parse(body: String, type: KType): T = when (type.classifier) {
     Unit::class -> Unit as T
     String::class -> body as T
-    else -> json.parse(body, type)
+    else -> json.readValue(body, json.typeOf(type))
   }
 }

@@ -7,6 +7,7 @@
 * jdbc: allow same column multiple times in or() and deprecate NullOrOp()
 * server: do not wrap exceptions already containing parameter name in annotated routes
 * server: TypedHttpClient introduced as a more generic foundation for JsonHttpClient
+* jackson: JsonHttpClient now accepts KType as non-reified parameters instead of KClass<*> for better type parameter support
 
 # 1.4.2
 * server: fallback to `docker compose` without dash
