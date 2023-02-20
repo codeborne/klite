@@ -44,10 +44,7 @@ class JsonRendererTest {
   }
 
   @Test fun classes() {
-    // TODO: Converter.supports() needs to create converters dynamically
-    val date = Converter.from<LocalDate>("2022-10-21")
-    val instant = Converter.from<Instant>("2022-10-21T10:55:00Z")
-    val o = Hello("", uuid, date, instant, Nested(567.toBigDecimal()), listOf(Nested(), Nested()))
+    val o = Hello("", uuid, LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()), listOf(Nested(), Nested()))
     expect(mapper.render(o)).toEqual(/*language=JSON*/ """{"array":[{"x":0,"y":123},{"x":0,"y":123}],"date":"2022-10-21","hello":"","id":"b8ca58ec-ab15-11ed-93cc-8fdb43988a14","instant":"2022-10-21T10:55:00Z","nested":{"x":567,"y":123}}""")
   }
 
