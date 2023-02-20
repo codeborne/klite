@@ -42,9 +42,6 @@ class JsonParserTest {
         listOf(Nested(), Nested())))
   }
 
-  data class Hello(val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested, val array: List<Nested> = emptyList())
-  data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
-
   @Test fun trimToNull() {
     val parser = JsonMapper(JsonOptions(trimToNull = true))
     expect(parser.parse<Nullable>("""{"x": "", "unknown": 123}""", typeOf<Nullable>())).toEqual(Nullable())
@@ -57,3 +54,6 @@ class JsonParserTest {
 
   data class Nullable(val x: String? = null)
 }
+
+data class Hello(val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested, val array: List<Nested> = emptyList())
+data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)

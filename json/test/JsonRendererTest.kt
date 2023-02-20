@@ -2,11 +2,15 @@ package klite.json
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Converter
 import org.junit.jupiter.api.Test
+import java.time.Instant
 import java.time.LocalDate
+import java.util.*
 
 class JsonRendererTest {
   val mapper = JsonMapper()
+  val uuid = UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14")
 
   @Test fun literals() {
     expect(mapper.render(null)).toEqual("null")
@@ -20,6 +24,13 @@ class JsonRendererTest {
     expect(mapper.render("Hello\n\"World\"")).toEqual("\"Hello\\n\\\"World\\\"\"")
   }
 
+  @Test fun converter() {
+    expect(mapper.render(uuid)).toEqual("\"$uuid\"")
+
+    val date = Converter.from<LocalDate>("2022-10-21")
+    expect(mapper.render(date)).toEqual("\"2022-10-21\"")
+  }
+
   @Test fun array() {
     expect(mapper.render(emptyList<Any>())).toEqual("[]")
     expect(mapper.render(listOf("a", 1, 3))).toEqual("[\"a\",1,3]")
@@ -30,6 +41,14 @@ class JsonRendererTest {
     expect(mapper.render(emptyMap<Any, Any>())).toEqual("{}")
     expect(mapper.render(mapOf("x" to 123, "y" to "abc"))).toEqual("""{"x":123,"y":"abc"}""")
     expect(mapper.render(mapOf(1 to mapOf(2 to arrayOf(1, 2, 3))))).toEqual("""{"1":{"2":[1,2,3]}}""")
+  }
+
+  @Test fun classes() {
+    // TODO: Converter.supports() needs to create converters dynamically
+    val date = Converter.from<LocalDate>("2022-10-21")
+    val instant = Converter.from<Instant>("2022-10-21T10:55:00Z")
+    val o = Hello("", uuid, date, instant, Nested(567.toBigDecimal()), listOf(Nested(), Nested()))
+    expect(mapper.render(o)).toEqual(/*language=JSON*/ """{"array":[{"x":0,"y":123},{"x":0,"y":123}],"date":"2022-10-21","hello":"","id":"b8ca58ec-ab15-11ed-93cc-8fdb43988a14","instant":"2022-10-21T10:55:00Z","nested":{"x":567,"y":123}}""")
   }
 
   @Test fun snakeCase() {
