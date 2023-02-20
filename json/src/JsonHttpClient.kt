@@ -1,6 +1,5 @@
 package klite.json
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import klite.*
 import klite.http.RequestModifier
 import klite.http.TypedHttpClient
@@ -27,12 +26,12 @@ class JsonHttpClient(
   http: HttpClient = registry!!.require(),
   val json: JsonMapper = registry!!.require()
 ): TypedHttpClient(urlPrefix, reqModifier, errorHandler, retryCount, retryAfter, maxLoggedLen, http, MimeTypes.json) {
-  override fun render(o: Any?) = if (o is String) o else json.stringify(o)
+  override fun render(o: Any?) = if (o is String) o else json.render(o)
 
   @Suppress("UNCHECKED_CAST")
   override fun <T> parse(body: String, type: KType): T = when (type.classifier) {
     Unit::class -> Unit as T
     String::class -> body as T
-    else -> json.readValue(body, json.typeOf(type))
+    else -> json.parse(body, type)
   }
 }
