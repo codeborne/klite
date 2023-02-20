@@ -1,6 +1,7 @@
 package klite
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -18,8 +19,13 @@ class ConverterTest {
   }
 
   @Test fun custom() {
+    expect(Converter.supports(Pattern::class)).toEqual(false)
+    expect { Converter.from<Pattern>("[a-z]") }.toThrow<IllegalStateException>()
+
     Converter.use<Pattern> { Pattern.compile(it) }
+
     expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
+    expect(Converter.supports(Pattern::class)).toEqual(true)
   }
 
   @Test fun enum() {
@@ -41,6 +47,7 @@ class ConverterTest {
   }
 
   @Test fun parse() {
+    expect(Converter.supports(Locale::class)).toEqual(true)
     expect(Converter.from<LocalDate>("2021-10-21")).toEqual(LocalDate.parse("2021-10-21"))
     expect(Converter.from<Period>("P1D")).toEqual(Period.parse("P1D"))
   }
