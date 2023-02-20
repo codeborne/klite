@@ -55,7 +55,7 @@ class JsonRendererTest {
 
   @Test fun valueConverter() {
     val mapper = JsonMapper(JsonOptions(values = object: JsonConverter<Any?>() {
-      override fun toJson(o: Any?) = when (o) {
+      override fun to(o: Any?) = when (o) {
         is LocalDate -> o.year
         is Nested -> o.x + o.y.toBigDecimal()
         else -> o

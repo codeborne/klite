@@ -15,7 +15,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
   private var pos: Int = 0
   private var nextChar: Char? = null
 
-  fun readValue(type: KType?): Any? = opts.values.fromJson(when (val c = nextNonSpace()) {
+  fun readValue(type: KType?): Any? = opts.values.from(when (val c = nextNonSpace()) {
     '"' -> type.from(readString().let { if (opts.trimToNull) it.trimToNull() else it })
     '{' -> readObject(type)
     '[' -> readArray(type)
@@ -51,7 +51,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
-      val key = opts.keys.fromJson(readString())
+      val key = opts.keys.from(readString())
       nextNonSpace().expect(':')
       this[key] = readValue((type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.find { it.name == key }?.type)
 

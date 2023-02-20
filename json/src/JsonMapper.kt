@@ -6,7 +6,7 @@ import kotlin.reflect.KType
 
 // TODO: support these
 annotation class JsonIgnore
-annotation class JsonProperty(val value: String = "")
+annotation class JsonProperty(val value: String = "", val readOnly: Boolean = false)
 
 class JsonMapper(val opts: JsonOptions = JsonOptions()) {
   fun <T> parse(json: Reader, type: KType? = null): T? = JsonParser(json, opts).readValue(type) as T
@@ -25,12 +25,12 @@ data class JsonOptions(
 )
 
 open class JsonConverter<T> {
-  open fun toJson(o: T) = o
-  open fun fromJson(o: T) = o
+  open fun to(o: T) = o
+  open fun from(o: T) = o
 }
 
 class SnakeCase: JsonConverter<String>() {
   private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
-  override fun toJson(o: String) = o.replace(humps, "_").lowercase()
-  override fun fromJson(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
+  override fun to(o: String) = o.replace(humps, "_").lowercase()
+  override fun from(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
 }

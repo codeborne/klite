@@ -10,7 +10,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
 
   private fun writeValue(o: Any?) {
     when (o) {
-      is String -> { write('\"'); write(opts.values.toJson(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
+      is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
       is Iterable<*> -> {
         write('[')
         o.firstOrNull()?.let { writeValue(it) }
@@ -30,13 +30,13 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
         write('}')
       }
       null, is Number, is Boolean -> write(o.toString())
-      else -> if (Converter.supports(o::class)) writeValue(opts.values.toJson(o).let { if (it !== o) it else it.toString() })
-              else writeValue(opts.values.toJson(o).let { if (it !== o) it else it.toValues() })
+      else -> if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
+              else writeValue(opts.values.to(o).let { if (it !== o) it else it.toValues() })
     }
   }
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
-    writeValue(opts.keys.toJson(it.key.toString()))
+    writeValue(opts.keys.to(it.key.toString()))
     write(':')
     writeValue(it.value)
   }
