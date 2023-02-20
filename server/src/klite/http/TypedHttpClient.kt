@@ -10,7 +10,8 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
@@ -38,7 +39,7 @@ open class TypedHttpClient(
     .setHeader("Content-Type", "application/json; charset=UTF-8").setHeader("Accept", "application/json")
     .timeout(10.seconds).reqModifier()
 
-  private suspend fun <T: Any> request(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: RequestModifier): T {
+  private suspend fun <T: Any> request(urlSuffix: String, type: KType, payload: String? = null, builder: RequestModifier): T {
     val req = buildReq(urlSuffix).builder().build()
     val start = System.nanoTime()
     val res = http.sendAsync(req, HttpResponse.BodyHandlers.ofString()).await()
@@ -56,7 +57,7 @@ open class TypedHttpClient(
 
   private fun cut(s: String?) = if (s == null) "" else if (s.length <= maxLoggedLen) s else s.substring(0, maxLoggedLen) + "..."
 
-  suspend fun <T: Any> retryRequest(urlSuffix: String, type: KClass<T>, payload: String? = null, builder: RequestModifier): T {
+  suspend fun <T: Any> retryRequest(urlSuffix: String, type: KType, payload: String? = null, builder: RequestModifier): T {
     for (i in 0..retryCount) {
       try {
         return request(urlSuffix, type, payload, builder)
@@ -74,30 +75,26 @@ open class TypedHttpClient(
     error("Unreachable")
   }
 
-  suspend inline fun <reified T: Any> request(urlSuffix: String, payload: String? = null, noinline builder: RequestModifier) = retryRequest(urlSuffix, T::class, payload, builder)
+  suspend inline fun <reified T: Any> request(urlSuffix: String, payload: String? = null, noinline builder: RequestModifier): T = retryRequest(urlSuffix, typeOf<T>(), payload, builder)
 
-  suspend fun <T: Any> get(urlSuffix: String, type: KClass<T>, modifier: RequestModifier? = null) = retryRequest(urlSuffix, type) { GET().apply(modifier) }
-  suspend inline fun <reified T: Any> get(urlSuffix: String, noinline modifier: RequestModifier? = null) = get(urlSuffix, T::class, modifier)
+  suspend fun <T: Any> get(urlSuffix: String, type: KType, modifier: RequestModifier? = null): T = retryRequest(urlSuffix, type) { GET().apply(modifier) }
+  suspend inline fun <reified T: Any> get(urlSuffix: String, noinline modifier: RequestModifier? = null): T = get(urlSuffix, typeOf<T>(), modifier)
 
-  suspend fun <T: Any> post(urlSuffix: String, o: Any?, type: KClass<T>, modifier: RequestModifier? = null) = render(o).let { retryRequest(urlSuffix, type, it) { POST(
-    HttpRequest.BodyPublishers.ofString(it)
-  ).apply(modifier) } }
-  suspend inline fun <reified T: Any> post(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null) = post(urlSuffix, o, T::class, modifier)
+  suspend fun <T: Any> post(urlSuffix: String, o: Any?, type: KType, modifier: RequestModifier? = null): T = render(o).let { retryRequest(urlSuffix, type, it) { POST(HttpRequest.BodyPublishers.ofString(it)).apply(modifier) } }
+  suspend inline fun <reified T: Any> post(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null): T = post(urlSuffix, o, typeOf<T>(), modifier)
 
-  suspend fun <T: Any> put(urlSuffix: String, o: Any?, type: KClass<T>, modifier: RequestModifier? = null) = render(o).let { retryRequest(urlSuffix, type, it) { PUT(
-    HttpRequest.BodyPublishers.ofString(it)
-  ).apply(modifier) } }
-  suspend inline fun <reified T: Any> put(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null) = put(urlSuffix, o, T::class, modifier)
+  suspend fun <T: Any> put(urlSuffix: String, o: Any?, type: KType, modifier: RequestModifier? = null): T = render(o).let { retryRequest(urlSuffix, type, it) { PUT(HttpRequest.BodyPublishers.ofString(it)).apply(modifier) } }
+  suspend inline fun <reified T: Any> put(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null): T = put(urlSuffix, o, typeOf<T>(), modifier)
 
-  suspend fun <T: Any> delete(urlSuffix: String, type: KClass<T>, modifier: RequestModifier? = null) = retryRequest(urlSuffix, type) { DELETE().apply(modifier) }
-  suspend inline fun <reified T: Any> delete(urlSuffix: String, noinline modifier: RequestModifier? = null) = delete(urlSuffix, T::class, modifier)
+  suspend fun <T: Any> delete(urlSuffix: String, type: KType, modifier: RequestModifier? = null): T = retryRequest(urlSuffix, type) { DELETE().apply(modifier) }
+  suspend inline fun <reified T: Any> delete(urlSuffix: String, noinline modifier: RequestModifier? = null): T = delete(urlSuffix, typeOf<T>(), modifier)
 
   private fun HttpRequest.Builder.apply(modifier: RequestModifier?) = modifier?.let { it() } ?: this
 
-  protected open fun render(o: Any?) = o.toString()
+  protected open fun render(o: Any?): String = o.toString()
 
   @Suppress("UNCHECKED_CAST")
-  protected open fun <T: Any> parse(body: String, type: KClass<T>) = when (type) {
+  protected open fun <T: Any> parse(body: String, type: KType): T = when (type.classifier) {
     Unit::class -> Unit as T
     else -> body as T
   }
