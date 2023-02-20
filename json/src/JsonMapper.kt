@@ -22,7 +22,7 @@ class JsonMapper(val opts: JsonOptions = JsonOptions()) {
 inline fun <reified T> JsonMapper.parse(json: Reader): T = parse(json, typeOf<T>().takeIfSpecific())
 inline fun <reified T> JsonMapper.parse(@Language("JSON") json: String): T = parse(json, typeOf<T>().takeIfSpecific())
 inline fun <reified T> JsonMapper.parse(json: InputStream): T = parse(json, typeOf<T>().takeIfSpecific())
-fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != Map::class && classifier != List::class }
+fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != Map::class }
 
 data class JsonOptions(
   val trimToNull: Boolean = false,

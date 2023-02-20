@@ -19,6 +19,11 @@ class JsonParserTest {
       mapOf("hello" to "world", "blah" to 123, "xxx" to true, "zzz" to null, "nested" to mapOf("a" to emptyList<Any>(), "c" to emptyMap<String, Any>()), "array" to listOf(1, -2, 3.14, 1e20)))
   }
 
+  @Test fun array() {
+    expect(mapper.parse<List<Int>>(" [1,\n2,3]\n")).toEqual(listOf(1, 2, 3))
+    expect(mapper.parse<Set<Int>>(" [1,\n2,3]\n")).toEqual(setOf(1, 2, 3))
+  }
+
   @Test fun escaping() {
     expect(mapper.parse<Any>("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
   }

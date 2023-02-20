@@ -60,7 +60,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
     }
   }.let { if (type != null) it.fromValues(type.classifier as KClass<*>) else it }
 
-  private fun readArray(type: KType?) = mutableListOf<Any?>().apply {
+  private fun readArray(type: KType?) = collectionOf(type).apply {
     while (true) {
       var c = nextNonSpace()
       if (c == ']') break else nextChar = c
@@ -68,6 +68,11 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
       c = nextNonSpace()
       if (c == ']') break else c.expect(',')
     }
+  }
+
+  private fun collectionOf(type: KType?): MutableCollection<Any?> = when (type?.classifier) {
+    Set::class -> mutableSetOf()
+    else -> mutableListOf()
   }
 
   private fun nextNonSpace(): Char {
