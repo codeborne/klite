@@ -15,7 +15,9 @@ typealias FromStringConverter<T> = (s: String) -> T
  * Supports enums, constructor invocation, parse() methods (e.g. java.time).
  * Can register custom converters with `use` method.
  */
+@Suppress("UNCHECKED_CAST")
 object Converter {
+  private val log = logger()
   private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     UUID::class to UUID::fromString,
     Currency::class to Currency::getInstance,
@@ -25,25 +27,25 @@ object Converter {
   operator fun <T: Any> set(type: KClass<T>, converter: FromStringConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: FromStringConverter<T>) = set(T::class, converter)
 
-  fun supports(type: KClass<*>) = converters[type] != null
+  fun supports(type: KClass<*>) = converter(type) != null
   fun forEach(block: (type: KClass<*>, converter: FromStringConverter<*>) -> Unit) = converters.forEach { block(it.key, it.value) }
 
+  // TODO: really support for KType in Converter
+  fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
+  fun <T: Any> from(s: String, type: KClass<T>): T = (converter(type) ?: error("No known converter from String to $type")).invoke(s)
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
-  @Suppress("UNCHECKED_CAST") // TODO: really support for KType in Converter
-  fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
+  private fun <T: Any> converter(type: KClass<T>) =
+    converters[type] as? FromStringConverter<T> ?: findCreator(type)?.also { set(type, it) }
 
-  @Suppress("UNCHECKED_CAST")
-  fun <T: Any> from(s: String, type: KClass<T>): T =
-    (converters[type] as? FromStringConverter<T> ?: findCreator(type).also { converters[type] = it }).invoke(s)
-
-  private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T> =
+  private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T>? =
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
     try { constructorCreator(type) }
     catch (e: NoSuchMethodException) {
       try { parseMethodCreator(type) }
       catch (e2: NoSuchMethodException) {
-        error("Don't know how to convert String to $type:\n$e\n$e2")
+        log.warn("Cannot find a way to convert String to $type\n$e\n$e2")
+        null
       }
     }
 

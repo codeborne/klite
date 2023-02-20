@@ -1,6 +1,7 @@
 # 1.4.3 (unreleased)
 * core: the new core module, to make it possible to use jdbc module without the server
 * core: mapOfNotNull() now accepts keys of any type
+* core: Converter.supports() now finds supported converters automatically, even if not used previously
 * jdbc: db.count() introduced
 * jdbc: box @JvmInline classes when loading from DB
 * jdbc: allow same column multiple times in or() and deprecate NullOrOp()
