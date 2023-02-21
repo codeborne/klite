@@ -1,14 +1,12 @@
 package users
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonValue
 import klite.jdbc.BaseEntity
 import klite.jdbc.toId
 import java.util.*
 
 @JvmInline value class Email(val email: String)
-data class Id<in T>(@JsonValue val value: UUID) {
-  @JsonCreator constructor(uuid: String): this(uuid.toId())
+@JvmInline value class Id<in T>(val uuid: UUID) {
+  constructor(uuid: String): this(uuid.toId())
 }
 
 data class User(
