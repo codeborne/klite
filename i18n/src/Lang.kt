@@ -1,7 +1,7 @@
 package klite.i18n
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import klite.HttpExchange
+import klite.json.JsonMapper
 import klite.json.parse
 
 typealias Translations = Map<String, Any>
@@ -40,7 +40,7 @@ object Lang {
   }
 
   private inline fun <reified T: Any> load(lang: String): T = JsonMapper().parse(
-    javaClass.getResourceAsStream("/$lang.json") ?: error("/$lang.json not found in classpath"), T::class)
+    javaClass.getResourceAsStream("/$lang.json") ?: error("/$lang.json not found in classpath"))
 }
 
 private fun Translations.resolve(key: String) =
