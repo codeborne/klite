@@ -15,7 +15,7 @@ class JsonMapper(val opts: JsonOptions = JsonOptions()) {
   fun <T> parse(json: InputStream, type: KType?): T = parse(json.reader(), type) as T
 
   fun render(o: Any?, out: Writer) = JsonRenderer(out, opts).render(o)
-  fun render(o: Any?, out: OutputStream) = render(o, OutputStreamWriter(out))
+  fun render(o: Any?, out: OutputStream) = OutputStreamWriter(out).let { render(o, it); it.flush() }
   @Language("JSON") fun render(o: Any?): String = StringWriter().apply { use { render(o, it) } }.toString()
 }
 
