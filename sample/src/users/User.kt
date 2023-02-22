@@ -1,5 +1,6 @@
 package users
 
+import klite.Converter
 import klite.jdbc.BaseEntity
 import klite.jdbc.toId
 import java.util.*
@@ -7,6 +8,9 @@ import java.util.*
 @JvmInline value class Email(val email: String)
 @JvmInline value class Id<in T>(val uuid: UUID) {
   constructor(uuid: String): this(uuid.toId())
+  companion object {
+    init { Converter.use { Id<Any>(it) } }
+  }
 }
 
 data class User(

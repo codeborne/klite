@@ -9,6 +9,8 @@ import java.net.URI
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
+import java.util.UUID.fromString
+import java.util.UUID.randomUUID
 import java.util.regex.Pattern
 
 class ConverterTest {
@@ -40,6 +42,9 @@ class ConverterTest {
 
   @Test fun jvmInline() {
     expect(Converter.from<Inline>("hello")).toEqual(Inline("hello"))
+    val id = randomUUID()
+    Converter.use { InlineId(fromString(it)) }
+    expect(Converter.from<InlineId>(id.toString())).toEqual(InlineId(id))
   }
 
   @Test fun javaPrimitive() {
@@ -60,3 +65,4 @@ class ConverterTest {
 }
 
 @JvmInline value class Inline(val string: String)
+@JvmInline value class InlineId(val id: UUID)
