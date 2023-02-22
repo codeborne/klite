@@ -43,6 +43,12 @@ class JsonRendererTest {
     expect(mapper.render(mapOf(1 to mapOf(2 to arrayOf(1, 2, 3))))).toEqual("""{"1":{"2":[1,2,3]}}""")
   }
 
+  @Test fun inline() {
+    expect(mapper.render(Inline(123))).toEqual("123")
+  }
+
+  @JvmInline value class Inline(val value: Int)
+
   @Test fun classes() {
     val o = Hello("", uuid, LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()), listOf(Nested(), Nested()))
     expect(mapper.render(o)).toEqual(/*language=JSON*/ """{"array":[{"x":0,"y":123},{"x":0,"y":123}],"date":"2022-10-21","hello":"","id":"b8ca58ec-ab15-11ed-93cc-8fdb43988a14","instant":"2022-10-21T10:55:00Z","nested":{"x":567,"y":123}}""")
