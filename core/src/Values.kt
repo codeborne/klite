@@ -1,5 +1,6 @@
 package klite
 
+import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
@@ -21,8 +22,9 @@ fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkippin
 private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> =
   toValues((this::class.memberProperties as Iterable<KProperty1<T, *>>).filter { it.name !in skipNames })
 
-fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> =
+fun <T: Any> T.toValues(props: Iterable<KProperty1<T, *>>): Map<String, Any?> = try {
   props.filter { it.visibility == KVisibility.PUBLIC && it.javaField != null }.associate { it.name to it.get(this) }
+} catch (e: InvocationTargetException) { throw e.targetException }
 
 
 fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter) -> Any? = { Converter.from(get(it.name), it.type) }): T {
