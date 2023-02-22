@@ -11,7 +11,7 @@ open class JsonBody(
   override val contentType: String = MimeTypes.json
 ): BodyParser, BodyRenderer, Extension {
   override fun <T: Any> parse(input: InputStream, type: KType): T = json.parse(input, type)!!
-  override fun render(output: OutputStream, value: Any?) = TODO()
+  override fun render(output: OutputStream, value: Any?) = json.render(value, output)
 
   override fun install(server: Server) = server.run {
     registry.register(json)

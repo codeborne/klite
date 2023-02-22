@@ -27,7 +27,7 @@ interface BodyParser: SupportsContentType {
   fun <T: Any> parse(input: InputStream, type: KClass<T>): T = throw UnsupportedOperationException()
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> parse(input: InputStream, type: KType): T = parse(input, type.classifier as KClass<T>)
-  fun <T: Any> parse(e: HttpExchange, type: KType): T = e.requestStream.use { parse(it, type) }
+  fun <T> parse(e: HttpExchange, type: KType): T = e.requestStream.use { parse(it, type) }
 }
 
 class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
