@@ -1,7 +1,7 @@
 package klite.json
 
 import klite.Converter
-import klite.fromValues
+import klite.create
 import klite.trimToNull
 import java.io.Reader
 import java.text.ParseException
@@ -62,10 +62,10 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
     }
-    if (type != null) create(type, it) else it
+    type?.createFrom(it) ?: it
   }
 
-  private fun create(type: KType, values: Map<String, Any?>) = values.fromValues(type.classifier as KClass<*>) {
+  private fun KType.createFrom(values: Map<String, Any?>) = create {
     val prop = it.findAnnotation<JsonProperty>()
     if (prop?.readOnly == true || it.hasAnnotation<JsonIgnore>()) null
     else Converter.from(values[prop?.value.trimToNull() ?: it.name], it.type)
