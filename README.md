@@ -33,22 +33,27 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 
 * [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
-* [json](json) - adds lightweight and easily configurable json parsing/rendering (usable *standalone*)
-* [jackson](jackson) - adds json parsing/rendering using Jackson
-* [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization
 * [slf4j](slf4j) - redirects server logs to slf4j and configures it
+* [json](json) - adds lightweight and easily configurable json parsing/rendering (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
 * [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner
+
+### Integrations
+
+These integrate with external libraries. All of this functionality is available in Klite's own modules.
+
+* [jackson](jackson) - adds json parsing/rendering using Jackson
+* [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization
 * [liquibase](liquibase) - allows to use liquibase for DB migration
 
 ## Status
 
-The core server is less than 1000 lines of code.
+The main server module is only ~1000 lines of code.
 
-Klite powers a few production apps already.
-Public announcement at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/), see [the slides](https://docs.google.com/presentation/d/1m5UORE88nVRdZXyDEoj74c0alk1Ff_tX8mfB8oLMbk0).
+Klite powers a few known production apps already.
+Publicly announced at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/), see [the slides](https://docs.google.com/presentation/d/1m5UORE88nVRdZXyDEoj74c0alk1Ff_tX8mfB8oLMbk0).
 
 ## Usage
 
