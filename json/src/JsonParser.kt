@@ -46,7 +46,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
     type?.from(s) ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
   }
 
-  private fun readObject(type: KType?) = mutableMapOf<String, Any?>().apply {
+  private fun readObject(type: KType?) = mutableMapOf<String, Any?>().let {
     val props = (type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.associateBy { it.name }
     while (true) {
       var next = nextNonSpace()
@@ -55,12 +55,16 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
       val key = opts.keys.from(readString())
       val prop = props?.get(key)
       nextNonSpace().expect(':')
-      this[key] = readValue(prop?.type)
+      it[key] = readValue(prop?.type)
 
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
     }
-  }.let { if (type != null) it.fromValues(type.classifier as KClass<*>) else it }
+    if (type != null) createInstance(type, it) else it
+  }
+
+  private fun createInstance(type: KType, values: Map<String, Any?>) =
+    values.fromValues(type.classifier as KClass<*>)
 
   private fun readArray(type: KType?) = collectionOf(type).apply {
     while (true) {
