@@ -1,5 +1,5 @@
 dependencies {
-  api(project(":server"))
-  api(project(":jackson"))
+  implementation(project(":server"))
+  implementation(project(":jackson"))
   testImplementation(files("../sample/i18n"))
 }
