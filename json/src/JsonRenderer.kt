@@ -13,28 +13,32 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
   private fun writeValue(o: Any?) {
     when (o) {
       is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
-      is Iterable<*> -> {
-        write('[')
-        val i = o.iterator()
-        if (i.hasNext()) writeValue(i.next())
-        i.forEachRemaining { write(','); writeValue(it) }
-        write(']')
-      }
-      is Array<*> -> writeValue(Arrays.asList(*o))
-      is Map<*, *> -> {
-        write('{')
-        val i = o.iterator()
-        if (i.hasNext()) writeEntry(i.next())
-        // TODO: JsonIgnore, JsonProperty
-        i.forEachRemaining { write(','); writeEntry(it) }
-        write('}')
-      }
+      is Iterable<*> -> writeArray(o)
+      is Array<*> -> writeArray(Arrays.asList(*o))
+      is Map<*, *> -> writeObject(o)
       null, is Number, is Boolean -> write(o.toString())
       else ->
         if (o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
         else if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
         else writeValue(opts.values.to(o).let { if (it !== o) it else it.toValues() })
     }
+  }
+
+  private fun writeArray(o: Iterable<*>) {
+    write('[')
+    val i = o.iterator()
+    if (i.hasNext()) writeValue(i.next())
+    i.forEachRemaining { write(','); writeValue(it) }
+    write(']')
+  }
+
+  private fun writeObject(o: Map<*, *>) {
+    write('{')
+    val i = o.iterator()
+    if (i.hasNext()) writeEntry(i.next())
+    // TODO: JsonIgnore, JsonProperty
+    i.forEachRemaining { write(','); writeEntry(it) }
+    write('}')
   }
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
