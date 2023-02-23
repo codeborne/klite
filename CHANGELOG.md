@@ -1,4 +1,4 @@
-# 1.4.3 (unreleased)
+# 1.4.3
 * core: the new core module, to make it possible to use jdbc module without the server
 * core: mapOfNotNull() now accepts keys of any type
 * core: Converter.supports() now finds supported converters automatically, even if not used previously

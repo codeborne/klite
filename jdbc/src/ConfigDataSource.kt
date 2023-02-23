@@ -7,6 +7,7 @@ import java.sql.DriverManager
 import java.sql.SQLFeatureNotSupportedException
 import javax.sql.DataSource
 
+/** Non-pooled basic datasource */
 class ConfigDataSource(
   val url: String = Config["DB_URL"],
   val user: String? = Config.optional("DB_USER"),
