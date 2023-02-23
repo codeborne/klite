@@ -57,6 +57,7 @@ class Server(
     onStopHandlers.forEach { it.run() }
   }
 
+  // add both Extension and Runnable overloads when this is resolved: https://youtrack.jetbrains.com/issue/KT-56930
   inline fun <reified E: Any> use() = require<E>().also { use(it) }
   fun use(extension: Any) = extension.also {
     register(it)
