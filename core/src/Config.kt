@@ -28,7 +28,8 @@ object Config {
     if (optional(env) == null) Config[env] = value
   }
 
-  fun useEnvFile(file: File = File(".env"), force: Boolean = false) {
+  fun useEnvFile(name: String = ".env", force: Boolean = false) = useEnvFile(File(name), force)
+  fun useEnvFile(file: File, force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
     file.forEachLine {
       val line = it.trim()
