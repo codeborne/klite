@@ -33,11 +33,12 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 
 * [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
+* [json](json) - adds lightweight and easily configurable json parsing/rendering (usable *standalone*)
 * [jackson](jackson) - adds json parsing/rendering using Jackson
 * [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization
 * [slf4j](slf4j) - redirects server logs to slf4j and configures it
 * [i18n](i18n) - simple server-side translations (for emails, etc)
-* [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (depends on slf4j because of Hikari)
+* [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner
 * [liquibase](liquibase) - allows to use liquibase for DB migration
