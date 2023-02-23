@@ -8,6 +8,7 @@ import java.text.ParseException
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.primaryConstructor
 
 private const val EOF = '\uFFFF'
@@ -65,8 +66,9 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
   }
 
   private fun create(type: KType, values: Map<String, Any?>) = values.fromValues(type.classifier as KClass<*>) {
-    val name = it.findAnnotation<JsonProperty>()?.value ?: it.name
-    Converter.from(values[name], it.type)
+    val prop = it.findAnnotation<JsonProperty>()
+    if (prop?.readOnly == true || it.hasAnnotation<JsonIgnore>()) null
+    else Converter.from(values[prop?.value.trimToNull() ?: it.name], it.type)
   }
 
   private fun readArray(type: KType?) = collectionOf(type).apply {
