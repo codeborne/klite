@@ -1,10 +1,13 @@
 package klite.json
 
 import klite.Converter
-import klite.toValues
+import klite.propsSequence
 import klite.unboxInline
 import java.io.Writer
 import java.util.*
+import java.util.Map.entry
+import kotlin.reflect.KVisibility.PUBLIC
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 
 class JsonRenderer(private val out: Writer, private val opts: JsonOptions): AutoCloseable {
@@ -15,12 +18,12 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
       is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
       is Iterable<*> -> writeArray(o)
       is Array<*> -> writeArray(Arrays.asList(*o))
-      is Map<*, *> -> writeObject(o)
+      is Map<*, *> -> writeObject(o.iterator())
       null, is Number, is Boolean -> write(o.toString())
       else ->
         if (o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
         else if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
-        else writeValue(opts.values.to(o).let { if (it !== o) it else it.toValues() })
+        else opts.values.to(o).let { if (it !== o) writeValue(it) else writeObject(it) }
     }
   }
 
@@ -32,14 +35,15 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
     write(']')
   }
 
-  private fun writeObject(o: Map<*, *>) {
+  private fun writeObject(i: Iterator<Map.Entry<Any?, Any?>>) {
     write('{')
-    val i = o.iterator()
     if (i.hasNext()) writeEntry(i.next())
-    // TODO: JsonIgnore, JsonProperty
     i.forEachRemaining { write(','); writeEntry(it) }
     write('}')
   }
+
+  private fun writeObject(o: Any) = writeObject(o.propsSequence.filter { it.visibility == PUBLIC && !it.hasAnnotation<JsonIgnore>() }
+    .map { entry(it.findAnnotation<JsonProperty>()?.value ?: it.name, it.get(o)) }.asIterable().iterator())
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
     writeValue(opts.keys.to(it.key.toString()))
