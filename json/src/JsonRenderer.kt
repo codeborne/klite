@@ -14,20 +14,18 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
       is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
       is Iterable<*> -> {
         write('[')
-        o.firstOrNull()?.let { writeValue(it) }
-        o.drop(1).forEach { write(','); writeValue(it) }
+        val i = o.iterator()
+        if (i.hasNext()) writeValue(i.next())
+        i.forEachRemaining { write(','); writeValue(it) }
         write(']')
       }
       is Array<*> -> writeValue(Arrays.asList(*o))
       is Map<*, *> -> {
         write('{')
-        o.entries.apply {
-          firstOrNull()?.let(::writeEntry)
-          drop(1).forEach {
-            // TODO: JsonIgnore, JsonProperty
-            write(','); writeEntry(it)
-          }
-        }
+        val i = o.iterator()
+        if (i.hasNext()) writeEntry(i.next())
+        // TODO: JsonIgnore, JsonProperty
+        i.forEachRemaining { write(','); writeEntry(it) }
         write('}')
       }
       null, is Number, is Boolean -> write(o.toString())
