@@ -9,3 +9,4 @@ fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }
 fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V?>) = mapOf(*pairs).filterValues { it != null } as Map<K, V>
 
 val KType.java get() = (classifier as KClass<*>).java
+fun Any.unboxInline() = javaClass.getMethod("unbox-impl").invoke(this)
