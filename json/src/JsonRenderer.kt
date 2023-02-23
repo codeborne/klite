@@ -3,6 +3,7 @@ package klite.json
 import klite.Converter
 import klite.propsSequence
 import klite.unboxInline
+import klite.valueOf
 import java.io.Writer
 import java.util.*
 import java.util.Map.entry
@@ -43,7 +44,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
   }
 
   private fun writeObject(o: Any) = writeObject(o.propsSequence.filter { it.visibility == PUBLIC && !it.hasAnnotation<JsonIgnore>() }
-    .map { entry(it.findAnnotation<JsonProperty>()?.value ?: it.name, it.get(o)) }.iterator())
+    .map { entry(it.findAnnotation<JsonProperty>()?.value ?: it.name, it.valueOf(o)) }.iterator())
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
     writeValue(opts.keys.to(it.key.toString()))

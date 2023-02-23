@@ -23,9 +23,10 @@ val <T: Any> T.propsSequence get() = (this::class.memberProperties as Collection
 
 private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> = toValues(propsSequence.filter { it.name !in skipNames })
 
-fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> = try {
-  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to it.get(this) }
-} catch (e: InvocationTargetException) { throw e.targetException }
+fun <T> KProperty1<T, *>.valueOf(o: T) = try { get(o) } catch (e: InvocationTargetException) { throw e.targetException }
+
+fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
+  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to it.valueOf(this) }
 
 
 fun <T: Any> Map<String, Any?>.fromValues(type: KClass<T>, getValue: (KParameter) -> Any? = { Converter.from(get(it.name), it.type) }): T {
