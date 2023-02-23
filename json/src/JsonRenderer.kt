@@ -43,7 +43,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
   }
 
   private fun writeObject(o: Any) = writeObject(o.propsSequence.filter { it.visibility == PUBLIC && !it.hasAnnotation<JsonIgnore>() }
-    .map { entry(it.findAnnotation<JsonProperty>()?.value ?: it.name, it.get(o)) }.asIterable().iterator())
+    .map { entry(it.findAnnotation<JsonProperty>()?.value ?: it.name, it.get(o)) }.iterator())
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
     writeValue(opts.keys.to(it.key.toString()))
