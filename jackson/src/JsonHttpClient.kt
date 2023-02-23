@@ -30,7 +30,7 @@ class JsonHttpClient(
   override fun render(o: Any?) = if (o is String) o else json.stringify(o)
 
   @Suppress("UNCHECKED_CAST")
-  override fun <T: Any> parse(body: String, type: KType): T = when (type.classifier) {
+  override fun <T> parse(body: String, type: KType): T = when (type.classifier) {
     Unit::class -> Unit as T
     String::class -> body as T
     else -> json.readValue(body, json.typeOf(type))
