@@ -33,7 +33,6 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 
 * [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
-* [slf4j](slf4j) - redirects server logs to slf4j and configures it
 * [json](json) - adds lightweight and easily configurable json parsing/rendering (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
 * [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
@@ -44,6 +43,7 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 
 These integrate with external libraries. All of this functionality is available in Klite's own modules.
 
+* [slf4j](slf4j) - redirects server logs to slf4j and configures it
 * [jackson](jackson) - adds json parsing/rendering using Jackson
 * [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization
 * [liquibase](liquibase) - allows to use liquibase for DB migration
