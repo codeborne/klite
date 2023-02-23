@@ -19,8 +19,8 @@ typealias Mapper<R> = ResultSet.() -> R
 internal typealias Column = Any // String | KProperty1
 
 // TODO: replace Map with vararg Pair<Column, Any?
-typealias Where = Map<out Column, Any?>
-typealias Values = Map<out Column, *>
+internal typealias Where = Map<out Column, Any?>
+internal typealias Values = Map<out Column, *>
 
 // TODO: maybe replace query<>select
 
