@@ -1,12 +1,13 @@
 package klite.jdbc
 
-import klite.PropValue
 import klite.fromValues
 import klite.toValues
 import klite.toValuesSkipping
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
+
+typealias PropValue<T> = klite.PropValue<T>
 
 inline fun <T: Any> T.toValues(vararg provided: PropValue<T>) = toValues(*provided)
 inline fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(*skip)
