@@ -2,12 +2,12 @@ package klite.json
 
 import org.intellij.lang.annotations.Language
 import java.io.*
+import kotlin.annotation.AnnotationTarget.PROPERTY
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
-// TODO: support these
-annotation class JsonIgnore
-annotation class JsonProperty(val value: String = "", val readOnly: Boolean = false)
+@Target(PROPERTY) annotation class JsonIgnore
+@Target(PROPERTY) annotation class JsonProperty(val value: String = "", val readOnly: Boolean = false)
 
 class JsonMapper(val opts: JsonOptions = JsonOptions()) {
   fun <T> parse(json: Reader, type: KType?): T = JsonParser(json, opts).readValue(type) as T

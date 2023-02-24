@@ -1,7 +1,7 @@
 package klite.json
 
 import klite.Converter
-import klite.create
+import klite.createFrom
 import klite.trimToNull
 import java.io.Reader
 import java.text.ParseException
@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.memberProperties
 
 private const val EOF = '\uFFFF'
 
@@ -49,26 +49,24 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
   }
 
   private fun readObject(type: KType?) = mutableMapOf<String, Any?>().let {
-    val props = (type?.classifier as? KClass<*>)?.primaryConstructor?.parameters?.associateBy { it.name }
+    val props = (type?.classifier as? KClass<*>)?.memberProperties?.associateBy { prop ->
+      prop.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: prop.name
+    }
     while (true) {
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
       val key = opts.keys.from(readString())
-      val prop = props?.get(key)
       nextNonSpace().expect(':')
-      it[key] = readValue(prop?.type)
+      val prop = props?.get(key)
+      val v = readValue(prop?.returnType)
+      if (prop == null || prop.findAnnotation<JsonProperty>()?.readOnly != true && !prop.hasAnnotation<JsonIgnore>())
+        it[prop?.name ?: key] = v
 
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
     }
     type?.createFrom(it) ?: it
-  }
-
-  private fun KType.createFrom(values: Map<String, Any?>) = create {
-    val prop = it.findAnnotation<JsonProperty>()
-    if (prop?.readOnly == true || it.hasAnnotation<JsonIgnore>()) null
-    else Converter.from(values[prop?.value.trimToNull() ?: it.name], it.type)
   }
 
   private fun readArray(type: KType?) = collectionOf(type).apply {

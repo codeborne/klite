@@ -30,6 +30,7 @@ fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
   props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to it.valueOf(this) }
 
 fun KType.create(valueOf: (KParameter) -> Any?) = (classifier as KClass<*>).create(valueOf)
+fun KType.createFrom(values: Map<String, Any?>) = create { Converter.from(values[it.name], it.type) }
 
 fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   val constructor = primaryConstructor!!
