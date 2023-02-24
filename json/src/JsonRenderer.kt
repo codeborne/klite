@@ -3,7 +3,7 @@ package klite.json
 import klite.*
 import java.io.Writer
 import java.util.*
-import java.util.Map.entry
+import java.util.AbstractMap.SimpleImmutableEntry
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 
@@ -40,7 +40,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
   }
 
   private fun writeObject(o: Any) = writeObject(o.publicProperties.filter { !it.hasAnnotation<JsonIgnore>() }
-    .map { entry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) }.iterator())
+    .map { SimpleImmutableEntry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) }.iterator())
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
     writeValue(opts.keys.to(it.key.toString()))

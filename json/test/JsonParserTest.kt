@@ -59,6 +59,7 @@ class JsonParserTest {
   data class Nullable(val x: String? = null)
 }
 
-data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested, val array: List<Nested> = emptyList(),
+data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested,
+                 val array: List<Nested> = emptyList(), val nullable: String? = null,
                  @JsonIgnore val ignore: Boolean = true, @JsonProperty(readOnly = true) val readOnly: Boolean = true)
 data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
