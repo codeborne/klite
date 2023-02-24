@@ -13,3 +13,20 @@ or
 ```kotlin
 useOnly<JsonBody>()
 ```
+
+## Options
+
+[JsonMapper](src/JsonMapper.kt) supports some configuration options through constructor parameters, e.g.
+
+```kotlin
+use(JsonBody(JsonMapper(renderNulls = true, keys = SnakeCase, values = object: ValueConverter<Any?>() {
+  override fun to(o: Any?) = when(o) {
+    is LocalDate -> dateFormat.format(o)
+    else -> o
+  }
+})))
+```
+
+## Integrations
+
+[JsonHttpClient](src/JsonHttpClient.kt) is provided to do async json requests to other services.
