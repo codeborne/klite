@@ -2,6 +2,7 @@ package klite.json
 
 import klite.Converter
 import klite.createFrom
+import klite.publicProperties
 import klite.trimToNull
 import java.io.Reader
 import java.text.ParseException
@@ -9,7 +10,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.memberProperties
 
 private const val EOF = '\uFFFF'
 
@@ -49,7 +49,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonOpti
   }
 
   private fun readObject(type: KType?) = mutableMapOf<String, Any?>().let {
-    val props = (type?.classifier as? KClass<*>)?.memberProperties?.associateBy { prop ->
+    val props = (type?.classifier as? KClass<*>)?.publicProperties?.associateBy { prop ->
       prop.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: prop.name
     }
     while (true) {

@@ -1,6 +1,7 @@
 package klite
 
 import java.lang.reflect.InvocationTargetException
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
@@ -19,15 +20,22 @@ fun <T: Any> T.toValues(vararg provided: PropValue<T>): Map<String, Any?> {
 
 fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.map { it.name }.toSet())
 
-@Suppress("UNCHECKED_CAST")
-val <T: Any> T.propsSequence get() = (this::class.memberProperties as Collection<KProperty1<T, *>>).asSequence()
+private val publicPropsCache = ConcurrentHashMap<KClass<*>, Sequence<KProperty1<*, *>>>()
 
-private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> = toValues(propsSequence.filter { it.name !in skipNames })
+@Suppress("UNCHECKED_CAST")
+val <T: Any> KClass<T>.publicProperties get() = publicPropsCache.getOrPut(this) {
+  memberProperties.filter { it.visibility == PUBLIC }.asSequence()
+} as Sequence<KProperty1<T, *>>
+
+@Suppress("UNCHECKED_CAST")
+val <T: Any> T.publicProperties get() = this::class.publicProperties as Sequence<KProperty1<T, *>>
+
+private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> = toValues(publicProperties.filter { it.name !in skipNames })
 
 fun <T> KProperty1<T, *>.valueOf(o: T) = try { get(o) } catch (e: InvocationTargetException) { throw e.targetException }
 
 fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
-  props.filter { it.visibility == PUBLIC && it.javaField != null }.associate { it.name to it.valueOf(this) }
+  props.filter { it.javaField != null }.associate { it.name to it.valueOf(this) }
 
 fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   val constructor = primaryConstructor!!

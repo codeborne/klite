@@ -4,7 +4,6 @@ import klite.*
 import java.io.Writer
 import java.util.*
 import java.util.Map.entry
-import kotlin.reflect.KVisibility.PUBLIC
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 
@@ -40,7 +39,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
     write('}')
   }
 
-  private fun writeObject(o: Any) = writeObject(o.propsSequence.filter { it.visibility == PUBLIC && !it.hasAnnotation<JsonIgnore>() }
+  private fun writeObject(o: Any) = writeObject(o.publicProperties.filter { !it.hasAnnotation<JsonIgnore>() }
     .map { entry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) }.iterator())
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
