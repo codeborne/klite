@@ -44,9 +44,9 @@ class JsonRendererTest {
   }
 
   @Test fun renderNulls() {
-    val mapper = mapper.copy(renderNulls = false)
     expect(mapper.render(mapOf("x" to null))).toEqual("{}")
     expect(mapper.render(mapOf("x" to null, "y" to null, 1 to 2))).toEqual("""{"1":2}""")
+    expect(mapper.copy(renderNulls = true).render(mapOf("x" to null))).toEqual("""{"x":null}""")
   }
 
   @Test fun inline() {
@@ -57,7 +57,7 @@ class JsonRendererTest {
 
   @Test fun classes() {
     val o = Hello("", uuid, LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()), listOf(Nested(), Nested()))
-    expect(mapper.render(o)).toEqual(/*language=JSON*/ """{"array":[{"x":0,"y":123},{"x":0,"y":123}],"date":"2022-10-21","hellou":"","id":"b8ca58ec-ab15-11ed-93cc-8fdb43988a14","instant":"2022-10-21T10:55:00Z","nested":{"x":567,"y":123},"nullable":null,"readOnly":true}""")
+    expect(mapper.render(o)).toEqual(/*language=JSON*/ """{"array":[{"x":0,"y":123},{"x":0,"y":123}],"date":"2022-10-21","hellou":"","id":"b8ca58ec-ab15-11ed-93cc-8fdb43988a14","instant":"2022-10-21T10:55:00Z","nested":{"x":567,"y":123},"readOnly":true}""")
   }
 
   @Test fun snakeCase() {

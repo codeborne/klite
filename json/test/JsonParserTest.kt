@@ -25,7 +25,7 @@ class JsonParserTest {
   }
 
   @Test fun escaping() {
-    expect(mapper.parse<Any>("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
+    expect(mapper.copy(trimToNull = false).parse<Any>("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
   }
 
   @Test fun `parse invalid`() {
@@ -39,16 +39,19 @@ class JsonParserTest {
 
   @Test fun `parse into class`() {
     expect(mapper.parse<Hello>("""{
-      "hellou": "", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z",
+      "hellou": " x ", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z",
       "nested": {"x": 567}, "array": [{}, {}], "ignore": false, "readOnly":  false}
     """)).toEqual(
-      Hello("", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
+      Hello("x", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
         listOf(Nested(), Nested())))
   }
 
   @Test fun trimToNull() {
-    val parser = JsonMapper(trimToNull = true)
-    expect(parser.parse<Nullable>("""{"x": "", "unknown": 123}""")).toEqual(Nullable())
+    val json = """{"x": "", "unknown": 123}"""
+    expect(mapper.parse<Nullable>(json)).toEqual(Nullable())
+
+    val mapper = mapper.copy(trimToNull = false)
+    expect(mapper.parse<Nullable>(json)).toEqual(Nullable(""))
   }
 
   @Test fun `snake case`() {

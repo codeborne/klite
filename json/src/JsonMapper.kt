@@ -10,8 +10,8 @@ import kotlin.reflect.typeOf
 @Target(PROPERTY) annotation class JsonProperty(val value: String = "", val readOnly: Boolean = false)
 
 data class JsonMapper(
-  val trimToNull: Boolean = false,
-  val renderNulls: Boolean = true,
+  val trimToNull: Boolean = true,
+  val renderNulls: Boolean = false,
   val keys: NameConverter = NameConverter(),
   val values: ValueConverter<Any?> = ValueConverter()
 ) {
