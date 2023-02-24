@@ -9,7 +9,7 @@ import kotlin.reflect.typeOf
 @Target(PROPERTY) annotation class JsonIgnore
 @Target(PROPERTY) annotation class JsonProperty(val value: String = "", val readOnly: Boolean = false)
 
-class JsonMapper(val opts: JsonOptions = JsonOptions()) {
+data class JsonMapper(val opts: JsonOptions = JsonOptions()) {
   fun <T> parse(json: Reader, type: KType?): T = JsonParser(json, opts).readValue(type) as T
   fun <T> parse(@Language("JSON") json: String, type: KType?): T = parse(json.reader(), type) as T
   fun <T> parse(json: InputStream, type: KType?): T = parse(json.reader(), type) as T
@@ -26,6 +26,7 @@ fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != 
 
 data class JsonOptions(
   val trimToNull: Boolean = false,
+  val renderNulls: Boolean = true,
   val keys: NameConverter = NameConverter(),
   val values: ValueConverter<Any?> = ValueConverter()
 )

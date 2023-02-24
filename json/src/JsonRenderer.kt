@@ -15,7 +15,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
       is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
       is Iterable<*> -> writeArray(o)
       is Array<*> -> writeArray(Arrays.asList(*o))
-      is Map<*, *> -> writeObject(o.iterator())
+      is Map<*, *> -> writeObject(o.asSequence())
       null, is Number, is Boolean -> write(o.toString())
       else ->
         if (o::class.isValue && o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
@@ -32,7 +32,8 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
     write(']')
   }
 
-  private fun writeObject(i: Iterator<Map.Entry<Any?, Any?>>) {
+  private fun writeObject(o: Sequence<Map.Entry<Any?, Any?>>) {
+    val i = (if (opts.renderNulls) o else o.filter { it.value != null }).iterator()
     write('{')
     if (i.hasNext()) writeEntry(i.next())
     i.forEachRemaining { write(','); writeEntry(it) }
@@ -40,7 +41,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
   }
 
   private fun writeObject(o: Any) = writeObject(o.publicProperties.filter { !it.hasAnnotation<JsonIgnore>() }
-    .map { SimpleImmutableEntry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) }.iterator())
+    .map { SimpleImmutableEntry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) })
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
     writeValue(opts.keys.to(it.key.toString()))

@@ -43,6 +43,12 @@ class JsonRendererTest {
     expect(mapper.render(mapOf(1 to mapOf(2 to arrayOf(1, 2, 3))))).toEqual("""{"1":{"2":[1,2,3]}}""")
   }
 
+  @Test fun renderNulls() {
+    val mapper = mapper.copy(opts = mapper.opts.copy(renderNulls = false))
+    expect(mapper.render(mapOf("x" to null))).toEqual("{}")
+    expect(mapper.render(mapOf("x" to null, "y" to null, 1 to 2))).toEqual("""{"1":2}""")
+  }
+
   @Test fun inline() {
     expect(mapper.render(Inline(123))).toEqual("123")
   }
