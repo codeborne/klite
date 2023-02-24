@@ -19,7 +19,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
 
   fun readValue(type: KType?): Any? = opts.values.from(when (val c = nextNonSpace()) {
     '"' -> type.from(readString().let { if (opts.trimToNull) it.trimToNull() else it })
-    '{' -> readObject(type?.takeIfSpecific())
+    '{' -> readObject(type)
     '[' -> readArray(type)
     '-', '+', in '0'..'9' -> readNumber(c, type)
     't', 'f' -> readLettersOrDigits(c).toBoolean()
@@ -48,25 +48,29 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
     type?.takeIfSpecific()?.from(s) ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
   }
 
-  private fun readObject(type: KType?) = mutableMapOf<String, Any?>().let {
-    val props = (type?.classifier as? KClass<*>)?.publicProperties?.associateBy { prop ->
+  @Suppress("UNCHECKED_CAST")
+  private fun readObject(type: KType?) = mutableMapOf<Any, Any?>().let { map ->
+    val mapTypes = if (type?.classifier == Map::class) type.arguments.let { it[0].type to it[1].type } else null
+    val props = if (mapTypes == null) (type?.classifier as? KClass<*>)?.publicProperties?.associateBy { prop ->
       prop.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: prop.name
-    }
+    } else null
+
     while (true) {
       var next = nextNonSpace()
       if (next == '}') break else next.expect('"')
 
-      val key = opts.keys.from(readString())
+      val key = mapTypes?.first.from(opts.keys.from(readString()))!!
       nextNonSpace().expect(':')
+
       val prop = props?.get(key)
-      val v = readValue(prop?.returnType)
+      val value = readValue(mapTypes?.second ?: prop?.returnType)
       if (prop == null || prop.findAnnotation<JsonProperty>()?.readOnly != true && !prop.hasAnnotation<JsonIgnore>())
-        it[prop?.name ?: key] = v
+        map[prop?.name ?: key] = value
 
       next = nextNonSpace()
       if (next == '}') break else next.expect(',')
     }
-    type?.createFrom(it) ?: it
+    type?.takeIfSpecific()?.createFrom(map as Map<String, Any?>) ?: map
   }
 
   private fun readArray(type: KType?) = collectionOf(type).apply {
