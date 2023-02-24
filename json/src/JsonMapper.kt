@@ -24,10 +24,9 @@ data class JsonMapper(
   @Language("JSON") fun render(o: Any?): String = FastStringWriter().also { render(o, it) }.toString()
 }
 
-inline fun <reified T> JsonMapper.parse(json: Reader): T = parse(json, typeOf<T>().takeIfSpecific())
-inline fun <reified T> JsonMapper.parse(@Language("JSON") json: String): T = parse(json, typeOf<T>().takeIfSpecific())
-inline fun <reified T> JsonMapper.parse(json: InputStream): T = parse(json, typeOf<T>().takeIfSpecific())
-fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != Map::class }
+inline fun <reified T> JsonMapper.parse(json: Reader): T = parse(json, typeOf<T>())
+inline fun <reified T> JsonMapper.parse(@Language("JSON") json: String): T = parse(json, typeOf<T>())
+inline fun <reified T> JsonMapper.parse(json: InputStream): T = parse(json, typeOf<T>())
 
 typealias NameConverter = ValueConverter<String>
 open class ValueConverter<T> {

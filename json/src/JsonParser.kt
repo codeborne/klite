@@ -19,7 +19,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
 
   fun readValue(type: KType?): Any? = opts.values.from(when (val c = nextNonSpace()) {
     '"' -> type.from(readString().let { if (opts.trimToNull) it.trimToNull() else it })
-    '{' -> readObject(type)
+    '{' -> readObject(type?.takeIfSpecific())
     '[' -> readArray(type)
     '-', '+', in '0'..'9' -> readNumber(c, type)
     't', 'f' -> readLettersOrDigits(c).toBoolean()
@@ -45,7 +45,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
   }
 
   private fun readNumber(c: Char, type: KType?) = readLettersOrDigits(c).let { s ->
-    type?.from(s) ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
+    type?.takeIfSpecific()?.from(s) ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
   }
 
   private fun readObject(type: KType?) = mutableMapOf<String, Any?>().let {
@@ -109,6 +109,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
 
   // TODO: puzzler: remove <Any>
   private fun KType?.from(s: String?) = if (this != null && s != null) Converter.from<Any>(s, this) else s
+  private fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != Map::class }
 }
 
 class JsonParseException(msg: String, pos: Int): ParseException("$msg at index $pos", pos)
