@@ -7,7 +7,7 @@ import java.util.AbstractMap.SimpleImmutableEntry
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 
-class JsonRenderer(private val out: Writer, private val opts: JsonOptions): AutoCloseable {
+class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoCloseable {
   fun render(o: Any?) = writeValue(o)
 
   private fun writeValue(o: Any?) {

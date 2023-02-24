@@ -47,12 +47,12 @@ class JsonParserTest {
   }
 
   @Test fun trimToNull() {
-    val parser = JsonMapper(JsonOptions(trimToNull = true))
+    val parser = JsonMapper(trimToNull = true)
     expect(parser.parse<Nullable>("""{"x": "", "unknown": 123}""")).toEqual(Nullable())
   }
 
   @Test fun `snake case`() {
-    val mapper = JsonMapper(JsonOptions(keys = SnakeCase))
+    val mapper = JsonMapper(keys = SnakeCase)
     expect(mapper.parse<Any>("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))
   }
 

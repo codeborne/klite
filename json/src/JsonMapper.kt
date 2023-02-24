@@ -9,12 +9,17 @@ import kotlin.reflect.typeOf
 @Target(PROPERTY) annotation class JsonIgnore
 @Target(PROPERTY) annotation class JsonProperty(val value: String = "", val readOnly: Boolean = false)
 
-data class JsonMapper(val opts: JsonOptions = JsonOptions()) {
-  fun <T> parse(json: Reader, type: KType?): T = JsonParser(json, opts).readValue(type) as T
+data class JsonMapper(
+  val trimToNull: Boolean = false,
+  val renderNulls: Boolean = true,
+  val keys: NameConverter = NameConverter(),
+  val values: ValueConverter<Any?> = ValueConverter()
+) {
+  fun <T> parse(json: Reader, type: KType?): T = JsonParser(json, this).readValue(type) as T
   fun <T> parse(@Language("JSON") json: String, type: KType?): T = parse(json.reader(), type) as T
   fun <T> parse(json: InputStream, type: KType?): T = parse(json.reader(), type) as T
 
-  fun render(o: Any?, out: Writer) = JsonRenderer(out, opts).render(o)
+  fun render(o: Any?, out: Writer) = JsonRenderer(out, this).render(o)
   fun render(o: Any?, out: OutputStream) = OutputStreamWriter(out).let { render(o, it); it.flush() }
   @Language("JSON") fun render(o: Any?): String = FastStringWriter().also { render(o, it) }.toString()
 }
@@ -23,13 +28,6 @@ inline fun <reified T> JsonMapper.parse(json: Reader): T = parse(json, typeOf<T>
 inline fun <reified T> JsonMapper.parse(@Language("JSON") json: String): T = parse(json, typeOf<T>().takeIfSpecific())
 inline fun <reified T> JsonMapper.parse(json: InputStream): T = parse(json, typeOf<T>().takeIfSpecific())
 fun KType.takeIfSpecific() = takeIf { classifier != Any::class && classifier != Map::class }
-
-data class JsonOptions(
-  val trimToNull: Boolean = false,
-  val renderNulls: Boolean = true,
-  val keys: NameConverter = NameConverter(),
-  val values: ValueConverter<Any?> = ValueConverter()
-)
 
 typealias NameConverter = ValueConverter<String>
 open class ValueConverter<T> {

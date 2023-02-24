@@ -44,7 +44,7 @@ class JsonRendererTest {
   }
 
   @Test fun renderNulls() {
-    val mapper = mapper.copy(opts = mapper.opts.copy(renderNulls = false))
+    val mapper = mapper.copy(renderNulls = false)
     expect(mapper.render(mapOf("x" to null))).toEqual("{}")
     expect(mapper.render(mapOf("x" to null, "y" to null, 1 to 2))).toEqual("""{"1":2}""")
   }
@@ -61,18 +61,18 @@ class JsonRendererTest {
   }
 
   @Test fun snakeCase() {
-    val mapper = JsonMapper(JsonOptions(keys = SnakeCase))
+    val mapper = JsonMapper(keys = SnakeCase)
     expect(mapper.render(mapOf("snakeCase" to 123))).toEqual("""{"snake_case":123}""")
   }
 
   @Test fun valueConverter() {
-    val mapper = JsonMapper(JsonOptions(values = object: ValueConverter<Any?>() {
+    val mapper = JsonMapper(values = object: ValueConverter<Any?>() {
       override fun to(o: Any?) = when (o) {
         is LocalDate -> o.year
         is Nested -> o.x + o.y.toBigDecimal()
         else -> o
       }
-    }))
+    })
     expect(mapper.render(mapOf("date" to LocalDate.of(2022, 10, 21), "custom" to Nested()))).toEqual("""{"date":2022,"custom":123}""")
   }
 }
