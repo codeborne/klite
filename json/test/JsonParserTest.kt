@@ -52,7 +52,7 @@ class JsonParserTest {
   }
 
   @Test fun `snake case`() {
-    val mapper = JsonMapper(JsonOptions(keys = SnakeCase()))
+    val mapper = JsonMapper(JsonOptions(keys = SnakeCase))
     expect(mapper.parse<Any>("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))
   }
 

@@ -36,7 +36,7 @@ open class ValueConverter<T> {
   open fun from(o: T) = o
 }
 
-class SnakeCase: NameConverter() {
+object SnakeCase: NameConverter() {
   private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
   override fun to(o: String) = o.replace(humps, "_").lowercase()
   override fun from(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }

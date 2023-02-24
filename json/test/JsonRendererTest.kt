@@ -55,7 +55,7 @@ class JsonRendererTest {
   }
 
   @Test fun snakeCase() {
-    val mapper = JsonMapper(JsonOptions(keys = SnakeCase()))
+    val mapper = JsonMapper(JsonOptions(keys = SnakeCase))
     expect(mapper.render(mapOf("snakeCase" to 123))).toEqual("""{"snake_case":123}""")
   }
 
