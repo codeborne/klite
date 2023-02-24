@@ -77,7 +77,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
     while (true) {
       var c = nextNonSpace()
       if (c == ']') break else nextChar = c
-      add(readValue(type?.arguments?.first()?.type))
+      add(readValue(type?.arguments?.firstOrNull()?.type))
       c = nextNonSpace()
       if (c == ']') break else c.expect(',')
     }

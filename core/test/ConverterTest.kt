@@ -31,6 +31,11 @@ class ConverterTest {
     expect(Converter.supports(Pattern::class)).toEqual(true)
   }
 
+  @Test fun `super classes`() {
+    expect(Converter.from<Any>("x")).toEqual("x")
+    expect(Converter.from<CharSequence>("x")).toEqual("x")
+  }
+
   @Test fun enum() {
     expect(Converter.from<AnnotationTarget>("FIELD")).toEqual(AnnotationTarget.FIELD)
   }

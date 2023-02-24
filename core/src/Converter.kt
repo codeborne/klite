@@ -21,8 +21,9 @@ private class NoConverter<T: Any>(val type: KClass<T>): FromStringConverter<T> {
  */
 @Suppress("UNCHECKED_CAST")
 object Converter {
-  private val log = logger()
   private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
+    Any::class to Any::toString,
+    CharSequence::class to Any::toString,
     UUID::class to UUID::fromString,
     Currency::class to Currency::getInstance,
     Locale::class to { Locale.forLanguageTag(it.replace('_', '-')) }
