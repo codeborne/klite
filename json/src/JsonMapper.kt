@@ -16,7 +16,7 @@ class JsonMapper(val opts: JsonOptions = JsonOptions()) {
 
   fun render(o: Any?, out: Writer) = JsonRenderer(out, opts).render(o)
   fun render(o: Any?, out: OutputStream) = OutputStreamWriter(out).let { render(o, it); it.flush() }
-  @Language("JSON") fun render(o: Any?): String = StringWriter().apply { use { render(o, it) } }.toString()
+  @Language("JSON") fun render(o: Any?): String = FastStringWriter().also { render(o, it) }.toString()
 }
 
 inline fun <reified T> JsonMapper.parse(json: Reader): T = parse(json, typeOf<T>().takeIfSpecific())
@@ -40,4 +40,15 @@ class SnakeCase: NameConverter() {
   private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
   override fun to(o: String) = o.replace(humps, "_").lowercase()
   override fun from(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
+}
+
+class FastStringWriter: Writer() {
+  private val buf = StringBuilder()
+  override fun close() {}
+  override fun flush() {}
+  override fun toString() = buf.toString()
+
+  override fun write(c: Int) { buf.append(c.toChar()) }
+  override fun write(s: String) { buf.append(s) }
+  override fun write(cbuf: CharArray, off: Int, len: Int) { buf.append(cbuf, off, len) }
 }
