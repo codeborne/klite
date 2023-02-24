@@ -38,7 +38,7 @@ fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
   props.filter { it.javaField != null }.associate { it.name to it.valueOf(this) }
 
 fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
-  val constructor = primaryConstructor!!
+  val constructor = primaryConstructor ?: error("$this does not have primary constructor")
   val args = constructor.parameters.associateWith { valueOf(it) }.filterNot { it.key.isOptional && it.value == null }
   return try {
     constructor.callBy(args)
