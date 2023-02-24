@@ -48,10 +48,7 @@ object Converter {
     try { constructorCreator(type) }
     catch (e: NoSuchMethodException) {
       try { parseMethodCreator(type) }
-      catch (e2: NoSuchMethodException) {
-        log.warn("Cannot find a way to convert String to $type\n$e\n$e2")
-        null
-      }
+      catch (e2: NoSuchMethodException) { null }
     }
 
   private fun <T: Any> enumCreator(type: KClass<T>): FromStringConverter<T> {
