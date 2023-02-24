@@ -1,6 +1,7 @@
 # Unreleased
 * core: toValues() functions moved here from jdbc module
 * json: new lightweight json parser
+* jackson: package changed to klite.jackson to avoid conflicts
 
 # 1.4.3
 * core: the new core module, to make it possible to use jdbc module without the server

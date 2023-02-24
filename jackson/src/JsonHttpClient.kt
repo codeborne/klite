@@ -1,4 +1,4 @@
-package klite.json
+package klite.jackson
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import klite.*

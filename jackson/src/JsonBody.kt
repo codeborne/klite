@@ -1,4 +1,4 @@
-package klite.json
+package klite.jackson
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonParseException
