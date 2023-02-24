@@ -1,5 +1,6 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
@@ -23,9 +24,9 @@ class ConverterTest {
   @Test fun custom() {
     expect(Converter.supports(Pattern::class)).toEqual(false)
     expect { Converter.from<Pattern>("[a-z]") }.toThrow<IllegalStateException>()
+    expect(Converter.of(Pattern::class)).toBeTheInstance(Converter.of(Pattern::class))
 
     Converter.use<Pattern> { Pattern.compile(it) }
-
     expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
     expect(Converter.supports(Pattern::class)).toEqual(true)
   }

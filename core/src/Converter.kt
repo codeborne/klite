@@ -31,17 +31,17 @@ object Converter {
   operator fun <T: Any> set(type: KClass<T>, converter: FromStringConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: FromStringConverter<T>) = set(T::class, converter)
 
-  fun supports(type: KClass<*>) = converter(type) !is NoConverter
+  fun supports(type: KClass<*>) = of(type) !is NoConverter
   fun forEach(block: (type: KClass<*>, converter: FromStringConverter<*>) -> Unit) = converters.forEach { block(it.key, it.value) }
 
   // TODO: really support for KType in Converter
   fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
-  fun <T: Any> from(s: String, type: KClass<T>): T = converter(type).invoke(s)
+  fun <T: Any> from(s: String, type: KClass<T>): T = of(type).invoke(s)
   fun from(o: Any?, type: KType): Any? = if (o is String) from(o, type) else o
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
-  private fun <T: Any> converter(type: KClass<T>) =
-    converters[type] as? FromStringConverter<T> ?: findCreator(type)?.also { set(type, it) } ?: NoConverter(type)
+  internal fun <T: Any> of(type: KClass<T>) =
+    converters[type] as? FromStringConverter<T> ?: (findCreator(type) ?: NoConverter(type)).also { set(type, it) }
 
   private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T>? =
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
