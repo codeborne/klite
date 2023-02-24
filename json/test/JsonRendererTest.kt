@@ -60,9 +60,14 @@ class JsonRendererTest {
     expect(mapper.render(o)).toEqual(/*language=JSON*/ """{"array":[{"x":0,"y":123},{"x":0,"y":123}],"date":"2022-10-21","hellou":"","id":"b8ca58ec-ab15-11ed-93cc-8fdb43988a14","instant":"2022-10-21T10:55:00Z","nested":{"x":567,"y":123},"readOnly":true}""")
   }
 
-  @Test fun snakeCase() {
+  @Test fun `snake case`() {
     val mapper = JsonMapper(keys = SnakeCase)
     expect(mapper.render(mapOf("snakeCase" to 123))).toEqual("""{"snake_case":123}""")
+  }
+
+  @Test fun `upper camel case`() {
+    val mapper = JsonMapper(keys = Capitalize)
+    expect(mapper.render(mapOf("camelCase" to true))).toEqual("""{"CamelCase":true}""")
   }
 
   @Test fun valueConverter() {

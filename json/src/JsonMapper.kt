@@ -12,7 +12,7 @@ import kotlin.reflect.typeOf
 data class JsonMapper(
   val trimToNull: Boolean = true,
   val renderNulls: Boolean = false,
-  val keys: NameConverter = NameConverter(),
+  val keys: KeyConverter = KeyConverter(),
   val values: ValueConverter<Any?> = ValueConverter()
 ) {
   fun <T> parse(json: Reader, type: KType?): T = JsonParser(json, this).readValue(type) as T
@@ -28,16 +28,21 @@ inline fun <reified T> JsonMapper.parse(json: Reader): T = parse(json, typeOf<T>
 inline fun <reified T> JsonMapper.parse(@Language("JSON") json: String): T = parse(json, typeOf<T>())
 inline fun <reified T> JsonMapper.parse(json: InputStream): T = parse(json, typeOf<T>())
 
-typealias NameConverter = ValueConverter<String>
+typealias KeyConverter = ValueConverter<String>
 open class ValueConverter<T> {
   open fun to(o: T) = o
   open fun from(o: T) = o
 }
 
-object SnakeCase: NameConverter() {
+object SnakeCase: KeyConverter() {
   private val humps = "(?<=.)(?=\\p{Upper})".toRegex()
   override fun to(o: String) = o.replace(humps, "_").lowercase()
   override fun from(o: String) = o.split('_').joinToString("") { it.replaceFirstChar { it.uppercaseChar() } }.replaceFirstChar { it.lowercaseChar() }
+}
+
+object Capitalize: KeyConverter() {
+  override fun to(o: String) = o.replaceFirstChar { it.uppercaseChar() }
+  override fun from(o: String) = o.replaceFirstChar { it.lowercaseChar() }
 }
 
 class FastStringWriter: Writer() {

@@ -59,6 +59,11 @@ class JsonParserTest {
     expect(mapper.parse<Any>("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))
   }
 
+  @Test fun `upper camel case`() {
+    val mapper = JsonMapper(keys = Capitalize)
+    expect(mapper.parse<Any>("""{"HelloWorld": true}""")).toEqual(mapOf("helloWorld" to true))
+  }
+
   data class Nullable(val x: String? = null)
 }
 
