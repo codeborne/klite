@@ -22,10 +22,5 @@ class ValuesTest {
     expect(rs.fromValues(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null, SomeData::list to listOf(9))).toEqual(SomeData("Hello", 42, list = listOf(9)))
   }
 
-  @Test fun `Map fromValues`() {
-    val data = mapOf("hello" to "Hello", "world" to 34).fromValues<SomeData>()
-    expect(data).toEqual(SomeData("Hello", 34))
-  }
-
   data class SomeData(val hello: String, val world: Int, val nullable: String? = null, val list: List<Int> = listOf(1, 2))
 }

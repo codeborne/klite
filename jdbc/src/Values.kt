@@ -13,8 +13,6 @@ inline fun <T: Any> T.toValues(vararg provided: PropValue<T>) = toValues(*provid
 inline fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(*skip)
 
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = fromValues(T::class, *provided)
-inline fun <reified T: Any> Map<String, Any?>.fromValues() = T::class.create { JdbcConverter.from(get(it.name), it.type) }
-
 fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T>): T {
   val extraArgs = provided.associate { it.first.name to it.second }
   return type.create {
