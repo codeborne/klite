@@ -53,7 +53,7 @@ object JdbcConverter {
       @Suppress("UNCHECKED_CAST") when {
         cls.javaPrimitiveType != null || nativeTypes.contains(cls) -> v
         converters.contains(cls) -> (converters[cls] as ToJdbcConverter<Any>).invoke(v, conn)
-        cls.hasAnnotation<JvmInline>() -> v.unboxInline()
+        cls.isValue && cls.hasAnnotation<JvmInline>() -> v.unboxInline()
         Converter.supports(v::class) -> v.toString()
         else -> v
       }

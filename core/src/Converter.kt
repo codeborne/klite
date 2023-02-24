@@ -61,7 +61,7 @@ object Converter {
 
   private fun <T: Any> constructorCreator(type: KClass<T>): FromStringConverter<T> {
     val constructor = type.javaObjectType.getDeclaredConstructor(String::class.java)
-    if (type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
+    if (type.isValue && type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
     return { s ->
       try { constructor.newInstance(s) }
       catch (e: InvocationTargetException) { throw e.targetException }

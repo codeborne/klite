@@ -19,7 +19,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonOptions): Auto
       is Map<*, *> -> writeObject(o.iterator())
       null, is Number, is Boolean -> write(o.toString())
       else ->
-        if (o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
+        if (o::class.isValue && o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
         else if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
         else opts.values.to(o).let { if (it !== o) writeValue(it) else writeObject(it) }
     }
