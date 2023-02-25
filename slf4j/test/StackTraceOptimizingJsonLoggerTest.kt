@@ -4,8 +4,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEndWith
 import ch.tutteli.atrium.api.fluent.en_GB.toStartWith
 import ch.tutteli.atrium.api.verbs.expect
-import com.fasterxml.jackson.databind.JsonNode
-import klite.json.kliteJsonMapper
+import klite.json.JsonMapper
 import klite.json.parse
 import klite.slf4j.KliteLogger
 import klite.slf4j.StackTraceOptimizingJsonLogger
@@ -23,7 +22,7 @@ class StackTraceOptimizingJsonLoggerTest {
       .toContain(javaClass.name)
       .toContain(""", "cause": {"error": "java.lang.IllegalStateException: cause", "stack": ["""")
       .toEndWith("]}}\n")
-    kliteJsonMapper().parse<JsonNode>(json)
+    JsonMapper().parse<Any>(json)
     KliteLogger.out = System.out
   }
 

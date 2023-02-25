@@ -1,6 +1,8 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -8,6 +10,8 @@ import java.net.URI
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
+import java.util.UUID.fromString
+import java.util.UUID.randomUUID
 import java.util.regex.Pattern
 
 class ConverterTest {
@@ -18,8 +22,18 @@ class ConverterTest {
   }
 
   @Test fun custom() {
+    expect(Converter.supports(Pattern::class)).toEqual(false)
+    expect { Converter.from<Pattern>("[a-z]") }.toThrow<IllegalStateException>()
+    expect(Converter.of(Pattern::class)).toBeTheInstance(Converter.of(Pattern::class))
+
     Converter.use<Pattern> { Pattern.compile(it) }
     expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
+    expect(Converter.supports(Pattern::class)).toEqual(true)
+  }
+
+  @Test fun `super classes`() {
+    expect(Converter.from<Any>("x")).toEqual("x")
+    expect(Converter.from<CharSequence>("x")).toEqual("x")
   }
 
   @Test fun enum() {
@@ -34,6 +48,9 @@ class ConverterTest {
 
   @Test fun jvmInline() {
     expect(Converter.from<Inline>("hello")).toEqual(Inline("hello"))
+    val id = randomUUID()
+    Converter.use { InlineId(fromString(it)) }
+    expect(Converter.from<InlineId>(id.toString())).toEqual(InlineId(id))
   }
 
   @Test fun javaPrimitive() {
@@ -41,6 +58,7 @@ class ConverterTest {
   }
 
   @Test fun parse() {
+    expect(Converter.supports(Locale::class)).toEqual(true)
     expect(Converter.from<LocalDate>("2021-10-21")).toEqual(LocalDate.parse("2021-10-21"))
     expect(Converter.from<Period>("P1D")).toEqual(Period.parse("P1D"))
   }
@@ -53,3 +71,4 @@ class ConverterTest {
 }
 
 @JvmInline value class Inline(val string: String)
+@JvmInline value class InlineId(val id: UUID)

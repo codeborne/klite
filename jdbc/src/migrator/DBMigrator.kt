@@ -14,14 +14,14 @@ open class DBMigrator(
   private val changeSets: Sequence<ChangeSet> = ChangeSetFileReader(Config.optional("DB_MIGRATE", "db.sql")),
   private val contexts: Set<String> = Config.active,
   private val dropAllOnFailure: Boolean = Config.isTest
-): Extension {
+): Runnable {
   private val log = logger()
   private val repository = ChangeSetRepository(db)
 
   private val tx = Transaction(db)
   private var history = mutableMapOf<String, ChangeSet>()
 
-  override fun install(server: Server) = migrate()
+  override fun run() = migrate()
 
   fun migrate() = try {
     doMigrate()
@@ -33,7 +33,7 @@ open class DBMigrator(
     } else throw e
   }
 
-  private fun doMigrate() = tx.attachToThread().use {
+  private fun doMigrate(): Unit = tx.attachToThread().use {
     try {
       log.info("Locking"); lock()
       readHistory()
@@ -43,7 +43,7 @@ open class DBMigrator(
     }
   }
 
-  private fun readHistory() = try {
+  private fun readHistory(): Unit = try {
     history = repository.list().associateByTo(HashMap()) { it.id }
   } catch (e: SQLException) {
     log.warn(e.toString())

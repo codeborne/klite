@@ -12,6 +12,12 @@ Registration with Server instance:
   use<RequestTransactionHandler>() // to enable per-request transactions
 ```
 
+Stand-alone usage without [klite-server](../server) is also possible:
+```kotlin
+  val db = HikariDataSource(...) // or ConfigDataSource()
+  DBMigrator(db).migrate()
+```
+
 Usage:
 
 ```kotlin

@@ -2,7 +2,7 @@ val mainClassName = "LauncherKt"
 
 dependencies {
   implementation(project(":server"))
-  implementation(project(":jackson"))
+  implementation(project(":json"))
   implementation(project(":i18n"))
   implementation(project(":jdbc"))
   implementation(project(":slf4j"))

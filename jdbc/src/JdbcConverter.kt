@@ -2,6 +2,7 @@ package klite.jdbc
 
 import klite.Converter
 import klite.annotations.annotation
+import klite.unboxInline
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
@@ -15,6 +16,8 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
 
 typealias ToJdbcConverter<T> = (T, Connection?) -> Any
@@ -50,7 +53,7 @@ object JdbcConverter {
       @Suppress("UNCHECKED_CAST") when {
         cls.javaPrimitiveType != null || nativeTypes.contains(cls) -> v
         converters.contains(cls) -> (converters[cls] as ToJdbcConverter<Any>).invoke(v, conn)
-        cls.annotation<JvmInline>() != null -> v.javaClass.getMethod("unbox-impl").invoke(v)
+        cls.isValue && cls.hasAnnotation<JvmInline>() -> v.unboxInline()
         Converter.supports(v::class) -> v.toString()
         else -> v
       }
@@ -81,6 +84,7 @@ object JdbcConverter {
     Instant::class -> (v as? Timestamp)?.toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
     LocalDateTime::class -> (v as? Timestamp)?.toLocalDateTime()
-    else -> if (v is String && target != null && target != String::class) Converter.from(v, target) else v
+    else -> if (target?.annotation<JvmInline>() != null) target.primaryConstructor!!.call(v)
+    else if (v is String && target != null && target != String::class) Converter.from(v, target) else v
   }
 }

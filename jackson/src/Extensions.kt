@@ -1,5 +1,5 @@
 @file:Suppress("NOTHING_TO_INLINE")
-package klite.json
+package klite.jackson
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.InputStream

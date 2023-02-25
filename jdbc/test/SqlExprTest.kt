@@ -14,4 +14,10 @@ class SqlExprTest {
 
     expect(SqlExpr("expr", 1, 2, 3).hashCode()).toEqual(3158614)
   }
+
+  @Test fun orExpr() {
+    val or = orExpr("column" to null, "column" to listOf(1, 2, 3), null)
+    expect(or.expr).toEqual("(\"column\" is null or \"column\" in (?, ?, ?))")
+    expect(or.values).toEqual(listOf(1, 2, 3))
+  }
 }

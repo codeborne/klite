@@ -1,5 +1,6 @@
 package klite.jdbc
 
+import klite.createFrom
 import klite.info
 import klite.logger
 import java.io.FileNotFoundException
@@ -51,11 +52,11 @@ open class ChangeSetFileReader(
             substitutions[key] = value
           }
           "changeset" -> {
-            changeSet = (mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
+            changeSet = ChangeSet::class.createFrom(mapOf(ChangeSet::id.name to parts[1], ChangeSet::filePath.name to path) +
               parts.drop(2).associate { it.split(':').let { (k, v) ->
                 require(k in changeSetParams) { "Unknown changeset param $k, supported: $changeSetParams" }
                 k to v
-              }}).fromValues()
+              }})
           }
         }
       }

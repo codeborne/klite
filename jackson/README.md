@@ -10,4 +10,4 @@ or
 useOnly<JsonBody>()
 ```
 
-This will also add jackson deserializers for all types already registered with [Converter](../server/src/klite/Converter.kt) at the moment of creation.
+This will also add jackson deserializers for all types already registered with [Converter](../core/src/Converter.kt) at the moment of creation.

@@ -1,5 +1,19 @@
 # 1.5.0-unreleased
+* core: toValues() functions moved here from jdbc module
+* json: new lightweight json parser
+* jackson: package changed to klite.jackson to avoid conflicts
 * jdbc: replace db.select <-> db.query methods
+
+# 1.4.3
+* core: the new core module, to make it possible to use jdbc module without the server
+* core: mapOfNotNull() now accepts keys of any type
+* core: Converter.supports() now finds supported converters automatically, even if not used previously
+* jdbc: db.count() introduced
+* jdbc: box @JvmInline classes when loading from DB
+* jdbc: allow same column multiple times in or() and deprecate NullOrOp()
+* server: do not wrap exceptions already containing parameter name in annotated routes
+* server: TypedHttpClient introduced as a more generic foundation for JsonHttpClient
+* jackson: JsonHttpClient now accepts KType as non-reified parameters instead of KClass<*> for better type parameter support
 
 # 1.4.2
 * server: fallback to `docker compose` without dash

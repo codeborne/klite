@@ -1,4 +1,4 @@
-package klite.json
+package klite.jackson
 
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
