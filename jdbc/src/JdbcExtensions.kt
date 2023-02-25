@@ -29,13 +29,13 @@ fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${
 fun <R, ID> DataSource.select(table: String, id: ID, mapper: Mapper<R>): R =
   select(table, listOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-inline fun <R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = "", noinline mapper: Mapper<R>): List<R> =
-  select(table, where.filterNotNull(), suffix, mapper = mapper)
-
 fun <R, C: MutableCollection<R>> DataSource.select(table: String, where: Where = emptyList(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   query("select * from " + q(table), where, suffix, into, mapper)
 
-fun <R> DataSource.select(table: String, where: Where = emptyList(), suffix: String = "", mapper: Mapper<R>) =
+inline fun <R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = "", noinline mapper: Mapper<R>): List<R> =
+  select(table, where.filterNotNull(), suffix, mapper = mapper)
+
+fun <R> DataSource.select(table: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
   select(table, where, suffix, mutableListOf(), mapper) as List<R>
 
 inline fun <reified R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = ""): List<R> =
@@ -49,11 +49,14 @@ fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: Strin
   }
 }
 
-fun <R> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), suffix: String = "", mapper: Mapper<R>) =
+inline fun <R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, suffix: String = "", noinline mapper: Mapper<R>): List<R> =
+  query(select, where.filterNotNull(), suffix, mapper = mapper)
+
+fun <R> DataSource.query(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
   query(select, where, suffix, mutableListOf(), mapper) as List<R>
 
-inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), suffix: String = ""): List<R> =
-  query(select, where, suffix) { create() }
+inline fun <reified R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, suffix: String = ""): List<R> =
+  query(select, *where, suffix = suffix) { create() }
 
 fun DataSource.count(table: String, where: Where = emptyList()) = query("select count(*) from $table", where) { getLong(1) }.first()
 
