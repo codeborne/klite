@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.PropValue
+import klite.toValues
 import java.sql.ResultSet
 import java.util.*
 import javax.sql.DataSource

@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.jdbc.ChangeSet.On.FAIL
+import klite.toValuesSkipping
 import klite.trimToNull
 import org.intellij.lang.annotations.Language
 import javax.sql.DataSource
