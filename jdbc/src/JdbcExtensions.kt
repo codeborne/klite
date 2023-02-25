@@ -52,7 +52,7 @@ fun <R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMa
 inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
   query(select, where, suffix) { fromValues() }
 
-fun DataSource.count(table: String, where: Where = emptyMap()) = select("select count(*) from $table", where.toMap()) { getLong(1) }.first()
+fun DataSource.count(table: String, where: Where = emptyMap()) = query("select count(*) from $table", where.toMap()) { getLong(1) }.first()
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Mapper<R>) {
   while (next()) consumer(mapper())
