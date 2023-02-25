@@ -17,9 +17,9 @@ val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "
 
 typealias Mapper<R> = ResultSet.() -> R
 internal typealias Column = Any // String | KProperty1
+internal typealias ColValue = Pair<Column, Any?>
 
-// TODO: replace Map with vararg Pair<Column, Any?
-typealias Where = Map<out Column, Any?>
+typealias Where = Collection<ColValue>
 typealias Values = Map<out Column, *>
 
 fun DataSource.lock(on: String) = query("select pg_advisory_lock(${on.hashCode()})") {}.first()
@@ -27,18 +27,21 @@ fun DataSource.tryLock(on: String): Boolean = query("select pg_try_advisory_lock
 fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
 
 fun <R, ID> DataSource.select(table: String, id: ID, mapper: Mapper<R>): R =
-  select(table, mapOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
+  select(table, listOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R, C: MutableCollection<R>> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
+inline fun <R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = "", noinline mapper: Mapper<R>): List<R> =
+  select(table, where.filterNotNull(), suffix, mapper = mapper)
+
+fun <R, C: MutableCollection<R>> DataSource.select(table: String, where: Where = emptyList(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   query("select * from " + q(table), where, suffix, into, mapper)
 
-fun <R> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
+fun <R> DataSource.select(table: String, where: Where = emptyList(), suffix: String = "", mapper: Mapper<R>) =
   select(table, where, suffix, mutableListOf(), mapper) as List<R>
 
-inline fun <reified R> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
-  select(table, where, suffix) { create() }
+inline fun <reified R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = ""): List<R> =
+  select(table, *where, suffix = suffix) { create() }
 
-fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
+fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   whereConvert(where).let { where ->
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
@@ -46,13 +49,13 @@ fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: Strin
   }
 }
 
-fun <R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", mapper: Mapper<R>) =
+fun <R> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), suffix: String = "", mapper: Mapper<R>) =
   query(select, where, suffix, mutableListOf(), mapper) as List<R>
 
-inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
+inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), suffix: String = ""): List<R> =
   query(select, where, suffix) { create() }
 
-fun DataSource.count(table: String, where: Where = emptyMap()) = query("select count(*) from $table", where.toMap()) { getLong(1) }.first()
+fun DataSource.count(table: String, where: Where = emptyList()) = query("select count(*) from $table", where) { getLong(1) }.first()
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Mapper<R>) {
   while (next()) consumer(mapper())
@@ -96,9 +99,14 @@ private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
   else "?"
 }
 
-fun DataSource.update(table: String, where: Where, values: Values): Int = whereConvert(where).let { where ->
+inline fun DataSource.update(table: String, values: Values, vararg where: ColValue?): Int =
+  update(table, values, where.filterNotNull())
+
+fun DataSource.update(table: String, values: Values, where: Where): Int = whereConvert(where).let { where ->
   exec("update ${q(table)} set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where))
 }
+
+inline fun DataSource.delete(table: String, vararg where: ColValue?): Int = delete(table, where.filterNotNull())
 
 fun DataSource.delete(table: String, where: Where): Int = whereConvert(where).let { where ->
   exec("delete from ${q(table)}${whereExpr(where)}", whereValues(where))
@@ -113,7 +121,7 @@ internal fun setExpr(values: Values) = values.entries.joinToString { (k, v) ->
 
 private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()
 
-internal fun whereConvert(where: Where) = where.mapValues { (_, v) -> whereValueConvert(v) }
+internal fun whereConvert(where: Where) = where.map { (k, v) -> k to whereValueConvert(v) }
 internal fun whereValueConvert(v: Any?) = if (isEmptyCollection(v)) emptyArray else when (v) {
   null -> isNull
   is Iterable<*> -> In(v)
@@ -123,9 +131,9 @@ internal fun whereValueConvert(v: Any?) = if (isEmptyCollection(v)) emptyArray e
   else -> v
 }
 
-internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.entries.map { (k, v) -> k to v }.join(" and ")
+internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.map { (k, v) -> k to v }.join(" and ")
 
-internal fun Iterable<Pair<Column, Any?>>.join(separator: String) = joinToString(separator) { (k, v) ->
+internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator) { (k, v) ->
   val n = name(k)
   if (v is SqlExpr) v.expr(n) else q(n) + "=?"
 }
@@ -139,7 +147,7 @@ internal fun name(key: Any) = when(key) {
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
 internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
-internal fun whereValues(where: Where) = where.values.asSequence().flatValues()
+internal fun whereValues(where: Where) = where.asSequence().map { it.second }.flatValues()
 internal fun Sequence<Any?>.flatValues() = filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
 

@@ -31,7 +31,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun get(id: ID): E = db.select(table, id) { mapper() }
   open fun save(entity: E) = db.upsert(table, entity.persister())
   open fun list(vararg where: PropValue<E>?, order: String = defaultOrder): List<E> =
-    db.select(table, where.filterNotNull().toMap(), order) { mapper() }
-  open fun count(vararg where: PropValue<E>): Long = db.count(table, where.toMap())
+    db.select(table, where.filterNotNull(), order) { mapper() }
+  open fun count(vararg where: PropValue<E>?): Long = db.count(table, where.filterNotNull())
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
 }

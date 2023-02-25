@@ -21,18 +21,18 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
     expect(db.select(table, id) { getId() }).toEqual(id)
 
-    expect(db.select(table, mapOf("hello" to "Hello")) { getId() }).toContain(id)
+    expect(db.select(table, "hello" to "Hello") { getId() }).toContain(id)
     expect(db.select<SomeData>(table)).toContain(SomeData("Hello", 42, id))
-    expect(db.select(table, mapOf("hello" to "World")) { getId() }).toBeEmpty()
+    expect(db.select(table, "hello" to "World") { getId() }).toBeEmpty()
 
-    expect(db.select(table, mapOf("hello" to SqlOp(">", "Hello"))) { getId() }).toContain(id2)
-    expect(db.select(table, mapOf("hello" to listOf("Hello", "Hello2"))) { getId() }).toContain(id, id2)
-    expect(db.select(table, mapOf("hello" to listOf("Hello", "Hello2")), "order by hello desc") { getId() }).toContainExactly(id2, id)
-    expect(db.select(table, mapOf("hello" to listOf("Hello", "Hello2")), "limit 1") { getId() }).toContainExactly(id)
-    expect(db.select(table, mapOf("hello" to NotIn("Hello2"))) { getId() }).toContainExactly(id)
+    expect(db.select(table, "hello" gt "Hello") { getId() }).toContain(id2)
+    expect(db.select(table, "hello" to listOf("Hello", "Hello2")) { getId() }).toContain(id, id2)
+    expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "order by hello desc") { getId() }).toContainExactly(id2, id)
+    expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "limit 1") { getId() }).toContainExactly(id)
+    expect(db.select(table, "hello" to NotIn("Hello2")) { getId() }).toContainExactly(id)
 
-    expect(db.select(table, emptyMap(), "where world is null") { getId() }).toContainExactly(id2)
-    expect(db.select("$table a join $table b on a.id = b.id", emptyMap()) { getId() }).toContain(id, id2)
+    expect(db.select(table, suffix = "where world is null") { getId() }).toContainExactly(id2)
+    expect(db.select("$table a join $table b on a.id = b.id") { getId() }).toContain(id, id2)
   }
 
   @Test fun generatedKey() {
@@ -60,10 +60,10 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val data = SomeData("World", 37)
     db.insert(table, data.toValues())
 
-    db.update(table, mapOf("id" to data.id), mapOf("world" to 39))
+    db.update(table, mapOf("world" to 39), "id" to data.id)
     expect(db.select(table, data.id) { create<SomeData>() }).toEqual(data.copy(world = 39))
 
-    db.delete(table, mapOf("world" to 39))
+    db.delete(table, listOf("world" to 39))
     expect { db.select(table, data.id) { } }.toThrow<NoSuchElementException>()
   }
 
