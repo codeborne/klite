@@ -5,6 +5,9 @@
 * jdbc: fromValues() was renamed to create()
 * jdbc: switched db.select() <-> db.query(), taking "where" as a list or varargs, to allow for duplicated columns
 
+The release is not backwards-compatible. This will migrate the most important parts:
+`find -name '*.kt' -exec sed 's/klite.json./klite.jackson./; /db.query/{s/db.query/db.select/; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/; n; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/}' {} \;`
+
 # 1.4.3
 * core: the new core module, to make it possible to use jdbc module without the server
 * core: mapOfNotNull() now accepts keys of any type
