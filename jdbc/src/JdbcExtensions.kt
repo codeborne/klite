@@ -16,8 +16,8 @@ import kotlin.reflect.KProperty1
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
 typealias Mapper<R> = ResultSet.() -> R
-internal typealias Column = Any // String | KProperty1
-internal typealias ColValue = Pair<Column, Any?>
+typealias Column = Any // String | KProperty1
+typealias ColValue = Pair<Column, Any?>
 
 typealias Where = Collection<ColValue>
 typealias Values = Map<out Column, *>

@@ -31,8 +31,8 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "limit 1") { getId() }).toContainExactly(id)
     expect(db.select(table, "hello" to NotIn("Hello2")) { getId() }).toContainExactly(id)
 
-    expect(db.select(table, suffix = "where world is null") { getId() }).toContainExactly(id2)
-    expect(db.select("$table a join $table b on a.id = b.id") { getId() }).toContain(id, id2)
+    expect(db.select(table, emptyList(), "where world is null") { getId() }).toContainExactly(id2)
+    expect(db.select("$table a join $table b on a.id = b.id", emptyList()) { getId() }).toContain(id, id2)
   }
 
   @Test fun generatedKey() {
