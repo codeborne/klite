@@ -35,17 +35,17 @@ Usage:
   // basic query from a table (mapper runs in context of ResultSet)
   db.select("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
   // or if all entity properties are contained in the result set
-  db.select("table", mapOf("column" to value)) { fromValues<MyEntity>() }
+  db.select("table", mapOf("column" to value)) { create<MyEntity>() }
   // if you need to add several criteria for a single column (map key), use SqlExpr and friends
   db.select("table", mapOf("column" to SqlExpr("(column is null or column >= 10)")))
   // where can also be written in a type-safe way, and some common operators are available
-  db.select("table", mapOf(MyEntity::column gte 123)) { fromValues<MyEntity>() }
+  db.select("table", mapOf(MyEntity::column gte 123)) { create<MyEntity>() }
 
-  // more advanced query with suffix and fromValues() auto-mapper
-  db.select("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { fromValues<MyEntity>() }
+  // more advanced query with suffix and create() auto-mapper
+  db.select("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { create<MyEntity>() }
   // single row, with joins, etc
   db.select("table1 left join table2 on table1.id = table2.megaId", mapOf("table2.field" to value), "limit 1") {
-    fromValues<MyEntity>(MyEntity::other to fromValues<OtherEntity>())
+    create<MyEntity>(MyEntity::other to create<OtherEntity>())
   }.first()
 
   // or you can write full sql manually using db.query() and db.exec()
@@ -60,7 +60,7 @@ in autocommit mode. If [Transaction](src/Transaction.kt) is active, then it will
 set autoCommit=false and reuse it until the transaction is closed with either commit or rollback.
 
 In query mappers you can either use ResultSet methods and extensions to build your entities or use the
-[ResultSet.fromValues](src/Values.kt). Likewise, [Any.toValues](src/Values.kt) is provided to simplify
+[ResultSet.create](src/Values.kt). Likewise, [Any.toValues](../core/src/Values.kt) is provided to simplify
 conversion of entities to Maps for use with insert/update/upsert.
 
 [JdbcConverter](src/JdbcConverter.kt) can be used to register conversion of custom types to be sent to the DB.

@@ -16,8 +16,12 @@ inline fun <T: Any> T.toValues(vararg provided: PropValue<T>) = toValues(*provid
 @Deprecated("use function from klite-core", ReplaceWith("this.toValuesSkipping<T>(*skip)", "klite.toValuesSkipping"))
 inline fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(*skip)
 
-inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = fromValues(T::class, *provided)
-fun <T: Any> ResultSet.fromValues(type: KClass<T>, vararg provided: PropValue<T>): T {
+@Deprecated("was renamed to create()", ReplaceWith("this.create<T>(*provided)"))
+inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = create(T::class, *provided)
+
+inline fun <reified T: Any> ResultSet.create(vararg provided: PropValue<T>) = create(T::class, *provided)
+
+fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T>): T {
   val extraArgs = provided.associate { it.first.name to it.second }
   return type.create {
     if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]

@@ -25,7 +25,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
   open val defaultOrder get() = orderDesc
 
-  protected open fun ResultSet.mapper(): E = fromValues(entityClass)
+  protected open fun ResultSet.mapper(): E = create(entityClass)
   protected open fun E.persister() = toValues()
 
   open fun get(id: ID): E = db.select(table, id) { mapper() }

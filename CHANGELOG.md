@@ -1,8 +1,9 @@
 # 1.5.0-unreleased
-* core: toValues() functions moved here from jdbc module
+* core: toValues() functions moved here from klite-jdbc
 * json: new lightweight json parser
-* jackson: package changed to klite.jackson to avoid conflicts
+* jackson: package changed to klite.jackson to avoid conflicts with klite-json
 * jdbc: replace db.select <-> db.query methods
+* jdbc: fromValues() was renamed to create()
 
 # 1.4.3
 * core: the new core module, to make it possible to use jdbc module without the server

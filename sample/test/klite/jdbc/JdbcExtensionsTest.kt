@@ -52,7 +52,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     db.upsert(table, data.toValues())
     db.upsert(table, data.toValues())
 
-    val loaded: SomeData = db.select(table, data.id) { fromValues() }
+    val loaded: SomeData = db.select(table, data.id) { create() }
     expect(loaded).toEqual(data)
   }
 
@@ -61,7 +61,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     db.insert(table, data.toValues())
 
     db.update(table, mapOf("id" to data.id), mapOf("world" to 39))
-    expect(db.select(table, data.id) { fromValues<SomeData>() }).toEqual(data.copy(world = 39))
+    expect(db.select(table, data.id) { create<SomeData>() }).toEqual(data.copy(world = 39))
 
     db.delete(table, mapOf("world" to 39))
     expect { db.select(table, data.id) { } }.toThrow<NoSuchElementException>()

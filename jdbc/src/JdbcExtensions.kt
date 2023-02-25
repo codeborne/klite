@@ -36,7 +36,7 @@ fun <R> DataSource.select(table: String, where: Where = emptyMap(), suffix: Stri
   select(table, where, suffix, mutableListOf(), mapper) as List<R>
 
 inline fun <reified R> DataSource.select(table: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
-  select(table, where, suffix) { fromValues() }
+  select(table, where, suffix) { create() }
 
 fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = "", into: C, mapper: Mapper<R>): C =
   whereConvert(where).let { where ->
@@ -50,7 +50,7 @@ fun <R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMa
   query(select, where, suffix, mutableListOf(), mapper) as List<R>
 
 inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where = emptyMap(), suffix: String = ""): List<R> =
-  query(select, where, suffix) { fromValues() }
+  query(select, where, suffix) { create() }
 
 fun DataSource.count(table: String, where: Where = emptyMap()) = query("select count(*) from $table", where.toMap()) { getLong(1) }.first()
 
