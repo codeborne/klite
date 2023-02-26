@@ -1,5 +1,6 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
@@ -46,6 +47,12 @@ class ConverterTest {
     expect(Converter.from<Long>("123")).toEqual(123L)
   }
 
+  @Test fun `no explicit data constructors`() {
+    expect { Converter.from<SingleValueData>("hello") }.toThrow<IllegalStateException>().messageToContain("No known converter from String to class klite.SingleValueData, register with Converter.use()")
+    Converter.use { SingleValueData(it) }
+    expect(Converter.from<SingleValueData>("hello")).toEqual(SingleValueData("hello"))
+  }
+
   @Test fun jvmInline() {
     expect(Converter.from<Inline>("hello")).toEqual(Inline("hello"))
     val id = randomUUID()
@@ -72,3 +79,4 @@ class ConverterTest {
 
 @JvmInline value class Inline(val string: String)
 @JvmInline value class InlineId(val id: UUID)
+data class SingleValueData(val s: String)

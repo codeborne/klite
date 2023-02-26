@@ -11,13 +11,14 @@ import kotlin.reflect.full.isSubclassOf
 typealias FromStringConverter<T> = (s: String) -> T
 
 private class NoConverter<T: Any>(val type: KClass<T>): FromStringConverter<T> {
-  override fun invoke(s: String) = error("No known converter from String to $type")
+  override fun invoke(s: String) = error("No known converter from String to $type, register with Converter.use()")
 }
 
 /**
  * Converts Strings to value types.
  * Supports enums, constructor invocation, parse() methods (e.g. java.time).
  * Can register custom converters with `use` method.
+ * Note: @JvmInline classes are converted by default, but Kotlin data are not; register them with `use` explicitly if needed.
  */
 @Suppress("UNCHECKED_CAST")
 object Converter {
@@ -57,7 +58,8 @@ object Converter {
     return { s -> enumConstants.find { (it as Enum<*>).name == s } ?: error("No $type constant: $s") }
   }
 
-  private fun <T: Any> constructorCreator(type: KClass<T>): FromStringConverter<T> {
+  private fun <T: Any> constructorCreator(type: KClass<T>): FromStringConverter<T>? {
+    if (type.isData) return null
     val constructor = type.javaObjectType.getDeclaredConstructor(String::class.java)
     if (type.isValue && type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
     return { s ->

@@ -27,6 +27,10 @@ use(JsonBody(JsonMapper(renderNulls = true, keys = SnakeCase, values = object: V
 })))
 ```
 
+## Annotations
+
+[@JsonProperty and @JsonIgnore](src/JsonMapper.kt) are provided, similar to Jackson
+
 ## Integrations
 
 [JsonHttpClient](src/JsonHttpClient.kt) is provided to do async json requests to other services.
