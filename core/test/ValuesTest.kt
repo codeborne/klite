@@ -19,8 +19,9 @@ class ValuesTest {
   }
 
   @Test fun createFrom() {
-    val data = SomeData::class.createFrom(mapOf("hello" to "Hello", "world" to 34))
-    expect(data).toEqual(SomeData("Hello", 34))
+    val values = mapOf("hello" to "Hello", "world" to 34)
+    expect(SomeData::class.createFrom(values)).toEqual(SomeData("Hello", 34))
+    expect(values.create<SomeData>()).toEqual(SomeData("Hello", 34))
   }
 
   data class SomeData(val hello: String, val world: Int, val nullable: String? = null, val list: List<Int> = listOf(1, 2))
