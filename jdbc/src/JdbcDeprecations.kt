@@ -2,13 +2,14 @@ package klite.jdbc
 
 import klite.toValues
 import klite.toValuesSkipping
+import klite.uuid
 import java.sql.ResultSet
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KProperty1
 
 @Deprecated("use .uuid instead", ReplaceWith("this.uuid", "klite.uuid"))
-fun String.toId(): UUID = UUID.fromString(this)
+fun String.toId(): UUID = uuid
 
 @Deprecated("use .getUuid() instead", ReplaceWith("this.getUuid()"))
 fun ResultSet.getId(column: String = "id") = getUuid(column)

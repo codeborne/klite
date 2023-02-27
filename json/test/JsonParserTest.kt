@@ -4,6 +4,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import klite.uuid
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
@@ -42,7 +43,7 @@ class JsonParserTest {
       "hellou": " x ", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z",
       "nested": {"x": 567}, "array": [{}, {"x": 2}], "map": {"2022-10-21": {"y": 1}},"ignore": false, "readOnly":  false}
     """)).toEqual(
-      Hello("x", UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14"), LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
+      Hello("x", "b8ca58ec-ab15-11ed-93cc-8fdb43988a14".uuid, LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
         listOf(Nested(), Nested(x = 2.toBigDecimal())), mapOf(LocalDate.parse("2022-10-21") to Nested(y = 1))))
   }
 

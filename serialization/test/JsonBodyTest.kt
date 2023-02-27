@@ -5,6 +5,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import klite.ErrorResponse
 import klite.StatusCode
+import klite.uuid
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -31,7 +32,7 @@ class JsonBodyTest {
 
   @Test fun `use ConverterSerializer`() {
     val out = ByteArrayOutputStream()
-    val entity = SomeEntity(UUID.fromString("fc587008-f555-4b4d-82c0-818b05eb8bad"))
+    val entity = SomeEntity("fc587008-f555-4b4d-82c0-818b05eb8bad".uuid)
     jsonBody.render(out, entity)
     expect(out.toByteArray().decodeToString()).toEqual("""{"id":"fc587008-f555-4b4d-82c0-818b05eb8bad"}""")
 
