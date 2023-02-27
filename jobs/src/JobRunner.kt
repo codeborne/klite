@@ -57,9 +57,10 @@ open class JobRunner(
       } catch (e: Exception) {
         commit = false
         logger.error("${job.name} failed", e)
+      } finally {
+        if (!job.allowParallelRun) db.unlock(job.name)
+        tx.close(commit)
       }
-      if (!job.allowParallelRun) db.unlock(job.name)
-      tx.close(commit)
     }.also { launched ->
       runningJobs += launched
       launched.invokeOnCompletion { runningJobs -= launched }
