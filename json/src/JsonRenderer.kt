@@ -12,7 +12,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
 
   private fun writeValue(o: Any?) {
     when (o) {
-      is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("\b", "\\b").replace("\"", "\\\"")).toString()); write('\"') }
+      is CharSequence -> writeString(opts.values.to(o).toString())
       is Iterable<*> -> writeArray(o)
       is Array<*> -> writeArray(Arrays.asList(*o))
       is Map<*, *> -> writeObject(o.asSequence())
@@ -22,6 +22,16 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
         else if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
         else opts.values.to(o).let { if (it !== o) writeValue(it) else writeObject(it) }
     }
+  }
+
+  private fun writeString(s: String) {
+    write('\"')
+    s.forEach { when(it) {
+      '\n' -> write("\\n"); '\r' -> write("\\r"); '\t' -> write("\\t"); '"' -> write("\\\"")
+      in '\u0000'..'\u001F' -> { write("\\u"); write(it.code.toString(16).padStart(4, '0')) }
+      else -> write(it)
+    } }
+    write('\"')
   }
 
   private fun writeArray(o: Iterable<*>) {

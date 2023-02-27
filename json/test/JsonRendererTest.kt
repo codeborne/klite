@@ -21,7 +21,7 @@ class JsonRendererTest {
 
   @Test fun string() {
     expect(mapper.render("Hello")).toEqual("\"Hello\"")
-    expect(mapper.render("Hello\n\t\"World\"")).toEqual("\"Hello\\n\\t\\\"World\\\"\"")
+    expect(mapper.render("Hello\n\t\"World\"\u001F")).toEqual("\"Hello\\n\\t\\\"World\\\"\\u001f\"")
   }
 
   @Test fun converter() {
