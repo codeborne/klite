@@ -12,7 +12,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
 
   private fun writeValue(o: Any?) {
     when (o) {
-      is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")).toString()); write('\"') }
+      is String -> { write('\"'); write(opts.values.to(o.replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace("\b", "\\b").replace("\"", "\\\"")).toString()); write('\"') }
       is Iterable<*> -> writeArray(o)
       is Array<*> -> writeArray(Arrays.asList(*o))
       is Map<*, *> -> writeObject(o.asSequence())
