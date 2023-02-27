@@ -1,5 +1,6 @@
 package klite
 
+import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -11,3 +12,5 @@ fun <K, V> mapOfNotNull(vararg pairs: Pair<K, V?>?) = notNullValues(*pairs).toMa
 
 val KType.java get() = (classifier as KClass<*>).java
 fun Any.unboxInline() = javaClass.getMethod("unbox-impl").invoke(this)
+
+val String.uuid: UUID get() = UUID.fromString(this)

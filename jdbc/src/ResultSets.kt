@@ -1,5 +1,6 @@
 package klite.jdbc
 
+import klite.uuid
 import java.sql.ResultSet
 import java.time.Period
 import java.util.*
@@ -13,8 +14,9 @@ inline operator fun <reified T> ResultSet.get(column: String): T = get(column, t
 fun <T> ResultSet.getOptional(column: String, type: KType): T? = runCatching { get<T>(column, type) }.getOrNull()
 inline fun <reified T> ResultSet.getOptional(column: String): T? = getOptional(column, typeOf<T>())
 
-fun ResultSet.getId(column: String = "id") = getString(column).toId()
-fun ResultSet.getIdOrNull(column: String) = getString(column)?.toId()
+fun ResultSet.getUuid(column: String = "id") = getString(column).uuid
+fun ResultSet.getUuidOrNull(column: String = "id") = getString(column)?.uuid
+
 fun ResultSet.getInstant(column: String) = getTimestamp(column).toInstant()
 fun ResultSet.getInstantOrNull(column: String) = getTimestamp(column)?.toInstant()
 fun ResultSet.getLocalDate(column: String) = getDate(column).toLocalDate()
@@ -29,5 +31,3 @@ fun ResultSet.getDoubleOrNull(column: String) = getDouble(column).takeUnless { w
 
 inline fun <reified T: Enum<T>> ResultSet.getEnum(column: String) = enumValueOf<T>(getString(column))
 inline fun <reified T: Enum<T>> ResultSet.getEnumOrNull(column: String) = getString(column)?.let { enumValueOf<T>(it) }
-
-fun String.toId(): UUID = UUID.fromString(this)

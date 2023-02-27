@@ -3,8 +3,17 @@ package klite.jdbc
 import klite.toValues
 import klite.toValuesSkipping
 import java.sql.ResultSet
+import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KProperty1
+
+@Deprecated("use .uuid instead", ReplaceWith("this.uuid", "klite.uuid"))
+fun String.toId(): UUID = UUID.fromString(this)
+
+@Deprecated("use .getUuid() instead", ReplaceWith("this.getUuid()"))
+fun ResultSet.getId(column: String = "id") = getUuid(column)
+@Deprecated("use .getUuidOrNull() instead", ReplaceWith("this.getUuidOrNull()"))
+fun ResultSet.getIdOrNull(column: String = "id") = getUuidOrNull(column)
 
 @Deprecated("use type from klite-core", ReplaceWith("klite.PropValue<T>", "klite.PropValue"))
 typealias PropValue<T> = klite.PropValue<T>
