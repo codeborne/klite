@@ -1,3 +1,6 @@
+# 1.4.4
+* jobs: locked jobs did not release DB connection (bug introduced in 1.4.2)
+
 # 1.4.3
 * core: the new core module, to make it possible to use jdbc module without the server
 * core: mapOfNotNull() now accepts keys of any type
