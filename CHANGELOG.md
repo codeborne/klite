@@ -8,6 +8,9 @@
 The release is not backwards-compatible. This will migrate the most important parts:
 `find -name '*.kt' -exec sed -Ei 's/klite.json./klite.jackson./; /db\.(query|select)/{s/db\.query/db.xxxselect/; s/db\.select/db.query/; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/; n; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/}' {} \; -exec sed -i 's/xxxselect/select/' {} \;`
 
+# 1.4.4
+* jobs: locked jobs did not release DB connection (bug introduced in 1.4.2)
+
 # 1.4.3
 * core: the new core module, to make it possible to use jdbc module without the server
 * core: mapOfNotNull() now accepts keys of any type
