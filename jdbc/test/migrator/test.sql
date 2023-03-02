@@ -3,7 +3,7 @@
 -- and another random
 
 --changeset test onChange:RUN onFail:SKIP separator:xxx context:!prod
-begin; ${test}(); end;
+begin; ${test}($${json}$$); end;
 
 --changeset test2 checksum:123
 checksum overridden;
