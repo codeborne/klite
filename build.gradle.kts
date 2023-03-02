@@ -29,13 +29,15 @@ subprojects {
   }
 
   sourceSets {
-    named("main") {
-      java.srcDirs("src")
-      resources.srcDirs("src").exclude("**/*.kt")
+    main {
+      java.setSrcDirs(emptyList<String>())
+      kotlin.setSrcDirs(listOf("src"))
+      resources.setSrcDirs(listOf("src")).exclude("**/*.kt")
     }
-    named("test") {
-      java.srcDirs("test")
-      resources.srcDirs("test").exclude("**/*.kt")
+    test {
+      java.setSrcDirs(emptyList<String>())
+      kotlin.setSrcDirs(listOf("test"))
+      resources.setSrcDirs(listOf("test")).exclude("**/*.kt")
     }
   }
 
