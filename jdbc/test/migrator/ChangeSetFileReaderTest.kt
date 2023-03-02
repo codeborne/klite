@@ -22,7 +22,7 @@ class ChangeSetFileReaderTest {
     expect(list).toHaveSize(2)
     val test = list.first()
     expect(test.copy(sql = test.sql.toString())).toEqual(
-      ChangeSet("test", "begin; exec hello(); end;", filePath = "migrator/test.sql", onChange = RUN, onFail = SKIP, separator = "xxx", context = "!prod", checksum = 413948791))
+      ChangeSet("test", "begin; exec hello($\${json}$$); end;", filePath = "migrator/test.sql", onChange = RUN, onFail = SKIP, separator = "xxx", context = "!prod", checksum = 2043940733))
     val test2 = list.last()
     expect(test2.copy(sql = test2.sql.toString())).toEqual(
       ChangeSet("test2", "checksum overridden;", filePath = "migrator/test.sql", checksum = 123))
