@@ -11,9 +11,9 @@ import kotlin.reflect.KProperty1
 @Deprecated("use .uuid instead", ReplaceWith("this.uuid", "klite.uuid"))
 fun String.toId(): UUID = uuid
 
-@Deprecated("use .getUuid() instead", ReplaceWith("this.getUuid()"))
+@Deprecated("use .getUuid() instead", ReplaceWith("this.getUuid(column)"))
 fun ResultSet.getId(column: String = "id") = getUuid(column)
-@Deprecated("use .getUuidOrNull() instead", ReplaceWith("this.getUuidOrNull()"))
+@Deprecated("use .getUuidOrNull() instead", ReplaceWith("this.getUuidOrNull(column)"))
 fun ResultSet.getIdOrNull(column: String = "id") = getUuidOrNull(column)
 
 @Deprecated("use type from klite-core", ReplaceWith("klite.PropValue<T>", "klite.PropValue"))
