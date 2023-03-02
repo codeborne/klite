@@ -33,25 +33,33 @@ Usage:
   db.upsert("table", entity.toValues(Entity::field to "another value"))
 
   // basic query from a table (mapper runs in context of ResultSet)
-  db.select("table", mapOf("column" to value)) { MyEntity(getId(), getString("column")) }
+  db.select("table", "column" to value) { MyEntity(getId(), getString("column")) }
   // or if all entity properties are contained in the result set
-  db.select("table", mapOf("column" to value)) { create<MyEntity>() }
+  db.select("table", "column" to value) { create<MyEntity>() }
   // if you need to add several criteria for a single column (map key), use SqlExpr and friends
-  db.select("table", mapOf("column" to SqlExpr("(column is null or column >= 10)")))
+  db.select("table", sql("(column is null or column >= ?)", 10))
   // where can also be written in a type-safe way, and some common operators are available
-  db.select("table", mapOf(MyEntity::column gte 123)) { create<MyEntity>() }
+  db.select("table", MyEntity::column gte 123) { create<MyEntity>() }
+
+  // where tokens are "and"-ed together, nulls filtered out, so convenient conditionals are possible
+  db.select("table", MyEntity::column gte 123, (MyEntity::other to something).takeIf { something != null }) { create<MyEntity>() }
+  // or another option is to use list filtering
+  db.select("table", notNullValues(MyEntity::column gte 123, MyEntity::other to something)) { create<MyEntity>() }
+
+  // "or" is also possible
+  db.select("table", MyEntity::column gte 123, or(MyEntity::other to something, "hello" to "world")) { create<MyEntity>() }
 
   // more advanced query with suffix and create() auto-mapper
-  db.select("table", mapOf("col1" to notNull, "col2" to SqlOp(">=", value)), "order by col3 limit 10") { create<MyEntity>() }
+  db.select("table", "col1" to notNull, "col2" gte  value, suffix = "order by col3 limit 10") { create<MyEntity>() }
   // single row, with joins, etc
-  db.select("table1 left join table2 on table1.id = table2.megaId", mapOf("table2.field" to value), "limit 1") {
+  db.select("table1 left join table2 on table1.id = table2.megaId", listOf("table2.field" to value), "limit 1") {
     create<MyEntity>(MyEntity::other to create<OtherEntity>())
   }.first()
 
   // or you can write full sql manually using db.query() and db.exec()
 ```
 
-Note: before Klite 1.5 query/select functions had the opposite meaning.
+*Note: before Klite 1.5 query/select functions had the opposite meaning, but users found select("select...") not nice.*
 
 See [all available functions](src/JdbcExtensions.kt).
 
