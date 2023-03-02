@@ -18,9 +18,16 @@ open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if
   override fun expr(key: String) = q(key) + " $operator" + (" ?".takeIf { values.firstOrNull() != null } ?: "")
 }
 
+@Deprecated("use or() instead")
+class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
+  override fun expr(key: String) = "(${q(key)} is null or ${q(key)} $operator ?)"
+}
+
 val isNull = SqlOp("is null")
 val notNull = SqlOp("is not null")
 val emptyArray = SqlComputed("'{}'")
+
+fun jsonb(value: String) = SqlComputed("?::jsonb", value)
 
 infix fun String.eq(value: Any) = this to value
 infix fun String.neq(value: Any) = this to SqlOp("!=", value)
@@ -31,7 +38,6 @@ infix fun String.lte(value: Any) = this to SqlOp("<=", value)
 infix fun String.like(value: String) = this to SqlOp("like", value)
 infix fun String.ilike(value: String) = this to SqlOp("ilike", value)
 infix fun String.any(value: Any) = this to SqlExpr("?=any($this)", value)
-fun <K: Column> sql(@Language("SQL") expr: String, vararg values: Any?): Pair<K, SqlExpr> = (expr as K) to SqlExpr(expr, *values)
 
 infix fun <T, V> KProperty1<T, V>.eq(value: V) = this to value
 infix fun <T, V> KProperty1<T, V>.neq(value: V) = this to SqlOp("!=", value)
@@ -53,11 +59,6 @@ class BetweenExcl(from: Comparable<*>, to: Comparable<*>): SqlExpr("", from, to)
   override fun expr(key: String) = "${q(key)} >= ? and ${q(key)} < ?"
 }
 
-@Deprecated("use or() instead")
-class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
-  override fun expr(key: String) = "(${q(key)} is null or ${q(key)} $operator ?)"
-}
-
 open class In(values: Iterable<*>): SqlExpr("", values) {
   constructor(vararg values: Any?): this(values.toList())
   override fun expr(key: String) = q(key) + " in (${values.joinToString { "?" }})"
@@ -73,3 +74,6 @@ fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr = where.asSequence().filt
 }
 
 fun <K: Column> or(vararg where: Pair<K, Any?>?) = where[0]!!.first to orExpr(*where)
+
+@Suppress("UNCHECKED_CAST")
+fun <K: Column> sql(@Language("SQL") expr: String, vararg values: Any?): Pair<K, SqlExpr> = (expr as K) to SqlExpr(expr, *values)
