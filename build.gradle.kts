@@ -29,11 +29,11 @@ subprojects {
   }
 
   sourceSets {
-    named("main") {
+    main {
       java.srcDirs("src")
       resources.srcDirs("src").exclude("**/*.kt")
     }
-    named("test") {
+    test {
       java.srcDirs("test")
       resources.srcDirs("test").exclude("**/*.kt")
     }

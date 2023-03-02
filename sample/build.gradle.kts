@@ -11,7 +11,7 @@ dependencies {
 }
 
 sourceSets {
-  named("main") {
+  main {
     resources.srcDirs("db", "i18n")
   }
 }
