@@ -27,19 +27,21 @@ inline fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValues
 @Deprecated("was renamed to create()", ReplaceWith("this.create<T>(*provided)"))
 inline fun <reified T: Any> ResultSet.fromValues(vararg provided: PropValue<T>) = create(T::class, *provided)
 
+private typealias OldWhere = Map<out Column, Any?>
+
 @Deprecated("pass values first and then optional where", ReplaceWith("this.update(table, values, where.map { it.key to it.value })"))
-inline fun DataSource.update(table: String, where: Map<Column, Any?>, values: Values): Int = update(table, values, where.map { it.key to it.value })
+inline fun DataSource.update(table: String, where: OldWhere, values: Values): Int = update(table, values, where.map { it.key to it.value })
 
 @Deprecated("pass where as varargs", ReplaceWith("this.delete(table, where.map { it.key to it.value })"))
-inline fun DataSource.delete(table: String, where: Map<Column, Any?>): Int = delete(table, where.map { it.key to it.value })
+inline fun DataSource.delete(table: String, where: OldWhere): Int = delete(table, where.map { it.key to it.value })
 
 @Deprecated("use select() instead of old query()", ReplaceWith("this.select(table, id, mapper)"))
 inline fun <R, ID> DataSource.query(table: String, id: ID, noinline mapper: Mapper<R>): R = select(table, id, mapper)
 
 @Deprecated("use select() instead of old query(), pass where as varargs", ReplaceWith("this.select(table, where.map { it.key to it.value }, suffix, mapper)"))
-inline fun <R> DataSource.query(table: String, where: Map<Column, Any?>, suffix: String = "", noinline mapper: Mapper<R>) =
+inline fun <R> DataSource.query(table: String, where: OldWhere, suffix: String = "", noinline mapper: Mapper<R>) =
   select(table, where.map { it.key to it.value }, suffix, mapper)
 
 @Deprecated("use query() instead of old select(), pass where as varargs", ReplaceWith("this.query(table, where.map { it.key to it.value }, suffix, mapper)"))
-inline fun <R> DataSource.select(table: String, where: Map<Column, Any?>, suffix: String = "", noinline mapper: Mapper<R>) =
+inline fun <R> DataSource.select(table: String, where: OldWhere, suffix: String = "", noinline mapper: Mapper<R>) =
   query(table, where.map { it.key to it.value }, suffix, mapper)
