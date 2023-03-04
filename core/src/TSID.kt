@@ -13,15 +13,13 @@ import java.util.concurrent.atomic.AtomicInteger
     val EPOCH = Instant.parse("2022-10-21T03:45:00.000Z").toEpochMilli()
     val random = SecureRandom()
     val counter = AtomicInteger()
-    var lastTime = 0L
+    @Volatile var lastTime = 0L
 
     private fun generate(): Long {
       val time = (currentTimeMillis() - EPOCH) shl RANDOM_BITS
-      synchronized(counter) {
-        if (time != lastTime) {
-          counter.set(random.nextInt())
-          lastTime = time
-        }
+      if (time != lastTime) {
+        counter.set(random.nextInt())
+        lastTime = time
       }
       val tail = counter.incrementAndGet() and RANDOM_MASK
       return time or tail.toLong()
