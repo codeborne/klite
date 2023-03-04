@@ -4,6 +4,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import klite.TSID
 import klite.uuid
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -53,6 +54,15 @@ class JsonParserTest {
 
     val mapper = mapper.copy(trimToNull = false)
     expect(mapper.parse<Nullable>(json)).toEqual(Nullable(""))
+  }
+
+  @Test fun converter() {
+    val uuid = UUID.randomUUID()
+    expect(mapper.parse<UUID>("\"$uuid\"")).toEqual(uuid)
+    val tsid = TSID()
+    expect(mapper.parse<TSID>("\"$tsid\"")).toEqual(tsid)
+
+    expect(mapper.parse<LocalDate>("\"2022-12-23\"")).toEqual(LocalDate.of(2022, 12, 23))
   }
 
   @Test fun `snake case`() {

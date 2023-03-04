@@ -6,11 +6,11 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Time-Sorted unique ID, a more compact and index-friendly alternative to UUID */
-@JvmInline value class TSID(val value: Long) {
+@JvmInline value class TSID(private val value: Long) {
   companion object {
     const val RANDOM_BITS = 22
     const val RANDOM_MASK = 0x003fffff
-    val EPOCH = Instant.parse("2022-10-21T03:45:00.000Z").toEpochMilli()
+    val EPOCH = Instant.parse(Config.optional("TSID_EPOCH", "2022-10-21T03:45:00.000Z")).toEpochMilli()
     val random = SecureRandom()
     val counter = AtomicInteger()
     @Volatile var lastTime = 0L

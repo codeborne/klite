@@ -18,8 +18,8 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
       is Map<*, *> -> writeObject(o.asSequence())
       null, is Number, is Boolean -> write(o.toString())
       else ->
-        if (o::class.isValue && o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
-        else if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
+        if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
+        else if (o::class.isValue && o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
         else opts.values.to(o).let { if (it !== o) writeValue(it) else writeObject(it) }
     }
   }
