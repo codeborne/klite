@@ -64,6 +64,8 @@ internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Ma
   while (next()) consumer(mapper())
 }
 
+fun DataSource.exec(@Language("SQL") expr: String, vararg values: Any?): Int = exec(expr, values.asSequence())
+
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): Int =
   withStatement(expr, keys) {
     setAll(values)
