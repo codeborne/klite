@@ -26,6 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger
       val tail = counter.incrementAndGet() and RANDOM_MASK
       return time or tail.toLong()
     }
+
+    init {
+      Converter.use { TSID(it) }
+    }
   }
 
   constructor(): this(generate())
