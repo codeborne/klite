@@ -29,6 +29,7 @@ typealias TSID = TypedTSID<Any>
 
     init {
       Converter.use { TSID(it) }
+      Converter.use { TypedTSID<Any>(it) }
     }
   }
 
