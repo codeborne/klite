@@ -1,5 +1,6 @@
 # 1.5.0-unreleased
 * core: toValues() functions moved here from klite-jdbc
+* core: TSID introduced as an alternative to UUID
 * json: new lightweight json parser
 * i18n: now uses the lightweight klite-json, not jackson
 * jackson: package changed to klite.jackson to avoid conflicts with klite-json
