@@ -52,13 +52,16 @@ open class JobRunner(
       var commit = true
       try {
         if (!job.allowParallelRun && !db.tryLock(job.name)) return@launch logger.info("${job.name} locked, skipping")
-        logger.info("${job.name} started")
-        run(job)
+        try {
+          logger.info("${job.name} started")
+          run(job)
+        } finally {
+          if (!job.allowParallelRun) db.unlock(job.name)
+        }
       } catch (e: Exception) {
         commit = false
         logger.error("${job.name} failed", e)
       } finally {
-        if (!job.allowParallelRun) db.unlock(job.name)
         tx.close(commit)
       }
     }.also { launched ->
