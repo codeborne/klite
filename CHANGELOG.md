@@ -10,6 +10,10 @@
 The release is not backwards-compatible. This will migrate the most important parts:
 `find -name '*.kt' -exec sed -Ei 's/klite.json./klite.jackson./; /db\.(query|select)/{s/db\.query/db.xxxselect/; s/db\.select/db.query/; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/; n; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/}' {} \; -exec sed -i 's/xxxselect/select/' {} \;`
 
+# 1.4.5
+* jdbc: allow using $${json}$$ in migration scripts without treating it as substitutions
+* jobs: do not unlock already running jobs after failing to lock (a problem for 3 instances with jobs or more)
+
 # 1.4.4
 * jobs: locked jobs did not release DB connection (bug introduced in 1.4.2)
 
