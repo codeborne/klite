@@ -8,7 +8,7 @@
 * jdbc: switched db.select() <-> db.query(), taking "where" as a list or varargs, to allow for duplicated columns
 
 The release is not backwards-compatible. This will migrate the most important parts:
-`find -name '*.kt' -exec sed -Ei 's/klite.json./klite.jackson./; /db\.(query|select)/{s/db\.query/db.xxxselect/; s/db\.select/db.query/; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/; s/emptyMap/emptyList/; n; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/; s/emptyMap/emptyList/}' {} \; -exec sed -i 's/xxxselect/select/' {} \;`
+`find -name '*.kt' -exec sed -Ei 's/klite.json./klite.jackson./; s/mapOfNotNull/notNullValues/; /db\.(query|select)/{N; s/db\.query/db.xxxselect/g; s/db\.select/db.query/g; s/mapOf/listOf/g; s/emptyMap/emptyList/g}' {} \; -exec sed -i 's/xxxselect/select/' {} \;`
 
 **Beware**: if you use the replacement above, then make sure that no deprecated query/select usages are left, i.e. check that all "where" maps are replaced with lists/varargs, which is done automatically only if on the same or next line.
 
