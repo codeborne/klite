@@ -1,5 +1,7 @@
 package klite.jdbc
 
+import klite.logger
+import klite.warn
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.InvocationInterceptor
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext
@@ -16,7 +18,7 @@ class JUnitAssertionImprover: InvocationInterceptor {
           isAccessible = true // needs --add-opens=java.base/java.lang=ALL-UNNAMED
           set(e, e.message?.replace(", matcher:", "\n   matcher:")?.replace("◆ to equal:", "        ◆ to equal:"))
         }
-      } catch (ignore: Exception) { }
+      } catch (fail: Exception) { logger().warn("Warning: cannot modify AssertionError: $e") }
       throw e
     }
   }
