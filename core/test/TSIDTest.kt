@@ -6,26 +6,28 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import java.lang.System.currentTimeMillis
 
+typealias Id = TSID<Any>
+
 class TSIDTest {
-  val maxValue = TSID(Long.MAX_VALUE)
+  val maxValue = Id(Long.MAX_VALUE)
 
   @Test fun tsid() {
-    expect(TSID(1234L).toString()).toEqual("ya")
+    expect(Id(1234L).toString()).toEqual("ya")
     expect(maxValue.toString()).toEqual("1y2p0ij32e8e7")
-    expect(TSID("1y2p0ij32e8e7")).toEqual(maxValue)
+    expect(Id("1y2p0ij32e8e7")).toEqual(maxValue)
   }
 
   @Test fun converter() {
-    expect(Converter.from<TSID>(maxValue.toString())).toEqual(maxValue)
+    expect(Converter.from<Id>(maxValue.toString())).toEqual(maxValue)
   }
 
   @Test fun createdAt() {
-    expect(TSID().createdAt.toEpochMilli()).toBeLessThanOrEqualTo(currentTimeMillis())
+    expect(Id().createdAt.toEpochMilli()).toBeLessThanOrEqualTo(currentTimeMillis())
   }
 
   @Test fun `no collisions`() {
-    val ids = mutableSetOf<TSID>()
-    for (i in 1..1000000) ids.add(TSID())
+    val ids = mutableSetOf<Id>()
+    for (i in 1..1000000) ids.add(Id())
     expect(ids.size).toEqual(1000000)
   }
 }

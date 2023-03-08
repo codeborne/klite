@@ -5,10 +5,11 @@ import java.security.SecureRandom
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
-/** Time-Sorted unique ID, a more compact and index-friendly alternative to UUID */
-typealias TSID = TypedTSID<Any>
-
-@JvmInline value class TypedTSID<T>(private val value: Long) {
+/**
+ * Time-Sorted unique ID, a more compact and DB index-friendly alternative to UUID.
+ * Add a `typealias Id<T> = TSID<T>` or `Id = TSID<Any>` in your own project.
+ */
+@JvmInline value class TSID<T>(private val value: Long) {
   companion object {
     const val RANDOM_BITS = 22
     const val RANDOM_MASK = 0x003fffff
@@ -28,8 +29,7 @@ typealias TSID = TypedTSID<Any>
     }
 
     init {
-      Converter.use { TSID(it) }
-      Converter.use { TypedTSID<Any>(it) }
+      Converter.use { TSID<Any>(it) }
     }
   }
 
