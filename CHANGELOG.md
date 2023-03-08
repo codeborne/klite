@@ -12,7 +12,8 @@ The release is not backwards-compatible. This will migrate the most important pa
 
 **Beware**: if you use the replacement above, then make sure that no deprecated query/select usages are left, i.e. check that all "where" maps are replaced with lists/varargs, which is done automatically only if on the same or next line.
 
-You may also use IDEA migration of deprecations, but it will most likely break code formatting, etc. Also, you may need to add some imports manually.
+You may also use IDEA migration of deprecations, but it will most likely [break code formatting, etc](https://youtrack.jetbrains.com/issue/KTIJ-24870).
+Also, you may need to add some imports manually.
 
 # 1.4.5
 * jdbc: allow using $${json}$$ in migration scripts without treating it as substitutions
