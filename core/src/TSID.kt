@@ -36,4 +36,6 @@ typealias TSID = TypedTSID<Any>
   constructor(): this(generate())
   constructor(tsid: String): this(tsid.toLong(36))
   override fun toString() = value.toString(36)
+
+  val createdAt: Instant get() = Instant.ofEpochMilli((value shr RANDOM_BITS) + EPOCH)
 }

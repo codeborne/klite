@@ -1,8 +1,10 @@
+package klite
+
+import ch.tutteli.atrium.api.fluent.en_GB.toBeLessThanOrEqualTo
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
-import klite.Converter
-import klite.TSID
 import org.junit.jupiter.api.Test
+import java.lang.System.currentTimeMillis
 
 class TSIDTest {
   val maxValue = TSID(Long.MAX_VALUE)
@@ -15,6 +17,10 @@ class TSIDTest {
 
   @Test fun converter() {
     expect(Converter.from<TSID>(maxValue.toString())).toEqual(maxValue)
+  }
+
+  @Test fun createdAt() {
+    expect(TSID().createdAt.toEpochMilli()).toBeLessThanOrEqualTo(currentTimeMillis())
   }
 
   @Test fun `no collisions`() {
