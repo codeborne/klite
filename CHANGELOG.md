@@ -10,6 +10,10 @@
 The release is not backwards-compatible. This will migrate the most important parts:
 `find -name '*.kt' -exec sed -Ei 's/klite.json./klite.jackson./; /db\.(query|select)/{s/db\.query/db.xxxselect/; s/db\.select/db.query/; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/; n; s/mapOfNotNull/notNullValues/; s/mapOf/listOf/}' {} \; -exec sed -i 's/xxxselect/select/' {} \;`
 
+**Beware**: if you use the replacement above, then make sure that no deprecated query/select usages are left, i.e. check that all "where" maps are replaced with lists/varargs, which is done automatically only if on the same or next line.
+
+You may also use IDEA migration of deprecations, but it will most likely break code formatting, etc. Also, you may need to add some imports manually.
+
 # 1.4.5
 * jdbc: allow using $${json}$$ in migration scripts without treating it as substitutions
 * jobs: do not unlock already running jobs after failing to lock (a problem for 3 instances with jobs or more)
