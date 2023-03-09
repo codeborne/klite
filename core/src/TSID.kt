@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
     val counter = AtomicInteger()
     @Volatile var lastTime = 0L
 
-    private fun generate(): Long {
+    fun generate(): Long {
       val time = (currentTimeMillis() - EPOCH) shl RANDOM_BITS
       if (time != lastTime) {
         counter.set(random.nextInt())
