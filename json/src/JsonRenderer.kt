@@ -10,17 +10,18 @@ import kotlin.reflect.full.hasAnnotation
 class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoCloseable {
   fun render(o: Any?) = writeValue(o)
 
+  @Suppress("NAME_SHADOWING")
   private fun writeValue(o: Any?) {
-    when (o) {
-      is CharSequence -> writeString(opts.values.to(o).toString())
+    when (val o = opts.values.to(o)) {
+      is CharSequence -> writeString(o.toString())
       is Iterable<*> -> writeArray(o)
       is Array<*> -> writeArray(Arrays.asList(*o))
       is Map<*, *> -> writeObject(o.asSequence())
       null, is Number, is Boolean -> write(o.toString())
       else ->
-        if (Converter.supports(o::class)) writeValue(opts.values.to(o).let { if (it !== o) it else it.toString() })
+        if (Converter.supports(o::class)) writeString(o.toString())
         else if (o::class.isValue && o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
-        else opts.values.to(o).let { if (it !== o) writeValue(it) else writeObject(it) }
+        else writeObject(o)
     }
   }
 

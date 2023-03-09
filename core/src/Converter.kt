@@ -39,7 +39,7 @@ object Converter {
   // TODO: really support for KType in Converter
   fun <T: Any> from(s: String, type: KType): T = from(s, type.classifier as KClass<T>)
   fun <T: Any> from(s: String, type: KClass<T>): T = of(type).invoke(s)
-  fun from(o: Any?, type: KType): Any? = if (o is String && type.classifier != String::class) from(o, type) else o
+  fun from(o: Any?, type: KType): Any? = if (o is String) from(o, type) else o
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
   internal fun <T: Any> of(type: KClass<T>) =
