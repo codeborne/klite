@@ -4,6 +4,7 @@
 * json: new lightweight json parser
 * i18n: now uses the lightweight klite-json, not jackson
 * jackson: package changed to klite.jackson to avoid conflicts with klite-json
+* jackson: .parse<T> extension function now passes type parameters to Jackson, not only the main class
 * jdbc: fromValues() was renamed to create()
 * jdbc: switched db.select() <-> db.query(), taking "where" as a list or varargs, to allow for duplicated columns
 
