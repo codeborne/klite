@@ -49,4 +49,4 @@ fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
 
 fun KType.createFrom(values: Map<String, Any?>) = (classifier as KClass<*>).createFrom(values)
 fun <T: Any> KClass<T>.createFrom(values: Map<String, Any?>) = create { Converter.from(values[it.name], it.type) }
-inline fun <reified T: Any> Map<String, Any?>.create() = T::class.create { Converter.from(this[it.name], it.type) }
+inline fun <reified T: Any> Map<String, Any?>.create() = T::class.createFrom(this)
