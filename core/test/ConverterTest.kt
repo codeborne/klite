@@ -14,6 +14,7 @@ import java.util.*
 import java.util.UUID.fromString
 import java.util.UUID.randomUUID
 import java.util.regex.Pattern
+import kotlin.reflect.typeOf
 
 class ConverterTest {
   @Test fun `pre-defined`() {
@@ -62,6 +63,11 @@ class ConverterTest {
 
   @Test fun javaPrimitive() {
     expect(Converter.from("456", Int::class)).toEqual(456)
+  }
+
+  @Test fun <T> `non-class type`() {
+    val type = typeOf<List<T>>()
+    expect(Converter.from<Any>("s", type.arguments.first().type!!)).toEqual("s")
   }
 
   @Test fun parse() {
