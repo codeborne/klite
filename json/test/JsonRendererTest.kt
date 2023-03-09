@@ -12,7 +12,7 @@ import java.util.*
 class JsonRendererTest {
   val mapper = JsonMapper()
   val uuid = UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14")
-  val tsId = TSID("123456789")
+  val tsId = TSID<Any>("123456789")
 
   @Test fun literals() {
     expect(mapper.render(null)).toEqual("null")

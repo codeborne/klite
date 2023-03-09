@@ -59,8 +59,8 @@ class JsonParserTest {
   @Test fun converter() {
     val uuid = UUID.randomUUID()
     expect(mapper.parse<UUID>("\"$uuid\"")).toEqual(uuid)
-    val tsid = TSID()
-    expect(mapper.parse<TSID>("\"$tsid\"")).toEqual(tsid)
+    val tsid = TSID<Any>()
+    expect(mapper.parse<TSID<Any>>("\"$tsid\"")).toEqual(tsid)
 
     expect(mapper.parse<LocalDate>("\"2022-12-23\"")).toEqual(LocalDate.of(2022, 12, 23))
   }
