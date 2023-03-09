@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
     val counter = AtomicInteger()
     @Volatile var lastTime = 0L
 
-    fun generate(): Long {
+    fun generateValue(): Long {
       val time = (currentTimeMillis() - EPOCH) shl RANDOM_BITS
       if (time != lastTime) {
         counter.set(random.nextInt())
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger
     }
   }
 
-  constructor(): this(generate())
+  constructor(): this(generateValue())
   constructor(tsid: String): this(tsid.toLong(36))
   override fun toString() = value.toString(36)
 
