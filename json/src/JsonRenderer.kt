@@ -55,7 +55,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
     .map { SimpleImmutableEntry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) })
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
-    writeValue(opts.keys.to(it.key.toString()))
+    writeString(opts.keys.to(it.key.toString()))
     write(':')
     writeValue(it.value)
   }
