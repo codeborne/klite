@@ -2,10 +2,7 @@ package klite
 
 import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty1
-import kotlin.reflect.KType
+import kotlin.reflect.*
 import kotlin.reflect.KVisibility.PUBLIC
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -37,11 +34,14 @@ fun <T> KProperty1<T, *>.valueOf(o: T) = try { get(o) } catch (e: InvocationTarg
 fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
   props.filter { it.javaField != null }.associate { it.name to it.valueOf(this) }
 
+val classCreators = ConcurrentHashMap<KClass<*>, KFunction<*>>()
+
+@Suppress("UNCHECKED_CAST")
 fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
-  val constructor = primaryConstructor ?: error("$this does not have primary constructor")
-  val args = constructor.parameters.associateWith { valueOf(it) }.filterNot { it.key.isOptional && it.value == null }
+  val creator = classCreators.getOrPut(this) { primaryConstructor ?: error("$this does not have primary constructor") } as KFunction<T>
+  val args = creator.parameters.associateWith { valueOf(it) }.filterNot { it.key.isOptional && it.value == null }
   return try {
-    constructor.callBy(args)
+    creator.callBy(args)
   } catch (e: IllegalArgumentException) {
     throw IllegalArgumentException("Cannot create $this using " + args.mapKeys { it.key.name }, e)
   }
