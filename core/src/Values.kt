@@ -1,3 +1,4 @@
+@file:Suppress("UNCHECKED_CAST")
 package klite
 
 import java.lang.reflect.InvocationTargetException
@@ -19,12 +20,10 @@ fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkippin
 
 private val publicPropsCache = ConcurrentHashMap<KClass<*>, Sequence<KProperty1<*, *>>>()
 
-@Suppress("UNCHECKED_CAST")
 val <T: Any> KClass<T>.publicProperties get() = publicPropsCache.getOrPut(this) {
   memberProperties.filter { it.visibility == PUBLIC }.asSequence()
 } as Sequence<KProperty1<T, *>>
 
-@Suppress("UNCHECKED_CAST")
 val <T: Any> T.publicProperties get() = this::class.publicProperties as Sequence<KProperty1<T, *>>
 
 private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> = toValues(publicProperties.filter { it.name !in skipNames })
@@ -36,7 +35,6 @@ fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
 
 val classCreators = ConcurrentHashMap<KClass<*>, KFunction<*>>()
 
-@Suppress("UNCHECKED_CAST")
 fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   val creator = classCreators.getOrPut(this) { primaryConstructor ?: error("$this does not have primary constructor") } as KFunction<T>
   val args = creator.parameters.associateWith { valueOf(it) }.filterNot { it.key.isOptional && it.value == null }
