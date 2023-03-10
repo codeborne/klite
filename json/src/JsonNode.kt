@@ -9,3 +9,4 @@ fun JsonNode.getLong(key: String) = (get(key) as Number).toLong()
 fun JsonNode.getBigDecimal(key: String) = (get(key) as Number).toDouble().toBigDecimal()
 fun <T> JsonNode.getList(key: String) = get(key) as List<T>
 fun <T> JsonNode.getMap(key: String) = get(key) as Map<String, T>
+fun JsonNode.getNode(key: String): JsonNode = getMap(key)
