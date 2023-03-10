@@ -2,6 +2,7 @@
 package klite.json
 
 typealias JsonNode = Map<String, Any?>
+typealias JsonList = List<JsonNode>
 
 fun JsonNode.getString(key: String) = get(key) as String
 fun JsonNode.getInt(key: String) = (get(key) as Number).toInt()
