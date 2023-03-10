@@ -11,8 +11,8 @@ import kotlin.reflect.typeOf
 fun <T> ResultSet.get(column: String, type: KType): T = JdbcConverter.from(getObject(column), type) as T
 inline operator fun <reified T> ResultSet.get(column: String): T = get(column, typeOf<T>())
 
-fun <T> ResultSet.getOptional(column: String, type: KType): T? = runCatching { get<T>(column, type) }.getOrNull()
-inline fun <reified T> ResultSet.getOptional(column: String): T? = getOptional(column, typeOf<T>())
+fun <T> ResultSet.getOptional(column: String, type: KType): Result<T> = runCatching { get(column, type) }
+inline fun <reified T> ResultSet.getOptional(column: String): Result<T> = getOptional(column, typeOf<T>())
 
 fun ResultSet.getUuid(column: String = "id") = getString(column).uuid
 fun ResultSet.getUuidOrNull(column: String = "id") = getString(column)?.uuid

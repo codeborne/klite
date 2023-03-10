@@ -37,7 +37,11 @@ val classCreators = ConcurrentHashMap<KClass<*>, KFunction<*>>()
 
 fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   val creator = classCreators.getOrPut(this) { primaryConstructor ?: error("$this does not have primary constructor") } as KFunction<T>
-  val args = creator.parameters.associateWith { valueOf(it) }.filterNot { it.key.isOptional && it.value == null }
+  val args = HashMap<KParameter, Any?>()
+  creator.parameters.forEach {
+    val v = valueOf(it)
+    if (v != AbsentValue) args[it] = v
+  }
   return try {
     creator.callBy(args)
   } catch (e: IllegalArgumentException) {
@@ -46,5 +50,8 @@ fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
 }
 
 fun KType.createFrom(values: Map<String, Any?>) = (classifier as KClass<*>).createFrom(values)
-fun <T: Any> KClass<T>.createFrom(values: Map<String, Any?>) = create { Converter.from(values[it.name], it.type) }
 inline fun <reified T: Any> Map<String, Any?>.create() = T::class.createFrom(this)
+
+fun <T: Any> KClass<T>.createFrom(values: Map<String, Any?>) = create { Converter.from(values.getOrDefault(it.name, AbsentValue), it.type) }
+
+object AbsentValue

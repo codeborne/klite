@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 
 class ValuesTest {
   @Test fun toValues() {
-    val data = SomeData("Hello", 123)
+    val data = SomeData("Hello", 123, nullable = null)
     expect(data.toValues()).toEqual(mapOf("hello" to "Hello", "world" to 123, "nullable" to null, "list" to listOf(1, 2)))
     expect(data.toValues(SomeData::world to 124)).toEqual(mapOf("hello" to "Hello", "world" to 124, "nullable" to null, "list" to listOf(1, 2)))
   }
@@ -24,5 +24,10 @@ class ValuesTest {
     expect(values.create<SomeData>()).toEqual(SomeData("Hello", 34))
   }
 
-  data class SomeData(val hello: String, val world: Int, val nullable: String? = null, val list: List<Int> = listOf(1, 2))
+  @Test fun createWithExplicitNullable() {
+    val values = mapOf("hello" to "", "world" to 0, "nullable" to null)
+    expect(SomeData::class.createFrom(values)).toEqual(SomeData("", 0, nullable = null))
+  }
+
+  data class SomeData(val hello: String, val world: Int, val nullable: String? = "default", val list: List<Int> = listOf(1, 2))
 }
