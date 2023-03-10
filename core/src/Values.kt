@@ -41,6 +41,7 @@ fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   creator.parameters.forEach {
     val v = valueOf(it)
     if (v != AbsentValue) args[it] = v
+    else if (!it.isOptional) args[it] = null
   }
   return try {
     creator.callBy(args)
