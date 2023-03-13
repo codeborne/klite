@@ -38,6 +38,9 @@ inline fun <R> DataSource.select(table: String, vararg where: ColValue?, suffix:
 fun <R> DataSource.select(table: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
   select(table, where, suffix, mutableListOf(), mapper) as List<R>
 
+inline fun <reified R> DataSource.select(table: String, where: Where, suffix: String = ""): List<R> =
+  select(table, where, suffix = suffix) { create() }
+
 inline fun <reified R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = ""): List<R> =
   select(table, *where, suffix = suffix) { create() }
 
@@ -54,6 +57,9 @@ inline fun <R> DataSource.query(@Language("SQL") select: String, vararg where: C
 
 fun <R> DataSource.query(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
   query(select, where, suffix, mutableListOf(), mapper) as List<R>
+
+inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where, suffix: String = ""): List<R> =
+  query(select, where, suffix = suffix) { create() }
 
 inline fun <reified R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, suffix: String = ""): List<R> =
   query(select, *where, suffix = suffix) { create() }
