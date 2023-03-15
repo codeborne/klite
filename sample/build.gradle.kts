@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.ByteArrayOutputStream
+
 val mainClassName = "LauncherKt"
 
 dependencies {
@@ -36,4 +39,24 @@ tasks.jar {
 tasks.register<JavaExec>("run") {
   mainClass.set(mainClassName)
   classpath = sourceSets.main.get().runtimeClasspath
+}
+
+tasks.register("types.ts") {
+  dependsOn("classes")
+  doLast {
+    val mainSource = sourceSets.main.get()
+    project.file("build/types.ts").writeText(ByteArrayOutputStream().use { out ->
+      project.javaexec {
+        standardOutput = out
+        mainClass.set("klite.json.TSGeneratorKt")
+        classpath = sourceSets.main.get().runtimeClasspath
+        args("${project.buildDir}/classes/kotlin/main")
+      }
+      out.toString()
+    })
+  }
+}
+
+tasks.withType<KotlinCompile> {
+  finalizedBy("types.ts")
 }
