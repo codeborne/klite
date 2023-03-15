@@ -4,6 +4,7 @@ import klite.*
 import java.io.Writer
 import java.util.*
 import java.util.AbstractMap.SimpleImmutableEntry
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
 
@@ -51,8 +52,8 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
     write('}')
   }
 
-  private fun writeObject(o: Any) = writeObject(o.publicProperties.filter { !it.hasAnnotation<JsonIgnore>() }
-    .map { SimpleImmutableEntry(it.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: it.name, it.valueOf(o)) })
+  private fun writeObject(o: Any) = writeObject(o.publicProperties.notIgnored
+    .map { SimpleImmutableEntry(it.jsonName, it.valueOf(o)) })
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
     writeString(opts.keys.to(it.key.toString()))
@@ -65,3 +66,6 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
 
   override fun close() = out.close()
 }
+
+internal val <T: Any> Sequence<KProperty1<T, *>>.notIgnored get() = filter { !it.hasAnnotation<JsonIgnore>() }
+internal val KProperty1<*, *>.jsonName get() = findAnnotation<JsonProperty>()?.value?.trimToNull() ?: name
