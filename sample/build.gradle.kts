@@ -41,19 +41,14 @@ tasks.register<JavaExec>("run") {
   classpath = sourceSets.main.get().runtimeClasspath
 }
 
-tasks.register("types.ts") {
+tasks.register<JavaExec>("types.ts") {
   dependsOn("classes")
+  mainClass.set("klite.json.TSGeneratorKt")
+  classpath = sourceSets.main.get().runtimeClasspath
+  args("${project.buildDir}/classes/kotlin/main")
+  standardOutput = ByteArrayOutputStream()
   doLast {
-    val mainSource = sourceSets.main.get()
-    project.file("build/types.ts").writeText(ByteArrayOutputStream().use { out ->
-      project.javaexec {
-        standardOutput = out
-        mainClass.set("klite.json.TSGeneratorKt")
-        classpath = sourceSets.main.get().runtimeClasspath
-        args("${project.buildDir}/classes/kotlin/main")
-      }
-      out.toString()
-    })
+    project.file("build/types.ts").writeText(standardOutput.toString())
   }
 }
 
