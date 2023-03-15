@@ -32,7 +32,7 @@ class TSGenerator(
   }
 
   @Language("TypeScript") fun render(cls: KClass<*>) =
-    if (cls.isData || cls.java.isInterface && !cls.java.isAnnotation) renderInterface(cls)
+    if (cls.isData || cls.isValue || cls.java.isInterface && !cls.java.isAnnotation) renderInterface(cls)
     else if (cls.isSubclassOf(Enum::class)) renderEnum(cls)
     else null
 
