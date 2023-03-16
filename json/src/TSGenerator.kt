@@ -47,17 +47,17 @@ open class TSGenerator(
     (cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") ?: "") +
     " = " + tsType(cls.memberProperties.first().returnType)
 
-  protected open fun renderInterface(cls: KClass<*>): String {
-    val sb = StringBuilder()
-    sb.append("interface ").append(tsName(cls)).append(" {")
+  @Suppress("UNCHECKED_CAST")
+  protected open fun renderInterface(cls: KClass<*>) = StringBuilder().apply {
+    append("interface ").append(tsName(cls)).append(" {")
     (cls.publicProperties as Sequence<KProperty1<Any, *>>).notIgnored.forEach { p ->
-      sb.append(p.jsonName)
-      if (p.returnType.isMarkedNullable) sb.append("?")
-      sb.append(": ").append(tsType(p.returnType)).append("; ")
+      append(p.jsonName)
+      if (p.returnType.isMarkedNullable) append("?")
+      append(": ").append(tsType(p.returnType)).append("; ")
     }
-    if (sb.endsWith("; ")) sb.setLength(sb.length - 2)
-    return sb.append("}").toString()
-  }
+    if (endsWith("; ")) setLength(length - 2)
+    append("}")
+  }.toString()
 
   protected open fun tsType(type: KType): String {
     val cls = type.classifier as KClass<*>
