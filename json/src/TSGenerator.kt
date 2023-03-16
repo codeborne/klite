@@ -76,12 +76,14 @@ open class TSGenerator(
   }
 
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
-}
 
-fun main(args: Array<String>) {
-  if (args.isEmpty())
-    return err.println("Usage: <classes-dir> ...custom.Type=tsType")
-  val dir = Path.of(args[0])
-  val customTypes = args.drop(1).associate { it.split("=").let { it[0] to it[1] } }
-  TSGenerator(customTypes).generate(dir)
+  companion object {
+    @JvmStatic fun main(args: Array<String>) {
+      if (args.isEmpty())
+        return err.println("Usage: <classes-dir> ...custom.Type=tsType")
+      val dir = Path.of(args[0])
+      val customTypes = args.drop(1).associate { it.split("=").let { it[0] to it[1] } }
+      TSGenerator(customTypes).generate(dir)
+    }
+  }
 }

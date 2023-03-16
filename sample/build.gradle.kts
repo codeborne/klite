@@ -43,7 +43,7 @@ tasks.register<JavaExec>("run") {
 
 tasks.register<JavaExec>("types.ts") {
   dependsOn("classes")
-  mainClass.set("klite.json.TSGeneratorKt")
+  mainClass.set("klite.json.TSGenerator")
   classpath = sourceSets.main.get().runtimeClasspath
   args("${project.buildDir}/classes/kotlin/main")
   standardOutput = ByteArrayOutputStream()
