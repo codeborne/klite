@@ -22,15 +22,16 @@ open class TSGenerator(
 ) {
   @OptIn(ExperimentalPathApi::class)
   open fun generate(dir: Path, out: PrintStream = System.out) = dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.forEach {
+    val className = dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")
     try {
-      val cls = Class.forName(dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")).kotlin
+      val cls = Class.forName(className).kotlin
       render(cls)?.let {
         out.println("// $cls")
         out.println(typePrefix + it)
       }
     } catch (ignore: UnsupportedOperationException) {
-    } catch (e: ClassNotFoundException) {
-      err.println("// $e")
+    } catch (e: Exception) {
+      err.println("// $className: $e")
     }
   }
 
