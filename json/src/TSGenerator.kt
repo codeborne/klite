@@ -63,9 +63,10 @@ open class TSGenerator(
     append("}")
   }.toString()
 
-  protected open fun tsType(type: KType): String {
-    val cls = type.classifier as KClass<*>
+  protected open fun tsType(type: KType?): String {
+    val cls = type?.classifier as? KClass<*>
     return customTypes[type.toString()] ?: (when {
+      cls == null -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
       cls.isSubclassOf(Boolean::class) -> "boolean"
@@ -75,7 +76,7 @@ open class TSGenerator(
       cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
       cls.isData -> tsName(cls)
       else -> "any"
-    } + (type.arguments.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type!!) } ?: ""))
+    } + (type?.arguments?.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: ""))
   }
 
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
