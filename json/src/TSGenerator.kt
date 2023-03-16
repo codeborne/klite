@@ -73,12 +73,12 @@ open class TSGenerator(
       cls.isSubclassOf(Number::class) -> "number"
       cls.isSubclassOf(Iterable::class) || cls.java.isArray -> "Array"
       cls.isSubclassOf(Map::class) -> "Record"
-      cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
       cls == KProperty1::class -> "keyof " + tsType(type.arguments.first().type)
+      cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
       cls.isData || cls.java.isInterface -> tsName(cls)
       else -> "any"
     }
-    return if (ts == "any" || ts.startsWith("keyof ")) ts
+    return if (ts[0].isLowerCase()) ts
     else ts + (type?.arguments?.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
   }
 
