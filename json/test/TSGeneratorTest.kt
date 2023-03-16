@@ -14,19 +14,22 @@ class TSGeneratorTest {
     expect(ts.render(SomeData.Status::class)).toEqual(/* language=TypeScript */ "enum SomeDataStatus {ACTIVE = 'ACTIVE'}")
   }
 
+  @Test fun inline() {
+    expect(ts.render(MyId::class)).toEqual( /* language=TypeScript */ "type MyId<T> = string")
+  }
+
   @Test fun `interface`() {
-    expect(ts.render(Person::class)).toEqual(
-      // language=TypeScript
+    expect(ts.render(Person::class)).toEqual( // language=TypeScript
       "interface Person {hello: SomeEnum; name: string}")
 
-    expect(ts.render(SomeData::class)).toEqual(
-      // language=TypeScript
-      "interface SomeData {age: number; birthDate?: string; id: string; list: SomeData[]; map: Record<string, SomeData[]>; name: string; other?: SomeData; status: SomeDataStatus; hello: SomeEnum}")
+    expect(ts.render(SomeData::class)).toEqual( // language=TypeScript
+      "interface SomeData {age: number; birthDate?: string; id: MyId<SomeData>; list: Array<SomeData>; map: Record<string, Array<SomeData>>; name: string; other?: SomeData; status: SomeDataStatus; hello: SomeEnum}")
   }
 }
 
+@JvmInline value class MyId<T>(val uuid: UUID = UUID.randomUUID())
+enum class SomeEnum { HELLO, WORLD }
 interface Person { val name: String; val hello get() = SomeEnum.HELLO }
-data class SomeData(override val name: String, val age: Int, val birthDate: String?, val id: UUID, val other: SomeData?, val list: List<SomeData>, val map: Map<LocalDate, Array<SomeData>>, val status: Status = Status.ACTIVE): Person {
+data class SomeData(override val name: String, val age: Int, val birthDate: String?, val id: MyId<SomeData>, val other: SomeData?, val list: List<SomeData>, val map: Map<LocalDate, Array<SomeData>>, val status: Status = Status.ACTIVE): Person {
   enum class Status { ACTIVE }
 }
-enum class SomeEnum { HELLO, WORLD }

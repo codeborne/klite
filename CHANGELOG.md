@@ -1,5 +1,6 @@
 # Unreleased
 * json: ValueConverter.from() can now have access to the expected KType
+* json: TSGenerator to generate TypeScript types for data classes/enums
 
 # 1.5.0
 * core: toValues() functions moved here from klite-jdbc

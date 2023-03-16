@@ -12,6 +12,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.memberProperties
 
 /** Converts project data classes/enums to TypeScript for front-end type-safety */
 class TSGenerator(
@@ -32,11 +33,16 @@ class TSGenerator(
   }
 
   @Language("TypeScript") fun render(cls: KClass<*>) =
-    if (cls.isData || cls.isValue || cls.java.isInterface && !cls.java.isAnnotation) renderInterface(cls)
+    if (cls.isData || cls.java.isInterface && !cls.java.isAnnotation) renderInterface(cls)
+    else if (cls.isValue) renderInline(cls)
     else if (cls.isSubclassOf(Enum::class)) renderEnum(cls)
     else null
 
   private fun renderEnum(cls: KClass<*>) = "enum " + tsName(cls) + " {" + cls.java.enumConstants.joinToString { "$it = '$it'" } + "}"
+
+  private fun renderInline(cls: KClass<*>) = "type " + tsName(cls) +
+    (cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") ?: "") +
+    " = " + tsType(cls.memberProperties.first().returnType)
 
   private fun renderInterface(cls: KClass<*>): String {
     val sb = StringBuilder()
@@ -52,16 +58,17 @@ class TSGenerator(
 
   private fun tsType(type: KType): String {
     val cls = type.classifier as KClass<*>
-    return customTypes[type.toString()] ?: when {
+    return customTypes[type.toString()] ?: (when {
+      cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
       cls.isSubclassOf(Boolean::class) -> "boolean"
       cls.isSubclassOf(Number::class) -> "number"
-      cls.isSubclassOf(Iterable::class) || cls.java.isArray -> tsType(type.arguments.first().type!!) + "[]"
-      cls.isSubclassOf(Map::class) -> "Record<" + tsType(type.arguments.first().type!!) + ", " + tsType(type.arguments.last().type!!) + ">"
+      cls.isSubclassOf(Iterable::class) || cls.java.isArray -> "Array"
+      cls.isSubclassOf(Map::class) -> "Record"
       cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
       cls.isData -> tsName(cls)
       else -> "any"
-    }
+    } + (type.arguments.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type!!) } ?: ""))
   }
 
   private fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
