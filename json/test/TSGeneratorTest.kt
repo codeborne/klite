@@ -19,6 +19,8 @@ class TSGeneratorTest {
   }
 
   @Test fun `interface`() {
+    expect(ts.render(NoProps::class)).toEqual(null)
+
     expect(ts.render(Person::class)).toEqual( // language=TypeScript
       "interface Person {hello: SomeEnum; name: string}")
 
@@ -33,3 +35,4 @@ interface Person { val name: String; val hello get() = SomeEnum.HELLO }
 data class SomeData(override val name: String, val age: Int, val birthDate: String?, val id: MyId<SomeData>, val other: SomeData?, val list: List<SomeData>, val map: Map<LocalDate, Array<SomeData>>, val status: Status = Status.ACTIVE): Person {
   enum class Status { ACTIVE }
 }
+interface NoProps { fun onlyMethods() }

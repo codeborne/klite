@@ -50,9 +50,11 @@ open class TSGenerator(
     cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") ?: ""
 
   @Suppress("UNCHECKED_CAST")
-  protected open fun renderInterface(cls: KClass<*>) = StringBuilder().apply {
+  protected open fun renderInterface(cls: KClass<*>): String? = StringBuilder().apply {
+    val props = (cls.publicProperties as Sequence<KProperty1<Any, *>>).notIgnored.iterator()
+    if (!props.hasNext()) return null
     append("interface ").append(tsName(cls)).append(typeParams(cls)).append(" {")
-    (cls.publicProperties as Sequence<KProperty1<Any, *>>).notIgnored.forEach { p ->
+    props.iterator().forEach { p ->
       append(p.jsonName)
       if (p.returnType.isMarkedNullable) append("?")
       append(": ").append(tsType(p.returnType)).append("; ")
