@@ -1,3 +1,6 @@
+# Unreleased
+* json: ValueConverter.from() can now have access to the expected KType
+
 # 1.5.0
 * core: toValues() functions moved here from klite-jdbc
 * core: TSID introduced as an alternative to UUID

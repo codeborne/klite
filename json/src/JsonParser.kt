@@ -25,7 +25,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
     't', 'f' -> readLettersOrDigits(c).toBoolean()
     'n' -> readLettersOrDigits(c).let { if (it == "null") null else fail("Unexpected $it") }
     else -> fail("Unexpected char: $c")
-  })
+  }, type)
 
   private fun readString(): String = StringBuilder().apply {
     while (true) {

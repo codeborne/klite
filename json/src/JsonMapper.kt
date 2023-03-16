@@ -32,6 +32,7 @@ typealias KeyConverter = ValueConverter<String>
 open class ValueConverter<T> {
   open fun to(o: T) = o
   open fun from(o: T) = o
+  open fun from(o: T, type: KType?) = from(o)
 }
 
 object SnakeCase: KeyConverter() {
