@@ -9,7 +9,7 @@ dependencies {
   implementation(project(":i18n"))
   implementation(project(":jdbc"))
   implementation(project(":slf4j"))
-  implementation("org.postgresql:postgresql:42.5.1")
+  implementation("org.postgresql:postgresql:42.5.4")
   testImplementation(project(":jdbc-test"))
 }
 
