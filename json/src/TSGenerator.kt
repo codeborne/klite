@@ -3,6 +3,7 @@ package klite.json
 import klite.Converter
 import klite.publicProperties
 import org.intellij.lang.annotations.Language
+import java.io.PrintStream
 import java.lang.System.err
 import java.nio.file.Path
 import java.util.*
@@ -20,18 +21,16 @@ open class TSGenerator(
   private val typePrefix: String = "export "
 ) {
   @OptIn(ExperimentalPathApi::class)
-  open fun scan(dir: Path) {
-    dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.forEach {
-      try {
-        val cls = Class.forName(dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")).kotlin
-        render(cls)?.let {
-          println("// $cls")
-          println(typePrefix + it)
-        }
-      } catch (ignore: UnsupportedOperationException) {
-      } catch (e: ClassNotFoundException) {
-        err.println("// $e")
+  open fun generate(dir: Path, out: PrintStream = System.out) = dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.forEach {
+    try {
+      val cls = Class.forName(dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")).kotlin
+      render(cls)?.let {
+        out.println("// $cls")
+        out.println(typePrefix + it)
       }
+    } catch (ignore: UnsupportedOperationException) {
+    } catch (e: ClassNotFoundException) {
+      err.println("// $e")
     }
   }
 
@@ -43,13 +42,15 @@ open class TSGenerator(
 
   protected open fun renderEnum(cls: KClass<*>) = "enum " + tsName(cls) + " {" + cls.java.enumConstants.joinToString { "$it = '$it'" } + "}"
 
-  protected open fun renderInline(cls: KClass<*>) = "type " + tsName(cls) +
-    (cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") ?: "") +
+  protected open fun renderInline(cls: KClass<*>) = "type " + tsName(cls) + typeParams(cls) +
     " = " + tsType(cls.memberProperties.first().returnType)
+
+  protected open fun typeParams(cls: KClass<*>) =
+    cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") ?: ""
 
   @Suppress("UNCHECKED_CAST")
   protected open fun renderInterface(cls: KClass<*>) = StringBuilder().apply {
-    append("interface ").append(tsName(cls)).append(" {")
+    append("interface ").append(tsName(cls)).append(typeParams(cls)).append(" {")
     (cls.publicProperties as Sequence<KProperty1<Any, *>>).notIgnored.forEach { p ->
       append(p.jsonName)
       if (p.returnType.isMarkedNullable) append("?")
@@ -79,8 +80,8 @@ open class TSGenerator(
 
 fun main(args: Array<String>) {
   if (args.isEmpty())
-    return err.println("Usage: <classes-dir> <custom-types>")
+    return err.println("Usage: <classes-dir> ...custom.Type=tsType")
   val dir = Path.of(args[0])
   val customTypes = args.drop(1).associate { it.split("=").let { it[0] to it[1] } }
-  TSGenerator(customTypes).scan(dir)
+  TSGenerator(customTypes).generate(dir)
 }
