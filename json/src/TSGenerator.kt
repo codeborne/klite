@@ -65,7 +65,7 @@ open class TSGenerator(
 
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
-    val ts =  customTypes[type.toString()] ?: when {
+    val ts = customTypes[type.toString()] ?: when {
       cls == null -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
@@ -74,10 +74,11 @@ open class TSGenerator(
       cls.isSubclassOf(Iterable::class) || cls.java.isArray -> "Array"
       cls.isSubclassOf(Map::class) -> "Record"
       cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
-      cls.isData -> tsName(cls)
+      cls == KProperty1::class -> "keyof " + tsType(type.arguments.first().type)
+      cls.isData || cls.java.isInterface -> tsName(cls)
       else -> "any"
     }
-    return if (ts == "any") ts
+    return if (ts == "any" || ts.startsWith("keyof ")) ts
     else ts + (type?.arguments?.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
   }
 
