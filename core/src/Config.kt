@@ -5,7 +5,8 @@ import java.io.File
 
 /**
  * An overridable way to read configuration from env vars or system properties,
- * as per 12-factor apps spec. In development, it is convenient to use [useEnvFile]
+ * as per 12-factor apps spec. In development, it is convenient to use [useEnvFile],
+ * which will skip already set env vars by default, giving them precedence.
  */
 object Config {
   fun optional(env: String): String? = System.getProperty(env) ?: System.getenv(env)
@@ -28,6 +29,7 @@ object Config {
     if (optional(env) == null) Config[env] = value
   }
 
+  /** @param force use to override already set env vars */
   fun useEnvFile(name: String = ".env", force: Boolean = false) = useEnvFile(File(name), force)
   fun useEnvFile(file: File, force: Boolean = false) {
     if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
