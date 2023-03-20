@@ -42,10 +42,10 @@ class JsonParserTest {
   @Test fun `parse into class`() {
     expect(mapper.parse<Hello>("""{
       "hellou": " x ", "id": "b8ca58ec-ab15-11ed-93cc-8fdb43988a14", "date": "2022-10-21", "instant": "2022-10-21T10:55:00Z",
-      "nested": {"x": 567}, "array": [{}, {"x": 2}], "map": {"2022-10-21": {"y": 1}},"ignore": false, "readOnly":  false}
+      "nested": {"x": 567}, "array": [{}, {"x": 2}], "map": {"2022-10-21": {"y": 1}},"ignore": false, "readOnly":  false, "isBoolean" : false}
     """)).toEqual(
       Hello("x", "b8ca58ec-ab15-11ed-93cc-8fdb43988a14".uuid, LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
-        listOf(Nested(), Nested(x = 2.toBigDecimal())), mapOf(LocalDate.parse("2022-10-21") to Nested(y = 1))))
+        listOf(Nested(), Nested(x = 2.toBigDecimal())), mapOf(LocalDate.parse("2022-10-21") to Nested(y = 1)), isBoolean = false))
   }
 
   @Test fun trimToNull() {
@@ -80,5 +80,5 @@ class JsonParserTest {
 
 data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val date: LocalDate, val instant: Instant, val nested: Nested,
                  val array: List<Nested> = emptyList(), val map: Map<LocalDate, Nested> = emptyMap(), val nullable: String? = null,
-                 @JsonIgnore val ignore: Boolean = true, @JsonProperty(readOnly = true) val readOnly: Boolean = true)
+                 @JsonIgnore val ignore: Boolean = true, @JsonProperty(readOnly = true) val readOnly: Boolean = true, val isBoolean: Boolean = true)
 data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)

@@ -31,6 +31,9 @@ use(JsonBody(JsonMapper(renderNulls = true, keys = SnakeCase, values = object: V
 
 [@JsonProperty and @JsonIgnore](src/JsonMapper.kt) are provided, similar to Jackson
 
+Note: `is`-prefixed boolean properties are rendered/parsed with `is` intact, but most Java json parsers would strip the `is` prefix.
+Use `@JsonProperty` with custom name if you want stripped `is` prefixes.
+
 ## Integrations
 
 [JsonHttpClient](src/JsonHttpClient.kt) is provided to do async json requests to other services.
