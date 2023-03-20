@@ -12,6 +12,7 @@ import kotlin.io.path.PathWalkOption.INCLUDE_DIRECTORIES
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberProperties
 
@@ -71,7 +72,8 @@ open class TSGenerator(
       cls.isSubclassOf(Enum::class) -> tsName(cls)
       cls.isSubclassOf(Boolean::class) -> "boolean"
       cls.isSubclassOf(Number::class) -> "number"
-      cls.isSubclassOf(Iterable::class) || cls.java.isArray -> "Array"
+      cls.isSubclassOf(Iterable::class) -> "Array"
+      cls.java.isArray -> "Array" + (cls.java.componentType?.let { if (it.isPrimitive) "<" + tsType(it.kotlin.createType()) + ">" else "" } ?: "")
       cls.isSubclassOf(Map::class) -> "Record"
       cls == KProperty1::class -> "keyof " + tsType(type.arguments.first().type)
       cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
