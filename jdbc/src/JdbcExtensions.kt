@@ -15,6 +15,10 @@ import kotlin.reflect.KProperty1
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
+internal const val selectFrom = "select * from"
+internal const val selectFromTable = "select * from table"
+internal const val selectWhere = "$selectFromTable where"
+
 typealias Mapper<R> = ResultSet.() -> R
 typealias Column = Any // String | KProperty1
 typealias ColValue = Pair<Column, Any?>
@@ -26,25 +30,25 @@ fun DataSource.lock(on: String) = query("select pg_advisory_lock(${on.hashCode()
 fun DataSource.tryLock(on: String): Boolean = query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
 fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
 
-fun <R, ID> DataSource.select(table: String, id: ID, mapper: Mapper<R>): R =
+fun <R, ID> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, id: ID, mapper: Mapper<R>): R =
   select(table, listOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
-fun <R, C: MutableCollection<R>> DataSource.select(table: String, where: Where = emptyList(), suffix: String = "", into: C, mapper: Mapper<R>): C =
-  query("select * from " + q(table), where, suffix, into, mapper)
+fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, where: Where = emptyList(), @Language("SQL", prefix = selectFromTable) suffix: String = "", into: C, mapper: Mapper<R>): C =
+  query("$selectFrom " + q(table), where, suffix, into, mapper)
 
-inline fun <R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = "", noinline mapper: Mapper<R>): List<R> =
+inline fun <R> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = "", noinline mapper: Mapper<R>): List<R> =
   select(table, where.filterNotNull(), suffix, mapper = mapper)
 
-fun <R> DataSource.select(table: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
+fun <R> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, where: Where, @Language("SQL", prefix = selectFromTable) suffix: String = "", mapper: Mapper<R>) =
   select(table, where, suffix, mutableListOf(), mapper) as List<R>
 
-inline fun <reified R> DataSource.select(table: String, where: Where, suffix: String = ""): List<R> =
+inline fun <reified R> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, where: Where, @Language("SQL", prefix = selectFromTable) suffix: String = ""): List<R> =
   select(table, where, suffix = suffix) { create() }
 
-inline fun <reified R> DataSource.select(table: String, vararg where: ColValue?, suffix: String = ""): List<R> =
+inline fun <reified R> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = ""): List<R> =
   select(table, *where, suffix = suffix) { create() }
 
-fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), suffix: String = "", into: C, mapper: Mapper<R>): C =
+fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: String, where: Where = emptyList(), @Language("SQL", prefix = selectFromTable) suffix: String = "", into: C, mapper: Mapper<R>): C =
   whereConvert(where).let { where ->
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
@@ -52,16 +56,16 @@ fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: Strin
   }
 }
 
-inline fun <R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, suffix: String = "", noinline mapper: Mapper<R>): List<R> =
+inline fun <R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = "", noinline mapper: Mapper<R>): List<R> =
   query(select, where.filterNotNull(), suffix, mapper = mapper)
 
-fun <R> DataSource.query(@Language("SQL") select: String, where: Where, suffix: String = "", mapper: Mapper<R>) =
+fun <R> DataSource.query(@Language("SQL") select: String, where: Where, @Language("SQL", prefix = selectFromTable) suffix: String = "", mapper: Mapper<R>) =
   query(select, where, suffix, mutableListOf(), mapper) as List<R>
 
-inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where, suffix: String = ""): List<R> =
+inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: Where, @Language("SQL", prefix = selectFromTable) suffix: String = ""): List<R> =
   query(select, where, suffix = suffix) { create() }
 
-inline fun <reified R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, suffix: String = ""): List<R> =
+inline fun <reified R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = ""): List<R> =
   query(select, *where, suffix = suffix) { create() }
 
 fun DataSource.count(table: String, where: Where = emptyList()) = query("select count(*) from $table", where) { getLong(1) }.first()
@@ -98,10 +102,10 @@ fun DataSource.insert(table: String, values: Values): Int {
   }
 }
 
-fun DataSource.upsert(table: String, values: Values, uniqueFields: String = "id"): Int =
+fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id"): Int =
   exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
 
-internal fun insertExpr(table: String, values: Values) =
+internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
   "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${insertValues(values.values)})"
 
 private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
@@ -110,16 +114,16 @@ private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
   else "?"
 }
 
-inline fun DataSource.update(table: String, values: Values, vararg where: ColValue?): Int =
+inline fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: Values, vararg where: ColValue?): Int =
   update(table, values, where.filterNotNull())
 
-fun DataSource.update(table: String, values: Values, where: Where): Int = whereConvert(where).let { where ->
+fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: Values, where: Where): Int = whereConvert(where).let { where ->
   exec("update ${q(table)} set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where))
 }
 
-inline fun DataSource.delete(table: String, vararg where: ColValue?): Int = delete(table, where.filterNotNull())
+inline fun DataSource.delete(@Language("SQL", prefix = selectFrom) table: String, vararg where: ColValue?): Int = delete(table, where.filterNotNull())
 
-fun DataSource.delete(table: String, where: Where): Int = whereConvert(where).let { where ->
+fun DataSource.delete(@Language("SQL", prefix = selectFrom) table: String, where: Where): Int = whereConvert(where).let { where ->
   exec("delete from ${q(table)}${whereExpr(where)}", whereValues(where))
 }
 

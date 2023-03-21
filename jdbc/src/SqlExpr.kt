@@ -3,10 +3,8 @@ package klite.jdbc
 import org.intellij.lang.annotations.Language
 import kotlin.reflect.KProperty1
 
-private const val selectPrefix = "select * from table where"
-
-open class SqlExpr(@Language("SQL", prefix = selectPrefix) internal val expr: String, val values: Iterable<*> = emptyList<Any>()) {
-  constructor(@Language("SQL", prefix = selectPrefix) expr: String, vararg values: Any?): this(expr, values.toList())
+open class SqlExpr(@Language("SQL", prefix = selectWhere) internal val expr: String, val values: Iterable<*> = emptyList<Any>()) {
+  constructor(@Language("SQL", prefix = selectWhere) expr: String, vararg values: Any?): this(expr, values.toList())
   open fun expr(key: String) = expr
   override fun equals(other: Any?) = other === this || other is SqlExpr && other.expr == this.expr && other.values == this.values
   override fun hashCode() = expr.hashCode() + values.hashCode()
@@ -78,4 +76,4 @@ fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr = where.asSequence().filt
 fun <K: Column> or(vararg where: Pair<K, Any?>?) = where[0]!!.first to orExpr(*where)
 
 @Suppress("UNCHECKED_CAST")
-fun <K: Column> sql(@Language("SQL", prefix = selectPrefix) expr: String, vararg values: Any?): Pair<K, SqlExpr> = (expr as K) to SqlExpr(expr, *values)
+fun <K: Column> sql(@Language("SQL", prefix = selectWhere) expr: String, vararg values: Any?): Pair<K, SqlExpr> = (expr as K) to SqlExpr(expr, *values)
