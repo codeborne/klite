@@ -1,4 +1,4 @@
-@file:Suppress("NAME_SHADOWING")
+@file:Suppress("NAME_SHADOWING", "NOTHING_TO_INLINE")
 package klite.jdbc
 
 import org.intellij.lang.annotations.Language
@@ -170,4 +170,5 @@ operator fun PreparedStatement.set(i: Int, value: Any?) {
   if (value is InputStream) setBinaryStream(i, value)
   else setObject(i, JdbcConverter.to(value, connection))
 }
+
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
