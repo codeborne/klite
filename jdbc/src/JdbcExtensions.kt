@@ -15,9 +15,9 @@ import kotlin.reflect.KProperty1
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
-internal const val selectFrom = "select * from"
-internal const val selectFromTable = "select * from table"
-internal const val selectWhere = "$selectFromTable where"
+internal const val selectFrom = "select * from "
+internal const val selectFromTable = "$selectFrom table "
+internal const val selectWhere = "$selectFromTable where "
 
 typealias Mapper<R> = ResultSet.() -> R
 typealias Column = Any // String | KProperty1
@@ -34,7 +34,7 @@ fun <R, ID> DataSource.select(@Language("SQL", prefix = selectFrom) table: Strin
   select(table, listOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
 fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, where: Where = emptyList(), @Language("SQL", prefix = selectFromTable) suffix: String = "", into: C, mapper: Mapper<R>): C =
-  query("$selectFrom " + q(table), where, suffix, into, mapper)
+  query(selectFrom + q(table), where, suffix, into, mapper)
 
 inline fun <R> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = "", noinline mapper: Mapper<R>): List<R> =
   select(table, where.filterNotNull(), suffix, mapper = mapper)

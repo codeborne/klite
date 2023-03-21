@@ -19,20 +19,20 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val id2 = randomUUID()
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
 
-    expect(db.select(table, id) { getId() }).toEqual(id)
+    expect(db.select(table, id) { getUuid() }).toEqual(id)
 
-    expect(db.select(table, "hello" to "Hello") { getId() }).toContain(id)
+    expect(db.select(table, "hello" to "Hello") { getUuid() }).toContain(id)
     expect(db.select<SomeData>(table)).toContain(SomeData("Hello", 42, id))
-    expect(db.select(table, "hello" to "World") { getId() }).toBeEmpty()
+    expect(db.select(table, "hello" to "World") { getUuid() }).toBeEmpty()
 
-    expect(db.select(table, "hello" gt "Hello") { getId() }).toContain(id2)
-    expect(db.select(table, "hello" to listOf("Hello", "Hello2")) { getId() }).toContain(id, id2)
-    expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "order by hello desc") { getId() }).toContainExactly(id2, id)
-    expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "limit 1") { getId() }).toContainExactly(id)
-    expect(db.select(table, "hello" to NotIn("Hello2")) { getId() }).toContainExactly(id)
+    expect(db.select(table, "hello" gt "Hello") { getUuid() }).toContain(id2)
+    expect(db.select(table, "hello" to listOf("Hello", "Hello2")) { getUuid() }).toContain(id, id2)
+    expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "order by hello desc") { getUuid() }).toContainExactly(id2, id)
+    expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "limit 1") { getUuid() }).toContainExactly(id)
+    expect(db.select(table, "hello" to NotIn("Hello2")) { getUuid() }).toContainExactly(id)
 
-    expect(db.select(table, emptyList(), "where world is null") { getId() }).toContainExactly(id2)
-    expect(db.select("$table a join $table b on a.id = b.id", emptyList()) { getId() }).toContain(id, id2)
+    expect(db.select(table, emptyList(), "where world is null") { getUuid() }).toContainExactly(id2)
+    expect(db.select("$table a join $table b on a.id = b.id", emptyList()) { getUuid() }).toContain(id, id2)
   }
 
   @Test fun generatedKey() {
