@@ -22,7 +22,7 @@ open class TSGenerator(
   private val typePrefix: String = "export "
 ) {
   @OptIn(ExperimentalPathApi::class)
-  open fun generate(dir: Path, out: PrintStream = System.out) = dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.forEach {
+  open fun generate(dir: Path, out: PrintStream = System.out) = dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.sorted().forEach {
     val className = dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")
     try {
       val cls = Class.forName(className).kotlin
