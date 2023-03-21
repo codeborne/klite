@@ -68,7 +68,7 @@ inline fun <reified R> DataSource.query(@Language("SQL") select: String, where: 
 inline fun <reified R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = ""): List<R> =
   query(select, *where, suffix = suffix) { create() }
 
-fun DataSource.count(table: String, where: Where = emptyList()) = query("select count(*) from $table", where) { getLong(1) }.first()
+fun DataSource.count(@Language("SQL", prefix = selectFrom) table: String, where: Where = emptyList()) = query("select count(*) from $table", where) { getLong(1) }.first()
 
 internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Mapper<R>) {
   while (next()) consumer(mapper())
@@ -94,7 +94,7 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
 }
 
 // TODO: add insert with mapper that returns the generated keys
-fun DataSource.insert(table: String, values: Values): Int {
+fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, values: Values): Int {
   val valuesToSet = values.filter { it.value !is GeneratedKey<*> }
   val hasGeneratedKeys = valuesToSet.size != values.size
   return exec(insertExpr(table, valuesToSet), setValues(valuesToSet), if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
