@@ -26,7 +26,8 @@ class TSGeneratorTest {
       "interface Person {hello: SomeEnum; name: string}")
 
     expect(ts.render(SomeData::class)).toEqual( // language=TypeScript
-      "interface SomeData {age: number; birthDate?: string; bytes: Array<number>; field: keyof Person; id: MyId<SomeData>; list: Array<SomeData>; map: Record<string, Array<SomeData>>; name: string; other?: SomeData; status: SomeDataStatus; hello: SomeEnum}")
+      "interface SomeData {age: number; birthDate?: string; bytes: Array<number>; field: keyof Person; id: MyId<SomeData>; " +
+        "list: Array<SomeData>; map: Record<string, Array<SomeData>>; name: string; other?: SomeData; status: SomeDataStatus; hello: SomeEnum}")
   }
 }
 
