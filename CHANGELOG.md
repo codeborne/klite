@@ -1,6 +1,7 @@
 # Unreleased
 * json: ValueConverter.from() can now have access to the expected KType
 * json: TSGenerator to generate TypeScript types for data classes/enums
+* server: AppScope.async now is the standard async function that returns a Deferred. Use AppScope.launch if you want exceptions to be logged
 
 # 1.5.0
 * core: toValues() functions moved here from klite-jdbc
