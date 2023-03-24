@@ -1,4 +1,4 @@
-# Unreleased
+# 1.5.1
 * json: ValueConverter.from() can now have access to the expected KType
 * json: TSGenerator to generate TypeScript types for data classes/enums
 * server: AppScope.async now is the standard async function that returns a Deferred. Use AppScope.launch if you want exceptions to be logged
@@ -13,7 +13,7 @@
 * jdbc: fromValues() was renamed to create()
 * jdbc: switched db.select() <-> db.query(), taking "where" as a list or varargs, to allow for duplicated columns
 
-The release is not fully backwards-compatible, however most old functions are provided as @Deprecated.
+The release is **not fully backwards-compatible**, however most old functions are provided as @Deprecated.
 
 This will migrate the most important parts:
 `find -name '*.kt' -exec sed -ri 's/klite.json./klite.jackson./; s/mapOfNotNull/notNullValues/; /db\.(query|select)/{N; s/db\.query/db.xxxselect/g; s/db\.select/db.query/g; s/mapOf/listOf/g; s/emptyMap/emptyList/g}; /db\.delete/s/mapOf//' {} \; -exec sed -ri 's/db\.xxxselect/db\.select/; s/(db.update\(.*, )mapOf\((.*?\)), (mapOf\(.*?\))\)/\1\3, \2/; ' {} \;`
