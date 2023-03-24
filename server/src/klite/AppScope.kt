@@ -6,9 +6,8 @@ import kotlin.coroutines.CoroutineContext
 
 object AppScope: CoroutineScope {
   private val exceptionHandler = CoroutineExceptionHandler { _, e -> logger().error("Async operation failed", e) }
-  override val coroutineContext get() = exceptionHandler + NonCancellable
-
-  fun async(block: suspend CoroutineScope.() -> Unit) = launch(ThreadNameContext(Thread.currentThread().name + "+async"), block = block)
+  private val fixedContext = SupervisorJob() + exceptionHandler + NonCancellable
+  override val coroutineContext get() = fixedContext + ThreadNameContext(Thread.currentThread().name + "+async")
 }
 
 class ThreadNameContext(private val requestId: String): ThreadContextElement<String?>, AbstractCoroutineContextElement(Key) {
