@@ -16,7 +16,7 @@ class TSGeneratorTest {
   }
 
   @Test fun inline() {
-    expect(ts.render(MyId::class)).toEqual( /* language=TypeScript */ "type MyId<T> = string")
+    expect(ts.render(MyId::class)).toEqual(/* language=TypeScript */ "type MyId<T> = string")
   }
 
   @Test fun `interface`() {
@@ -34,9 +34,11 @@ class TSGeneratorTest {
 @JvmInline value class MyId<T>(val uuid: UUID = UUID.randomUUID())
 enum class SomeEnum { HELLO, WORLD }
 interface Person { val name: String; val hello get() = SomeEnum.HELLO }
+
 data class SomeData(override val name: String, val age: Int, val birthDate: String?, val id: MyId<SomeData>, val other: SomeData?,
                     val list: List<SomeData>, val map: Map<LocalDate, Array<SomeData>>, val status: Status = Status.ACTIVE,
                     val field: KProperty1<Person, *>, val bytes: ByteArray): Person {
   enum class Status { ACTIVE }
 }
+
 interface NoProps { fun onlyMethods() }
