@@ -7,7 +7,11 @@ import klite.uuid
 import java.sql.ResultSet
 import java.util.*
 
-/** A sample type-safe Id class */
+/**
+ * A sample type-safe Id class.
+ * Beware: Mockk's any() matcher has [trouble with inline classes](https://github.com/mockk/mockk/issues/847).
+ * Workaround: `fun <T> MockKMatcherScope.anyId(): Id<T> = Id(ofType(UUID::class))`
+ */
 @JvmInline value class Id<T>(val uuid: UUID = UUID.randomUUID()) {
   constructor(uuid: String): this(uuid.uuid)
   override fun toString() = uuid.toString()
