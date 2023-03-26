@@ -19,25 +19,26 @@ import kotlin.reflect.full.memberProperties
 /** Converts project data/enum/inline classes to TypeScript for front-end type-safety */
 open class TSGenerator(
   private val customTypes: Map<String, String?> = emptyMap(),
-  private val typePrefix: String = "export "
+  private val typePrefix: String = "export ",
+  private val out: PrintStream = System.out
 ) {
   @OptIn(ExperimentalPathApi::class)
-  open fun printFrom(dir: Path, out: PrintStream = System.out) {
+  open fun printFrom(dir: Path) {
     dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.sorted().forEach {
       val className = dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")
-      out.printClass(className)
+      printClass(className)
     }
   }
 
-  protected open fun printExtraTypes(out: PrintStream = System.out) = customTypes.forEach {
-    if (it.value == null) out.printClass(it.key)
+  protected open fun printUnmappedCustomTypes() = customTypes.forEach {
+    if (it.value == null) printClass(it.key)
   }
 
-  protected open fun PrintStream.printClass(className: String) = try {
+  protected open fun printClass(className: String) = try {
     val cls = Class.forName(className).kotlin
     render(cls)?.let {
-      println("// $cls")
-      println(typePrefix + it)
+      out.println("// $cls")
+      out.println(typePrefix + it)
     }
   } catch (ignore: UnsupportedOperationException) {
   } catch (e: Exception) {
@@ -101,7 +102,7 @@ open class TSGenerator(
       val dir = Path.of(args[0])
       val customTypes = args.drop(1).associate { it.split("=").let { it[0] to it.getOrNull(1) } }
       TSGenerator(customTypes).apply {
-        printExtraTypes()
+        printUnmappedCustomTypes()
         printFrom(dir)
       }
     }
