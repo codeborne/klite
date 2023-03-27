@@ -31,7 +31,7 @@ private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any
 
 fun <T> KProperty1<T, *>.valueOf(o: T) = try {
   val v = get(o)
-  if (v != null && v::class.isValue && v.unboxInline() == null) null else v // workaround for a bug in kotlin-reflect: https://youtrack.jetbrains.com/issue/KT-57590
+  if (v != null && !v::class.java.isSynthetic && v::class.isValue && v.unboxInline() == null) null else v // workaround for a bug in kotlin-reflect: https://youtrack.jetbrains.com/issue/KT-57590
 } catch (e: InvocationTargetException) { throw e.targetException }
 
 fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
