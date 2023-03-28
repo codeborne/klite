@@ -25,7 +25,7 @@ class ValuesTest {
   }
 
   @Test fun createWithExplicitNullable() {
-    val values = mapOf("hello" to "", "world" to 0, "nullable" to null)
+    val values = mapOf("hello" to "", "world" to 0, "nullable" to null, "list" to null)
     expect(SomeData::class.createFrom(values)).toEqual(SomeData("", 0, nullable = null))
 
     expect(AnotherData::class.createFrom(emptyMap())).toEqual(AnotherData(null))

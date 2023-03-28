@@ -44,8 +44,11 @@ fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   val args = HashMap<KParameter, Any?>()
   creator.parameters.forEach {
     val v = valueOf(it)
-    if (v != AbsentValue) args[it] = v
-    else if (!it.isOptional) args[it] = null
+    if (v == AbsentValue) {
+      if (it.type.isMarkedNullable && !it.isOptional) args[it] = null
+    } else if (v == null) {
+      if (it.type.isMarkedNullable) args[it] = null
+    } else args[it] = v
   }
   return try {
     creator.callBy(args)

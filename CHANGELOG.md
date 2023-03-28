@@ -1,3 +1,6 @@
+# Unreleased
+* core/json: use default values for explicitly passed nulls if property is not nullable
+
 # 1.5.1
 * json: ValueConverter.from() can now have access to the expected KType
 * json: TSGenerator to generate TypeScript types for data classes/enums
