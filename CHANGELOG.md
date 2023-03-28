@@ -1,5 +1,9 @@
 # Unreleased
 * core/json: use default values for explicitly passed nulls if property is not nullable
+* core/json: unwrap InvocationTargetException, so that any validation exceptions thrown from data class constructors is propagated properly
+* core/json: workaround for a bug in kotlin-reflect, which boxes null values even if nullable inline type is used: https://youtrack.jetbrains.com/issue/KT-57590
+* json: TSGenerator can now receive additional library types to generate from command-line, e.g. klite.TSID
+* core: Decimal class that unlike BigDecimal implements equals() numerically (independent of scale)
 
 # 1.5.1
 * json: ValueConverter.from() can now have access to the expected KType
