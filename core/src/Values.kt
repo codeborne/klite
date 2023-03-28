@@ -49,6 +49,8 @@ fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   }
   return try {
     creator.callBy(args)
+  } catch (e: InvocationTargetException) {
+    throw e.targetException
   } catch (e: IllegalArgumentException) {
     throw IllegalArgumentException("Cannot create $this using " + args.mapKeys { it.key.name }, e)
   }
