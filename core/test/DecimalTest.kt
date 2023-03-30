@@ -1,6 +1,9 @@
 import ch.tutteli.atrium.api.fluent.en_GB.notToEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toBeAnInstanceOf
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toEqualNumerically
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Decimal
 import klite.d
 import org.junit.jupiter.api.Test
 
@@ -20,5 +23,9 @@ class DecimalTest {
     expect("3.00".d.toString()).toEqual("3.00")
     expect(3.d.toString()).toEqual("3")
     expect("1e3".d.toString()).toEqual("1000")
+  }
+
+  @Test fun operations() {
+    expect(3.d + 5.d * 2.5.d).toEqualNumerically(15.5.d).toBeAnInstanceOf<Decimal>()
   }
 }
