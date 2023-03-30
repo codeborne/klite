@@ -9,6 +9,7 @@ private typealias MutableTranslations = MutableMap<String, Any>
 
 object Lang {
   const val COOKIE = "LANG"
+  var jsonMapper = JsonMapper(trimToNull = false)
 
   val available: List<String> = load("langs")
   private val translations = loadTranslations()
@@ -39,7 +40,7 @@ object Lang {
     }
   }
 
-  private inline fun <reified T: Any> load(lang: String): T = JsonMapper().parse(
+  private inline fun <reified T: Any> load(lang: String): T = jsonMapper.parse(
     javaClass.getResourceAsStream("/$lang.json") ?: error("/$lang.json not found in classpath"))
 }
 
