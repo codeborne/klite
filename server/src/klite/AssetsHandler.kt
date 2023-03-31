@@ -9,7 +9,7 @@ import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import kotlin.io.path.*
 
-class AssetsHandler(
+open class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
   val useIndexForUnknownPaths: Boolean = false,
@@ -39,11 +39,8 @@ class AssetsHandler(
     }
   }
 
-  private fun HttpExchange.send(file: Path) {
-    val lastModified = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC))
-    header("Last-Modified", lastModified)
-    if (lastModified == header("If-Modified-Since")) return send(NotModified)
-
+  protected open fun HttpExchange.send(file: Path) {
+    if (setLastModified(file) == header("If-Modified-Since")) return send(NotModified)
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType = MimeTypes.typeFor(file)
@@ -63,4 +60,8 @@ class AssetsHandler(
     val out = startResponse(OK, fileToSend.fileSize().takeIf { it <= useChunkedResponseForFilesLargerThan }, contentType)
     fileToSend.inputStream(READ).use { it.transferTo(out) }
   }
+}
+
+fun HttpExchange.setLastModified(file: Path) = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC)).also {
+  header("Last-Modified", it)
 }
