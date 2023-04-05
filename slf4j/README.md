@@ -18,7 +18,7 @@ When deploying as a 12-factor app, this is all you need - logging to standard ou
 
 ## Other slf4j backends
 
-This module uses the slf4j 2.0 ServiceLoader mechanism to provide a simple logger to slf4j.
+This module uses the slf4j 2.x ServiceLoader mechanism to provide a simple logger to slf4j.
 This implementation is much lighter than `slf4j-simple.jar` and is easier to extend/configure.
 
-If you want to use another (much bigger) backend (e.g. logback), then ensure that it supports slfj4 2.0 and that it is before this module on classpath.
+If you want to use another (much bigger) backend (e.g. logback), then ensure that it supports slfj4 2.x ServiceLoader and that it is before this module on classpath.

@@ -16,24 +16,25 @@ open class StackTraceOptimizingJsonLogger(name: String): StackTraceOptimizingLog
   }
 
   private fun appendJson(sb: StringBuilder, t: Throwable) {
-    sb.append("""{"error": """")
+    sb.append("""{"error":"""")
     sb.append(t.toString().replace("\"", "\\\"").replace("\n", "\\n"))
-    sb.append("""", "stack": [""")
-    val stackTrace = t.stackTrace
-    val until = findUsefulStackTraceEnd(stackTrace)
+    sb.append("""","stack":[""")
+    val stack = t.stackTrace
+    val until = findUsefulStackTraceEnd(stack)
     for (i in 0..until) {
-      var line = stackTrace[i].toString()
+      var line = stack[i].toString()
       if (i < until - 1) {
-        val prev = stackTrace[i + 1]
+        val prev = stack[i + 1]
         line = line.substringAfter(prev.className)
         val prevPackage = prev.className.substringBeforeLast(".")
         line = line.substringAfter(prevPackage)
       }
       sb.append("\"").append(line).append("\"")
-      sb.append(if (i != until) ", " else "]")
+      if (i != until) sb.append(",")
     }
+    sb.append("]")
     t.cause?.let {
-      sb.append(""", "cause": """)
+      sb.append(""","cause":""")
       appendJson(sb, it)
     }
     sb.append("}")
