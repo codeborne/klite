@@ -6,6 +6,7 @@
 * i18n: do not trim translations by default (keep all whitespace)
 * jdbc: support binding of Int values to data classes (DB usually returns integers as Long)
 * server: default RequestLogFormatter will not log StatusCodeExceptions anymore
+* server: useHashCodeAsETag() introduced to avoid sending of same responses
 
 # 1.5.1
 * json: ValueConverter.from() can now have access to the expected KType

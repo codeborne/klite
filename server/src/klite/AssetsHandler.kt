@@ -4,9 +4,6 @@ import klite.StatusCode.Companion.OK
 import java.io.FileNotFoundException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.READ
-import java.time.Instant
-import java.time.ZoneOffset.UTC
-import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import kotlin.io.path.*
 
 open class AssetsHandler(
@@ -60,12 +57,4 @@ open class AssetsHandler(
     val out = startResponse(OK, fileToSend.fileSize().takeIf { it <= useChunkedResponseForFilesLargerThan }, contentType)
     fileToSend.inputStream(READ).use { it.transferTo(out) }
   }
-}
-
-fun HttpExchange.checkLastModified(at: Instant) {
-  if (lastModified(at) == header("If-Modified-Since")) throw NotModifiedException()
-}
-
-fun HttpExchange.lastModified(at: Instant): String = RFC_1123_DATE_TIME.format(at.atOffset(UTC)).also {
-  header("Last-Modified", it)
 }
