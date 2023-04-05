@@ -5,6 +5,7 @@
 * json: TSGenerator can now receive additional library types to generate from command-line, e.g. klite.TSID
 * i18n: do not trim translations by default (keep all whitespace)
 * jdbc: support binding of Int values to data classes (DB usually returns integers as Long)
+* server: default RequestLogFormatter will not log StatusCodeExceptions anymore
 
 # 1.5.1
 * json: ValueConverter.from() can now have access to the expected KType
