@@ -1,10 +1,10 @@
 package klite
 
-import klite.StatusCode.Companion.NotModified
 import klite.StatusCode.Companion.OK
 import java.io.FileNotFoundException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.READ
+import java.time.Instant
 import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import kotlin.io.path.*
@@ -40,7 +40,7 @@ open class AssetsHandler(
   }
 
   protected open fun HttpExchange.send(file: Path) {
-    if (setLastModified(file) == header("If-Modified-Since")) return send(NotModified)
+    checkLastModified(file.getLastModifiedTime().toInstant())
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType = MimeTypes.typeFor(file)
@@ -62,6 +62,10 @@ open class AssetsHandler(
   }
 }
 
-fun HttpExchange.setLastModified(file: Path) = RFC_1123_DATE_TIME.format(file.getLastModifiedTime().toInstant().atOffset(UTC)).also {
+fun HttpExchange.checkLastModified(at: Instant) {
+  if (lastModified(at) == header("If-Modified-Since")) throw NotModifiedException()
+}
+
+fun HttpExchange.lastModified(at: Instant): String = RFC_1123_DATE_TIME.format(at.atOffset(UTC)).also {
   header("Last-Modified", it)
 }
