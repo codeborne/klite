@@ -14,6 +14,6 @@ fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T>): T
     val v = if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
             else if (it.isOptional) getOptional<T>(it.name!!, it.type).getOrDefault(AbsentValue)
             else get(it.name!!, it.type)
-    if (v != null && it.type.classifier == Int::class) (v as Number).toInt() else v
+    if (v is Number && it.type.classifier == Int::class) v.toInt() else v
   }
 }
