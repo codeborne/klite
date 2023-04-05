@@ -42,5 +42,6 @@ import kotlin.reflect.full.memberProperties
     }
   }
 
+  val bodyAllowed get() = this != NoContent && this != NotModified
   override fun toString() = value.toString()
 }

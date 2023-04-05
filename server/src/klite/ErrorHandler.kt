@@ -28,8 +28,9 @@ open class ErrorHandler {
 
   fun handle(exchange: HttpExchange, e: Throwable) {
     exchange.failure = e
-    if (!exchange.isResponseStarted) toResponse(exchange, e)?.let { exchange.render(it.statusCode, it) }
-    else if (e.message?.let { "Broken pipe" in it || "Connection reset" in it } == false)
+    if (!exchange.isResponseStarted) toResponse(exchange, e)?.let {
+      if (it.statusCode.bodyAllowed) exchange.render(it.statusCode, it) else exchange.send(it.statusCode)
+    } else if (e.message?.let { "Broken pipe" in it || "Connection reset" in it } == false)
       logger.error("Error after headers sent", e)
   }
 
