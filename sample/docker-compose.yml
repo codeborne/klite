@@ -11,7 +11,7 @@ services:
       - db
 
   db:
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     volumes:
       - ./db/create_test_db.sh:/docker-entrypoint-initdb.d/create_test_db.sh
       - data:/var/lib/postgresql/data
