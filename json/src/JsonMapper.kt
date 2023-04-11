@@ -20,7 +20,7 @@ data class JsonMapper(
   fun <T> parse(json: InputStream, type: KType?): T = parse(json.reader(), type) as T
 
   fun render(o: Any?, out: Writer) = JsonRenderer(out, this).render(o)
-  fun render(o: Any?, out: OutputStream) = OutputStreamWriter(out).let { render(o, it); it.flush() }
+  fun render(o: Any?, out: OutputStream) = OutputStreamWriter(out).let { try { render(o, it) } finally { it.flush() } }
   @Language("JSON") fun render(o: Any?): String = FastStringWriter().also { render(o, it) }.toString()
 }
 
