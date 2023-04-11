@@ -30,7 +30,7 @@ open class ErrorHandler {
     exchange.failure = e
     if (!exchange.isResponseStarted) toResponse(exchange, e)?.let {
       if (it.statusCode.bodyAllowed) exchange.render(it.statusCode, it) else exchange.send(it.statusCode)
-    } else if (e.message == null || e.message!!.let { "Broken pipe" !in it || "Connection reset" !in it })
+    } else if (e.message == null || e.message!!.let { "Broken pipe" !in it && "Connection reset" !in it })
       logger.error("Error after headers sent", e)
   }
 
