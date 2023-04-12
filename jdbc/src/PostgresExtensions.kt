@@ -1,6 +1,11 @@
 package klite.jdbc
 
 import java.sql.ResultSet
+import javax.sql.DataSource
+
+fun DataSource.lock(on: String) = query("select pg_advisory_lock(${on.hashCode()})") {}.first()
+fun DataSource.tryLock(on: String): Boolean = query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
+fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
 
 private val columnNameIndexMapField = runCatching {
   Class.forName("org.postgresql.jdbc.PgResultSet").getDeclaredField("columnNameIndexMap").apply { trySetAccessible() }
