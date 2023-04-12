@@ -1,3 +1,5 @@
+package klite.jdbc
+
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import klite.jdbc.AlreadyExistsException
