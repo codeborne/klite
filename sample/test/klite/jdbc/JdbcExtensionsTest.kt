@@ -32,7 +32,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     expect(db.select(table, "hello" to NotIn("Hello2")) { getUuid() }).toContainExactly(id)
 
     expect(db.select(table, emptyList(), "where world is null") { getUuid() }).toContainExactly(id2)
-    expect(db.select("$table a join $table b on a.id = b.id", emptyList()) { getUuid() }).toContain(id, id2)
+    expect(db.select("$table a join $table b on a.id = b.id", emptyList()) { getUuid("2.id") }).toContain(id, id2)
   }
 
   @Test fun generatedKey() {

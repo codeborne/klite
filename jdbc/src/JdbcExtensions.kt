@@ -53,7 +53,7 @@ fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: Strin
   withStatement("$select${whereExpr(where)} $suffix") {
     setAll(whereValues(where))
     executeQuery().run {
-      populatePgColumnNameIndex()
+      populatePgColumnNameIndex(select)
       into.also { process(it::add, mapper) }
     }
   }
