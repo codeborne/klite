@@ -30,7 +30,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   protected open fun ResultSet.mapper(): E = create(entityClass)
   protected open fun E.persister() = toValues()
 
-  open fun get(id: ID): E = db.select(selectFrom, id) { mapper() }
+  open fun get(id: ID): E = db.select(selectFrom, id, "$table.id") { mapper() }
   open fun list(vararg where: PropValue<E>?, order: String = defaultOrder): List<E> =
     db.select(selectFrom, where.filterNotNull(), order) { mapper() }
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()

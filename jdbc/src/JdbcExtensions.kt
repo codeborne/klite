@@ -30,8 +30,8 @@ fun DataSource.lock(on: String) = query("select pg_advisory_lock(${on.hashCode()
 fun DataSource.tryLock(on: String): Boolean = query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
 fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
 
-fun <R, ID> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, id: ID, mapper: Mapper<R>): R =
-  select(table, listOf("id" to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
+fun <R, ID> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, id: ID, column: String = "id", mapper: Mapper<R>): R =
+  select(table, listOf(column to id), into = ArrayList(1), mapper = mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
 
 fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, where: Where = emptyList(), @Language("SQL", prefix = selectFromTable) suffix: String = "", into: C, mapper: Mapper<R>): C =
   query(selectFrom + q(table), where, suffix, into, mapper)

@@ -36,7 +36,7 @@ inline fun DataSource.update(table: String, where: OldWhere, values: Values): In
 inline fun DataSource.delete(table: String, where: OldWhere): Int = delete(table, where.map { it.key to it.value })
 
 @Deprecated("use select() instead of old query()", ReplaceWith("this.select(table, id, mapper)"))
-inline fun <R, ID> DataSource.query(table: String, id: ID, noinline mapper: Mapper<R>): R = select(table, id, mapper)
+inline fun <R, ID> DataSource.query(table: String, id: ID, noinline mapper: Mapper<R>): R = select(table, id, mapper = mapper)
 
 @Deprecated("use select() instead of old query(), pass where as varargs", ReplaceWith("this.select(table, where.map { it.key to it.value }, suffix, mapper)"))
 inline fun <R> DataSource.query(table: String, where: OldWhere, suffix: String = "", noinline mapper: Mapper<R>) =
