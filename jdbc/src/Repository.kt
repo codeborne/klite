@@ -2,6 +2,7 @@ package klite.jdbc
 
 import klite.PropValue
 import klite.toValues
+import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
 import java.util.*
 import javax.sql.DataSource
@@ -24,7 +25,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   @Suppress("UNCHECKED_CAST")
   private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
   open val defaultOrder get() = orderDesc
-  open val selectFrom get() = table
+  open val selectFrom @Language("SQL", prefix = "select * from ") get() = table
 
   protected open fun ResultSet.mapper(): E = create(entityClass)
   protected open fun E.persister() = toValues()
