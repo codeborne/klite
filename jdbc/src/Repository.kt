@@ -24,14 +24,16 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   @Suppress("UNCHECKED_CAST")
   private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
   open val defaultOrder get() = orderDesc
+  open val selectFrom get() = table
 
   protected open fun ResultSet.mapper(): E = create(entityClass)
   protected open fun E.persister() = toValues()
 
-  open fun get(id: ID): E = db.select(table, id) { mapper() }
-  open fun save(entity: E) = db.upsert(table, entity.persister())
+  open fun get(id: ID): E = db.select(selectFrom, id) { mapper() }
   open fun list(vararg where: PropValue<E>?, order: String = defaultOrder): List<E> =
-    db.select(table, where.filterNotNull(), order) { mapper() }
-  open fun count(vararg where: PropValue<E>?): Long = db.count(table, where.filterNotNull())
+    db.select(selectFrom, where.filterNotNull(), order) { mapper() }
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
+  open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
+
+  open fun save(entity: E) = db.upsert(table, entity.persister())
 }
