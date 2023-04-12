@@ -56,14 +56,6 @@ fun <R, C: MutableCollection<R>> DataSource.query(@Language("SQL") select: Strin
   }
 }
 
-fun <R, C: MutableCollection<R>> DataSource.queryNamed(@Language("SQL") fullSelect: String, where: Where = emptyList(), into: C, mapper: Mapper<R>): C =
-  whereConvert(where).let { where ->
-  withStatement(fullSelect) {
-    setAll(whereValues(where))
-    into.also { executeQuery().process(it::add, mapper) }
-  }
-}
-
 inline fun <R> DataSource.query(@Language("SQL") select: String, vararg where: ColValue?, @Language("SQL", prefix = selectFromTable) suffix: String = "", noinline mapper: Mapper<R>): List<R> =
   query(select, where.filterNotNull(), suffix, mapper = mapper)
 
