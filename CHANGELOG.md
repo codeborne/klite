@@ -5,6 +5,7 @@
 * json: TSGenerator can now receive additional library types to generate from command-line, e.g. klite.TSID
 * i18n: do not trim translations by default (keep all whitespace)
 * jdbc: support binding of Int values to data classes (DB usually returns integers as Long)
+* jdbc: possibility to use table aliases when getting of columns from ResultSet with joins/using create (Postgres only)
 * server: default RequestLogFormatter will not log StatusCodeExceptions anymore
 * server: useHashCodeAsETag() introduced to avoid sending of same responses
 
