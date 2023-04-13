@@ -20,9 +20,9 @@ internal class PooledDataSource(
   val pool = ArrayBlockingQueue<PooledConnection>(size)
   val used = ArrayBlockingQueue<PooledConnection>(size)
 
-  override fun getConnection() = pool.poll() ?:
-    if (pool.remainingCapacity() > 0) PooledConnection(db.connection).also { used.put(it) }
-    else pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)
+  override fun getConnection(): PooledConnection = pool.poll()?.check() ?:
+    (if (pool.remainingCapacity() == 0) pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)?.check() else null) ?:
+    PooledConnection(db.connection).also { used.put(it) }
 
   override fun close() {
     pool.removeIf { it.conn.close(); true }
@@ -35,7 +35,10 @@ internal class PooledDataSource(
   inner class PooledConnection(val conn: Connection): Connection by conn {
     init { log.info("New connection: $conn") }
 
+    fun check() = if (isValid(timeout.inWholeSeconds.toInt())) this else null
+
     override fun close() {
+      if (!conn.autoCommit) conn.rollback()
       used -= this
       pool += this
     }
