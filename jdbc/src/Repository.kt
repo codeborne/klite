@@ -15,7 +15,7 @@ interface BaseEntity<ID> {
 interface Entity: BaseEntity<UUID>
 
 abstract class BaseRepository(protected val db: DataSource, val table: String) {
-  protected open val orderAsc get() = "order by createdAt"
+  protected open val orderAsc get() = "order by $table.createdAt"
   protected open val orderDesc get() = "$orderAsc desc"
 }
 
