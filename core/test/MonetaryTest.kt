@@ -4,7 +4,7 @@ import klite.m
 import org.junit.jupiter.api.Test
 
 class MonetaryTest {
-  @Test fun string() {
+  @Test fun `operators & string`() {
     expect(20.m.toString()).toEqual("20.00")
     expect((3.m * 5.m).toString()).toEqual("15.00")
     expect((3.m / 5.m).toString()).toEqual("0.60")
@@ -14,5 +14,6 @@ class MonetaryTest {
     expect("1.33".m.toString()).toEqual("1.33")
     expect("1.2".m.toString()).toEqual("1.20")
     expect("145".m.toString()).toEqual("145.00")
+    expect(-10.m).toEqual("-10".m)
   }
 }
