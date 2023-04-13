@@ -8,7 +8,7 @@ import java.sql.SQLFeatureNotSupportedException
 import javax.sql.DataSource
 
 /** Non-pooled basic datasource */
-class ConfigDataSource(
+open class ConfigDataSource(
   val url: String = Config["DB_URL"],
   val user: String? = Config.optional("DB_USER"),
   private val pass: String? = Config.optional("DB_PASS"),
