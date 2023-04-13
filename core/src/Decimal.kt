@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 /** A monetary value, with numeric equality. EXPERIMENTAL */
-class Decimal: BigDecimal {
+internal class Decimal: BigDecimal {
   constructor(value: String): super(value)
   constructor(value: Int): super(value)
   constructor(value: Long): super(value)
@@ -25,9 +25,9 @@ class Decimal: BigDecimal {
   override fun toShort() = shortValueExact()
 }
 
-fun BigDecimal.toDecimal() = Decimal(toString())
+internal fun BigDecimal.toDecimal() = Decimal(toString())
 
-val Int.d get() = Decimal(this)
-val Long.d get() = Decimal(this)
-val String.d get() = Decimal(this)
-val Double.d get() = Decimal(this)
+internal val Int.d get() = Decimal(this)
+internal val Long.d get() = Decimal(this)
+internal val String.d get() = Decimal(this)
+internal val Double.d get() = Decimal(this)
