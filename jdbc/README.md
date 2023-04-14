@@ -53,7 +53,7 @@ Usage:
   db.select("table", "col1" to notNull, "col2" gte  value, suffix = "order by col3 limit 10") { create<MyEntity>() }
   // single row, with joins, etc
   db.select("table1 left join table2 on table1.id = table2.megaId", listOf("table2.field" to value), "limit 1") {
-    create<MyEntity>(MyEntity::other to create<OtherEntity>())
+    create<MyEntity>(MyEntity::other to create<OtherEntity>("table2.")) // you can provide table alias to create (PostgresSQL only)
   }.first()
 
   // or you can write full sql manually using db.query() and db.exec()
