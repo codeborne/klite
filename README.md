@@ -1,8 +1,8 @@
-# Klite
+# <img src="logo.png" alt="Klite" width=128 height=128>
 
 [![Build & Test](https://github.com/codeborne/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/codeborne/klite/actions/workflows/ci.yml)
 
-A very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
+Klite: a very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
 
 Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Comparisons.md).
 
