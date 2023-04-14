@@ -3,7 +3,9 @@ package klite.jdbc
 import klite.Config
 import klite.info
 import klite.logger
+import klite.warn
 import java.sql.Connection
+import java.sql.SQLException
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.sql.DataSource
@@ -25,8 +27,8 @@ internal class PooledDataSource(
     PooledConnection(db.connection).also { used.put(it) }
 
   override fun close() {
-    pool.removeIf { it.conn.close(); true }
-    used.removeIf { it.conn.close(); true }
+    pool.removeIf { it.reallyClose(); true }
+    used.removeIf { it.reallyClose(); true }
   }
 
   override fun isWrapperFor(iface: Class<*>) = db::class.java.isAssignableFrom(iface)
@@ -41,6 +43,13 @@ internal class PooledDataSource(
       if (!conn.autoCommit) conn.rollback()
       used -= this
       pool += this
+    }
+
+    fun reallyClose() = try {
+      log.info("Closing connection: $conn")
+      conn.close()
+    } catch (e: SQLException) {
+      log.warn("Failed to close connection: $conn: $e")
     }
 
     override fun isWrapperFor(iface: Class<*>) = conn::class.java.isAssignableFrom(iface)
