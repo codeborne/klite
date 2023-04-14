@@ -27,9 +27,9 @@ class PooledDataSourceTest {
     expect(extra.isCompleted).toEqual(false)
     conns.forEach { it.close() }
 
+    expect(runBlocking { extra.await() }).toBeAnInstanceOf<Connection>()
     expect(pooled.used).toHaveSize(1)
     expect(pooled.pool).toHaveSize(3)
-    expect(runBlocking { extra.await() }).toBeAnInstanceOf<Connection>()
 
     pooled.close()
     expect(pooled.pool).toHaveSize(0)
