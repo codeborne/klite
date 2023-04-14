@@ -6,6 +6,8 @@ A very light-weight (lite) non-blocking http framework for Kotlin coroutines on 
 
 Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Comparisons.md).
 
+Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotlin, which can be used independently.
+
 ## Goals
 
 * Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
