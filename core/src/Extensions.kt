@@ -14,3 +14,6 @@ val KType.java get() = (classifier as KClass<*>).java
 fun Any.unboxInline() = javaClass.getMethod("unbox-impl").invoke(this)
 
 val String.uuid: UUID get() = UUID.fromString(this)
+
+fun <T: Comparable<T>> T.min(o: T) = if (this <= o) this else o
+fun <T: Comparable<T>> T.max(o: T) = if (this >= o) this else o
