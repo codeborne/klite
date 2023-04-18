@@ -6,6 +6,8 @@ import ch.tutteli.atrium.api.verbs.expect
 import klite.Decimal
 import klite.d
 import org.junit.jupiter.api.Test
+import java.text.NumberFormat
+import java.util.*
 
 class DecimalTest {
   @Test fun `operators & string`() {
@@ -48,5 +50,9 @@ class DecimalTest {
 
   @Test fun percent() {
     expect(200.d percent 20.d).toEqual(40.d)
+  }
+
+  @Test fun formatting() {
+    expect(NumberFormat.getNumberInstance(Locale("et")).format(10500.24.d)).toEqual("10 500,24")
   }
 }
