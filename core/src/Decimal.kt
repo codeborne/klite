@@ -2,6 +2,7 @@ package klite
 
 import klite.Decimal.Companion.DECIMALS
 import java.lang.Math.*
+import java.math.RoundingMode
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 
@@ -55,3 +56,14 @@ val Long.d get() = Decimal(multiplyExact(DECIMALS, this))
 val Double.d get() = Decimal(this)
 val Float.d get() = Decimal(toDouble())
 val String.d get() = Decimal(this)
+
+fun Iterable<Decimal>.sum() = sumOf { it }
+fun Iterable<Decimal>.min() = minOf { it }
+fun Iterable<Decimal>.max() = maxOf { it }
+fun Collection<Decimal>.average() = sum() / size.d
+
+inline fun <T> Iterable<T>.sumOf(selector: (T) -> Decimal): Decimal {
+  var sum = Decimal.ZERO
+  for (element in this) sum += selector(element)
+  return sum
+}
