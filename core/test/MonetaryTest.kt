@@ -13,6 +13,8 @@ class MonetaryTest {
     expect((10.m / 8.m).toString()).toEqual("1.25")
     expect((100.m / 97.m).toString()).toEqual("1.03")
     expect((100.m / 87.m).toString()).toEqual("1.15")
+    expect((100.m % 87.m).toString()).toEqual("13.00")
+    expect((10.05.m % 8.03.m).toString()).toEqual("2.02")
     expect("1.33".m.toString()).toEqual("1.33")
     expect("1.2".m.toString()).toEqual("1.20")
     expect("145".m.toString()).toEqual("145.00")

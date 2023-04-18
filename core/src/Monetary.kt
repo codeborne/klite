@@ -23,6 +23,7 @@ internal class Monetary private constructor(private val c: Long): Comparable<Mon
   operator fun minus(o: Monetary) = Monetary(Math.subtractExact(c, o.c))
   operator fun times(o: Monetary) = Monetary(Math.multiplyExact(c, o.c) / DECIMALS)
   operator fun div(o: Monetary) = Monetary(toDouble() / o.toDouble())
+  operator fun rem(o: Monetary) = Monetary(c % o.c)
 
   operator fun inc() = plus(1.m)
   operator fun dec() = minus(1.m)
@@ -46,4 +47,6 @@ internal class Monetary private constructor(private val c: Long): Comparable<Mon
 }
 
 internal val Int.m get() = Monetary(this)
+internal val Double.m get() = Monetary(this)
+internal val Float.m get() = Monetary(this)
 internal val String.m get() = Monetary(this)
