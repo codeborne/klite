@@ -21,6 +21,7 @@ class ConverterTest {
     expect(Converter.from<UUID>("05e1cebe-67dc-4780-b5df-472edd55fab6")).toEqual("05e1cebe-67dc-4780-b5df-472edd55fab6".uuid)
     expect(Converter.from<Currency>("EUR")).toEqual(Currency.getInstance("EUR"))
     expect(Converter.from<Locale>("et_EE")).toEqual(Locale("et", "EE"))
+    expect(Converter.from<Decimal>("123.45")).toEqual("123.45".d)
   }
 
   @Test fun custom() {
