@@ -1,5 +1,8 @@
 package klite
 
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
+
 internal class Monetary private constructor(private val v: Long): Comparable<Monetary>, Number() {
   companion object {
     const val DECIMALS = 100L
@@ -9,8 +12,8 @@ internal class Monetary private constructor(private val v: Long): Comparable<Mon
 
   constructor(v: Int): this(v * DECIMALS)
   // TODO: Long
-  constructor(v: Double): this((v * DECIMALS).toLong())
-  constructor(v: Float): this((v * DECIMALS).toLong())
+  constructor(v: Double): this((v * DECIMALS).roundToLong())
+  constructor(v: Float): this((v * DECIMALS).roundToLong())
   constructor(v: String): this(v.split('.').let { it[0].toLong() * DECIMALS + (it.getOrNull(1)?.padEnd(2, '0')?.toLong() ?: 0) })
 
   operator fun unaryMinus() = Monetary(-v)
@@ -19,7 +22,7 @@ internal class Monetary private constructor(private val v: Long): Comparable<Mon
   operator fun plus(o: Monetary) = Monetary(Math.addExact(v, o.v))
   operator fun minus(o: Monetary) = Monetary(Math.subtractExact(v, o.v))
   operator fun times(o: Monetary) = Monetary(Math.multiplyExact(v, o.v) / DECIMALS)
-  operator fun div(o: Monetary) = Monetary(v * DECIMALS / o.v)
+  operator fun div(o: Monetary) = Monetary(toDouble() / o.toDouble())
 
   operator fun times(o: Long) = Monetary(Math.multiplyExact(v, o))
   operator fun div(o: Long) = Monetary(v / o)
