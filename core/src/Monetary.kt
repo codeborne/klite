@@ -1,12 +1,13 @@
 package klite
 
+import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 
 internal class Monetary private constructor(private val c: Long): Comparable<Monetary>, Number() {
   companion object {
     const val DECIMALS = 100L
-    val MAX_VALUE = Monetary(Long.MAX_VALUE / DECIMALS)
-    val MIN_VALUE = Monetary(Long.MIN_VALUE / DECIMALS)
+    val MAX_VALUE = Monetary(Long.MAX_VALUE)
+    val MIN_VALUE = Monetary(Long.MIN_VALUE)
   }
 
   constructor(v: Int): this(v * DECIMALS)
@@ -23,6 +24,9 @@ internal class Monetary private constructor(private val c: Long): Comparable<Mon
   operator fun times(o: Monetary) = Monetary(Math.multiplyExact(c, o.c) / DECIMALS)
   operator fun div(o: Monetary) = Monetary(toDouble() / o.toDouble())
 
+  operator fun inc() = plus(1.m)
+  operator fun dec() = minus(1.m)
+
   operator fun times(o: Long) = Monetary(Math.multiplyExact(c, o))
   operator fun div(o: Long) = Monetary(c / o)
 
@@ -30,7 +34,7 @@ internal class Monetary private constructor(private val c: Long): Comparable<Mon
   override fun hashCode() = c.hashCode()
   override fun compareTo(o: Monetary) = c.compareTo(o.c)
 
-  override fun toString() = "${c / DECIMALS}.${(c % DECIMALS).toString().padStart(2, '0')}"
+  override fun toString() = "${c / DECIMALS}.${(c % DECIMALS).absoluteValue.toString().padStart(2, '0')}"
 
   override fun toDouble() = c / DECIMALS.toDouble()
   override fun toFloat() = c / DECIMALS.toFloat()
