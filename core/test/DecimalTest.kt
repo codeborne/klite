@@ -36,6 +36,11 @@ class DecimalTest {
     expect(--x).toEqual(1.d)
   }
 
+  @Test fun abs() {
+    expect(1.d.abs()).toEqual(1.d)
+    expect((-1).d.abs()).toEqual(1.d)
+  }
+
   @Test fun overflow() {
     expect { Decimal.MAX_VALUE * 2.d }.toThrow<ArithmeticException>()
     expect { Decimal.MAX_VALUE + 1.d }.toThrow<ArithmeticException>()
