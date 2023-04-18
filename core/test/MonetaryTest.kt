@@ -1,3 +1,5 @@
+import ch.tutteli.atrium.api.fluent.en_GB.toBeGreaterThan
+import ch.tutteli.atrium.api.fluent.en_GB.toBeLessThan
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
@@ -36,5 +38,11 @@ class MonetaryTest {
     expect { Monetary.MAX_VALUE * 2.m }.toThrow<ArithmeticException>()
     expect { Monetary.MAX_VALUE + 1.m }.toThrow<ArithmeticException>()
     expect { Monetary.MIN_VALUE - 1.m }.toThrow<ArithmeticException>()
+  }
+
+  @Test fun compareTo() {
+    expect(1.m).toBeGreaterThan(0.5.m)
+    expect(2.m).toBeLessThan(2.5.m)
+    expect(1.m.compareTo(1.00.m)).toEqual(0)
   }
 }
