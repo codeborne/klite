@@ -28,8 +28,12 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   operator fun div(o: Decimal) = Decimal(toDouble() / o.toDouble())
   operator fun rem(o: Decimal) = Decimal(c % o.c)
 
+  operator fun times(o: Int) = Decimal(multiplyExact(c, o))
   operator fun times(o: Long) = Decimal(multiplyExact(c, o))
+  operator fun times(o: Double) = Decimal(toDouble() * o)
+  operator fun div(o: Int) = Decimal(c / o)
   operator fun div(o: Long) = Decimal(c / o)
+  operator fun div(o: Double) = Decimal(toDouble() / o)
 
   operator fun inc() = plus(1.d)
   operator fun dec() = minus(1.d)

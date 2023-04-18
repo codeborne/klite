@@ -12,9 +12,9 @@ import java.util.*
 class DecimalTest {
   @Test fun `operators & string`() {
     expect(20.d.toString()).toEqual("20.00")
-    expect((3.d * 5.d).toString()).toEqual("15.00")
-    expect((3.d / 5.d).toString()).toEqual("0.60")
-    expect((10.d / 8.d).toString()).toEqual("1.25")
+    expect((3.d * 5).toString()).toEqual("15.00")
+    expect((3.d / 5.0).toString()).toEqual("0.60")
+    expect((10.d / 8).toString()).toEqual("1.25")
     expect((100.d / 97.d).toString()).toEqual("1.03")
     expect((100.d / 87.d).toString()).toEqual("1.15")
     expect((100.d % 87.d).toString()).toEqual("13.00")
