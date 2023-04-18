@@ -1,5 +1,7 @@
 package klite.jdbc
 
+import klite.Decimal
+import klite.d
 import klite.uuid
 import java.sql.ResultSet
 import java.time.Period
@@ -8,7 +10,12 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 @Suppress("UNCHECKED_CAST")
-fun <T> ResultSet.get(column: String, type: KType): T = JdbcConverter.from(getObject(column), type) as T
+fun <T> ResultSet.get(column: String, type: KType): T = JdbcConverter.from(when (type.classifier) {
+  Int::class -> getIntOrNull(column)
+  Decimal::class -> getDecimalOrNull(column)
+  else -> getObject(column)
+}, type) as T
+
 inline operator fun <reified T> ResultSet.get(column: String): T = get(column, typeOf<T>())
 
 fun <T> ResultSet.getOptional(column: String, type: KType): Result<T> = runCatching { get(column, type) }
@@ -23,11 +30,13 @@ fun ResultSet.getLocalDate(column: String) = getDate(column).toLocalDate()
 fun ResultSet.getLocalDateOrNull(column: String) = getDate(column)?.toLocalDate()
 fun ResultSet.getPeriod(column: String) = Period.parse(getString(column))
 fun ResultSet.getPeriodOrNull(column: String) = getString(column)?.let { Period.parse(it) }
+fun ResultSet.getDecimal(column: String) = getString(column).d
 
 fun ResultSet.getIntOrNull(column: String) = getInt(column).takeUnless { wasNull() }
 fun ResultSet.getLongOrNull(column: String) = getLong(column).takeUnless { wasNull() }
 fun ResultSet.getFloatOrNull(column: String) = getFloat(column).takeUnless { wasNull() }
 fun ResultSet.getDoubleOrNull(column: String) = getDouble(column).takeUnless { wasNull() }
+fun ResultSet.getDecimalOrNull(column: String) = getString(column)?.d
 
 inline fun <reified T: Enum<T>> ResultSet.getEnum(column: String) = enumValueOf<T>(getString(column))
 inline fun <reified T: Enum<T>> ResultSet.getEnumOrNull(column: String) = getString(column)?.let { enumValueOf<T>(it) }

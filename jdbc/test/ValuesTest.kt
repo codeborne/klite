@@ -11,7 +11,8 @@ class ValuesTest {
   @Test fun create() {
     val rs = mockk<ResultSet> {
       every { getObject("hello") } returns "Hello"
-      every { getObject("world") } returns 42L
+      every { getInt("world") } returns 42
+      every { wasNull() } returns false
       every { getObject("list") } returns mockk<java.sql.Array> { every { array } returns arrayOf(4, 5)}
     }
     expect(rs.create<SomeData>()).toEqual(SomeData("Hello", 42, list = listOf(4, 5)))

@@ -15,9 +15,8 @@ fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T>, co
   val extraArgs = provided.associate { it.first.name to it.second }
   return type.create {
     val column = columnPrefix + it.name
-    val v = if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
-            else if (it.isOptional) getOptional<T>(column, it.type).getOrDefault(AbsentValue)
-            else get(column, it.type)
-    if (v is Number && it.type.classifier == Int::class) v.toInt() else v
+    if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
+    else if (it.isOptional) getOptional<T>(column, it.type).getOrDefault(AbsentValue)
+    else get(column, it.type)
   }
 }
