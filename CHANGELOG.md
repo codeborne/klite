@@ -6,6 +6,7 @@
 * i18n: do not trim translations by default (keep all whitespace)
 * jdbc: support binding of Int values to data classes (DB usually returns integers as Long)
 * jdbc: possibility to use table aliases when getting of columns from ResultSet with joins/using create (Postgres only)
+* jdbc: allow whitespace between -- and keywords in changeset sql files
 * server: default RequestLogFormatter will not log StatusCodeExceptions anymore
 * server: useHashCodeAsETag() introduced to avoid sending of same responses
 

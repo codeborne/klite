@@ -40,7 +40,7 @@ open class ChangeSetFileReader(
 
     reader.buffered().lineSequence().map { it.trimEnd() }.filter { it.isNotEmpty() }.forEach { line ->
       if (line.startsWith("--")) {
-        val parts = line.substring(2).split(whitespace)
+        val parts = line.substring(2).trim().split(whitespace)
         if (parts[0] in keywords && changeSet != null) {
           yield(changeSet!!.finish())
           changeSet = null
