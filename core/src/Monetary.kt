@@ -31,6 +31,8 @@ internal class Monetary private constructor(private val c: Long): Comparable<Mon
   operator fun times(o: Long) = Monetary(Math.multiplyExact(c, o))
   operator fun div(o: Long) = Monetary(c / o)
 
+  infix fun percent(p: Monetary) = times(p) / DECIMALS
+
   override fun equals(o: Any?) = c == (o as? Monetary)?.c
   override fun hashCode() = c.hashCode()
   override fun compareTo(o: Monetary) = c.compareTo(o.c)

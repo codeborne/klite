@@ -45,4 +45,8 @@ class MonetaryTest {
     expect(2.m).toBeLessThan(2.5.m)
     expect(1.m.compareTo(1.00.m)).toEqual(0)
   }
+
+  @Test fun percent() {
+    expect(200.m percent 20.m).toEqual(40.m)
+  }
 }
