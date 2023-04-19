@@ -5,7 +5,10 @@ import java.lang.Math.*
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 
-/** A monetary amount with 2 fraction digits, lighter than BigDecimal and having numeric equals */
+/**
+ * A monetary amount with 2 fraction digits, lighter than BigDecimal and having numeric equals.
+ * Operations resulting in Long overflow will throw ArithmeticException.
+ */
 class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Number() {
   companion object {
     const val CENTS = 100L
@@ -23,16 +26,18 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
 
   operator fun plus(o: Decimal) = Decimal(addExact(c, o.c))
   operator fun minus(o: Decimal) = Decimal(subtractExact(c, o.c))
-  operator fun times(o: Decimal) = Decimal(multiplyExact(c, o.c) / CENTS)
-  operator fun div(o: Decimal) = Decimal(toDouble() / o.toDouble())
+  operator fun times(o: Decimal) = Decimal(roundDiv(multiplyExact(c, o.c), CENTS))
+  operator fun div(o: Decimal) = Decimal(roundDiv(c, roundDiv(o.c, CENTS)))
   operator fun rem(o: Decimal) = Decimal(c % o.c)
 
   operator fun times(o: Int) = Decimal(multiplyExact(c, o))
   operator fun times(o: Long) = Decimal(multiplyExact(c, o))
   operator fun times(o: Double) = Decimal(toDouble() * o)
-  operator fun div(o: Int) = div(o.toDouble())
-  operator fun div(o: Long) = div(o.toDouble())
+  operator fun div(o: Int) = div(o.toLong())
+  operator fun div(o: Long) = Decimal(roundDiv(c, o))
   operator fun div(o: Double) = Decimal(toDouble() / o)
+
+  private fun roundDiv(n: Long, d: Long) = (if ((n < 0) xor (d < 0)) subtractExact(n, d/2) else addExact(n, d/2)) / d
 
   operator fun inc() = plus(1.d)
   operator fun dec() = minus(1.d)
