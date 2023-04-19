@@ -27,7 +27,7 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   operator fun plus(o: Decimal) = Decimal(addExact(c, o.c))
   operator fun minus(o: Decimal) = Decimal(subtractExact(c, o.c))
   operator fun times(o: Decimal) = Decimal(roundDiv(multiplyExact(c, o.c), CENTS))
-  operator fun div(o: Decimal) = Decimal(roundDiv(c, o.toLong()))
+  operator fun div(o: Decimal) = Decimal(roundDiv(multiplyExact(c, CENTS), o.c))
   operator fun rem(o: Decimal) = Decimal(c % o.c)
 
   operator fun times(o: Int) = Decimal(multiplyExact(c, o))
