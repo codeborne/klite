@@ -62,8 +62,6 @@ val Float.d get() = Decimal(toDouble())
 val String.d get() = Decimal(this)
 
 fun Iterable<Decimal>.sum() = sumOf { it }
-fun Iterable<Decimal>.min() = minOf { it }
-fun Iterable<Decimal>.max() = maxOf { it }
 fun Collection<Decimal>.average() = sum() / size.d
 
 inline fun <T> Sequence<T>.sumOf(selector: (T) -> Decimal): Decimal = asIterable().sumOf(selector)
