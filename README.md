@@ -1,6 +1,6 @@
 # <img src="logo.png" alt="Klite" width=128 height=128>
 
-[![Build & Test](https://github.com/codeborne/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/codeborne/klite/actions/workflows/ci.yml)
+[![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite) [![Build & Test](https://github.com/codeborne/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/codeborne/klite/actions/workflows/ci.yml)
 
 Klite: a very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
 
@@ -35,7 +35,7 @@ Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotl
 
 * [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
-* [json](json) - adds lightweight and easily configurable json parsing/rendering (usable *standalone*)
+* [json](json) - lightweight and easily configurable json parsing/rendering (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
 * [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
@@ -46,9 +46,9 @@ Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotl
 These integrate with external libraries. All of this functionality is available in Klite's own modules.
 
 * [slf4j](slf4j) - redirects server logs to slf4j and configures it
-* [jackson](jackson) - adds json parsing/rendering using Jackson
-* [serialization](serialization) - adds json parsing/rendering using kotlinx-serialization
-* [liquibase](liquibase) - allows to use liquibase for DB migration
+* [jackson](jackson) - json parsing/rendering using Jackson
+* [serialization](serialization) - json parsing/rendering using kotlinx-serialization
+* [liquibase](liquibase) - allows to use Liquibase for DB migration
 
 ## Status
 
@@ -62,8 +62,6 @@ Publicly announced at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/
 See [the sample subproject](sample) on how to build apps with Klite and run them in Docker.
 
 Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), see also [changelog](CHANGELOG.md)
-
-[![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite)
 
 ```kotlin
   repositories {
