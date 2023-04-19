@@ -1,6 +1,7 @@
 @file:Suppress("NAME_SHADOWING", "NOTHING_TO_INLINE")
 package klite.jdbc
 
+import klite.Decimal
 import org.intellij.lang.annotations.Language
 import java.io.InputStream
 import java.sql.PreparedStatement
@@ -109,6 +110,7 @@ internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, val
 
 private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
   if (v is SqlExpr) v.expr
+  else if (v is Decimal) "?::decimal"
   else if (isEmptyCollection(v)) emptyArray.expr
   else "?"
 }

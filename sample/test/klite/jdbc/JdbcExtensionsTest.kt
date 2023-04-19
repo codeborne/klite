@@ -2,6 +2,7 @@ package klite.sample.klite.jdbc
 
 import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
+import klite.d
 import klite.jdbc.*
 import klite.sample.TempTableDBTest
 import klite.toValues
@@ -14,7 +15,7 @@ import java.util.UUID.randomUUID
 open class JdbcExtensionsTest: TempTableDBTest() {
   @Test fun `insert & query`() {
     val id = randomUUID()
-    db.insert(table, mapOf("id" to id, "hello" to "Hello", "world" to 42))
+    db.insert(table, mapOf("id" to id, "hello" to "Hello", "world" to 42.d))
 
     val id2 = randomUUID()
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
