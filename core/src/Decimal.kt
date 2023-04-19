@@ -16,7 +16,7 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   }
 
   constructor(v: Double): this((v * DECIMALS).roundToLong())
-  constructor(v: String): this(v.split('.').let { it[0].toLong() * DECIMALS + (it.getOrNull(1)?.padEnd(2, '0')?.toLong() ?: 0) })
+  constructor(v: String): this(v.toDouble())
 
   operator fun unaryMinus() = Decimal(-c)
   operator fun unaryPlus() = this

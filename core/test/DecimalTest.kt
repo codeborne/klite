@@ -24,6 +24,7 @@ class DecimalTest {
     expect("1.2".d.toString()).toEqual("1.20")
     expect("145".d.toString()).toEqual("145.00")
     expect(-10.d).toEqual("-10".d)
+    expect("-123.456".d).toEqual("-123.46".d)
   }
 
   @Test fun `min & max`() {
