@@ -2,7 +2,6 @@ package klite
 
 import klite.Decimal.Companion.DECIMALS
 import java.lang.Math.*
-import java.math.RoundingMode
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 
@@ -31,8 +30,8 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   operator fun times(o: Int) = Decimal(multiplyExact(c, o))
   operator fun times(o: Long) = Decimal(multiplyExact(c, o))
   operator fun times(o: Double) = Decimal(toDouble() * o)
-  operator fun div(o: Int) = Decimal(c / o)
-  operator fun div(o: Long) = Decimal(c / o)
+  operator fun div(o: Int) = div(o.toDouble())
+  operator fun div(o: Long) = div(o.toDouble())
   operator fun div(o: Double) = Decimal(toDouble() / o)
 
   operator fun inc() = plus(1.d)

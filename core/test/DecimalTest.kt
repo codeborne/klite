@@ -17,6 +17,7 @@ class DecimalTest {
     expect((10.d / 8).toString()).toEqual("1.25")
     expect((100.d / 97.d).toString()).toEqual("1.03")
     expect((100.d / 87.d).toString()).toEqual("1.15")
+    expect((100.d / 87).toString()).toEqual("1.15")
     expect((100.d % 87.d).toString()).toEqual("13.00")
     expect((10.05.d % 8.03.d).toString()).toEqual("2.02")
     expect("1.33".d.toString()).toEqual("1.33")
