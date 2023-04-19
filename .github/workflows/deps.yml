@@ -12,4 +12,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      - uses: mikepenz/gradle-dependency-submission@{latest}
+      - uses: mikepenz/gradle-dependency-submission@v0.8.6
+        with:
+          sub-module-mode: COMBINED
