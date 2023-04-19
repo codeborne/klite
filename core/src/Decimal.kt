@@ -27,7 +27,7 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   operator fun plus(o: Decimal) = Decimal(addExact(c, o.c))
   operator fun minus(o: Decimal) = Decimal(subtractExact(c, o.c))
   operator fun times(o: Decimal) = Decimal(roundDiv(multiplyExact(c, o.c), CENTS))
-  operator fun div(o: Decimal) = Decimal(roundDiv(c, roundDiv(o.c, CENTS)))
+  operator fun div(o: Decimal) = Decimal(roundDiv(c, o.toLong()))
   operator fun rem(o: Decimal) = Decimal(c % o.c)
 
   operator fun times(o: Int) = Decimal(multiplyExact(c, o))
@@ -52,8 +52,8 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   override fun toString() = "${c / CENTS}.${(c % CENTS).absoluteValue.toString().padStart(2, '0')}"
 
   override fun toDouble() = c / CENTS.toDouble()
-  override fun toFloat() = c / CENTS.toFloat()
-  override fun toLong() = c / CENTS
+  override fun toFloat() = toDouble().toFloat()
+  override fun toLong() = roundDiv(c, CENTS)
   override fun toInt() = toLong().toInt()
   override fun toShort() = toLong().toShort()
   override fun toByte() = toLong().toByte()
