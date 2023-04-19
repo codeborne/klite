@@ -106,16 +106,7 @@ fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, value
   exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
 
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
-  "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${insertValues(values.values)})"
-
-private fun insertValues(values: Iterable<*>) = values.joinToString { placeholder(it) }
-
-private fun placeholder(v: Any?) = when {
-  v is SqlExpr -> v.expr
-  isEmptyCollection(v) -> emptyArray.expr
-  v is Decimal -> "?::decimal"
-  else -> "?"
-}
+  "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${values.values.joinToString { placeholder(it) }})"
 
 inline fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: Values, vararg where: ColValue?): Int =
   update(table, values, where.filterNotNull())
@@ -157,6 +148,13 @@ internal fun name(key: Any) = when(key) {
 }
 
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
+
+private fun placeholder(v: Any?) = when {
+  v is SqlExpr -> v.expr
+  isEmptyCollection(v) -> emptyArray.expr
+  v is Decimal -> "?::decimal"
+  else -> "?"
+}
 
 internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
 internal fun whereValues(where: Where) = where.asSequence().map { it.second }.flatValues()
