@@ -13,5 +13,3 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: mikepenz/gradle-dependency-submission@{latest}
-        with:
-          gradle-build-module: ":app"
