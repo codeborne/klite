@@ -130,12 +130,6 @@ fun DataSource.delete(@Language("SQL", prefix = selectFrom) table: String, where
   exec("delete from ${q(table)}${whereExpr(where)}", whereValues(where))
 }
 
-internal fun setExpr(values: Values) = values.entries.joinToString { (k, v) ->
-  val n = name(k)
-  if (v is SqlExpr) v.expr(n)
-  else q(n) + "=" + placeholder(v)
-}
-
 private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()
 
 internal fun whereConvert(where: Where) = where.map { (k, v) -> k to whereValueConvert(v) }
@@ -148,7 +142,8 @@ internal fun whereValueConvert(v: Any?) = if (isEmptyCollection(v)) emptyArray e
   else -> v
 }
 
-internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.map { (k, v) -> k to v }.join(" and ")
+internal fun setExpr(values: Values) = values.entries.map { (k, v) -> k to v }.join(", ")
+internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.join(" and ")
 
 internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator) { (k, v) ->
   val n = name(k)
