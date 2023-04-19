@@ -108,11 +108,13 @@ fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, value
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
   "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${insertValues(values.values)})"
 
-private fun insertValues(values: Iterable<*>) = values.joinToString { v ->
-  if (v is SqlExpr) v.expr
-  else if (v is Decimal) "?::decimal"
-  else if (isEmptyCollection(v)) emptyArray.expr
-  else "?"
+private fun insertValues(values: Iterable<*>) = values.joinToString { placeholder(it) }
+
+private fun placeholder(v: Any?) = when {
+  v is SqlExpr -> v.expr
+  isEmptyCollection(v) -> emptyArray.expr
+  v is Decimal -> "?::decimal"
+  else -> "?"
 }
 
 inline fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: Values, vararg where: ColValue?): Int =
@@ -131,8 +133,7 @@ fun DataSource.delete(@Language("SQL", prefix = selectFrom) table: String, where
 internal fun setExpr(values: Values) = values.entries.joinToString { (k, v) ->
   val n = name(k)
   if (v is SqlExpr) v.expr(n)
-  else if (isEmptyCollection(v)) emptyArray.expr(n)
-  else q(n) + "=?"
+  else q(n) + "=" + placeholder(v)
 }
 
 private fun isEmptyCollection(v: Any?) = v is Collection<*> && v.isEmpty() || v is Array<*> && v.isEmpty()
@@ -151,7 +152,7 @@ internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + 
 
 internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator) { (k, v) ->
   val n = name(k)
-  if (v is SqlExpr) v.expr(n) else q(n) + "=?"
+  if (v is SqlExpr) v.expr(n) else q(n) + "=" + placeholder(v)
 }
 
 internal fun name(key: Any) = when(key) {
