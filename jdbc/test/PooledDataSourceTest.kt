@@ -7,16 +7,15 @@ import io.mockk.mockk
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import javax.sql.DataSource
 import kotlin.time.Duration.Companion.milliseconds
 
 class PooledDataSourceTest {
   val db = mockk<DataSource>(relaxed = true)
-  internal val pooled = PooledDataSource(db, size = 3, timeout = 10.milliseconds)
+  internal val pooled = PooledDataSource(db, maxSize = 3, timeout = 100.milliseconds)
 
-  @Test @Disabled fun pool() {
+  @Test fun pool() {
     val conns = (1..3).map { pooled.connection }
     expect(pooled.used).toHaveSize(3)
     expect(pooled.pool).toHaveSize(0)
@@ -29,7 +28,7 @@ class PooledDataSourceTest {
     runBlocking {
       val conn = extra.await()
       expect(pooled.used).toHaveSize(1)
-      expect(pooled.pool).toHaveSize(3)
+      expect(pooled.pool).toHaveSize(2)
       conn.close()
       expect(pooled.used).toHaveSize(0)
       expect(pooled.pool).toHaveSize(3)
