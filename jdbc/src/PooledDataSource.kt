@@ -8,6 +8,7 @@ import java.lang.System.currentTimeMillis
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
@@ -23,7 +24,7 @@ class PooledDataSource(
   private val log = logger()
   val size = AtomicInteger()
   val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
-  val used = ArrayBlockingQueue<PooledConnection>(maxSize)
+  val used = ConcurrentHashMap.newKeySet<PooledConnection>(maxSize)
 
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
