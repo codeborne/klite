@@ -1,9 +1,6 @@
 import klite.*
 import klite.annotations.annotated
-import klite.jdbc.DBMigrator
-import klite.jdbc.DBModule
-import klite.jdbc.RequestTransactionHandler
-import klite.jdbc.startDevDB
+import klite.jdbc.*
 import klite.json.JsonBody
 import kotlinx.coroutines.delay
 import java.net.InetSocketAddress
@@ -20,7 +17,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
   use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
 
   if (Config.isDev) startDevDB() // start docker-compose db automatically
-  use<DBModule>() // configure a DataSource
+  use(DBModule(PooledDataSource())) // configure a DataSource
   use<DBMigrator>() //  migrate the DB
   use<RequestTransactionHandler>() // runs each request in a transaction
 

@@ -18,8 +18,8 @@ import kotlin.time.Duration.Companion.seconds
 
 @Deprecated("EXPERIMENTAL") @Suppress("UNCHECKED_CAST")
 class PooledDataSource(
-  val db: DataSource,
-  val maxSize: Int = Config.optional("DB_POOL_SIZE")?.toInt() ?: ((Config.optional("NUM_WORKERS")?.toInt() ?: 5) + (Config.optional("JOB_WORKERS")?.toInt() ?: 5)),
+  val db: DataSource = ConfigDataSource(),
+  val maxSize: Int = Config.dbPoolMaxSize,
   val timeout: Duration = 5.seconds,
   val leakWarningTimeout: Duration? = null
 ): DataSource by db, AutoCloseable {
@@ -41,6 +41,8 @@ class PooledDataSource(
       }
     }
   }
+
+  override fun getConnection(username: String?, password: String?) = throw UnsupportedOperationException("Please use getConnection()")
 
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
@@ -92,7 +94,7 @@ class PooledDataSource(
       log.warn("Failed to close $conn: $e")
     }
 
-    override fun toString() = "PooledConnection:" + hashCode().toString(36) + ":" + conn
+    override fun toString() = "Pooled:$conn"
 
     override fun isWrapperFor(iface: Class<*>) = conn::class.java.isAssignableFrom(iface)
     override fun <T> unwrap(iface: Class<T>): T? = if (isWrapperFor(iface)) conn as T else null

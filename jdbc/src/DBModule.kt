@@ -6,24 +6,24 @@ import klite.*
 import klite.StatusCode.Companion.Conflict
 import javax.sql.DataSource
 
-class DBModule(configure: HikariConfig.() -> Unit = {}): Extension {
-  private val logger = logger()
-  val dataSource = HikariDataSource(HikariConfig().apply {
+val Config.dbPoolMaxSize get() = optional("DB_POOL_SIZE")?.toInt() ?: ((optional("NUM_WORKERS")?.toInt() ?: 5) + (optional("JOB_WORKERS")?.toInt() ?: 5))
+
+class DBModule(val dataSource: DataSource): Extension {
+  constructor(configure: HikariConfig.() -> Unit = {}): this(HikariDataSource(HikariConfig().apply {
     poolName = "app-db"
     jdbcUrl = Config.required("DB_URL")
     username = Config.optional("DB_USER")
     password = Config.optional("DB_PASS")
     minimumIdle = 1
-    maximumPoolSize = Config.optional("DB_POOL_SIZE")?.toInt() ?:
-      ((Config.optional("NUM_WORKERS")?.toInt() ?: 5) + (Config.optional("JOB_WORKERS")?.toInt() ?: 5))
+    maximumPoolSize = Config.dbPoolMaxSize
     configure()
-    logger.info("Connecting to $jdbcUrl${username?.let { ", user: $username" }}")
-  })
+    logger().info("Connecting to $jdbcUrl${username?.let { ", user: $username" }}")
+  }))
 
   override fun install(server: Server) = server.run {
     registry.register<DataSource>(dataSource)
     errors.on(AlreadyExistsException::class, Conflict)
-    onStop { dataSource.close() }
+    onStop { (dataSource as? AutoCloseable)?.close() }
   }
 }
 
