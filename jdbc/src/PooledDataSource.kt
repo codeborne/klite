@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
+import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -19,12 +20,27 @@ import kotlin.time.Duration.Companion.seconds
 class PooledDataSource(
   val db: DataSource,
   val maxSize: Int = Config.optional("DB_POOL_SIZE")?.toInt() ?: ((Config.optional("NUM_WORKERS")?.toInt() ?: 5) + (Config.optional("JOB_WORKERS")?.toInt() ?: 5)),
-  val timeout: Duration = 5.seconds
+  val timeout: Duration = 5.seconds,
+  val leakWarningTimeout: Duration? = null
 ): DataSource by db, AutoCloseable {
   private val log = logger()
   val size = AtomicInteger()
   val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
-  val used = ConcurrentHashMap.newKeySet<PooledConnection>(maxSize)
+  val used = ConcurrentHashMap<PooledConnection, Long>(maxSize)
+
+  private val leakChecker = leakWarningTimeout?.let {
+    thread(name = "$this:leakChecker", isDaemon = true) {
+      while (!Thread.interrupted()) {
+        val now = currentTimeMillis()
+        used.forEach { (conn, since) ->
+          val usedFor = now - since
+          if (usedFor >= leakWarningTimeout.inWholeMilliseconds)
+            log.warn("Possible leaked $conn, used for $usedFor ms")
+        }
+        try { Thread.sleep(1000) } catch (e: InterruptedException) { break }
+      }
+    }
+  }
 
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
@@ -45,13 +61,14 @@ class PooledDataSource(
         }
       }
     } while (conn == null)
-    used += conn
+    used[conn] = currentTimeMillis()
     return conn
   }
 
   override fun close() {
+    leakChecker?.interrupt()
     pool.removeIf { it.reallyClose(); true }
-    used.removeIf { it.reallyClose(); true }
+    used.keys.removeIf { it.reallyClose(); true }
   }
 
   inner class PooledConnection(val conn: Connection): Connection by conn {
