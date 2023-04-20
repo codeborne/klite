@@ -4,10 +4,10 @@ import klite.Config
 import klite.info
 import klite.logger
 import klite.warn
+import java.lang.System.currentTimeMillis
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
@@ -15,7 +15,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @Deprecated("EXPERIMENTAL") @Suppress("UNCHECKED_CAST")
-internal class PooledDataSource(
+class PooledDataSource(
   val db: DataSource,
   val maxSize: Int = Config.optional("DB_POOL_SIZE")?.toInt() ?: ((Config.optional("NUM_WORKERS")?.toInt() ?: 5) + (Config.optional("JOB_WORKERS")?.toInt() ?: 5)),
   val timeout: Duration = 5.seconds
@@ -23,14 +23,14 @@ internal class PooledDataSource(
   private val log = logger()
   val size = AtomicInteger()
   val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
-  val used = ConcurrentLinkedQueue<PooledConnection>()
+  val used = ArrayBlockingQueue<PooledConnection>(maxSize)
 
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
     do {
       conn = pool.poll()
       if (conn != null && !conn.check()) {
-        log.info("Dropping failed $conn")
+        log.warn("Dropping failed $conn, age ${conn.ageMs} ms")
         size.decrementAndGet()
         conn = null
         continue
@@ -54,7 +54,10 @@ internal class PooledDataSource(
   }
 
   inner class PooledConnection(val conn: Connection): Connection by conn {
+    val since = currentTimeMillis()
     init { log.info("New connection: $this") }
+
+    val ageMs get() = currentTimeMillis() - since
 
     fun check() = isValid(timeout.inWholeSeconds.toInt())
 
@@ -65,7 +68,7 @@ internal class PooledDataSource(
     }
 
     fun reallyClose() = try {
-      log.info("Closing $conn")
+      log.info("Closing $conn, age $ageMs ms")
       conn.close()
     } catch (e: SQLException) {
       log.warn("Failed to close $conn: $e")

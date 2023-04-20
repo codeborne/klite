@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class PooledDataSourceTest {
   val db = mockk<DataSource>(relaxed = true)
-  internal val pooled = PooledDataSource(db, maxSize = 3, timeout = 100.milliseconds)
+  val pooled = PooledDataSource(db, maxSize = 3, timeout = 100.milliseconds)
 
   @Test fun pool() {
     val conns = (1..3).map { pooled.connection }
