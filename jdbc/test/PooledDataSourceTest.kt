@@ -17,7 +17,7 @@ class PooledDataSourceTest {
 
   @Test fun pool() {
     val conns = (1..3).map { pooled.connection }
-    expect(pooled.used).toHaveSize(3)
+    expect(pooled.used.keys).toHaveSize(3)
     expect(pooled.pool).toHaveSize(0)
 
     val extra = GlobalScope.async { pooled.connection }
@@ -27,15 +27,15 @@ class PooledDataSourceTest {
 
     runBlocking {
       val conn = extra.await()
-      expect(pooled.used).toHaveSize(1)
+      expect(pooled.used.keys).toHaveSize(1)
       expect(pooled.pool).toHaveSize(2)
       conn.close()
-      expect(pooled.used).toHaveSize(0)
+      expect(pooled.used.keys).toHaveSize(0)
       expect(pooled.pool).toHaveSize(3)
     }
 
     pooled.close()
     expect(pooled.pool).toHaveSize(0)
-    expect(pooled.used).toHaveSize(0)
+    expect(pooled.used.keys).toHaveSize(0)
   }
 }
