@@ -37,10 +37,10 @@ class PooledDataSource(
         val now = currentTimeMillis()
         used.forEach { (conn, used) ->
           val usedFor = now - used.since
-          if (usedFor >= leakWarningTimeout.inWholeMilliseconds)
+          if (usedFor >= it.inWholeMilliseconds)
             log.warn("Possible leaked $conn, used for $usedFor ms, acquired by ${used.threadName}")
         }
-        try { Thread.sleep(1000) } catch (e: InterruptedException) { break }
+        try { Thread.sleep(it.inWholeMilliseconds / 10) } catch (e: InterruptedException) { break }
       }
     }
   }
