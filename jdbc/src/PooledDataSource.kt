@@ -25,6 +25,7 @@ class PooledDataSource(
   val leakWarningTimeout: Duration? = null
 ): DataSource by db, AutoCloseable {
   private val log = logger()
+  val counter = AtomicInteger()
   val size = AtomicInteger()
   val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
   val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
@@ -77,6 +78,7 @@ class PooledDataSource(
   }
 
   inner class PooledConnection(val conn: Connection): Connection by conn {
+    val count = counter.incrementAndGet()
     val since = currentTimeMillis()
     init { log.info("New connection: $this") }
 
@@ -97,7 +99,7 @@ class PooledDataSource(
       log.warn("Failed to close $conn: $e")
     }
 
-    override fun toString() = "Pooled:$conn"
+    override fun toString() = "Pooled#${count}:$conn"
 
     override fun isWrapperFor(iface: Class<*>) = conn::class.java.isAssignableFrom(iface)
     override fun <T> unwrap(iface: Class<T>): T? = if (isWrapperFor(iface)) conn as T else null
