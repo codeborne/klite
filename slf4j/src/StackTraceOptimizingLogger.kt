@@ -5,7 +5,7 @@ package klite.slf4j
  * Config["LOGGER_CLASS"] = StacktraceOptimizingLogger::class
  */
 open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
-  public override fun print(formatted: String, t: Throwable?) {
+  public override fun print(formatted: String, t: Throwable?): Unit = synchronized(out) {
     if (formatted.isNotEmpty()) {
       out.print(formatted)
       if (t == null) out.println()

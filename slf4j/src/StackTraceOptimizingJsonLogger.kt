@@ -12,7 +12,8 @@ open class StackTraceOptimizingJsonLogger(name: String): StackTraceOptimizingLog
       sb.append(" ")
     }
     if (t != null) appendJson(sb, t)
-    out.println(sb.toString())
+    val message = sb.toString()
+    out.println(message)
   }
 
   private fun appendJson(sb: StringBuilder, t: Throwable) {

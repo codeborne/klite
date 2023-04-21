@@ -64,7 +64,7 @@ open class KliteLogger(name: String): MarkerIgnoringBase() {
     if (isEnabled(level)) print(formatMessage(level, msg), t)
   }
 
-  protected open fun print(formatted: String, t: Throwable?) {
+  protected open fun print(formatted: String, t: Throwable?): Unit = synchronized(out) {
     out.println(formatted)
     t?.printStackTrace(out)
   }
