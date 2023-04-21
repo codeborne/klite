@@ -5,6 +5,7 @@ import klite.info
 import klite.logger
 import klite.warn
 import java.lang.System.currentTimeMillis
+import java.lang.Thread.currentThread
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ArrayBlockingQueue
@@ -26,16 +27,18 @@ class PooledDataSource(
   private val log = logger()
   val size = AtomicInteger()
   val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
-  val used = ConcurrentHashMap<PooledConnection, Long>(maxSize)
+  val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
+
+  data class Used(val since: Long = currentTimeMillis(), val threadName: String = currentThread().name)
 
   private val leakChecker = leakWarningTimeout?.let {
     thread(name = "$this:leakChecker", isDaemon = true) {
       while (!Thread.interrupted()) {
         val now = currentTimeMillis()
-        used.forEach { (conn, since) ->
-          val usedFor = now - since
+        used.forEach { (conn, used) ->
+          val usedFor = now - used.since
           if (usedFor >= leakWarningTimeout.inWholeMilliseconds)
-            log.warn("Possible leaked $conn, used for $usedFor ms")
+            log.warn("Possible leaked $conn, used for $usedFor ms, acquired by ${used.threadName}")
         }
         try { Thread.sleep(1000) } catch (e: InterruptedException) { break }
       }
@@ -63,7 +66,7 @@ class PooledDataSource(
         }
       }
     } while (conn == null)
-    used[conn] = currentTimeMillis()
+    used[conn] = Used()
     return conn
   }
 
