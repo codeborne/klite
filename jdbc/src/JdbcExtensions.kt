@@ -4,10 +4,7 @@ package klite.jdbc
 import klite.Decimal
 import org.intellij.lang.annotations.Language
 import java.io.InputStream
-import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.sql.Statement
+import java.sql.*
 import java.sql.Statement.NO_GENERATED_KEYS
 import java.sql.Statement.RETURN_GENERATED_KEYS
 import java.util.*
@@ -167,3 +164,6 @@ operator fun PreparedStatement.set(i: Int, value: Any?) {
 }
 
 fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
+
+var Connection.applicationName get() = getClientInfo("ApplicationName")
+                               set(value) { setClientInfo("ApplicationName", value) }

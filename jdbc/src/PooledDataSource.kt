@@ -64,6 +64,7 @@ class PooledDataSource(
         else {
           size.decrementAndGet()
           pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)
+          // TODO: check
         }
       }
     } while (conn == null)
@@ -77,14 +78,21 @@ class PooledDataSource(
     used.keys.removeIf { it.reallyClose(); true }
   }
 
-  inner class PooledConnection(val conn: Connection): Connection by conn {
+  inner class PooledConnection(private val conn: Connection): Connection by conn {
     val count = counter.incrementAndGet()
     val since = currentTimeMillis()
-    init { log.info("New connection: $this") }
+    init {
+      log.info("New connection: $this")
+      try { setNetworkTimeout(null, timeout.inWholeMilliseconds.toInt()) }
+      catch (e: SQLException) { log.warn("Failed to set network timeout for $this: $e") }
+    }
 
     val ageMs get() = currentTimeMillis() - since
 
-    fun check() = isValid(timeout.inWholeSeconds.toInt())
+    fun check(): Boolean {
+      if (isClosed) return false
+      return runCatching { applicationName = currentThread().name; true }.getOrNull() ?: false
+    }
 
     override fun close() {
       if (!conn.autoCommit) conn.rollback()
