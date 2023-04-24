@@ -19,7 +19,6 @@ class Transaction(private val db: DataSource): AutoCloseable {
   private fun openConnection() = db.connection.apply {
     autoCommit = false
     setClientInfo("ApplicationName", currentThread().name)
-    println(getClientInfo("ApplicationName"))
     conn = this
   }
 
