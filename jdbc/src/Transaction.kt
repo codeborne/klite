@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import kotlinx.coroutines.ThreadContextElement
+import java.lang.Thread.currentThread
 import java.sql.Connection
 import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -13,8 +14,13 @@ class Transaction(private val db: DataSource): AutoCloseable {
   }
 
   private var conn: Connection? = null
-  val connection: Connection
-    get() = conn ?: db.connection.also { it.autoCommit = false; conn = it }
+  val connection: Connection get() = conn ?: openConnection()
+
+  private fun openConnection() = db.connection.apply {
+    autoCommit = false
+    setClientInfo("ApplicationName", currentThread().name)
+    conn = this
+  }
 
   override fun close() = close(true)
   fun close(commit: Boolean = true) {
