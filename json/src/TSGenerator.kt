@@ -6,6 +6,8 @@ import org.intellij.lang.annotations.Language
 import java.io.PrintStream
 import java.lang.System.err
 import java.nio.file.Path
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 import kotlin.io.path.*
 import kotlin.io.path.PathWalkOption.INCLUDE_DIRECTORIES
@@ -53,11 +55,11 @@ open class TSGenerator(
 
   protected open fun renderEnum(cls: KClass<*>) = "enum " + tsName(cls) + " {" + cls.java.enumConstants.joinToString { "$it = '$it'" } + "}"
 
-  protected open fun renderInline(cls: KClass<*>) = "type " + tsName(cls) + typeParams(cls) +
+  protected open fun renderInline(cls: KClass<*>) = "type " + tsName(cls) + typeParams(cls, noVariance = true) +
     " = " + tsType(cls.memberProperties.first().returnType)
 
-  protected open fun typeParams(cls: KClass<*>) =
-    cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { it.name } ?: ""
+  protected open fun typeParams(cls: KClass<*>, noVariance: Boolean = false) =
+    cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { if (noVariance) it.name else it.toString() } ?: ""
 
   @Suppress("UNCHECKED_CAST")
   protected open fun renderInterface(cls: KClass<*>): String? = StringBuilder().apply {
