@@ -31,4 +31,3 @@ open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
     return until
   }
 }
-

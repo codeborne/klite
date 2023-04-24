@@ -31,7 +31,7 @@ class TSGeneratorTest {
   }
 }
 
-@JvmInline value class MyId<T>(val uuid: UUID = UUID.randomUUID())
+@JvmInline value class MyId<out T>(val uuid: UUID = UUID.randomUUID())
 enum class SomeEnum { HELLO, WORLD }
 interface Person { val name: String; val hello get() = SomeEnum.HELLO }
 

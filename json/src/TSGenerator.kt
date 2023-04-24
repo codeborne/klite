@@ -57,7 +57,7 @@ open class TSGenerator(
     " = " + tsType(cls.memberProperties.first().returnType)
 
   protected open fun typeParams(cls: KClass<*>) =
-    cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") ?: ""
+    cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { it.name } ?: ""
 
   @Suppress("UNCHECKED_CAST")
   protected open fun renderInterface(cls: KClass<*>): String? = StringBuilder().apply {
