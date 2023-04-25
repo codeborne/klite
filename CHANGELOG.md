@@ -10,6 +10,8 @@
 * jdbc: allow whitespace between -- and keywords in changeset sql files
 * server: default RequestLogFormatter will not log StatusCodeExceptions anymore
 * server: useHashCodeAsETag() introduced to avoid sending of same responses
+* server: run onStop handlers in reverse order of registration, so that e.g. connection pool is stopped after jobs are stopped
+* jobs: do not start new jobs on shutdown while waiting for running jobs to finish
 
 # 1.5.1
 * json: ValueConverter.from() can now have access to the expected KType
