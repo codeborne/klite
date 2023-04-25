@@ -22,8 +22,8 @@ class PooledDataSource(
   val leakCheckThreshold: Duration? = null
 ): DataSource by db, AutoCloseable {
   private val log = logger()
-  val counter = AtomicInteger()
-  val size = AtomicInteger()
+  private val counter = AtomicInteger()
+  private val size = AtomicInteger()
   val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
   val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
 
@@ -44,25 +44,18 @@ class PooledDataSource(
   }
 
   override fun getConnection(username: String?, password: String?) = throw UnsupportedOperationException("Please use getConnection()")
-
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
     do {
-      conn = pool.poll()
+      conn = pool.poll() ?: if (size.incrementAndGet() <= maxSize) PooledConnection(db.connection)
+      else {
+        size.decrementAndGet()
+        pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)
+      }
       if (conn != null && !conn.check()) {
         log.warn("Dropping failed $conn, age ${conn.ageMs} ms")
         size.decrementAndGet()
         conn = null
-        continue
-      }
-      if (conn == null) {
-        conn = if (size.incrementAndGet() <= maxSize)
-          PooledConnection(db.connection)
-        else {
-          size.decrementAndGet()
-          pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)
-          // TODO: check
-        }
       }
     } while (conn == null)
     used[conn] = Used()
