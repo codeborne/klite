@@ -1,9 +1,6 @@
 package klite.jdbc
 
-import klite.Config
-import klite.info
-import klite.logger
-import klite.warn
+import klite.*
 import java.lang.System.currentTimeMillis
 import java.lang.Thread.currentThread
 import java.sql.Connection
@@ -22,7 +19,7 @@ class PooledDataSource(
   val db: DataSource = ConfigDataSource(),
   val maxSize: Int = Config.dbPoolMaxSize,
   val timeout: Duration = 5.seconds,
-  val leakWarningTimeout: Duration? = null
+  val leakCheckThreshold: Duration? = null
 ): DataSource by db, AutoCloseable {
   private val log = logger()
   val counter = AtomicInteger()
@@ -32,14 +29,14 @@ class PooledDataSource(
 
   data class Used(val since: Long = currentTimeMillis(), val threadName: String = currentThread().name)
 
-  private val leakChecker = leakWarningTimeout?.let {
+  private val leakChecker = leakCheckThreshold?.let {
     thread(name = "$this:leakChecker", isDaemon = true) {
       while (!Thread.interrupted()) {
         val now = currentTimeMillis()
         used.forEach { (conn, used) ->
           val usedFor = now - used.since
           if (usedFor >= it.inWholeMilliseconds)
-            log.warn("Possible leaked $conn, used for $usedFor ms, acquired by ${used.threadName}")
+            log.error("Possible leaked $conn, used for $usedFor ms, acquired by ${used.threadName}")
         }
         try { Thread.sleep(it.inWholeMilliseconds / 10) } catch (e: InterruptedException) { break }
       }
