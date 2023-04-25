@@ -11,20 +11,20 @@ import java.util.*
 
 class DecimalTest {
   @Test fun `operators & string`() {
-    expect(20.d.toString()).toEqual("20.00")
-    expect((3.d * 5).toString()).toEqual("15.00")
+    expect(20.d.toString()).toEqual("20")
+    expect((3.d * 5).toString()).toEqual("15")
     expect((3.d / 5.0).toString()).toEqual("0.60")
     expect((10.d / 8).toString()).toEqual("1.25")
     expect((100.d / 97.d).toString()).toEqual("1.03")
     expect((100.d / 87.d).toString()).toEqual("1.15")
     expect((100.d / 87).toString()).toEqual("1.15")
     expect((-100.d / 87).toString()).toEqual("-1.15")
-    expect((1.05.d / 1.05.d).toString()).toEqual("1.00")
+    expect((1.05.d / 1.05.d).toString()).toEqual("1")
     expect(100.d % 87.d).toEqual(13.d)
     expect((10.05.d % 8.03.d).toString()).toEqual("2.02")
     expect("1.33".d.toString()).toEqual("1.33")
     expect("1.2".d.toString()).toEqual("1.20")
-    expect("145".d.toString()).toEqual("145.00")
+    expect("145".d.toString()).toEqual("145")
     expect(-10.d).toEqual("-10".d)
     expect("-123.456".d).toEqual("-123.46".d)
   }
