@@ -54,7 +54,7 @@ class Server(
   fun stop(delaySec: Int = 1) {
     logger.info("Stopping gracefully")
     http.stop(delaySec)
-    onStopHandlers.forEach { it.run() }
+    onStopHandlers.reversed().forEach { it.run() }
   }
 
   // add both Extension and Runnable overloads when this is resolved: https://youtrack.jetbrains.com/issue/KT-56930

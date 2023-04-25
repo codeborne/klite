@@ -95,10 +95,10 @@ open class JobRunner(
   }, at = at)
 
   open fun gracefulStop() {
+    workerPool.shutdown()
     runBlocking {
       runningJobs.forEach { it.cancelAndJoin() }
     }
-    workerPool.shutdown()
     workerPool.awaitTermination(10, SECONDS)
   }
 }
