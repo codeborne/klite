@@ -49,7 +49,12 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   override fun hashCode() = c.hashCode()
   override fun compareTo(o: Decimal) = c.compareTo(o.c)
 
-  override fun toString() = "${c / CENTS}${(c % CENTS).absoluteValue.takeIf { it != 0L }?.let { ".${it.toString().padStart(2, '0')}" } ?: ""}"
+  override fun toString(): String {
+    val sb = StringBuilder("${c / CENTS}")
+    val cents = (c % CENTS).absoluteValue
+    if (cents > 0) sb.append('.').append(cents.toString().padStart(2, '0'))
+    return sb.toString()
+  }
 
   override fun toDouble() = c / CENTS.toDouble()
   override fun toFloat() = toDouble().toFloat()
