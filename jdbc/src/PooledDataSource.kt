@@ -73,7 +73,7 @@ class PooledDataSource(
     val count = counter.incrementAndGet()
     val since = currentTimeMillis()
     init {
-      log.info("New connection $this")
+      log.info("New connection $size/$maxSize: $this")
       try { setNetworkTimeout(null, timeout.inWholeMilliseconds.toInt()) }
       catch (e: Exception) { log.warn("Failed to set network timeout for $this: $e") }
     }
