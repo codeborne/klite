@@ -5,6 +5,7 @@ import java.lang.System.currentTimeMillis
 import java.lang.Thread.currentThread
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.SQLTimeoutException
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -50,9 +51,9 @@ class PooledDataSource(
       conn = pool.poll() ?: if (size.incrementAndGet() <= maxSize) PooledConnection(db.connection)
       else {
         size.decrementAndGet()
-        pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)
+        pool.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
       }
-      conn?.check()?.let { failure ->
+      conn.check()?.let { failure ->
         log.warn("Dropping failed $conn, age ${conn!!.ageMs} ms: $failure")
         size.decrementAndGet()
         conn = null
