@@ -80,7 +80,7 @@ class PooledDataSource(
 
     val ageMs get() = currentTimeMillis() - since
 
-    fun check() = runCatching { applicationName = currentThread().name }.exceptionOrNull()
+    fun check() = runCatching { applicationName = currentThread().name }.exceptionOrNull()?.cause
 
     override fun close() {
       if (!conn.autoCommit) conn.rollback()
