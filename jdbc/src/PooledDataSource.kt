@@ -43,7 +43,7 @@ class PooledDataSource(
     }
   }
 
-  override fun getConnection(username: String?, password: String?) = throw UnsupportedOperationException("Please use getConnection()")
+  override fun getConnection(username: String?, password: String?) = throw UnsupportedOperationException("Use getConnection()")
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
     do {
@@ -52,14 +52,14 @@ class PooledDataSource(
         size.decrementAndGet()
         pool.poll(timeout.inWholeMilliseconds, MILLISECONDS)
       }
-      if (conn != null && !conn.check()) {
-        log.warn("Dropping failed $conn, age ${conn.ageMs} ms")
+      conn?.check()?.let { failure ->
+        log.warn("Dropping failed $conn, age ${conn!!.ageMs} ms: $failure")
         size.decrementAndGet()
         conn = null
       }
     } while (conn == null)
-    used[conn] = Used()
-    return conn
+    used[conn!!] = Used()
+    return conn!!
   }
 
   override fun close() {
@@ -72,17 +72,14 @@ class PooledDataSource(
     val count = counter.incrementAndGet()
     val since = currentTimeMillis()
     init {
-      log.info("New connection: $this")
+      log.info("New connection $this")
       try { setNetworkTimeout(null, timeout.inWholeMilliseconds.toInt()) }
-      catch (e: SQLException) { log.warn("Failed to set network timeout for $this: $e") }
+      catch (e: Exception) { log.warn("Failed to set network timeout for $this: $e") }
     }
 
     val ageMs get() = currentTimeMillis() - since
 
-    fun check(): Boolean {
-      if (isClosed) return false
-      return runCatching { applicationName = currentThread().name; true }.getOrNull() ?: false
-    }
+    fun check() = runCatching { applicationName = currentThread().name }.exceptionOrNull()
 
     override fun close() {
       if (!conn.autoCommit) conn.rollback()
