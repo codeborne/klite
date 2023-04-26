@@ -6,7 +6,8 @@ import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
 
 /**
- * A monetary amount with 2 fraction digits, lighter than BigDecimal and having numeric equals.
+ * A decimal fixed-point number with 2 fraction digits, suitable for e.g. monetary amounts.
+ * Lighter and faster than BigDecimal, but also having numeric equals.
  * Operations resulting in Long overflow will throw ArithmeticException.
  */
 class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Number() {
