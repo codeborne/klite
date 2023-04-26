@@ -37,7 +37,7 @@ class PooledDataSource(
         used.forEach { (conn, used) ->
           val usedFor = now - used.since
           if (usedFor >= it.inWholeMilliseconds)
-            log.error("Possible leaked $conn, used for $usedFor ms, acquired by ${used.threadName}")
+            log.error("Possible leaked $conn, used for ${usedFor / 1000}s, acquired by ${used.threadName}")
         }
         try { Thread.sleep(it.inWholeMilliseconds / 10) } catch (e: InterruptedException) { break }
       }
@@ -54,7 +54,7 @@ class PooledDataSource(
         pool.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
       }
       conn.check()?.let { failure ->
-        log.warn("Dropping failed $conn, age ${conn!!.ageMs} ms: $failure")
+        log.warn("Dropping failed $conn, age ${conn!!.ageMs / 1000}s: $failure")
         size.decrementAndGet()
         conn = null
       }
