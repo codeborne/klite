@@ -13,10 +13,10 @@ import kotlin.math.roundToLong
 class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Number() {
   companion object {
     const val CENTS = 100L
-    @JvmStatic val MAX_VALUE = Decimal(Long.MAX_VALUE)
-    @JvmStatic val MIN_VALUE = Decimal(Long.MIN_VALUE)
-    @JvmStatic val ZERO = Decimal(0)
-    @JvmStatic val ONE = Decimal(CENTS)
+    val MAX_VALUE = Decimal(Long.MAX_VALUE)
+    val MIN_VALUE = Decimal(Long.MIN_VALUE)
+    val ZERO = Decimal(0)
+    val ONE = Decimal(CENTS)
   }
 
   constructor(v: Double): this((v * CENTS).roundToLong())
