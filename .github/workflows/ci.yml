@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # The Dependency Submission API requires write permission
       packages: write
     steps:
       - uses: actions/checkout@v3
@@ -23,3 +23,12 @@ jobs:
       - run: cd sample && docker-compose stop db && cd -
       - run: cd sample && docker-compose build && cd -
       - run: .github/workflows/check-readme-links.sh
+
+      - uses: mikepenz/gradle-dependency-submission@v0.8.6
+        if: ${{ github.ref == 'refs/heads/master' }}
+        with:
+          gradle-build-module: |-
+            :server
+            :slf4j
+            :jackson
+            :liquibase
