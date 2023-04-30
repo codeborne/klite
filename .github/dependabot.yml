@@ -13,3 +13,6 @@ updates:
     directory: "sample"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "openjdk"
+        versions: "<=17"
