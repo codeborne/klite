@@ -1,9 +1,8 @@
-// TODO: document how to use without klite-server
 dependencies {
   api(project(":core"))
   api(project(":slf4j"))
   implementation(project(":server"))
-  api("com.zaxxer:HikariCP:5.0.1") {
+  api(libs.hikari) {
     exclude("org.slf4j")
   }
 }

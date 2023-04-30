@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
   group = "com.github.codeborne.klite"
-  version = "master-SNAPSHOT"
+  version = "master-SNAPSHOT" // see tags/releases
 }
 
 subprojects {
@@ -18,14 +18,16 @@ subprojects {
   }
 
   dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-    testImplementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.18.0") {
+    val libs = rootProject.libs
+    testImplementation(libs.junit)
+    testRuntimeOnly(libs.junit.engine)
+    testImplementation(libs.atrium) {
       exclude("org.jetbrains.kotlin")
     }
-    testImplementation("io.mockk:mockk:1.13.5") {
+    testImplementation(libs.mockk) {
       exclude("org.jetbrains.kotlin")
     }
+    testImplementation(libs.kotlinx.coroutines.test)
   }
 
   sourceSets {
