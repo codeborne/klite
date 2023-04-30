@@ -9,7 +9,7 @@ dependencyResolutionManagement {
       library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
       library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
-      val junit5 = version("junit", "5.9.2")
+      val junit5 = version("junit", "5.9.3")
       library("junit", "org.junit.jupiter", "junit-jupiter").versionRef(junit5)
       library("junit-api", "org.junit.jupiter", "junit-jupiter-api").versionRef(junit5)
       library("junit-engine", "org.junit.jupiter", "junit-jupiter-engine").versionRef(junit5)
