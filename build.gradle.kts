@@ -23,7 +23,7 @@ subprojects {
     testImplementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.18.0") {
       exclude("org.jetbrains.kotlin")
     }
-    testImplementation("io.mockk:mockk:1.13.4") {
+    testImplementation("io.mockk:mockk:1.13.5") {
       exclude("org.jetbrains.kotlin")
     }
   }
