@@ -32,3 +32,4 @@ jobs:
             :slf4j
             :jackson
             :liquibase
+            :sample
