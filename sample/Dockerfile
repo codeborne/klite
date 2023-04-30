@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine as build
+FROM openjdk:18-alpine as build
 
 WORKDIR /app
 RUN apk add binutils # for objcopy, needed by jlink
