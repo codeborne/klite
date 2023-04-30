@@ -19,7 +19,7 @@ subprojects {
 
   dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
     testImplementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.18.0") {
       exclude("org.jetbrains.kotlin")
     }
