@@ -51,7 +51,7 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   override fun compareTo(o: Decimal) = c.compareTo(o.c)
 
   override fun toString(): String {
-    val sb = StringBuilder("${c / CENTS}")
+    val sb = StringBuilder(if (c < 0) "-" else "").append(c.absoluteValue / CENTS)
     val cents = (c % CENTS).absoluteValue
     if (cents > 0) sb.append('.').append(cents.toString().padStart(2, '0'))
     return sb.toString()
