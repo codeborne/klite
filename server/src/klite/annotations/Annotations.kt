@@ -90,7 +90,7 @@ private class Param(val param: KParameter) {
       }
     }
   } catch (e: Exception) {
-    if (e.message?.contains(name) == true) throw e
+    if (e is IllegalArgumentException || e.message?.contains(name) == true) throw e
     throw IllegalArgumentException("Cannot get $name: ${e.message}", e)
   }
 
