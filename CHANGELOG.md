@@ -1,4 +1,4 @@
-# Unreleased
+# 1.5.2
 * core: experimental Decimal class to be used for monetary values, with numerical equality (unlike BigDecimal)
 * core/json: use default values for explicitly passed nulls if property is not nullable
 * core/json: unwrap InvocationTargetException, so that any validation exceptions thrown from data class constructors is propagated properly
