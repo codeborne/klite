@@ -20,6 +20,10 @@ class JsonHttpClientTest {
   val http = JsonHttpClient("http://some.host/v1", reqModifier = { setHeader("X-Custom-API", "123") },
     retryCount = 2, retryAfter = ZERO, http = httpClient, json = kliteJsonMapper())
 
+  @Test fun `logger name from stack trace`() {
+    expect(http.logger.name).toEqual(javaClass.name)
+  }
+
   @Test fun get() {
     val response = mockResponse(200, """{"hello": "World"}""")
     every { httpClient.sendAsync<String>(any(), any()) } returns completedFuture(response)

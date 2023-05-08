@@ -31,7 +31,7 @@ open class TypedHttpClient(
   val http: HttpClient,
   val contentType: String
 ) {
-  val logger = logger(Exception().stackTrace.first { it.className !== javaClass.name }.className).apply {
+  val logger = logger(Exception().stackTrace.first { it.className != TypedHttpClient::class.java.name && it.className !== javaClass.name }.className).apply {
     info("Using $urlPrefix")
   }
 
