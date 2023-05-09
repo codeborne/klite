@@ -1,4 +1,5 @@
 # Unreleased
+* server: TypedHttpClient/JsonHttpClient uses a better logger name (from nearest user class)
 * jdbc: PooledDataSource - a simple and easy to configure connection pool (alternative to Hikari)
 
 # 1.5.2
