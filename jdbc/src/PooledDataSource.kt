@@ -83,13 +83,15 @@ class PooledDataSource(
 
     fun check() = runCatching { applicationName = currentThread().name }.exceptionOrNull()?.cause
 
-    override fun close() {
-      if (!conn.autoCommit) conn.rollback()
+    override fun close() = try {
       used -= this
+      if (!conn.autoCommit) conn.rollback()
       pool += this
+    } catch (e: SQLException) {
+      log.warn("Failed to return $this: $e")
     }
 
-    fun reallyClose() = try {
+    internal fun reallyClose() = try {
       log.info("Closing $this, age $ageMs ms")
       conn.close()
     } catch (e: SQLException) {
