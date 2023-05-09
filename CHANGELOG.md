@@ -1,6 +1,7 @@
 # Unreleased
 * server: TypedHttpClient/JsonHttpClient uses a better logger name (from nearest user class)
 * jdbc: PooledDataSource - a simple and easy to configure connection pool (alternative to Hikari)
+* jobs: JobRunner.schedule() now takes kotlin.time.Duration values
 
 # 1.5.2
 * core: experimental Decimal class to be used for monetary values, with numerical equality (unlike BigDecimal)
