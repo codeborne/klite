@@ -23,7 +23,6 @@ import javax.sql.DataSource
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 interface Job {
   suspend fun run()
@@ -82,7 +81,7 @@ open class JobRunner(
     workerPool.scheduleAtFixedRate({ runInTransaction(job, UNDISPATCHED) }, delay, period, unit)
   }
 
-  open fun schedule(job: Job, period: Duration, delay: Duration = (Math.random() * 60).seconds) =
+  open fun schedule(job: Job, period: Duration, delay: Duration = period) =
     schedule(job, delay.inWholeMilliseconds, period.inWholeMilliseconds, MILLISECONDS)
 
   fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong()) =
