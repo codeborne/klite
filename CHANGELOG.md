@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: PooledDataSource - a simple and easy to configure connection pool (alternative to Hikari)
+
 # 1.5.2
 * core: experimental Decimal class to be used for monetary values, with numerical equality (unlike BigDecimal)
 * core/json: use default values for explicitly passed nulls if property is not nullable

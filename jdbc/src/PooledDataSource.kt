@@ -15,7 +15,7 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@Deprecated("EXPERIMENTAL") @Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST")
 class PooledDataSource(
   val db: DataSource = ConfigDataSource(),
   val maxSize: Int = Config.dbPoolMaxSize,
