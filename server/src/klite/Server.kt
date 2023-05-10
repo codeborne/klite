@@ -61,8 +61,11 @@ class Server(
   inline fun <reified E: Any> use() = require<E>().also { use(it) }
   fun use(extension: Any) = extension.also {
     register(it)
-    if (it is Extension) it.install(this)
-    if (it is Runnable) it.run()
+    when (it) {
+      is Extension -> it.install(this)
+      is Runnable -> it.run()
+      else -> error("Cannot use $it, must be either Extension or Runnable")
+    }
   }
 
   /** Adds a new router context. When handing a request, the longest matching router context is chosen. */
