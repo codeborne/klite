@@ -16,10 +16,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.MINUTES
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 interface Job {
   suspend fun run()
@@ -78,8 +81,11 @@ open class JobRunner(
     workerPool.scheduleAtFixedRate({ runInTransaction(job, UNDISPATCHED) }, delay, period, unit)
   }
 
+  open fun schedule(job: Job, period: Duration, delay: Duration = period) =
+    schedule(job, delay.inWholeMilliseconds, period.inWholeMilliseconds, MILLISECONDS)
+
   fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong()) =
-    schedule(job, delayMinutes, 24 * 60, MINUTES)
+    schedule(job, 24.hours, delayMinutes.minutes)
 
   fun scheduleDaily(job: Job, vararg at: LocalTime) {
     val now = LocalDateTime.now()

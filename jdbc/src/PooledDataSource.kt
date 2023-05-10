@@ -15,7 +15,7 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@Deprecated("EXPERIMENTAL") @Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST")
 class PooledDataSource(
   val db: DataSource = ConfigDataSource(),
   val maxSize: Int = Config.dbPoolMaxSize,
@@ -48,10 +48,12 @@ class PooledDataSource(
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
     do {
-      conn = pool.poll() ?: if (size.incrementAndGet() <= maxSize) PooledConnection(db.connection)
-      else {
-        size.decrementAndGet()
-        pool.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
+      conn = pool.poll() ?: size.incrementAndGet().let { newSize ->
+        if (newSize <= maxSize) PooledConnection(db.connection).also { log.info("New connection $newSize/$maxSize: $it") }
+        else {
+          size.decrementAndGet()
+          pool.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
+        }
       }
       conn.check()?.let { failure ->
         log.warn("Dropping failed $conn, age ${conn!!.ageMs / 1000}s: $failure")
@@ -73,7 +75,6 @@ class PooledDataSource(
     val count = counter.incrementAndGet()
     val since = currentTimeMillis()
     init {
-      log.info("New connection $size/$maxSize: $this")
       try { setNetworkTimeout(null, timeout.inWholeMilliseconds.toInt()) }
       catch (e: Exception) { log.warn("Failed to set network timeout for $this: $e") }
     }
@@ -82,13 +83,15 @@ class PooledDataSource(
 
     fun check() = runCatching { applicationName = currentThread().name }.exceptionOrNull()?.cause
 
-    override fun close() {
-      if (!conn.autoCommit) conn.rollback()
+    override fun close() = try {
       used -= this
+      if (!conn.autoCommit) conn.rollback()
       pool += this
+    } catch (e: SQLException) {
+      log.warn("Failed to return $this: $e")
     }
 
-    fun reallyClose() = try {
+    internal fun reallyClose() = try {
       log.info("Closing $this, age $ageMs ms")
       conn.close()
     } catch (e: SQLException) {
