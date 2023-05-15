@@ -92,7 +92,7 @@ class PooledDataSource(
     }
 
     internal fun reallyClose() = try {
-      log.info("Closing $this, age $ageMs ms")
+      log.info("Closing $this, age ${ageMs / 1000}s")
       conn.close()
     } catch (e: SQLException) {
       log.warn("Failed to close $this: $e")
