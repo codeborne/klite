@@ -1,8 +1,10 @@
 package klite.json
 
-import klite.*
+import klite.MimeTypes
+import klite.Registry
 import klite.http.RequestModifier
 import klite.http.TypedHttpClient
+import klite.require
 import java.io.IOException
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
@@ -15,7 +17,7 @@ import kotlin.time.Duration.Companion.seconds
  * registry.register(HttpClient.newBuilder().connectTimeout(5.seconds).build())
  * or provide both http and json parameters to the constructor instead
  */
-class JsonHttpClient(
+open class JsonHttpClient(
   urlPrefix: String = "",
   reqModifier: RequestModifier = { this },
   errorHandler: (HttpResponse<*>, String) -> Nothing = { res, body -> throw IOException("Failed with ${res.statusCode()}: $body") },

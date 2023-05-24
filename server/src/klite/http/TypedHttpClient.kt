@@ -31,7 +31,8 @@ open class TypedHttpClient(
   val http: HttpClient,
   val contentType: String
 ) {
-  val logger = logger(Exception().stackTrace.first { it.className != TypedHttpClient::class.java.name && it.className !== javaClass.name }.className).apply {
+  protected var trimToLog: String.() -> String = { if (length <= maxLoggedLen) this else substring(0, maxLoggedLen) + "…" }
+  var logger = logger(Exception().stackTrace.first { it.className != TypedHttpClient::class.java.name && it.className !== javaClass.name }.className).apply {
     info("Using $urlPrefix")
   }
 
@@ -46,16 +47,13 @@ open class TypedHttpClient(
     val ms = (System.nanoTime() - start) / 1000_000
     val body = res.body().trim() // TODO: NPE -> return nullable type
     if (res.statusCode() < 300) {
-      logger.info("${req.method()} $urlSuffix ${cut(payload)} in $ms ms: ${cut(body)}")
+      logger.info("${req.method()} $urlSuffix ${payload?.trimToLog() ?: ""} in $ms ms: ${body.trimToLog()}")
       return parse(body, type)
-    }
-    else {
-      logger.error("Failed ${req.method()} $urlSuffix ${cut(payload)} in $ms ms: ${res.statusCode()}: $body")
+    } else {
+      logger.error("Failed ${req.method()} $urlSuffix ${payload?.trimToLog() ?: ""} in $ms ms: ${res.statusCode()}: $body")
       errorHandler(res, body)
     }
   }
-
-  private fun cut(s: String?) = if (s == null) "" else if (s.length <= maxLoggedLen) s else s.substring(0, maxLoggedLen) + "..."
 
   suspend fun <T> retryRequest(urlSuffix: String, type: KType, payload: String? = null, builder: RequestModifier): T {
     for (i in 0..retryCount) {
@@ -65,9 +63,8 @@ open class TypedHttpClient(
         if (i < retryCount) {
           logger.error("Failed $urlSuffix, retry ${i + 1} after $retryAfter", e)
           delay(retryAfter.inWholeMilliseconds)
-        }
-        else {
-          logger.error("Failed $urlSuffix: ${cut(payload)}", e)
+        } else {
+          logger.error("Failed $urlSuffix: ${payload?.trimToLog()}", e)
           throw e
         }
       }
