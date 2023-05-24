@@ -49,20 +49,23 @@ class PooledDataSource(
     var conn: PooledConnection?
     do {
       conn = pool.poll() ?: size.incrementAndGet().let { newSize ->
-        if (newSize <= maxSize) PooledConnection(db.connection).also { log.info("New connection $newSize/$maxSize: $it") }
-        else {
+        if (newSize <= maxSize) try {
+          PooledConnection(db.connection).also { log.info("New connection $newSize/$maxSize: $it") }
+        } catch (e: Exception) {
+          size.decrementAndGet(); throw e
+        } else {
           size.decrementAndGet()
           pool.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
         }
       }
-      conn.check()?.let { failure ->
-        log.warn("Dropping failed $conn, age ${conn!!.ageMs / 1000}s: $failure")
+      try { conn.checkBySetApplicationName() } catch (e: Exception) {
+        log.warn("Dropping failed $conn, age ${conn.ageMs / 1000}s: $e")
         size.decrementAndGet()
         conn = null
       }
     } while (conn == null)
-    used[conn!!] = Used()
-    return conn!!
+    used[conn] = Used()
+    return conn
   }
 
   override fun close() {
@@ -81,7 +84,7 @@ class PooledDataSource(
 
     val ageMs get() = currentTimeMillis() - since
 
-    fun check() = runCatching { applicationName = currentThread().name }.exceptionOrNull()?.cause
+    internal fun checkBySetApplicationName() { applicationName = currentThread().name }
 
     override fun close() = try {
       used -= this

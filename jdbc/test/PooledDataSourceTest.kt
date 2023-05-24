@@ -1,13 +1,17 @@
 package klite.jdbc
 
+import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toHaveSize
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -37,5 +41,12 @@ class PooledDataSourceTest {
     pooled.close()
     expect(pooled.pool).toHaveSize(0)
     expect(pooled.used.keys).toHaveSize(0)
+  }
+
+  @Test fun `handle exceptions`() {
+    every { db.connection } throws SQLException("connection refused")
+    repeat(pooled.maxSize + 1) {
+      expect { pooled.connection }.toThrow<SQLException>().messageToContain("connection refused")
+    }
   }
 }
