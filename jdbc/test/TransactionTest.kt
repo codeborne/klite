@@ -2,13 +2,12 @@ package klite.jdbc
 
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.verbs.expect
-import com.zaxxer.hikari.util.DriverDataSource
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 
 class TransactionTest {
-  val db = mockk<DriverDataSource>(relaxed = true)
+  val db = mockk<ConfigDataSource>(relaxed = true)
 
   @Test fun `transaction does not open connection on creation`() {
     val tx = Transaction(db)

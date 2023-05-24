@@ -3,7 +3,7 @@
 * json/jackson: TypedHttpClient/JsonHttpClient now have overridable trimToLog property in case you need to process how requests/responses are logged
 * jobs: JobRunner.schedule() now takes kotlin.time.Duration values
 * jdbc: PooledDataSource - a simple and easy to configure connection pool (used in DBModule by default)
-* jdbc: HikariModule is provided if you want to keep using it (add dependency on HikariCP manually)
+* jdbc: use HikariModule instead of DBModule if you still want to use Hikari (also add dependency on com.zaxxer:HikariCP)
 
 # 1.5.2
 * core: experimental Decimal class to be used for monetary values, with numerical equality (unlike BigDecimal)
