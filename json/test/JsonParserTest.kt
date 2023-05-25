@@ -70,7 +70,7 @@ class JsonParserTest {
   @Test fun `custom converter from String`() {
     val mapper = mapper.copy(values = object: ValueConverter<Any?>() {
       override fun from(o: Any?, type: KType?) =
-        if (o is String && type?.classifier == LocalDateTime::class) LocalDateTime.parse(o.toString().replace(" ", "T")) else o
+        if (o is String && type?.classifier == LocalDateTime::class) LocalDateTime.parse(o.replace(" ", "T")) else o
     })
     expect(mapper.parse<LocalDateTime>("\"2022-12-23 10:53:45\"")).toEqual(LocalDateTime.of(2022, 12, 23, 10, 53, 45))
   }
