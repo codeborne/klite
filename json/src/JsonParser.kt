@@ -18,7 +18,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
   private var nextChar: Char? = null
 
   fun readValue(type: KType?): Any? = opts.values.from(when (val c = nextNonSpace()) {
-    '"' -> type.from(readString().let { if (opts.trimToNull) it.trimToNull() else it })
+    '"' -> opts.values.from(readString().let { if (opts.trimToNull) it.trimToNull() else it }, type).let { if (it is String) type.from(it) else it }
     '{' -> readObject(type)
     '[' -> readArray(type)
     '-', '+', in '0'..'9' -> readNumber(c, type)

@@ -11,7 +11,9 @@ import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
+import kotlin.reflect.KType
 
 class JsonParserTest {
   val mapper = JsonMapper()
@@ -63,6 +65,14 @@ class JsonParserTest {
     expect(mapper.parse<TSID<Any>>("\"$tsid\"")).toEqual(tsid)
 
     expect(mapper.parse<LocalDate>("\"2022-12-23\"")).toEqual(LocalDate.of(2022, 12, 23))
+  }
+
+  @Test fun `custom converter from String`() {
+    val mapper = mapper.copy(values = object: ValueConverter<Any?>() {
+      override fun from(o: Any?, type: KType?) =
+        if (o is String && type?.classifier == LocalDateTime::class) LocalDateTime.parse(o.toString().replace(" ", "T")) else o
+    })
+    expect(mapper.parse<LocalDateTime>("\"2022-12-23 10:53:45\"")).toEqual(LocalDateTime.of(2022, 12, 23, 10, 53, 45))
   }
 
   @Test fun `snake case`() {
