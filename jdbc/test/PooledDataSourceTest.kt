@@ -37,6 +37,7 @@ class PooledDataSourceTest {
     expect(pool.used.keys).toContainExactly(pooled)
 
     pooled.close()
+    verify { conn.rollback() }
     verify(exactly = 0) { conn.close() }
     expect(pool.size.get()).toEqual(1)
     expect(pool.available).toContainExactly(pooled)
