@@ -30,8 +30,8 @@ class PooledDataSource(
   private val log = logger()
   private val counter = AtomicInteger()
   private val size = AtomicInteger()
-  val pool = ArrayBlockingQueue<PooledConnection>(maxSize)
-  val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
+  internal val available = ArrayBlockingQueue<PooledConnection>(maxSize)
+  internal val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
 
   data class Used(val since: Long = currentTimeMillis(), val threadName: String = currentThread().name)
 
@@ -53,14 +53,14 @@ class PooledDataSource(
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
     do {
-      conn = pool.poll() ?: size.incrementAndGet().let { newSize ->
+      conn = available.poll() ?: size.incrementAndGet().let { newSize ->
         if (newSize <= maxSize) try {
           PooledConnection(db.connection).also { log.info("New connection $newSize/$maxSize: $it") }
         } catch (e: Exception) {
           size.decrementAndGet(); throw e
         } else {
           size.decrementAndGet()
-          pool.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
+          available.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
         }
       }
       try { conn.checkBySetApplicationName() } catch (e: Exception) {
@@ -75,7 +75,7 @@ class PooledDataSource(
 
   override fun close() {
     leakChecker?.interrupt()
-    pool.removeIf { it.reallyClose(); true }
+    available.removeIf { it.reallyClose(); true }
     used.keys.removeIf { it.reallyClose(); true }
   }
 
@@ -94,7 +94,7 @@ class PooledDataSource(
     override fun close() = try {
       used -= this
       if (!conn.autoCommit) conn.rollback()
-      pool += this
+      available += this
     } catch (e: SQLException) {
       log.warn("Failed to return $this: $e")
     }
