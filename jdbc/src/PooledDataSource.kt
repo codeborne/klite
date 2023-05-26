@@ -15,6 +15,11 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Simple DB connection pool that opens connections on demand up to [maxSize].
+ * Optional [leakCheckThreshold] can be used for debugging of possibly leaked connections.
+ * ApplicationName is set to the name of the retrieving thread/request, so that you can see who is holding the connection on the DB side.
+ */
 @Suppress("UNCHECKED_CAST")
 class PooledDataSource(
   val db: DataSource = ConfigDataSource(),
