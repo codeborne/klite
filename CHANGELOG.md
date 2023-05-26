@@ -1,3 +1,6 @@
+# Unreleased
+* json: ValueConverter can now be used to transform strings into types
+
 # 1.5.3
 * server: TypedHttpClient/JsonHttpClient uses a better logger name (from nearest user class)
 * json/jackson: TypedHttpClient/JsonHttpClient now have overridable trimToLog property in case you need to process how requests/responses are logged
