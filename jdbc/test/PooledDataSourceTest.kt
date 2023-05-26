@@ -44,12 +44,16 @@ class PooledDataSourceTest {
     expect(pool.used).toBeEmpty()
 
     every { conn.applicationName = any() } throws IOException("boom")
-    every { db.connection } returns mockk<Connection>(relaxed = true)
+    val conn2 = mockk<Connection>(relaxed = true)
+    every { db.connection } returns conn2
     val pooled2 = pool.connection
     expect(pooled2).notToEqual(pooled)
     expect(pool.size.get()).toEqual(1)
     expect(pool.available).toBeEmpty()
     expect(pool.used.keys).toContainExactly(pooled2)
+
+    pool.close()
+    verify { conn2.close() }
   }
 
   @Test fun `handle exceptions`() {
