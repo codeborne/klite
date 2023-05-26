@@ -1,52 +1,84 @@
 package klite.jdbc
 
-import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.fluent.en_GB.toHaveSize
-import ch.tutteli.atrium.api.fluent.en_GB.toThrow
+import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.io.IOException
+import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.time.Duration.Companion.milliseconds
 
 class PooledDataSourceTest {
   val db = mockk<DataSource>(relaxed = true)
-  val pooled = PooledDataSource(db, maxSize = 3, timeout = 100.milliseconds)
+  val pool = PooledDataSource(db, maxSize = 3, timeout = 100.milliseconds)
 
-  @Test fun pool() {
-    val conns = (1..3).map { pooled.connection }
-    expect(pooled.used.keys).toHaveSize(3)
-    expect(pooled.available).toHaveSize(0)
+  @Test fun unwrap() {
+    expect(pool.unwrap(DataSource::class.java)).toBeTheInstance(db)
+  }
 
-    val extra = GlobalScope.async { pooled.connection }
+  @Test fun `retrieved connections are checked`() {
+    val pooled = pool.connection
+    expect(pooled).toBeAnInstanceOf<PooledDataSource.PooledConnection>()
+    val conn = pooled.unwrap(Connection::class.java)!!
+    expect(conn).notToEqual(pooled)
+    verify {
+      conn.setNetworkTimeout(null, 100)
+      conn.applicationName = Thread.currentThread().name
+    }
+    expect(pool.size.get()).toEqual(1)
+    expect(pool.available).toBeEmpty()
+    expect(pool.used.keys).toContainExactly(pooled)
+
+    pooled.close()
+    verify(exactly = 0) { conn.close() }
+    expect(pool.size.get()).toEqual(1)
+    expect(pool.available).toContainExactly(pooled)
+    expect(pool.used).toBeEmpty()
+
+    every { conn.applicationName = any() } throws IOException("boom")
+    every { db.connection } returns mockk<Connection>(relaxed = true)
+    val pooled2 = pool.connection
+    expect(pooled2).notToEqual(pooled)
+    expect(pool.size.get()).toEqual(1)
+    expect(pool.available).toBeEmpty()
+    expect(pool.used.keys).toContainExactly(pooled2)
+  }
+
+  @Test fun `handle exceptions`() {
+    every { db.connection } throws SQLException("connection refused")
+    repeat(pool.maxSize + 1) {
+      expect { pool.connection }.toThrow<SQLException>().messageToContain("connection refused")
+    }
+  }
+
+  @Test fun maxSize() {
+    val conns = (1..3).map { pool.connection }
+    expect(pool.used.keys).toHaveSize(3)
+    expect(pool.available).toHaveSize(0)
+
+    val extra = GlobalScope.async { pool.connection }
     expect(extra.isActive).toEqual(true)
     expect(extra.isCompleted).toEqual(false)
     conns.forEach { it.close() }
 
     runBlocking {
       val conn = extra.await()
-      expect(pooled.used.keys).toHaveSize(1)
-      expect(pooled.available).toHaveSize(2)
+      expect(pool.used.keys).toHaveSize(1)
+      expect(pool.available).toHaveSize(2)
       conn.close()
-      expect(pooled.used.keys).toHaveSize(0)
-      expect(pooled.available).toHaveSize(3)
+      expect(pool.used.keys).toHaveSize(0)
+      expect(pool.available).toHaveSize(3)
     }
 
-    pooled.close()
-    expect(pooled.available).toHaveSize(0)
-    expect(pooled.used.keys).toHaveSize(0)
-  }
-
-  @Test fun `handle exceptions`() {
-    every { db.connection } throws SQLException("connection refused")
-    repeat(pooled.maxSize + 1) {
-      expect { pooled.connection }.toThrow<SQLException>().messageToContain("connection refused")
-    }
+    pool.close()
+    expect(pool.available).toHaveSize(0)
+    expect(pool.used.keys).toHaveSize(0)
   }
 }

@@ -29,7 +29,7 @@ class PooledDataSource(
 ): DataSource by db, AutoCloseable {
   private val log = logger()
   private val counter = AtomicInteger()
-  private val size = AtomicInteger()
+  internal val size = AtomicInteger()
   internal val available = ArrayBlockingQueue<PooledConnection>(maxSize)
   internal val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
 
@@ -108,10 +108,10 @@ class PooledDataSource(
 
     override fun toString() = "Pooled#${count}:$conn"
 
-    override fun isWrapperFor(iface: Class<*>) = conn::class.java.isAssignableFrom(iface)
+    override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(conn::class.java)
     override fun <T> unwrap(iface: Class<T>): T? = if (isWrapperFor(iface)) conn as T else null
   }
 
-  override fun isWrapperFor(iface: Class<*>) = db::class.java.isAssignableFrom(iface)
+  override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(db::class.java)
   override fun <T> unwrap(iface: Class<T>): T? = if (isWrapperFor(iface)) db as T else null
 }
