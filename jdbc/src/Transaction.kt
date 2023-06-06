@@ -1,5 +1,7 @@
 package klite.jdbc
 
+import klite.error
+import klite.logger
 import kotlinx.coroutines.ThreadContextElement
 import java.sql.Connection
 import javax.sql.DataSource
@@ -8,6 +10,7 @@ import kotlin.coroutines.CoroutineContext
 
 class Transaction(private val db: DataSource): AutoCloseable {
   companion object {
+    private val log = logger()
     private val threadLocal = ThreadLocal<Transaction>()
     fun current(): Transaction? = threadLocal.get()
   }
@@ -28,9 +31,9 @@ class Transaction(private val db: DataSource): AutoCloseable {
           if (commit) commit() else rollback()
           autoCommit = true
         }
-        close()
       }
     } finally {
+      try { conn?.close() } catch (e: Exception) { log.error("Failed to close $conn: $e") }
       conn = null
       detachFromThread()
     }
