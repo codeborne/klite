@@ -39,10 +39,17 @@ class PooledDataSource(
     thread(name = "$this:leakChecker", isDaemon = true) {
       while (!Thread.interrupted()) {
         val now = currentTimeMillis()
-        used.forEach { (conn, used) ->
-          val usedFor = now - used.since
-          if (usedFor >= it.inWholeMilliseconds)
-            log.error("Possible leaked $conn, used for ${usedFor / 1000}s, acquired by ${used.threadName}")
+        used.entries.removeIf { (conn, used) ->
+          val usedForMs = now - used.since
+          if (runCatching { conn.isClosed }.getOrNull() == true) {
+            log.warn("Dropping closed $conn, used for ${usedForMs / 1000}s, acquired by ${used.threadName}")
+            size.decrementAndGet()
+            true
+          } else {
+            if (usedForMs >= it.inWholeMilliseconds)
+              log.error("Possible leaked $conn, used for ${usedForMs / 1000}s, acquired by ${used.threadName}")
+            false
+          }
         }
         try { Thread.sleep(it.inWholeMilliseconds / 10) } catch (e: InterruptedException) { break }
       }
