@@ -24,6 +24,7 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
     '-', '+', in '0'..'9' -> readNumber(c, type)
     't', 'f' -> readLettersOrDigits(c).toBoolean()
     'n' -> readLettersOrDigits(c).let { if (it == "null") null else fail("Unexpected $it") }
+    EOF -> fail("Unexpected EOF")
     else -> fail("Unexpected char: $c")
   }, type)
 
