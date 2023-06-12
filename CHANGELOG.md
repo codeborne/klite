@@ -1,5 +1,6 @@
 # Unreleased
 * json: ValueConverter can now be used to transform strings into types
+* server: support for boolean query parameters without values, e.g. ?flag
 
 # 1.5.3
 * server: TypedHttpClient/JsonHttpClient uses a better logger name (from nearest user class)

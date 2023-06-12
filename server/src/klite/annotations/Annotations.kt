@@ -80,7 +80,7 @@ private class Param(val param: KParameter) {
     else {
       when (annotation) {
         is PathParam -> e.path(name)?.toType()
-        is QueryParam -> e.query(name)?.toType()
+        is QueryParam -> e.query(name).let { if (it == null && param.type.classifier == Boolean::class && name in e.queryParams) true else it?.toType() }
         is HeaderParam -> e.header(name)?.toType()
         is CookieParam -> e.cookie(name)?.toType()
         is SessionParam -> e.session[name]?.toType()
