@@ -15,6 +15,6 @@ inline fun JsonNode.getInt(key: String) = get<Number>(key).toInt()
 inline fun JsonNode.getLong(key: String) = get<Number>(key).toLong()
 inline fun JsonNode.getBigDecimal(key: String) = get<String>(key).toBigDecimal()
 inline fun JsonNode.getDecimal(key: String) = get<String>(key).d
-inline fun <T> JsonNode.getList(key: String) = get<List<T>>(key).forEach {  }
+inline fun <T> JsonNode.getList(key: String) = get<List<T>>(key)
 inline fun <T> JsonNode.getMap(key: String) = get<Map<String, T>>(key)
 inline fun JsonNode.getNode(key: String): JsonNode = getMap(key)
