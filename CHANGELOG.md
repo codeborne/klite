@@ -2,6 +2,7 @@
 * json: ValueConverter can now be used to transform strings into types
 * json: JsonNode.getList() signature fixed
 * json: improve error message when trying to parse an empty stream
+* json: JsonParser.readArray can now be used to stream json arrays without loading them into memory
 * jdbc: close connection (return to pool) even if autoCommit/commit/rollback fails
 * server: support for boolean query parameters without values, e.g. ?flag
 

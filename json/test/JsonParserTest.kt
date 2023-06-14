@@ -28,6 +28,12 @@ class JsonParserTest {
     expect(mapper.parse<Set<Int>>(" [1,\n2,3]\n")).toEqual(setOf(1, 2, 3))
   }
 
+  @Test fun `consume array`() {
+    var count = 0
+    JsonParser("[1,2,3,4,5]".reader(), mapper).readArray<Int> { count++ }
+    expect(count).toEqual(5)
+  }
+
   @Test fun escaping() {
     expect(mapper.copy(trimToNull = false).parse<Any>("""{"x\\y": "\"\n\r\u00A0"}""")).toEqual(mapOf("x\\y" to "\"\n\r\u00A0"))
   }

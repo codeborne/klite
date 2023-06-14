@@ -10,10 +10,11 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.typeOf
 
 private const val EOF = '\uFFFF'
 
-internal class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
+class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
   private var pos: Int = 0
   private var nextChar: Char? = null
 
@@ -74,19 +75,28 @@ internal class JsonParser(private val reader: Reader, private val opts: JsonMapp
     type?.takeIfSpecific()?.createFrom(map as Map<String, Any?>) ?: map
   }
 
-  private fun readArray(type: KType?) = collectionOf(type).apply {
+  private fun readArray(type: KType?) = collectionOf(type).also { readArrayElements<Any>(type, it::add) }
+
+  private fun collectionOf(type: KType?): MutableCollection<Any?> = when (type?.classifier) {
+    Set::class -> mutableSetOf()
+    else -> mutableListOf()
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  private fun <T> readArrayElements(type: KType?, consumer: (o: T) -> Unit) {
     while (true) {
       var c = nextNonSpace()
       if (c == ']') break else nextChar = c
-      add(readValue(type?.arguments?.firstOrNull()?.type))
+      consumer(readValue(type?.arguments?.firstOrNull()?.type) as T)
       c = nextNonSpace()
       if (c == ']') break else c.expect(',')
     }
   }
 
-  private fun collectionOf(type: KType?): MutableCollection<Any?> = when (type?.classifier) {
-    Set::class -> mutableSetOf()
-    else -> mutableListOf()
+  inline fun <reified T> readArray(noinline consumer: (o: T) -> Unit) = readArray(typeOf<T>(), consumer)
+  fun <T> readArray(type: KType, consumer: (o: T) -> Unit) {
+    nextNonSpace().expect('[')
+    readArrayElements(type, consumer)
   }
 
   private fun nextNonSpace(): Char {
