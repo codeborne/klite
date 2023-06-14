@@ -1,6 +1,7 @@
 package klite.json
 
 import ch.tutteli.atrium.api.fluent.en_GB.messageToContain
+import ch.tutteli.atrium.api.fluent.en_GB.toContainExactly
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
@@ -29,9 +30,9 @@ class JsonParserTest {
   }
 
   @Test fun `consume array`() {
-    var count = 0
-    JsonParser("[1,2,3,4,5]".reader(), mapper).readArray<Int> { count++ }
-    expect(count).toEqual(5)
+    val list = mutableListOf<JsonNode>()
+    JsonParser("""[{"a":1},{"b":2}]""".reader(), mapper).readArray<JsonNode>(list::add)
+    expect(list).toContainExactly(mapOf("a" to 1), mapOf("b" to 2))
   }
 
   @Test fun escaping() {

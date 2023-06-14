@@ -75,7 +75,7 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
     type?.takeIfSpecific()?.createFrom(map as Map<String, Any?>) ?: map
   }
 
-  private fun readArray(type: KType?) = collectionOf(type).also { readArrayElements<Any>(type, it::add) }
+  private fun readArray(type: KType?) = collectionOf(type).also { readArrayElements<Any>(type?.arguments?.firstOrNull()?.type, it::add) }
 
   private fun collectionOf(type: KType?): MutableCollection<Any?> = when (type?.classifier) {
     Set::class -> mutableSetOf()
@@ -87,7 +87,7 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
     while (true) {
       var c = nextNonSpace()
       if (c == ']') break else nextChar = c
-      consumer(readValue(type?.arguments?.firstOrNull()?.type) as T)
+      consumer(readValue(type) as T)
       c = nextNonSpace()
       if (c == ']') break else c.expect(',')
     }
