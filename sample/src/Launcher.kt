@@ -39,7 +39,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     get("/failure") { error("Failure") }
 
     get("/admin") @AdminOnly {
-      "Only for admins" // TODO: Kotlin bug: suspend lambda annotations don't work yet
+      "Only for admins"
     }
 
     get("/param/:param") {

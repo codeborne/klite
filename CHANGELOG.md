@@ -5,6 +5,7 @@
 * json: JsonParser.readArray can now be used to stream json arrays without loading them into memory
 * jdbc: close connection (return to pool) even if autoCommit/commit/rollback fails
 * server: support for boolean query parameters without values, e.g. ?flag
+* server: support for anonymous handler annotations (fixed in Kotlin 1.8)
 
 # 1.5.3
 * server: TypedHttpClient/JsonHttpClient uses a better logger name (from nearest user class)

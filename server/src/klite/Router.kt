@@ -60,8 +60,8 @@ class Router(
     routes += it.apply { logger.info("$method $prefix$path") }
   }
 
-  // TODO: doesn't work for suspend lambda annotations: https://youtrack.jetbrains.com/issue/KT-32208 (set as fixed in 1.8.0)
-  private fun anonymousHandlerAnnotations(handler: Handler) = handler.javaClass.methods.first { !it.isSynthetic }.annotations.toList()
+  private fun anonymousHandlerAnnotations(handler: Handler) =
+    handler.javaClass.methods.find { it.name.startsWith("invoke") && it.annotations.isNotEmpty() }?.annotations?.toList() ?: emptyList()
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler = handler))
   fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
