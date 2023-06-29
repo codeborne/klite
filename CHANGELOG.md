@@ -1,4 +1,4 @@
-# Unreleased
+# 1.5.4
 * json: ValueConverter can now be used to transform strings into types
 * json: JsonNode.getList() signature fixed
 * json: improve error message when trying to parse an empty stream
