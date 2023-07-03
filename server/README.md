@@ -28,7 +28,7 @@ Anything returned from a handler will be passed to [BodyRenderer](src/klite/Body
 
 POST/PUT requests with body will be parsed using one of registered [BodyParsers](src/klite/Body.kt) according to the request Content-Type header; `text/plain` and `application/x-www-form-urlencoded` are enabled by default.
 
-use<[JsonBody](../jackson/src/JsonBody.kt)>() for `application/json` support.
+use<[JsonBody](../json/src/JsonBody.kt)>() for `application/json` support.
 
 ## Contexts
 
