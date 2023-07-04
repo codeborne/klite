@@ -4,9 +4,13 @@ import ch.tutteli.atrium.api.fluent.en_GB.toBeAnInstanceOf
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import klite.Decimal
+import klite.d
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 import java.math.BigDecimal.ONE
 import java.math.BigDecimal.TEN
 import java.sql.Connection
@@ -59,6 +63,15 @@ class JdbcConverterTest {
     verify { conn.createArrayOf("numeric", arrayOf(ONE, TEN)) }
   }
 
+  @Test fun `from array of BigDecimal`() {
+    val array = mockk<java.sql.Array>(relaxed = true) {
+      every { array } returns arrayOf(ONE, TEN)
+    }
+    expect(JdbcConverter.from(array, typeOf<Array<BigDecimal>>())).toEqual(array.array)
+    expect(JdbcConverter.from(array, typeOf<Set<BigDecimal>>())).toEqual(setOf(ONE, TEN))
+    expect(JdbcConverter.from(array, typeOf<List<Decimal>>())).toEqual(listOf(1.d, 10.d))
+  }
+
   @Test fun `to local date and time`() {
     expect(JdbcConverter.to(LocalDate.of(2021, 10, 21))).toEqual(LocalDate.of(2021, 10, 21))
     expect(JdbcConverter.to(LocalDateTime.MIN)).toBeTheInstance(LocalDateTime.MIN)
@@ -88,6 +101,7 @@ class JdbcConverterTest {
     expect(JdbcConverter.from("EUR", Currency::class)).toEqual(Currency.getInstance("EUR"))
     expect(JdbcConverter.from("et", Locale::class)).toEqual(Locale("et"))
     expect(JdbcConverter.from("P3D", Period::class)).toEqual(Period.ofDays(3))
+    expect(JdbcConverter.from("13.456".toBigDecimal(), Decimal::class)).toEqual(13.46.d)
   }
 
   @Test fun `inline class`() {
