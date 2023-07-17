@@ -31,13 +31,13 @@ open class AssetsHandler(
         if (useIndexForUnknownPaths && !file.name.contains(".")) file = path / indexFile
         else throw NotFoundException(exchange.path)
       }
-      exchange.send(file)
+      send(exchange, file)
     } catch (e: FileNotFoundException) {
       throw NotFoundException(e.message, e)
     }
   }
 
-  protected open fun HttpExchange.send(file: Path) {
+  protected open fun send(e: HttpExchange, file: Path) = e.apply {
     checkLastModified(file.getLastModifiedTime().toInstant())
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
