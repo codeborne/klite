@@ -37,7 +37,7 @@ open class AssetsHandler(
     }
   }
 
-  protected open fun send(e: HttpExchange, file: Path) = e.apply {
+  protected open fun send(e: HttpExchange, file: Path): Unit = e.run {
     checkLastModified(file.getLastModifiedTime().toInstant())
     responseHeaders += if (file.endsWith(indexFile)) indexHeaders else additionalHeaders
     var contentType = MimeTypes.typeFor(file)
