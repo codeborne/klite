@@ -1,3 +1,6 @@
+# Unreleased
+* server: AssetsHandler.headerModifier now gets file parameter to make decisions based on it
+
 # 1.5.4
 * json: ValueConverter can now be used to transform strings into types
 * json: JsonNode.getList() signature fixed

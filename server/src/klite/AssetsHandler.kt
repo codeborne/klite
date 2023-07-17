@@ -16,10 +16,10 @@ open class AssetsHandler(
   val useChunkedResponseForFilesLargerThan: Long = 30 * (1L shl 20),
   val headerModifier: HttpExchange.(file: Path) -> Unit = {}
 ): Handler {
-  private val logger = logger()
+  protected val log = logger()
 
   init {
-    if (!path.isDirectory()) logger.warn("Assets path ${path.toAbsolutePath()} is not a readable directory")
+    if (!path.isDirectory()) log.warn("Assets path ${path.toAbsolutePath()} is not a readable directory")
   }
 
   override suspend fun invoke(exchange: HttpExchange) {
@@ -43,7 +43,7 @@ open class AssetsHandler(
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType = MimeTypes.typeFor(file)
     if (contentType == null) {
-      logger.warn("Cannot detect content-type for $file")
+      log.warn("Cannot detect content-type for $file")
       contentType = MimeTypes.unknown
     }
 
