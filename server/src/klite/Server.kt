@@ -75,8 +75,8 @@ class Server(
       router.block()
     }
 
-  fun assets(prefix: String, handler: AssetsHandler, vararg annotations: Annotation) {
-    val route = Route(GET, prefix.toRegex(), annotations.toList() + handler.javaClass.annotations, decorators.wrap(handler))
+  fun assets(prefix: String, handler: AssetsHandler) {
+    val route = Route(GET, prefix.toRegex(), handler::class.annotations, decorators.wrap(handler))
     addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET || method == HEAD }) }
   }
 
