@@ -5,12 +5,13 @@ import java.io.FileNotFoundException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption.READ
 import kotlin.io.path.*
+import kotlin.time.Duration.Companion.days
 
 open class AssetsHandler(
   val path: Path,
   val indexFile: String = "index.html",
   val useIndexForUnknownPaths: Boolean = false,
-  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=604800"),
+  val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=${7.days.inWholeSeconds}"),
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val useChunkedResponseForFilesLargerThan: Long = 30 * (1L shl 20),
   val headerModifier: HttpExchange.() -> Unit = {}
