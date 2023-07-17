@@ -14,7 +14,7 @@ open class AssetsHandler(
   val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=${7.days.inWholeSeconds}"),
   val indexHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=0, must-revalidate"),
   val useChunkedResponseForFilesLargerThan: Long = 30 * (1L shl 20),
-  val headerModifier: HttpExchange.() -> Unit = {}
+  val headerModifier: HttpExchange.(file: Path) -> Unit = {}
 ): Handler {
   private val logger = logger()
 
@@ -47,7 +47,7 @@ open class AssetsHandler(
       contentType = MimeTypes.unknown
     }
 
-    headerModifier()
+    headerModifier(file)
 
     val gzFile = Path.of("$file.gz")
     val fileToSend = if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
