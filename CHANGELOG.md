@@ -1,6 +1,7 @@
 # Unreleased
 * jdbc: support reading of collections of Decimal from DB array columns
 * server: AssetsHandler.headerModifier now gets file parameter to make decisions based on it
+* server: allow to specify annotations for AssetsHandler for e.g. access checks
 
 # 1.5.4
 * json: ValueConverter can now be used to transform strings into types
