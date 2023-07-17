@@ -48,6 +48,7 @@ open class AssetsHandler(
     }
 
     headerModifier(file)
+    if (isResponseStarted) return@apply
 
     val gzFile = Path.of("$file.gz")
     val fileToSend = if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
