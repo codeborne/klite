@@ -1,4 +1,5 @@
 # Unreleased
+* jdbc: support reading of collections of Decimal from DB array columns
 * server: AssetsHandler.headerModifier now gets file parameter to make decisions based on it
 
 # 1.5.4
