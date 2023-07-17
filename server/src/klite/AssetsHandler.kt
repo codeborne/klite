@@ -38,7 +38,6 @@ open class AssetsHandler(
   }
 
   protected open fun send(e: HttpExchange, file: Path) = e.apply {
-    checkLastModified(file.getLastModifiedTime().toInstant())
     responseHeaders += additionalHeaders
     if (file.endsWith(indexFile)) responseHeaders += indexHeaders
     var contentType = MimeTypes.typeFor(file)
@@ -49,6 +48,7 @@ open class AssetsHandler(
 
     headerModifier(file)
     if (isResponseStarted) return@apply
+    checkLastModified(file.getLastModifiedTime().toInstant())
 
     val gzFile = Path.of("$file.gz")
     val fileToSend = if (header("Accept-Encoding")?.contains("gzip") == true && gzFile.exists()) {
