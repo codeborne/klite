@@ -51,8 +51,9 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
   @Test fun upsert() {
     val data = SomeData("World", 37)
-    db.upsert(table, data.toValues())
-    db.upsert(table, data.toValues())
+    expect(db.upsert(table, data.toValues())).toEqual(1)
+    expect(db.upsert(table, data.toValues())).toEqual(1)
+    expect(db.upsert(table, data.toValues(), where = listOf(SomeData::world neq 37))).toEqual(0)
 
     val loaded: SomeData = db.select(table, data.id) { create() }
     expect(loaded).toEqual(data)

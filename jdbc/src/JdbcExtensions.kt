@@ -99,8 +99,9 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
   }
 }
 
-fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id"): Int =
-  exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}", setValues(values) + setValues(values))
+fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList()): Int = whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v }).let { where ->
+  exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}${whereExpr(where)}", setValues(values) + setValues(values) + whereValues(where))
+}
 
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
   "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${values.values.joinToString { placeholder(it) }})"
