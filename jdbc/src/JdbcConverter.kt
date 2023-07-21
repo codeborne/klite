@@ -3,6 +3,7 @@ package klite.jdbc
 import klite.Converter
 import klite.Decimal
 import klite.annotations.annotation
+import klite.d
 import klite.unboxInline
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -85,7 +86,7 @@ object JdbcConverter {
     Instant::class -> (v as? Timestamp)?.toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
     LocalDateTime::class -> (v as? Timestamp)?.toLocalDateTime()
-    Decimal::class -> Decimal(v.toString())
+    Decimal::class -> v?.toString()?.d
     else -> if (target?.annotation<JvmInline>() != null || target == Decimal::class) target.primaryConstructor!!.call(v)
     else if (v is String && target != null && target != String::class) Converter.from(v, target) else v
   }
