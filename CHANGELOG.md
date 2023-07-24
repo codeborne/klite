@@ -1,4 +1,4 @@
-# Unreleased
+# 1.5.5
 * jdbc: support reading of collections of Decimal from DB array columns
 * jdbc: db.upsert() now has an optional "where" parameter
 * server: AssetsHandler.headerModifier now gets file parameter to make decisions based on it
