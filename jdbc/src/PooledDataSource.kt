@@ -5,6 +5,7 @@ import java.lang.System.currentTimeMillis
 import java.lang.Thread.currentThread
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.SQLFeatureNotSupportedException
 import java.sql.SQLTimeoutException
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
@@ -56,7 +57,7 @@ class PooledDataSource(
     }
   }
 
-  override fun getConnection(username: String?, password: String?) = throw UnsupportedOperationException("Use getConnection()")
+  override fun getConnection(username: String?, password: String?) = throw SQLFeatureNotSupportedException("Use getConnection()")
   override fun getConnection(): PooledConnection {
     var conn: PooledConnection?
     do {

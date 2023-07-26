@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: DB_READONLY=true env var can be used to make the whole app read-only (e.g. when migrating the DB, instead of Heroku maintenance mode)
+
 # 1.5.5
 * jdbc: support reading of collections of Decimal from DB array columns
 * jdbc: db.upsert() now has an optional "where" parameter
