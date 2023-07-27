@@ -63,6 +63,31 @@ class HttpExchangeTest {
     verify { original.responseHeaders.add("Set-Cookie", "LANG=et; Domain=angryip.org; SameSite=Strict") }
   }
 
+  @Test fun `response content-type`() {
+    exchange.responseType = MimeTypes.csv
+    verify { original.responseHeaders.set("Content-type", "application/csv; charset=UTF-8") }
+
+    exchange.responseType = "text/hello; charset=ISO-8859-1"
+    verify { original.responseHeaders.set("Content-type", "text/hello; charset=ISO-8859-1") }
+
+    exchange.responseType = MimeTypes.pdf
+    verify { original.responseHeaders.set("Content-type", "application/pdf") }
+  }
+
+  @Test fun `response content-disposition`() {
+    exchange.fileName("hello.xml")
+    verify {
+      original.responseHeaders.set("Content-disposition", "attachment; filename=\"hello.xml\"")
+      original.responseHeaders.set("Content-type", "text/xml; charset=UTF-8")
+    }
+
+    exchange.fileName("mega.pdf", attachment = false)
+    verify {
+      original.responseHeaders.set("Content-disposition", "inline; filename=\"mega.pdf\"")
+      original.responseHeaders.set("Content-type", "application/pdf")
+    }
+  }
+
   @Test fun `body as text`() {
     every { exchange.requestType } returns null
     every { original.requestBody } answers { "123".byteInputStream() }

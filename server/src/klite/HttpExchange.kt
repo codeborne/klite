@@ -90,6 +90,11 @@ open class HttpExchange(
     get() = responseHeaders["Content-type"]?.firstOrNull()
     set(value) { value?.let { header("Content-type", MimeTypes.withCharset(it)) } }
 
+  fun fileName(fileName: String, attachment: Boolean = true) {
+    header("Content-disposition", (if (attachment) "attachment" else "inline") + "; filename=\"$fileName\"")
+    responseType = MimeTypes.typeFor(fileName)
+  }
+
   val accept get() = Accept(header("Accept"))
 
   fun render(code: StatusCode, body: Any?) {
@@ -103,9 +108,10 @@ open class HttpExchange(
    * Sends response headers and provides the stream
    * @param length 0 -> no response, null -> use chunked encoding
    */
-  fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null): OutputStream {
+  fun startResponse(code: StatusCode, length: Long? = null, contentType: String? = null, fileName: String? = null): OutputStream {
     sessionStore?.save(this, session)
-    responseType = contentType
+    fileName?.let { fileName(it) }
+    contentType?.let { responseType = it }
     val bodyNotAllowed = method == HEAD || method == OPTIONS
     original.sendResponseHeaders(code.value, if (length == 0L || bodyNotAllowed) -1 else length ?: 0)
     if (bodyNotAllowed) throw BodyNotAllowedException()
