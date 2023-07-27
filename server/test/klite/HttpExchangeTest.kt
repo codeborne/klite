@@ -83,7 +83,7 @@ class HttpExchangeTest {
 
     exchange.fileName("mega.pdf", attachment = false)
     verify {
-      original.responseHeaders.set("Content-disposition", "inline; filename=\"mega.pdf\"")
+      original.responseHeaders.set("Content-disposition", "filename=\"mega.pdf\"")
       original.responseHeaders.set("Content-type", "application/pdf")
     }
   }

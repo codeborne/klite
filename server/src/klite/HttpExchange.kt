@@ -91,7 +91,7 @@ open class HttpExchange(
     set(value) { value?.let { header("Content-type", MimeTypes.withCharset(it)) } }
 
   fun fileName(fileName: String, attachment: Boolean = true) {
-    header("Content-disposition", (if (attachment) "attachment" else "inline") + "; filename=\"$fileName\"")
+    header("Content-disposition", (if (attachment) "attachment; " else "") + "filename=\"$fileName\"")
     responseType = MimeTypes.typeFor(fileName)
   }
 
