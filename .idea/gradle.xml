@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/csv" />
             <option value="$PROJECT_DIR$/i18n" />
             <option value="$PROJECT_DIR$/jackson" />
             <option value="$PROJECT_DIR$/jdbc" />

@@ -36,6 +36,7 @@ Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotl
 * [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's docs](server). Zero external dependencies.
 * [json](json) - lightweight and easily configurable json parsing/rendering (usable *standalone*)
+* [csv](csv) - simple CSV parsing/generation (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
 * [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
