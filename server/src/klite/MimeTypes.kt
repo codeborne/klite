@@ -8,6 +8,7 @@ object MimeTypes {
   val text = "text/plain"
   val json = "application/json"
   val xml = "text/xml"
+  val csv = "application/csv"
   val pdf = "application/pdf"
   val wwwForm = "application/x-www-form-urlencoded"
   val formData = "multipart/form-data"
@@ -19,6 +20,7 @@ object MimeTypes {
     "txt" to text,
     "xml" to xml,
     "xsd" to xml,
+    "csv" to csv,
     "js" to "text/javascript",
     "mjs" to "text/javascript",
     "json" to json,
@@ -52,6 +54,6 @@ object MimeTypes {
   fun typeFor(file: Path) = byExtension[file.extension]
   fun typeFor(fileName: String) = typeFor(Path.of(fileName))
 
-  fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml")
+  fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml") || contentType.contains("csv")
   fun withCharset(contentType: String) = if (!contentType.contains("charset") && isText(contentType)) "$contentType; charset=$textCharset" else contentType
 }
