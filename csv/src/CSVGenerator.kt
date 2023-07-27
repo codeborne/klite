@@ -2,13 +2,14 @@ package klite.csv
 
 import java.io.OutputStream
 import java.sql.ResultSet
-import kotlin.text.Charsets.UTF_8
 
-open class CSVGenerator(val out: OutputStream, val separator: String = ",", bom: ByteArray = "\uFEFF".toByteArray()) {
-  init { out.write(bom) }
+const val bomUTF8 = "\uFEFF"
+
+open class CSVGenerator(val out: OutputStream, val separator: String = ",", bom: String = bomUTF8) {
+  init { out.write(bom.toByteArray()) }
 
   fun row(vararg values: Any?) = this.apply {
-    out.write(values.joinToString(separator, postfix = "\n", transform = ::transform).toByteArray(UTF_8))
+    out.write(values.joinToString(separator, postfix = "\n", transform = ::transform).toByteArray())
   }
 
   protected open fun transform(o: Any?): String = when(o) {

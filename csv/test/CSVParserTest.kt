@@ -5,7 +5,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 
 class CSVParserTest {
-  val parser = CSVParser(separator = ";", skipBOM = false)
+  val parser = CSVParser(separator = ";")
 
   @Test fun quotes() {
     expect(parser.splitLine("""1;2;"hello; world";4""").toList()).toEqual(listOf("1", "2", "hello; world", "4"))
@@ -14,7 +14,7 @@ class CSVParserTest {
 
   @Test fun parse() {
     val lines = parser.parse("""
-      nimi;ariregistri_kood;ettevotja_oiguslik_vorm;ettevotja_oigusliku_vormi_alaliik;kmkr_nr;ettevotja_staatus;ettevotja_staatus_tekstina;ettevotja_esmakande_kpv;ettevotja_aadress;asukoht_ettevotja_aadressis;asukoha_ehak_kood;asukoha_ehak_tekstina;indeks_ettevotja_aadressis;ads_adr_id;ads_ads_oid;ads_normaliseeritud_taisaadress;teabesysteemi_link
+      ${bomUTF8}nimi;ariregistri_kood;ettevotja_oiguslik_vorm;ettevotja_oigusliku_vormi_alaliik;kmkr_nr;ettevotja_staatus;ettevotja_staatus_tekstina;ettevotja_esmakande_kpv;ettevotja_aadress;asukoht_ettevotja_aadressis;asukoha_ehak_kood;asukoha_ehak_tekstina;indeks_ettevotja_aadressis;ads_adr_id;ads_ads_oid;ads_normaliseeritud_taisaadress;teabesysteemi_link
       001 Kinnisvara OÜ;12652512;Osaühing;;EE101721589;R;Registrisse kantud;25.04.2014;;Õismäe tee 78-9;0176;Haabersti linnaosa, Tallinn, Harju maakond;13513;2182337;;Harju maakond, Tallinn, Haabersti linnaosa, Õismäe tee 78-9;https://ariregister.rik.ee/est/company/12652512
     """.trimIndent().byteInputStream()).toList()
     expect(lines.first()).toEqual(mapOf(
