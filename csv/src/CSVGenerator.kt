@@ -4,6 +4,7 @@ import java.io.OutputStream
 import java.sql.ResultSet
 
 const val bomUTF8 = "\uFEFF"
+private val needsQuotes = "[\\s\"';,]".toRegex()
 
 open class CSVGenerator(val out: OutputStream, val separator: String = ",", bom: String = bomUTF8) {
   init { out.write(bom.toByteArray()) }
@@ -15,7 +16,7 @@ open class CSVGenerator(val out: OutputStream, val separator: String = ",", bom:
   protected open fun transform(o: Any?): String = when(o) {
     null -> ""
     is Number -> if (separator == ";") o.toString().replace(".", ",") else o.toString()
-    is String -> if (o.contains("[\\s\"';,]".toRegex())) "\"${o.replace("\"", "\"\"")}\"" else o
+    is String -> if (o.contains(needsQuotes)) "\"${o.replace("\"", "\"\"")}\"" else o
     else -> transform(o.toString())
   }
 
