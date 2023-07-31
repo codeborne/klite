@@ -13,9 +13,10 @@ open class CSVGenerator(val out: OutputStream, val separator: String = ",", bom:
   }
 
   protected open fun transform(o: Any?): String = when(o) {
+    null -> ""
     is Number -> if (separator == ";") o.toString().replace(".", ",") else o.toString()
     is String -> if (o.contains("[\\s\"';,]".toRegex())) "\"${o.replace("\"", "\"\"")}\"" else o
-    else -> transform(o?.toString()) ?: ""
+    else -> transform(o.toString())
   }
 
   private fun sqlHeader(rs: ResultSet) = row(*(1..rs.metaData.columnCount).map { rs.metaData.getColumnName(it) }.toTypedArray())
