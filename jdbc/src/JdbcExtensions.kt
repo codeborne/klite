@@ -7,7 +7,6 @@ import java.io.InputStream
 import java.sql.*
 import java.sql.Statement.NO_GENERATED_KEYS
 import java.sql.Statement.RETURN_GENERATED_KEYS
-import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KProperty1
 
@@ -86,7 +85,7 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
     prepareStatement(sql, keys).use { it.block() }
   } catch (e: SQLException) {
     throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e)
-          else SQLException(e.message + "\nSQL: $sql", e.sqlState, e.errorCode, e)
+          else SQLException(e.message + "\n  SQL: $sql", e.sqlState, e.errorCode, e)
   }
 }
 
