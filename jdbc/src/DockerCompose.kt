@@ -12,12 +12,12 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 fun dockerCompose(command: String): Int = try {
-  val fullCommand = Config.optional("DOCKER_COMPOSE", "docker-compose") + " " + command
+  val fullCommand = Config.optional("DOCKER_COMPOSE", "docker compose") + " " + command
   getLogger("dockerCompose").info("Starting $fullCommand")
   ProcessBuilder(fullCommand.split(' ')).redirectErrorStream(true).redirectOutput(INHERIT).start().waitFor()
 } catch (e: Exception) {
   if (Config.optional("DOCKER_COMPOSE") == null) {
-    Config["DOCKER_COMPOSE"] = "docker compose"
+    Config["DOCKER_COMPOSE"] = "docker-compose"
     dockerCompose(command)
   } else throw e
 }
