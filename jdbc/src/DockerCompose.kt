@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.seconds
 
 fun dockerCompose(command: String): Int = try {
   val fullCommand = Config.optional("DOCKER_COMPOSE", "docker compose") + " " + command
-  getLogger("dockerCompose").info("Starting $fullCommand")
+  getLogger("dockerCompose").info(fullCommand)
   ProcessBuilder(fullCommand.split(' ')).redirectErrorStream(true).redirectOutput(INHERIT).start().waitFor()
 } catch (e: Exception) {
   if (Config.optional("DOCKER_COMPOSE") == null) {
@@ -25,7 +25,7 @@ fun dockerCompose(command: String): Int = try {
 fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Duration = 2.seconds) {
   if (service.isEmpty()) return
   try {
-    val ms = measureTimeMillis { dockerCompose("up -d $service") }
+    val ms = measureTimeMillis { dockerCompose("up -d --wait $service") }
     if (ms > timeout.inWholeMilliseconds / 5) sleep(timeout.inWholeMilliseconds) // give the db more time to start listening
   } catch (e: IOException) {
     getLogger("startDevDB").warn("Failed to automatically start $service: $e")
