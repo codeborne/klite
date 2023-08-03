@@ -1,5 +1,6 @@
 # Unreleased
 * jdbc: DB_READONLY=true env var can be used to make the whole app read-only (e.g. when migrating the DB, instead of Heroku maintenance mode)
+* jdbc: CrudRepository.get() now has optional forUpdate parameter
 * HttpExchange.fileName() added for setting of Content-Disposition
 * csv: new module for CSV parsing/generation
 
