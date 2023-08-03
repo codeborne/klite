@@ -9,6 +9,7 @@ dependencies {
   implementation(project(":i18n"))
   implementation(project(":jdbc"))
   implementation(project(":slf4j"))
+  implementation(project(":openapi"))
   implementation(libs.postgresql)
   testImplementation(project(":jdbc-test"))
 }

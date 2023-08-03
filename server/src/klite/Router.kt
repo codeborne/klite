@@ -37,8 +37,8 @@ class Router(
   renderers: List<BodyRenderer>,
   parsers: List<BodyParser>
 ): RouterConfig(decorators, renderers, parsers), Registry by registry {
-  private val logger = logger()
-  private val routes = mutableListOf<Route>()
+  private val log = logger()
+  val routes = mutableListOf<Route>() // TODO: after Kotlin 2, use immutable getter and mutable setter
 
   internal fun route(exchange: HttpExchange): Route? {
     val suffix = exchange.path.removePrefix(prefix)
@@ -57,7 +57,7 @@ class Router(
   }
 
   fun add(route: Route) = route.copy(handler = decorators.wrap(route.handler), annotations = anonymousHandlerAnnotations(route.handler) + route.annotations).also {
-    routes += it.apply { logger.info("$method $prefix$path") }
+    routes += it.apply { log.info("$method $prefix$path") }
   }
 
   private fun anonymousHandlerAnnotations(handler: Handler) =

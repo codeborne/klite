@@ -2,6 +2,7 @@ import klite.*
 import klite.annotations.annotated
 import klite.jdbc.*
 import klite.json.JsonBody
+import klite.openapi.openApi
 import kotlinx.coroutines.delay
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
@@ -59,5 +60,6 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     useOnly<JsonBody>() // in case only json should be supported in this context
     useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
     annotated<MyRoutes>() // read routes from an annotated class - such classes are easier to unit-test
+    openApi()
   }
 }
