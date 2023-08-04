@@ -6,6 +6,7 @@ import klite.StatusCode.Companion.OK
 import klite.publicProperties
 import klite.toValues
 import klite.trimToNull
+import kotlin.reflect.KProperty1
 
 // Spec: https://swagger.io/specification/
 // Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
@@ -29,11 +30,17 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
             "responses" to mapOf(
               OK.value to mapOf("description" to "OK")
             )
-          ) + ((op?.toValues(op.publicProperties.filter { it.name != "method" }) ?: emptyMap()).filterValues {
-            it != "" && it != false && (it as? Array<*>)?.isEmpty() != true
-          })
+          ) + (op?.let { it.toNonEmptyValues { it.name != "method" } + mapOf(
+            // TODO: describe body parameter from the route method
+            "requestBody" to op.requestBody.toNonEmptyValues().takeIf { it.isNotEmpty() },
+            "externalDocs" to op.externalDocs.toNonEmptyValues().takeIf { it.isNotEmpty() }
+          ) } ?: emptyMap())
         }
       }
     )
   }
+}
+
+private fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = {true}) = toValues(publicProperties.filter(filter)).filterValues {
+  it != "" && it != false && (it as? Array<*>)?.isEmpty() != true
 }
