@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.*
 import kotlin.reflect.KVisibility.PUBLIC
-import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
@@ -27,15 +26,14 @@ val <T: Any> KClass<T>.publicProperties get() = publicPropsCache.getOrPut(this) 
 
 val <T: Any> T.publicProperties get() = this::class.publicProperties as Sequence<KProperty1<T, *>>
 
-private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> = toValues(publicProperties.filter { it.name !in skipNames })
+private fun <T: Any> T.toValuesSkipping(skipNames: Set<String>): Map<String, Any?> = toValues(publicProperties.filter { it.javaField != null && it.name !in skipNames })
 
 fun <T> KProperty1<T, *>.valueOf(o: T) = try {
   val v = get(o)
   if (v != null && !v::class.java.isSynthetic && v::class.isValue && v.unboxInline() == null) null else v // workaround for a bug in kotlin-reflect: https://youtrack.jetbrains.com/issue/KT-57590
 } catch (e: InvocationTargetException) { throw e.targetException }
 
-fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> =
-  props.filter { it.javaField != null }.associate { it.name to it.valueOf(this) }
+fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>): Map<String, Any?> = props.associate { it.name to it.valueOf(this) }
 
 val classCreators = ConcurrentHashMap<KClass<*>, KFunction<*>>()
 

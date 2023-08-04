@@ -3,6 +3,9 @@ package klite.openapi
 import io.swagger.v3.oas.annotations.Operation
 import klite.Router
 import klite.StatusCode.Companion.OK
+import klite.publicProperties
+import klite.toValues
+import klite.trimToNull
 
 // Spec: https://swagger.io/specification/
 // Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
@@ -22,11 +25,13 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
       "paths" to routes.groupBy { it.path.toString() }.mapValues { (_, routes) ->
         routes.associate {
           val op = it.annotation<Operation>()
-          (op?.method ?: it.method.name).lowercase() to (op ?: mapOf(
+          (op?.method?.trimToNull() ?: it.method.name).lowercase() to mapOf(
             "responses" to mapOf(
               OK.value to mapOf("description" to "OK")
             )
-          ))
+          ) + ((op?.toValues(op.publicProperties.filter { it.name != "method" }) ?: emptyMap()).filterValues {
+            it != "" && it != false && (it as? Array<*>)?.isEmpty() != true
+          })
         }
       }
     )
