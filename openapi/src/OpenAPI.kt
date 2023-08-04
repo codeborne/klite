@@ -1,26 +1,34 @@
 package klite.openapi
 
-import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.Operation
-import io.swagger.v3.oas.models.PathItem
-import io.swagger.v3.oas.models.PathItem.HttpMethod
-import klite.MimeTypes
+import io.swagger.v3.oas.annotations.Operation
 import klite.Router
 import klite.StatusCode.Companion.OK
 
-fun Router.openApi(path: String = "/openapi") {
+// Spec: https://swagger.io/specification/
+// Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
+
+/**
+ * Adds an /openapi endpoint to the context, describing all the routes.
+ * Use @Operation swagger annotations to describe the routes.
+ */
+fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0") {
   get(path) {
-    // TODO: publicProperties does not enumerate Java public properties, maybe file a bug to kotlin-reflect
-    send(OK, OpenAPI().apply {
-      routes.forEach {
-        path(it.path.toString(), PathItem().apply {
-          operation(HttpMethod.valueOf(it.method.toString()), Operation().apply {
-            tags = listOf(it.handler::class.simpleName)
-            summary = it.handler::class.simpleName
-            description = it.handler::class.simpleName
-          })
-        })
+    mapOf(
+      "openapi" to "3.0.0",
+      "info" to mapOf("title" to title, "version" to version),
+      "servers" to listOf(mapOf("url" to fullUrl(prefix))),
+      // TODO: need to transform template paths into OpenAPI format with {}
+      // TODO: describe parameters from route methods
+      "paths" to routes.groupBy { it.path.toString() }.mapValues { (_, routes) ->
+        routes.associate {
+          val op = it.annotation<Operation>()
+          (op?.method ?: it.method.name).lowercase() to (op ?: mapOf(
+            "responses" to mapOf(
+              OK.value to mapOf("description" to "OK")
+            )
+          ))
+        }
       }
-    }.toString(), MimeTypes.text)
+    )
   }
 }

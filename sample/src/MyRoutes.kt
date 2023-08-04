@@ -1,3 +1,4 @@
+import io.swagger.v3.oas.annotations.Operation
 import klite.HttpExchange
 import klite.StatusCode
 import klite.annotations.*
@@ -6,11 +7,10 @@ import kotlinx.coroutines.delay
 import users.Id
 import users.User
 import users.UserRepository
-import java.util.*
 
 @Path("/hello")
 class MyRoutes(private val userRepository: UserRepository) {
-  @GET fun sayHello() = MyData("Hello")
+  @GET @Operation(summary = "Just a hello") fun sayHello() = MyData("Hello")
   @GET("2") fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
   @GET("3") fun HttpExchange.asContext() = "${translate("hello")} $method $path"
 
