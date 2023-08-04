@@ -58,6 +58,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
 
   context("/api") {
     useOnly<JsonBody>() // in case only json should be supported in this context
+    before(CorsHandler()) // enable CORS for this context, so that Swagger-UI can access the API
     useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
     annotated<MyRoutes>() // read routes from an annotated class - such classes are easier to unit-test
     openApi()
