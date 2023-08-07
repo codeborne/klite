@@ -3,12 +3,11 @@ package klite.openapi
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import klite.Router
+import klite.*
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
-import klite.publicProperties
-import klite.toValues
-import klite.trimToNull
+import java.math.BigDecimal
+import kotlin.reflect.KClassifier
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 
@@ -18,6 +17,7 @@ import kotlin.reflect.full.findAnnotation
 /**
  * Adds an /openapi endpoint to the context, describing all the routes.
  * Use @Operation swagger annotations to describe the routes.
+ * @Parameter swagger annotation can be used on method parameters directly.
  *
  * To run Swagger-UI:
  *   add `before(CorsHandler())`
@@ -35,10 +35,12 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
           val op = route.annotation<Operation>()
           (op?.method?.trimToNull() ?: route.method.name).lowercase() to mapOf(
             "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
-            "parameters" to (route.handler as? FunHandler)?.let { it.params.map { p ->
-              mapOf("name" to p.name, "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable), "in" to toParameterIn(p.source)) +
-                ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap())
-            } },
+            "parameters" to (route.handler as? FunHandler)?.let { it.params.map { p -> mapOf(
+              "name" to p.name,
+              "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
+              "in" to toParameterIn(p.source),
+              "schema" to toSchema(p.p.type.classifier),
+            ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap()) } },
             "responses" to mapOf(
               OK.value to mapOf("description" to "OK")
             )
@@ -53,13 +55,20 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
   }
 }
 
-fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) {
+private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) {
   is HeaderParam -> ParameterIn.HEADER
   is QueryParam -> ParameterIn.QUERY
   is PathParam -> ParameterIn.PATH
   is CookieParam -> ParameterIn.COOKIE
   else -> null
 }
+
+private fun toSchema(type: KClassifier?) = mapOf("type" to when(type) {
+  Boolean::class -> "boolean"
+  Number::class -> "integer"
+  BigDecimal::class, Decimal::class, Float::class, Double::class -> "float" // TODO: is this correct
+  else -> "string"
+}) // TODO: enum, object
 
 private fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = {true}) = toValues(publicProperties.filter(filter)).filterValues {
   it != "" && it != false && (it as? Array<*>)?.isEmpty() != true
