@@ -61,12 +61,12 @@ class AnnotationsTest {
   }
 
   @Test fun `no parameter handler`() {
-    val handler = toHandler(Routes(), Routes::root)
+    val handler = FunHandler(Routes(), Routes::root)
     runBlocking { expect(handler(exchange)).toEqual("Hello") }
   }
 
   @Test fun `exchange parameter handler`() {
-    val handler = toHandler(Routes(), Routes::generic)
+    val handler = FunHandler(Routes(), Routes::generic)
     every { exchange.body<String>() } returns "TheBody"
     every { exchange.body<FileUpload>("file") } returns FileUpload("name.txt", "text/plain")
     every { exchange.path("world") } returns "7.9e9"
@@ -78,7 +78,7 @@ class AnnotationsTest {
   }
 
   @Test fun `nicer exception if getting parameter value fails`() {
-    val handler = toHandler(Routes(), Routes::generic)
+    val handler = FunHandler(Routes(), Routes::generic)
     expect { runBlocking { handler(exchange) } }.toThrow<MockKException>().messageToContain("no answer found for HttpExchange")
 
     every { exchange.body<Any>(any<KType>()) } throws IOException("Kaboom!")

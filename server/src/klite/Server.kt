@@ -76,7 +76,7 @@ class Server(
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
-    val route = Route(GET, prefix.toRegex(), handler::class.annotations, decorators.wrap(handler))
+    val route = Route(GET, prefix.toRegex(), handler::class.annotations, handler).apply { decoratedHandler = decorators.wrap(handler) }
     addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET || method == HEAD }) }
   }
 
@@ -92,7 +92,7 @@ class Server(
   private suspend fun runHandler(exchange: HttpExchange, route: Route?) {
     try {
       if (route != null) exchange.route = route
-      val result = (route?.handler ?: notFoundHandler).invoke(exchange)
+      val result = (route?.decoratedHandler ?: notFoundHandler).invoke(exchange)
       if (!exchange.isResponseStarted) exchange.handle(result)
       else if (result != null && result != Unit) logger.warn("Response already started, cannot render $result")
     } catch (ignore: BodyNotAllowedException) {

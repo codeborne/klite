@@ -21,7 +21,7 @@ import kotlin.reflect.jvm.javaMethod
 @Target(FUNCTION) annotation class DELETE(val value: String = "")
 @Target(FUNCTION) annotation class OPTIONS(val value: String = "")
 
-@Target(VALUE_PARAMETER) annotation class PathParam
+@Target(VALUE_PARAMETER) annotation class PathParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class QueryParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class BodyParam(val value: String = "")
 @Target(VALUE_PARAMETER) annotation class HeaderParam(val value: String = "")
@@ -47,8 +47,8 @@ fun Router.annotated(routes: Any) {
     val a = f.kliteAnnotation ?: return@mapNotNull null
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
-    val handler = classDecorators.wrap(toHandler(routes, f))
-    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, f, handler)
+    val handler = classDecorators.wrap(FunHandler(routes, f))
+    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, handler)
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
@@ -58,38 +58,36 @@ private val packageName = GET::class.java.packageName
 private val KAnnotatedElement.kliteAnnotation get() = annotations.filter { it.annotationClass.java.packageName == packageName }
   .let { if (it.size > 1) error("$this cannot have multiple klite annotations: $it") else it.firstOrNull() }
 
-internal fun toHandler(instance: Any, f: KFunction<*>): Handler {
+class FunHandler(val instance: Any, val f: KFunction<*>): Handler {
   val params = f.parameters.map(::Param)
-  return {
-    try {
-      val args = params.associate { p -> p.param to p.valueFrom(this, instance) }.filter { !it.key.isOptional || it.value != null }
-      f.callSuspendBy(args)
-    } catch (e: InvocationTargetException) {
-      throw e.targetException
-    }
+  override suspend fun invoke(e: HttpExchange): Any? = try {
+    val args = params.associate { p -> p.p to p.valueFrom(e, instance) }.filter { !it.key.isOptional || it.value != null }
+    f.callSuspendBy(args)
+  } catch (e: InvocationTargetException) {
+    throw e.targetException
   }
 }
 
-private class Param(val param: KParameter) {
-  val cls = param.type.classifier as KClass<*>
-  val annotation: Annotation? = param.kliteAnnotation
-  val name: String = annotation?.takeIf { it !is PathParam }?.value ?: param.name ?: ""
+class Param(val p: KParameter) {
+  val cls = p.type.classifier as KClass<*>
+  val annotation: Annotation? = p.kliteAnnotation
+  val name: String = annotation?.value ?: p.name ?: ""
 
   fun valueFrom(e: HttpExchange, instance: Any) = try {
-    if (param.kind == INSTANCE) instance
+    if (p.kind == INSTANCE) instance
     else if (cls == HttpExchange::class) e
     else if (cls == Session::class) e.session
     else if (cls == InputStream::class) e.requestStream
     else {
       when (annotation) {
         is PathParam -> e.path(name)?.toType()
-        is QueryParam -> e.query(name).let { if (it == null && param.type.classifier == Boolean::class && name in e.queryParams) true else it?.toType() }
+        is QueryParam -> e.query(name).let { if (it == null && p.type.classifier == Boolean::class && name in e.queryParams) true else it?.toType() }
         is HeaderParam -> e.header(name)?.toType()
         is CookieParam -> e.cookie(name)?.toType()
         is SessionParam -> e.session[name]?.toType()
         is AttrParam -> e.attr(name)
         is BodyParam -> e.body<Any?>(name)?.let { if (it is String) it.trimToNull()?.toType() else it }
-        else -> e.body(param.type)
+        else -> e.body(p.type)
       }
     }
   } catch (e: Exception) {
@@ -98,7 +96,7 @@ private class Param(val param: KParameter) {
   }
 
   private val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
-  private fun String.toType() = Converter.from<Any>(this, param.type)
+  private fun String.toType() = Converter.from<Any>(this, p.type)
 }
 
 inline fun <reified T: Annotation> KClass<*>.annotation(): T? = java.getAnnotation(T::class.java)
