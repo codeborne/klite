@@ -2,6 +2,7 @@ package klite
 
 import klite.RequestMethod.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 
 abstract class RouterConfig(
   decorators: List<Decorator>,
@@ -86,7 +87,7 @@ enum class RequestMethod(val hasBody: Boolean = true) {
   GET(false), POST, PUT, PATCH, DELETE(false), OPTIONS, HEAD(false)
 }
 
-data class Route(val method: RequestMethod, val path: Regex, val annotations: List<Annotation> = emptyList(), val handler: Handler) {
+data class Route(val method: RequestMethod, val path: Regex, val annotations: List<Annotation> = emptyList(), val handlerFun: KFunction<*>? = null, val handler: Handler) {
   @Suppress("UNCHECKED_CAST")
   fun <T: Annotation> annotation(key: KClass<T>): T? = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) } as? T
   inline fun <reified T: Annotation> annotation() = annotation(T::class)

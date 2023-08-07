@@ -4,7 +4,10 @@ import klite.*
 import java.io.InputStream
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*
-import kotlin.reflect.*
+import kotlin.reflect.KAnnotatedElement
+import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.functions
@@ -45,7 +48,7 @@ fun Router.annotated(routes: Any) {
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
     val handler = classDecorators.wrap(toHandler(routes, f))
-    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, handler)
+    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, f, handler)
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
