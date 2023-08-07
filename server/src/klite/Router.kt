@@ -96,6 +96,8 @@ data class Route(val method: RequestMethod, val path: Regex, val annotations: Li
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
 open class PathParamRegexer(private val paramConverter: Regex = "(^|/):([^/]+)".toRegex()) {
   open fun from(path: String) = paramConverter.replace(path, "$1(?<$2>[^/]+)").toRegex()
+  open fun toOpenApi(path: String) = paramConverter.replace(path, "$1{$2}")
+  open fun toOpenApi(path: Regex) = path.pattern.replace("\\(\\?<(.+?)>.*?\\)".toRegex(), "{$1}")
 }
 
 class PathParams(val groups: MatchGroupCollection): Params {

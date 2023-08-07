@@ -28,7 +28,7 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
       "servers" to listOf(mapOf("url" to fullUrl(prefix))),
       // TODO: need to transform template paths into OpenAPI format with {}
       // TODO: describe parameters from route methods
-      "paths" to routes.groupBy { it.path.toString() }.mapValues { (_, routes) ->
+      "paths" to routes.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
         routes.associate {
           val op = it.annotation<Operation>()
           (op?.method?.trimToNull() ?: it.method.name).lowercase() to mapOf(
