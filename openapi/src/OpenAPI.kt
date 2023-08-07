@@ -1,6 +1,7 @@
 package klite.openapi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import klite.Router
 import klite.StatusCode.Companion.OK
@@ -9,6 +10,7 @@ import klite.publicProperties
 import klite.toValues
 import klite.trimToNull
 import kotlin.reflect.KProperty1
+import kotlin.reflect.full.findAnnotation
 
 // Spec: https://swagger.io/specification/
 // Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
@@ -33,9 +35,9 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
           val op = route.annotation<Operation>()
           (op?.method?.trimToNull() ?: route.method.name).lowercase() to mapOf(
             "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
-            "parameters" to (route.handler as? FunHandler)?.let { it.params.map {p ->
-              mapOf("name" to p.name, "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable), "in" to toParameterIn(p.annotation)) +
-                (op?.parameters?.find { it.name == p.name }?.toNonEmptyValues() ?: emptyMap())
+            "parameters" to (route.handler as? FunHandler)?.let { it.params.map { p ->
+              mapOf("name" to p.name, "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable), "in" to toParameterIn(p.source)) +
+                ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap())
             } },
             "responses" to mapOf(
               OK.value to mapOf("description" to "OK")

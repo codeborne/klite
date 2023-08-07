@@ -70,8 +70,8 @@ class FunHandler(val instance: Any, val f: KFunction<*>): Handler {
 
 class Param(val p: KParameter) {
   val cls = p.type.classifier as KClass<*>
-  val annotation: Annotation? = p.kliteAnnotation
-  val name: String = annotation?.value ?: p.name ?: ""
+  val source: Annotation? = p.kliteAnnotation
+  val name: String = source?.value ?: p.name ?: ""
 
   fun valueFrom(e: HttpExchange, instance: Any) = try {
     if (p.kind == INSTANCE) instance
@@ -79,7 +79,7 @@ class Param(val p: KParameter) {
     else if (cls == Session::class) e.session
     else if (cls == InputStream::class) e.requestStream
     else {
-      when (annotation) {
+      when (source) {
         is PathParam -> e.path(name)?.toType()
         is QueryParam -> e.query(name).let { if (it == null && p.type.classifier == Boolean::class && name in e.queryParams) true else it?.toType() }
         is HeaderParam -> e.header(name)?.toType()
