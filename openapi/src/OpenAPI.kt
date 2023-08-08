@@ -12,6 +12,7 @@ import kotlin.reflect.KClassifier
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmName
 
 // Spec: https://swagger.io/specification/
@@ -66,12 +67,12 @@ private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) 
   else -> null
 }
 
-private fun toSchema(type: KClassifier?) = mapOf("type" to when(type) {
+private fun toSchema(type: KClassifier?) = notNullValues("type" to when(type) {
   Boolean::class -> "boolean"
   Number::class -> "integer"
-  BigDecimal::class, Decimal::class, Float::class, Double::class -> "float" // TODO: is this correct
+  BigDecimal::class, Decimal::class, Float::class, Double::class -> "number"
   else -> "string"
-}) // TODO: enum, object
+}, "enum" to if ((type as KClass<*>).isSubclassOf(Enum::class)) type.java.enumConstants else null) // TODO: object
 
 private fun KParameter.toRequestBody() = mapOf("content" to mapOf("schema" to toSchema(type.classifier)))
 
