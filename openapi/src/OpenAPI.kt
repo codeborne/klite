@@ -67,12 +67,20 @@ private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) 
   else -> null
 }
 
-private fun toSchema(type: KClassifier?) = notNullValues("type" to when(type) {
-  Boolean::class -> "boolean"
-  Number::class -> "integer"
-  BigDecimal::class, Decimal::class, Float::class, Double::class -> "number"
-  else -> "string"
-}, "enum" to if ((type as KClass<*>).isSubclassOf(Enum::class)) type.java.enumConstants else null) // TODO: object
+private fun toSchema(type: KClassifier?): Map<String, Any> {
+  val cls = type as KClass<*>
+  val jsonType = when (cls) {
+    Boolean::class -> "boolean"
+    Number::class -> "integer"
+    BigDecimal::class, Decimal::class, Float::class, Double::class -> "number"
+    else -> if (cls == String::class || Converter.supports(cls)) "string" else "object"
+  }
+  return mapOfNotNull(
+    "type" to jsonType,
+    "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants else null,
+    "properties" to if (jsonType == "object") type.publicProperties.associate { it.name to toSchema(it.returnType.classifier) } else null
+  )
+}
 
 private fun KParameter.toRequestBody() = mapOf("content" to mapOf("schema" to toSchema(type.classifier)))
 
