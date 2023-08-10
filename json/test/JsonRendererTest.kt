@@ -46,6 +46,12 @@ class JsonRendererTest {
     expect(mapper.render(mapOf(1 to mapOf(2 to arrayOf(1, 2, 3))))).toEqual("""{"1":{"2":[1,2,3]}}""")
   }
 
+  @Test
+  fun escaped() {
+    val value = mapper.render(mapOf("a" to "\"foo\""))
+    expect(mapper.render(mapOf("x" to value))).toEqual("""{"x":"{\"a\":\"\\\"foo\\\"\"}"}""")
+  }
+
   @Test fun renderNulls() {
     expect(mapper.render(mapOf("x" to null))).toEqual("{}")
     expect(mapper.render(mapOf("x" to null, "y" to null, 1 to 2))).toEqual("""{"1":2}""")

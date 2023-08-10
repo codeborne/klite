@@ -29,7 +29,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
   private fun writeString(s: String) {
     write('\"')
     s.forEach { when(it) {
-      '\n' -> write("\\n"); '\r' -> write("\\r"); '\t' -> write("\\t"); '"' -> write("\\\"")
+      '\n' -> write("\\n");'\\' -> write("\\\\"); '\r' -> write("\\r"); '\t' -> write("\\t"); '"' -> write("\\\"")
       in '\u0000'..'\u001F' -> { write("\\u"); write(it.code.toString(16).padStart(4, '0')) }
       else -> write(it)
     } }
