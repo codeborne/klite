@@ -35,28 +35,34 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
       "info" to mapOf("title" to title, "version" to version),
       "servers" to listOf(mapOf("url" to fullUrl(prefix))),
       "paths" to routes.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
-        routes.associate { route ->
-          val op = route.annotation<Operation>()
-          (op?.method?.trimToNull() ?: route.method.name).lowercase() to mapOf(
-            "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
-            "parameters" to (route.handler as? FunHandler)?.let { it.params.filter { it.source != null }.map { p -> mapOf(
-              "name" to p.name,
-              "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
-              "in" to toParameterIn(p.source),
-              "schema" to toSchema(p.p.type.classifier),
-            ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap()) } },
-            "requestBody" to (route.handler as? FunHandler)?.params?.find { it.source == null && !(it.p.type.classifier as KClass<*>).jvmName.startsWith("klite") }?.p?.toRequestBody(),
-            "responses" to mapOf(
-              OK.value to mapOf("description" to "OK")
-            )
-          ) + (op?.let { it.toNonEmptyValues { it.name != "method" } + mapOf(
-            "requestBody" to op.requestBody.toNonEmptyValues().takeIf { it.isNotEmpty() },
-            "externalDocs" to op.externalDocs.toNonEmptyValues().takeIf { it.isNotEmpty() }
-          ) } ?: emptyMap())
-        }
+        routes.associate(::toOperation)
       }
     )
   }
+}
+
+internal fun toOperation(route: Route): Pair<String, Any> {
+  val op = route.annotation<Operation>()
+  return (op?.method?.trimToNull() ?: route.method.name).lowercase() to mapOf(
+    "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
+    "parameters" to (route.handler as? FunHandler)?.let {
+      it.params.filter { it.source != null }.map { p -> mapOf(
+        "name" to p.name,
+        "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
+        "in" to toParameterIn(p.source),
+        "schema" to toSchema(p.p.type.classifier),
+      ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap()) }
+    },
+    "requestBody" to (route.handler as? FunHandler)?.params?.find { it.source == null && !(it.p.type.classifier as KClass<*>).jvmName.startsWith("klite") }?.p?.toRequestBody(),
+    "responses" to mapOf(
+      OK.value to mapOf("description" to "OK")
+    )
+  ) + (op?.let { it.toNonEmptyValues { it.name != "method" } + mapOf(
+    "requestBody" to op.requestBody.toNonEmptyValues().takeIf { it.isNotEmpty() },
+    "externalDocs" to op.externalDocs.toNonEmptyValues().takeIf { it.isNotEmpty() },
+    "parameters" to op.parameters.map { it.toNonEmptyValues() }.takeIf { it.isNotEmpty() },
+    "responses" to op.responses.associate { it.responseCode to it.toNonEmptyValues { it.name != "responseCode" } }.takeIf { it.isNotEmpty() },
+  ) } ?: emptyMap())
 }
 
 private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) {

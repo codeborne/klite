@@ -56,14 +56,11 @@ class Router(
     return null
   }
 
-  fun add(route: Route) = route.copy(annotations = anonymousHandlerAnnotations(route.handler) + route.annotations).apply {
+  fun add(route: Route) = route.apply {
     decoratedHandler = decorators.wrap(route.decoratedHandler)
     routes += this
     log.info("$method $prefix$path")
   }
-
-  private fun anonymousHandlerAnnotations(handler: Handler) =
-    handler.javaClass.methods.find { it.name.startsWith("invoke") && it.annotations.isNotEmpty() }?.annotations?.toList() ?: emptyList()
 
   fun get(path: Regex, handler: Handler) = add(Route(GET, path, handler = handler))
   fun get(path: String = "", handler: Handler) = get(pathParamRegexer.from(path), handler)
@@ -88,12 +85,16 @@ enum class RequestMethod(val hasBody: Boolean = true) {
   GET(false), POST, PUT, PATCH, DELETE(false), OPTIONS, HEAD(false)
 }
 
-data class Route(val method: RequestMethod, val path: Regex, val annotations: List<Annotation> = emptyList(), val handler: Handler) {
+class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler) {
   internal var decoratedHandler: Handler = handler
+  val annotations = anonymousHandlerAnnotations(handler) + annotations
   @Suppress("UNCHECKED_CAST")
   fun <T: Annotation> annotation(key: KClass<T>): T? = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) } as? T
   inline fun <reified T: Annotation> annotation() = annotation(T::class)
   inline fun <reified T: Annotation> hasAnnotation() = annotation(T::class) != null
+
+  private fun anonymousHandlerAnnotations(handler: Handler) =
+    handler.javaClass.methods.find { it.name.startsWith("invoke") && it.annotations.isNotEmpty() }?.annotations?.toList() ?: emptyList()
 }
 
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
