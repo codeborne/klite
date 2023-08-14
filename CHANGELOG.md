@@ -2,7 +2,8 @@
 * jdbc: DB_READONLY=true env var can be used to make the whole app read-only (e.g. when migrating the DB, instead of Heroku maintenance mode)
 * jdbc: CrudRepository.get() now has optional forUpdate parameter
 * HttpExchange.fileName() added for setting of Content-Disposition
-* json: json within json (and '\') are now properly escaped
+* json bugfix: json within json (and '\') are now properly escaped
+* json bugfix: render Any type as 'any' instead of 'string' in TSGenerator
 * csv: new module for CSV parsing/generation
 
 # 1.5.5

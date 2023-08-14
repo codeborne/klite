@@ -6,11 +6,10 @@ import org.intellij.lang.annotations.Language
 import java.io.PrintStream
 import java.lang.System.err
 import java.nio.file.Path
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.*
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.PathWalkOption.INCLUDE_DIRECTORIES
+import kotlin.io.path.extension
+import kotlin.io.path.walk
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
@@ -78,7 +77,7 @@ open class TSGenerator(
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
     val ts = customTypes[type.toString()] ?: when {
-      cls == null -> "any"
+      cls == null || cls == Any::class -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
       cls.isSubclassOf(Boolean::class) -> "boolean"
