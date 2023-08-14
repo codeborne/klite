@@ -23,7 +23,7 @@ class JsonRendererTest {
 
   @Test fun string() {
     expect(mapper.render("Hello")).toEqual("\"Hello\"")
-    expect(mapper.render("Hello\n\t\"World\"\u001F")).toEqual("\"Hello\\n\\t\\\"World\\\"\\u001f\"")
+    expect(mapper.render("Hello\n\t\"World\"\u001F\\")).toEqual("\"Hello\\n\\t\\\"World\\\"\\u001f\\\\\"")
   }
 
   @Test fun converter() {
@@ -46,8 +46,7 @@ class JsonRendererTest {
     expect(mapper.render(mapOf(1 to mapOf(2 to arrayOf(1, 2, 3))))).toEqual("""{"1":{"2":[1,2,3]}}""")
   }
 
-  @Test
-  fun escaped() {
+  @Test fun `json in json`() {
     val value = mapper.render(mapOf("a" to "\"foo\""))
     expect(mapper.render(mapOf("x" to value))).toEqual("""{"x":"{\"a\":\"\\\"foo\\\"\"}"}""")
   }
