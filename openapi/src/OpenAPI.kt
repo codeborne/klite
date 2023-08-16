@@ -25,7 +25,7 @@ import kotlin.reflect.jvm.jvmName
  *
  * To run Swagger-UI:
  *   add `before(CorsHandler())`
- *   `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP/api/openapi swaggerapi/swagger-ui`
+ *   `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP:PORT/api/openapi swaggerapi/swagger-ui`
  *   Open http://localhost:8088
  */
 fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0") {
