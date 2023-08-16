@@ -8,6 +8,10 @@ import klite.*
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
 import java.math.BigDecimal
+import java.net.URI
+import java.net.URL
+import java.time.*
+import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KParameter
@@ -90,8 +94,18 @@ private fun toSchema(type: KClassifier?): Map<String, Any> {
     BigDecimal::class, Decimal::class, Float::class, Double::class -> "number"
     else -> if (cls == String::class || Converter.supports(cls)) "string" else "object"
   }
+  val jsonFormat = when (cls) {
+    LocalDate::class, Date::class -> "date"
+    LocalTime::class -> "time"
+    Instant::class, LocalDateTime::class -> "date-time"
+    Period::class, Duration::class -> "duration"
+    URI::class, URL::class -> "uri"
+    UUID::class -> "uuid"
+    else -> null
+  }
   return mapOfNotNull(
     "type" to jsonType,
+    "format" to jsonFormat,
     "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants else null,
     "properties" to if (jsonType == "object") type.publicProperties.associate { it.name to toSchema(it.returnType.classifier) } else null
   )
