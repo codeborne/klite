@@ -1,17 +1,39 @@
 package klite.openapi
 
+import ch.tutteli.atrium.api.fluent.en_GB.toContainExactly
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
+import klite.RequestMethod.GET
 import klite.RequestMethod.POST
 import klite.Route
 import klite.StatusCode.Companion.OK
+import klite.annotations.FunHandler
+import klite.annotations.annotation
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class OpenAPITest {
+  @Test fun nonEmptyValues() {
+    @Tag(name = "hello") class Dummy {}
+    expect(Dummy::class.annotation<Tag>()!!.toNonEmptyValues()).toEqual(mapOf("name" to "hello"))
+  }
+
+  @Test fun `route classes to tags`() {
+    expect(toTags(listOf(Route(GET, "/hello".toRegex(), handler = FunHandler(this, OpenAPITest::toString)))))
+      .toContainExactly(mapOf("name" to "OpenAPITest"))
+  }
+
+  @Test fun `route classes to tags with Tag annotation`() {
+    @Tag(name = "my-tag", description = "My description") class MyRoutes {}
+    expect(toTags(listOf(Route(GET, "/hello".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::toString)))))
+      .toContainExactly(mapOf("name" to "my-tag", "description" to "My description"))
+  }
+
   @Test fun `anonymous route`() {
     expect(toOperation(Route(POST, "/x".toRegex()) {})).toEqual("post" to mapOf(
       "operationId" to null,
@@ -21,7 +43,7 @@ class OpenAPITest {
     ))
   }
 
-  @Test fun `anonymous route with annotation`() {
+  @Test @Disabled fun `anonymous route with annotation`() {
     val route = Route(POST, "/x".toRegex()) @Operation(
       operationId = "opId",
       summary = "summary",

@@ -3,6 +3,7 @@ package klite.openapi
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.tags.Tag
 import klite.*
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
@@ -34,12 +35,19 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
       "openapi" to "3.0.0",
       "info" to mapOf("title" to title, "version" to version),
       "servers" to listOf(mapOf("url" to fullUrl(prefix))),
+      "tags" to toTags(routes),
       "paths" to routes.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
         routes.associate(::toOperation)
       }
     )
   }
 }
+
+internal fun toTags(routes: List<Route>) = routes
+  .map { it.handler }
+  .filterIsInstance<FunHandler>()
+  .map { it.instance::class.annotation<Tag>()?.toNonEmptyValues() ?: mapOf("name" to it.instance::class.simpleName) }
+  .toSet()
 
 internal fun toOperation(route: Route): Pair<String, Any> {
   val op = route.annotation<Operation>()
@@ -90,6 +98,10 @@ private fun toSchema(type: KClassifier?): Map<String, Any> {
 
 private fun KParameter.toRequestBody() = mapOf("content" to mapOf("schema" to toSchema(type.classifier)))
 
-private fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = {true}) = toValues(publicProperties.filter(filter)).filterValues {
-  it != "" && it != false && (it as? Array<*>)?.isEmpty() != true
-}
+internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = {true}) =
+  toValues(publicProperties.filter(filter)).filterValues { !isEmpty(it) }
+
+private fun isEmpty(it: Any?): Boolean =
+  it == "" || it == false ||
+  (it as? Array<*>)?.isEmpty() == true ||
+  (it as? Annotation)?.toNonEmptyValues()?.isEmpty() == true

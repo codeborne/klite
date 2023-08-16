@@ -1,4 +1,5 @@
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import klite.HttpExchange
 import klite.StatusCode
 import klite.annotations.*
@@ -8,7 +9,7 @@ import users.Id
 import users.User
 import users.UserRepository
 
-@Path("/hello")
+@Path("/hello") @Tag(name = "cool", description = "Cool routes")
 class MyRoutes(private val userRepository: UserRepository) {
   @GET @Operation(summary = "Just a hello") fun sayHello() = MyData("Hello")
   @GET("2") fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
@@ -26,6 +27,8 @@ class MyRoutes(private val userRepository: UserRepository) {
   @GET("/null") fun returnNull() = null
 
   @GET("/admin") @AdminOnly fun onlyForAdmins() = "Only for admins"
+  @POST("/admin") @AdminOnly fun onlyForAdminsPost() = "Only for admins"
+  @DELETE("/admin") @AdminOnly fun onlyForAdminsDelete() = "Only for admins"
 
   @GET("/params")
   fun withOptionalParams(@QueryParam optional: Boolean = false, @QueryParam required: String, @QueryParam nullable: String?) = "$optional,$required,$nullable"
