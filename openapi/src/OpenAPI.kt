@@ -59,12 +59,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
     "tags" to listOfNotNull((route.handler as? FunHandler)?.let { it.instance::class.annotation<Tag>()?.name ?: it.instance::class.simpleName }),
     "parameters" to (route.handler as? FunHandler)?.let {
-      it.params.filter { it.source != null }.map { p -> mapOf(
-        "name" to p.name,
-        "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
-        "in" to toParameterIn(p.source),
-        "schema" to toSchema(p.p.type.classifier),
-      ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap()) }
+      it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
     },
     "requestBody" to (route.handler as? FunHandler)?.params?.find { it.source == null && !(it.p.type.classifier as KClass<*>).jvmName.startsWith("klite") }?.p?.toRequestBody(),
     "responses" to mapOf(
@@ -77,6 +72,13 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "responses" to op.responses.associate { it.responseCode to it.toNonEmptyValues { it.name != "responseCode" } }.takeIf { it.isNotEmpty() },
   ) } ?: emptyMap())
 }
+
+fun toParameter(p: Param, op: Operation? = null) = mapOf(
+  "name" to p.name,
+  "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
+  "in" to toParameterIn(p.source),
+  "schema" to toSchema(p.p.type.classifier),
+) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap())
 
 private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) {
   is HeaderParam -> ParameterIn.HEADER
@@ -106,7 +108,7 @@ private fun toSchema(type: KClassifier?): Map<String, Any> {
   return mapOfNotNull(
     "type" to jsonType,
     "format" to jsonFormat,
-    "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants else null,
+    "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants.toList() else null,
     "properties" to if (jsonType == "object") type.publicProperties.associate { it.name to toSchema(it.returnType.classifier) } else null
   )
 }
