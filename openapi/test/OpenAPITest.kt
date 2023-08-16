@@ -34,9 +34,20 @@ class OpenAPITest {
       .toContainExactly(mapOf("name" to "my-tag", "description" to "My description"))
   }
 
+  @Test fun `annotated route`() {
+    expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(this, OpenAPITest::toString)))).toEqual("post" to mapOf(
+      "operationId" to "OpenAPITest.toString",
+      "tags" to listOf("OpenAPITest"),
+      "parameters" to emptyList<Any>(),
+      "requestBody" to null,
+      "responses" to mapOf(OK.value to mapOf("description" to "OK"))
+    ))
+  }
+
   @Test fun `anonymous route`() {
     expect(toOperation(Route(POST, "/x".toRegex()) {})).toEqual("post" to mapOf(
       "operationId" to null,
+      "tags" to emptyList<Any>(),
       "parameters" to null,
       "requestBody" to null,
       "responses" to mapOf(OK.value to mapOf("description" to "OK"))
