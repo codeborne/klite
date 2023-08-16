@@ -37,17 +37,27 @@ class OpenAPITest {
   }
 
   @Test fun `annotated route`() {
+    data class User(val name: String, val id: UUID)
     class MyRoutes {
-      fun getUser(@PathParam userId: UUID, @QueryParam force: Boolean = false) = null
+      fun saveUser(@PathParam userId: UUID, @QueryParam force: Boolean = false, body: User) = null
     }
-    expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::getUser)))).toEqual("post" to mapOf(
-      "operationId" to "MyRoutes.getUser",
+    expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser)))).toEqual("post" to mapOf(
+      "operationId" to "MyRoutes.saveUser",
       "tags" to listOf("MyRoutes"),
       "parameters" to listOf(
         mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid")),
         mapOf("name" to "force", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "boolean"))
       ),
-      "requestBody" to null,
+      "requestBody" to mapOf("content" to
+        mapOf("application/json" to mapOf(
+          "schema" to mapOf(
+            "type" to "object", "properties" to mapOf(
+              "name" to mapOf("type" to "string"),
+              "id" to mapOf("type" to "string", "format" to "uuid")
+            )
+          )
+        ))
+      ),
       "responses" to mapOf(OK.value to mapOf("description" to "OK"))
     ))
   }
@@ -59,7 +69,7 @@ class OpenAPITest {
     expect(FunHandler(MyRoutes(), MyRoutes::withParams).params.filter { it.source != null }.map { toParameter(it) }).toContainExactly(
       mapOf("name" to "date", "required" to true, "in" to QUERY, "schema" to mapOf("type" to "string", "format" to "date")),
       mapOf("name" to "simpleString", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "string")),
-      mapOf("name" to "dow", "required" to true, "in" to COOKIE, "schema" to mapOf("type" to "string", "enum" to DayOfWeek.values().toList())),
+      mapOf("name" to "dow", "required" to true, "in" to COOKIE, "schema" to mapOf("type" to "string", "enum" to DayOfWeek.values().toList()))
     )
   }
 
