@@ -27,13 +27,17 @@ class ErrorHandlerTest {
   }
 
   @Test fun `no such element`() {
-    expect(errorHandler.toResponse(exchange, NoSuchElementException("List is empty.")))
-      .toEqual(ErrorResponse(NotFound, "List is empty."))
+    expect(errorHandler.toResponse(exchange, NoSuchElementException("List is empty."))).toEqual(ErrorResponse(NotFound, null))
+    expect(errorHandler.toResponse(exchange, NoSuchElementException("Custom message"))).toEqual(ErrorResponse(NotFound, "Custom message"))
   }
 
   @Test fun unhandled() {
-    expect(errorHandler.toResponse(exchange, Exception("Kaboom")))
-      .toEqual(ErrorResponse(InternalServerError, "Kaboom"))
+    expect(errorHandler.toResponse(exchange, Exception("Kaboom"))).toEqual(ErrorResponse(InternalServerError, "Kaboom"))
+  }
+
+  @Test fun `handler returning null proceeds further`() {
+    errorHandler.on<NullPointerException> { null }
+    expect(errorHandler.toResponse(exchange, NullPointerException())).toEqual(ErrorResponse(InternalServerError, null))
   }
 
   @Test fun `handle broken pipe - client closed connection`() {

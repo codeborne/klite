@@ -66,8 +66,8 @@ open class JsonBody(
     errors.apply {
       on(JsonParseException::class, BadRequest)
       on(MismatchedInputException::class, BadRequest)
-      on(ValueInstantiationException::class) { e, _ -> handleValueInstantiation(e) }
-      on(MissingKotlinParameterException::class) { e, _ -> handleMissingParameter(e) }
+      on(ValueInstantiationException::class) { e -> handleValueInstantiation(e) }
+      on(MissingKotlinParameterException::class) { e -> handleMissingParameter(e) }
     }
     renderers += this@JsonBody
     parsers += this@JsonBody
