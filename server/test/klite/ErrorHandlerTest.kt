@@ -32,8 +32,12 @@ class ErrorHandlerTest {
   }
 
   @Test fun unhandled() {
-    expect(errorHandler.toResponse(exchange, Exception("Kaboom")))
-      .toEqual(ErrorResponse(InternalServerError, "Kaboom"))
+    expect(errorHandler.toResponse(exchange, Exception("Kaboom"))).toEqual(ErrorResponse(InternalServerError, "Kaboom"))
+  }
+
+  @Test fun `handler returning null proceeds further`() {
+    errorHandler.on<NullPointerException> { _, _ -> null }
+    expect(errorHandler.toResponse(exchange, NullPointerException())).toEqual(ErrorResponse(InternalServerError, null))
   }
 
   @Test fun `handle broken pipe - client closed connection`() {
