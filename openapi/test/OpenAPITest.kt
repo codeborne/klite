@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.*
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import klite.HttpExchange
+import klite.MimeTypes
 import klite.RequestMethod.GET
 import klite.RequestMethod.POST
 import klite.Route
@@ -37,9 +39,8 @@ class OpenAPITest {
   }
 
   @Test fun `annotated route`() {
-    data class User(val name: String, val id: UUID)
     class MyRoutes {
-      fun saveUser(@PathParam userId: UUID, @QueryParam force: Boolean = false, body: User) = null
+      fun saveUser(@PathParam userId: UUID, @QueryParam force: Boolean = false) = null
     }
     expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser)))).toEqual("post" to mapOf(
       "operationId" to "MyRoutes.saveUser",
@@ -48,8 +49,35 @@ class OpenAPITest {
         mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid")),
         mapOf("name" to "force", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "boolean"))
       ),
+      "requestBody" to null,
+      "responses" to mapOf(OK.value to mapOf("description" to "OK"))
+    ))
+  }
+
+  @Test fun parameters() {
+    class MyRoutes {
+      fun withParams(@PathParam date: LocalDate, @QueryParam simpleString: String?, @CookieParam dow: DayOfWeek) = null
+    }
+    expect(FunHandler(MyRoutes(), MyRoutes::withParams).params.filter { it.source != null }.map { toParameter(it) }).toContainExactly(
+      mapOf("name" to "date", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "date")),
+      mapOf("name" to "simpleString", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "string")),
+      mapOf("name" to "dow", "required" to true, "in" to COOKIE, "schema" to mapOf("type" to "string", "enum" to DayOfWeek.values().toList()))
+    )
+  }
+
+  @Test fun `request body`() {
+    data class User(val name: String, val id: UUID)
+    class MyRoutes {
+      fun saveUser(e: HttpExchange, @PathParam userId: UUID, body: User) = null
+    }
+    expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser)))).toEqual("post" to mapOf(
+      "operationId" to "MyRoutes.saveUser",
+      "tags" to listOf("MyRoutes"),
+      "parameters" to listOf(
+        mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid"))
+      ),
       "requestBody" to mapOf("content" to
-        mapOf("application/json" to mapOf(
+        mapOf(MimeTypes.json to mapOf(
           "schema" to mapOf(
             "type" to "object", "properties" to mapOf(
               "name" to mapOf("type" to "string"),
@@ -60,17 +88,6 @@ class OpenAPITest {
       ),
       "responses" to mapOf(OK.value to mapOf("description" to "OK"))
     ))
-  }
-
-  @Test fun parameters() {
-    class MyRoutes {
-      fun withParams(@QueryParam date: LocalDate, @QueryParam simpleString: String?, @CookieParam dow: DayOfWeek) = null
-    }
-    expect(FunHandler(MyRoutes(), MyRoutes::withParams).params.filter { it.source != null }.map { toParameter(it) }).toContainExactly(
-      mapOf("name" to "date", "required" to true, "in" to QUERY, "schema" to mapOf("type" to "string", "format" to "date")),
-      mapOf("name" to "simpleString", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "string")),
-      mapOf("name" to "dow", "required" to true, "in" to COOKIE, "schema" to mapOf("type" to "string", "enum" to DayOfWeek.values().toList()))
-    )
   }
 
   @Test fun `anonymous route`() {

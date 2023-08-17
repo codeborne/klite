@@ -15,10 +15,10 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KParameter
+import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.jvm.jvmName
 
 // Spec: https://swagger.io/specification/
 // Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
@@ -61,15 +61,12 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "parameters" to (route.handler as? FunHandler)?.let {
       it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
     },
-    "requestBody" to (route.handler as? FunHandler)?.params?.find { it.source == null && !(it.p.type.classifier as KClass<*>).jvmName.startsWith("klite") }?.p?.toRequestBody(),
+    "requestBody" to findRequestBody(route),
     "responses" to mapOf(
       OK.value to mapOf("description" to "OK")
     )
   ) + (op?.let { it.toNonEmptyValues { it.name != "method" } + mapOf(
-    "requestBody" to op.requestBody.toNonEmptyValues().takeIf { it.isNotEmpty() },
-    "externalDocs" to op.externalDocs.toNonEmptyValues().takeIf { it.isNotEmpty() },
-    "parameters" to op.parameters.map { it.toNonEmptyValues() }.takeIf { it.isNotEmpty() },
-    "responses" to op.responses.associate { it.responseCode to it.toNonEmptyValues { it.name != "responseCode" } }.takeIf { it.isNotEmpty() },
+    "responses" to op.responses.associate { it.responseCode to it.toNonEmptyValues { it.name != "responseCode" } }.takeIf { it.isNotEmpty() }
   ) } ?: emptyMap())
 }
 
@@ -113,7 +110,10 @@ private fun toSchema(type: KClassifier?): Map<String, Any> {
   )
 }
 
-private fun KParameter.toRequestBody() = mapOf("content" to mapOf("schema" to toSchema(type.classifier)))
+private fun findRequestBody(route: Route) = (route.handler as? FunHandler)?.params?.
+  find { it.p.kind != INSTANCE && it.source == null && it.cls.java.packageName != "klite" }?.p?.toRequestBody()
+
+private fun KParameter.toRequestBody() = mapOf("content" to mapOf(MimeTypes.json to mapOf("schema" to toSchema(type.classifier))))
 
 internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = {true}) =
   toValues(publicProperties.filter(filter)).filterValues { !isEmpty(it) }
