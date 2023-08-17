@@ -36,7 +36,7 @@ class ErrorHandlerTest {
   }
 
   @Test fun `handler returning null proceeds further`() {
-    errorHandler.on<NullPointerException> { _, _ -> null }
+    errorHandler.on<NullPointerException> { null }
     expect(errorHandler.toResponse(exchange, NullPointerException())).toEqual(ErrorResponse(InternalServerError, null))
   }
 

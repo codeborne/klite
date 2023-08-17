@@ -1,5 +1,6 @@
 # Unreleased
 * server: ErrorHandler will now omit the default message thrown by first() function ("List/Collection is empty.") and generate a standard 404 NotFound response
+* server: ThrowableHandler now has HttpExchange as receiver for cleaner code, as it is not used in most handlers anyway
 * server: ThrowableHandler returning null will now proceed with next handler, eventually producing error 500 if not handled
 
 # 1.5.6

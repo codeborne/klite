@@ -8,9 +8,7 @@ import kotlin.reflect.KClass
 
 open class BusinessException(messageKey: String, cause: Throwable? = null): Exception(messageKey, cause)
 
-fun interface ThrowableHandler<in E: Throwable> {
-  fun handle(e: E, exchange: HttpExchange): ErrorResponse?
-}
+typealias ThrowableHandler<T> = HttpExchange.(e: T) -> ErrorResponse?
 
 open class ErrorHandler {
   private val logger = logger(ErrorHandler::class.qualifiedName!!)
@@ -22,8 +20,8 @@ open class ErrorHandler {
   )
 
   init {
-    on<NoSuchElementException> { e, _ -> logger.error(e); ErrorResponse(NotFound, e.message?.takeIf { "is empty" !in it }) }
-    on<NullPointerException> { e, _ ->
+    on<NoSuchElementException> { e -> logger.error(e); ErrorResponse(NotFound, e.message?.takeIf { "is empty" !in it }) }
+    on<NullPointerException> { e ->
       if (e.message?.startsWith("Parameter specified as non-null is null") == true)
         ErrorResponse(BadRequest, e.message!!.substring(e.message!!.indexOf(", parameter ") + 12) + " is required")
       else null
@@ -32,7 +30,7 @@ open class ErrorHandler {
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Throwable> on(e: KClass<out T>, handler: ThrowableHandler<T>) { handlers[e] = handler as ThrowableHandler<Throwable> }
-  inline fun <reified T: Throwable> on(handler: ThrowableHandler<T>) = on(T::class, handler)
+  inline fun <reified T: Throwable> on(noinline handler: ThrowableHandler<T>) = on(T::class, handler)
 
   fun on(e: KClass<out Throwable>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
@@ -50,7 +48,7 @@ open class ErrorHandler {
 
     // TODO: look for subclasses
     handlers[e::class]?.let { handler ->
-      handler.handle(e, exchange)?.let { return it }
+      exchange.handler(e)?.let { return it }
     }
     statusCodes[e::class]?.let {
       logger.error(e)
