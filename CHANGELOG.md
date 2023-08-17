@@ -1,3 +1,6 @@
+# Unreleased
+* server: ErrorHandler will now omit the default message thrown by first() function ("List/Collection is empty.") and generate a standard 404 NotFound response
+
 # 1.5.6
 * jdbc: DB_READONLY=true env var can be used to make the whole app read-only (e.g. when migrating the DB, instead of Heroku maintenance mode)
 * jdbc: CrudRepository.get() now has optional forUpdate parameter

@@ -14,9 +14,10 @@ fun interface ThrowableHandler<in E: Throwable> {
 
 open class ErrorHandler {
   private val logger = logger(ErrorHandler::class.qualifiedName!!)
-  private val handlers = mutableMapOf<KClass<out Throwable>, ThrowableHandler<Throwable>>()
+  private val handlers = mutableMapOf<KClass<out Throwable>, ThrowableHandler<Throwable>>(
+    NoSuchElementException::class to ThrowableHandler { e, _ -> ErrorResponse(NotFound, e.message?.takeIf { "is empty" !in it }) }
+  )
   private val statusCodes = mutableMapOf<KClass<out Throwable>, StatusCode>(
-    NoSuchElementException::class to NotFound,
     IllegalArgumentException::class to BadRequest,
     IllegalStateException::class to BadRequest,
     BusinessException::class to UnprocessableEntity

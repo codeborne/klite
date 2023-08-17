@@ -27,8 +27,8 @@ class ErrorHandlerTest {
   }
 
   @Test fun `no such element`() {
-    expect(errorHandler.toResponse(exchange, NoSuchElementException("List is empty.")))
-      .toEqual(ErrorResponse(NotFound, "List is empty."))
+    expect(errorHandler.toResponse(exchange, NoSuchElementException("List is empty."))).toEqual(ErrorResponse(NotFound, null))
+    expect(errorHandler.toResponse(exchange, NoSuchElementException("Custom message"))).toEqual(ErrorResponse(NotFound, "Custom message"))
   }
 
   @Test fun unhandled() {
