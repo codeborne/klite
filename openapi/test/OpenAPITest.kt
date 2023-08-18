@@ -13,6 +13,7 @@ import klite.MimeTypes
 import klite.RequestMethod.GET
 import klite.RequestMethod.POST
 import klite.Route
+import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
 import org.junit.jupiter.api.Test
@@ -49,7 +50,7 @@ class OpenAPITest {
         mapOf("name" to "force", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "boolean"))
       ),
       "requestBody" to null,
-      "responses" to mapOf(OK.value to mapOf("description" to "OK"))
+      "responses" to mapOf(OK.value to mapOf("description" to "OK", "content" to mapOf(MimeTypes.json to mapOf("schema" to mapOf("type" to "null")))))
     ))
   }
 
@@ -67,7 +68,7 @@ class OpenAPITest {
   @Test fun `request body`() {
     data class User(val name: String, val id: UUID)
     class MyRoutes {
-      fun saveUser(e: HttpExchange, @PathParam userId: UUID, body: User) = null
+      fun saveUser(e: HttpExchange, @PathParam userId: UUID, body: User) {}
     }
     expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser)))).toEqual("post" to mapOf(
       "operationId" to "MyRoutes.saveUser",
@@ -87,7 +88,7 @@ class OpenAPITest {
           )
         ))
       ),
-      "responses" to mapOf(OK.value to mapOf("description" to "OK"))
+      "responses" to mapOf(NoContent.value to mapOf("description" to "No content"))
     ))
   }
 
