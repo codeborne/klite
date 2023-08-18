@@ -15,7 +15,6 @@ import klite.RequestMethod.POST
 import klite.Route
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -102,18 +101,21 @@ class OpenAPITest {
     ))
   }
 
-  @Test @Disabled fun `anonymous route with annotation`() {
+  @Test fun `anonymous route with annotation`() {
     val route = Route(POST, "/x".toRegex()) @Operation(
       operationId = "opId",
+      tags = ["my-tag"],
       summary = "summary",
       parameters = [Parameter(name = "param", description = "description", `in` = QUERY)],
       responses = [ApiResponse(description = "desc", responseCode = "302")]
     ) {}
     expect(toOperation(route)).toEqual("post" to mapOf(
       "operationId" to "opId",
-      "parameters" to listOf(mapOf("name" to "param", "description" to "description", "in" to "query")),
+      "tags" to listOf("my-tag"),
+      "parameters" to listOf(mapOf("name" to "param", "in" to QUERY, "description" to "description")),
       "requestBody" to null,
-      "responses" to mapOf("302" to mapOf("description" to "desc"))
+      "responses" to mapOf("302" to mapOf("description" to "desc")),
+      "summary" to "summary"
     ))
   }
 }

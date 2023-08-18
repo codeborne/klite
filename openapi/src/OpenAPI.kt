@@ -3,6 +3,7 @@ package klite.openapi
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.*
 import klite.StatusCode.Companion.OK
@@ -117,10 +118,11 @@ private fun findRequestBody(route: Route) = (route.handler as? FunHandler)?.para
 
 private fun KParameter.toRequestBody() = mapOf("content" to mapOf(MimeTypes.json to mapOf("schema" to toSchema(type.classifier))))
 
-internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = {true}) =
-  toValues(publicProperties.filter(filter)).filterValues { !isEmpty(it) }
-
-private fun isEmpty(it: Any?): Boolean =
-  it == "" || it == false ||
-  (it as? Array<*>)?.isEmpty() == true ||
-  (it as? Annotation)?.toNonEmptyValues()?.isEmpty() == true
+internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = { true }): Map<String, Any?> =
+  publicProperties.filter(filter).associate { it.name to when(val v = it.valueOf(this)) {
+    "", false, 0, Int.MAX_VALUE, Int.MIN_VALUE, 0.0, Void::class.java, AccessMode.AUTO -> null
+    is Enum<*> -> v.takeIf { v.name != "DEFAULT" }
+    is Annotation -> v.toNonEmptyValues().takeIf { it.isNotEmpty() }
+    is Array<*> -> v.map { (it as? Annotation)?.toNonEmptyValues() ?: it }.takeIf { it.isNotEmpty() }
+    else -> v
+  }}.filterValues { it != null }
