@@ -48,7 +48,7 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
   }
 }
 
-internal fun toTags(routes: List<Route>) = routes
+internal fun toTags(routes: List<Route>) = routes.asSequence()
   .map { it.handler }
   .filterIsInstance<FunHandler>()
   .map { it.instance::class.annotation<Tag>()?.toNonEmptyValues() ?: mapOf("name" to it.instance::class.simpleName) }
