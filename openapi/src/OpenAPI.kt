@@ -30,11 +30,6 @@ import kotlin.reflect.full.isSubclassOf
  * - Use @Operation swagger annotation to describe the routes.
  * - @Parameter annotation can be used on method parameters directly.
  * - @Tag annotation is supported on route classes for grouping of routes.
- *
- * # Run Swagger-UI or use https://petstore.swagger.io in case your server is available over https
- * - add `before(CorsHandler())`
- * - `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP:PORT/api/openapi swaggerapi/swagger-ui`
- * - Open http://localhost:8088
  */
 fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0") {
   get(path) {

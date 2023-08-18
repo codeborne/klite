@@ -2,4 +2,26 @@
 
 An experimental module to generate OpenAPI spec for klite routes.
 
-Work in progress.
+Input/output parameters, paths, names will be generated from annotated route classes automatically.
+Use Swagger/OpenAPI annotations to specify descriptions or more details.
+
+Usage:
+```kotlin
+  context("/api") {
+    useOnly<JsonBody>()
+    annotated<MyRoutes>()
+    // ... more routes
+    openApi() // adds /openapi endpoint to the /api context
+  }
+```
+
+See [sample Launcher](../sample/src/Launcher.kt).
+
+## Swagger UI
+
+For nice visual representation of OpenAPI json output:
+* add `before(CorsHandler())` before `openApi()`, as Swagger UI requires CORS to request openapi.json from another host/domain
+* `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP:PORT/api/openapi swaggerapi/swagger-ui`
+* Open http://localhost:8088
+
+Alternatively, use https://petstore.swagger.io if your `/openapi` route is available over https.

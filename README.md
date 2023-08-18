@@ -41,6 +41,7 @@ Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotl
 * [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner
+* [openapi](openapi) - generates openapi.json for all routes in a context
 
 ### Integrations
 
