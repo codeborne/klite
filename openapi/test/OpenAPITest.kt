@@ -79,10 +79,12 @@ class OpenAPITest {
       "requestBody" to mapOf("content" to
         mapOf(MimeTypes.json to mapOf(
           "schema" to mapOf(
-            "type" to "object", "properties" to mapOf(
+            "type" to "object",
+            "properties" to mapOf(
               "name" to mapOf("type" to "string"),
               "id" to mapOf("type" to "string", "format" to "uuid")
-            )
+            ),
+            "required" to setOf("name", "id")
           )
         ))
       ),

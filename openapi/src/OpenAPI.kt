@@ -106,7 +106,8 @@ private fun toSchema(type: KClassifier?): Map<String, Any> {
     "type" to jsonType,
     "format" to jsonFormat,
     "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants.toList() else null,
-    "properties" to if (jsonType == "object") type.publicProperties.associate { it.name to toSchema(it.returnType.classifier) } else null
+    "properties" to if (jsonType == "object") type.publicProperties.associate { it.name to toSchema(it.returnType.classifier) } else null,
+    "required" to if (jsonType == "object") type.publicProperties.filter { !it.returnType.isMarkedNullable }.map { it.name }.toSet() else null
   )
 }
 
