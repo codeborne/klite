@@ -24,14 +24,15 @@ import kotlin.reflect.full.isSubclassOf
 // Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
 
 /**
- * Adds an /openapi endpoint to the context, describing all the routes.
- * Use @Operation swagger annotations to describe the routes.
- * @Parameter swagger annotation can be used on method parameters directly.
+ * Adds an /openapi endpoint to the context, listing all the routes.
+ * - Use @Operation swagger annotation to describe the routes.
+ * - @Parameter annotation can be used on method parameters directly.
+ * - @Tag annotation is supported on route classes for grouping of routes.
  *
- * To run Swagger-UI:
- *   add `before(CorsHandler())`
- *   `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP:PORT/api/openapi swaggerapi/swagger-ui`
- *   Open http://localhost:8088
+ * # Run Swagger-UI or use https://petstore.swagger.io in case your server is available over https
+ * - add `before(CorsHandler())`
+ * - `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP:PORT/api/openapi swaggerapi/swagger-ui`
+ * - Open http://localhost:8088
  */
 fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0") {
   get(path) {
