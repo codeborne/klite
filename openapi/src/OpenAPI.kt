@@ -115,7 +115,7 @@ private fun KType.toJsonSchema(): Map<String, Any>? {
   )
 }
 
-private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, Any?> {
+private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, Any?>? {
   val bodyParam = (route.handler as? FunHandler)?.params?.find { it.p.kind != INSTANCE && it.source == null && it.cls.java.packageName != "klite" }?.p
   val requestBody = annotation?.toNonEmptyValues() ?: HashMap()
   if (annotation != null && annotation.content.isNotEmpty())
@@ -125,7 +125,7 @@ private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, A
       it.mediaType to content
     }
   if (bodyParam != null) requestBody.putIfAbsent("content", bodyParam.type.toJsonContent())
-  return requestBody
+  return requestBody.takeIf { it.isNotEmpty() }
 }
 
 private fun KType.toJsonContent() = mapOf(MimeTypes.json to mapOf("schema" to toJsonSchema()))
