@@ -38,10 +38,10 @@ Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotl
 * [json](json) - lightweight and easily configurable json parsing/rendering (usable *standalone*)
 * [csv](csv) - simple CSV parsing/generation (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
-* [jdbc](jdbc) - provides jdbc extensions, transaction handling and migrations (usable *standalone*)
+* [jdbc](jdbc) - provides JDBC extensions for DB access, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner
-* [openapi](openapi) - generates openapi.json for all routes in a context
+* [openapi](openapi) - generates OpenAPI 3.0 spec for all routes in a context, viewable with [Swagger UI](https://swagger.io/tools/swagger-ui/)
 
 ### Integrations
 
