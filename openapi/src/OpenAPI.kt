@@ -1,5 +1,6 @@
 package klite.openapi
 
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -28,7 +29,8 @@ import kotlin.reflect.full.isSubclassOf
 
 /**
  * Adds an /openapi endpoint to the context, listing all the routes.
- * - Use @Operation swagger annotation to describe the routes.
+ * - Use @Operation swagger annotation to describe the routes
+ * - Use @Hidden to hide a route from the spec
  * - @Parameter annotation can be used on method parameters directly.
  * - @Tag annotation is supported on route classes for grouping of routes.
  */
@@ -39,7 +41,7 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
       "info" to mapOf("title" to title, "version" to version),
       "servers" to listOf(mapOf("url" to fullUrl(prefix))),
       "tags" to toTags(routes),
-      "paths" to routes.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
+      "paths" to routes.filter { !it.hasAnnotation<Hidden>() }.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
         routes.associate(::toOperation)
       }
     )

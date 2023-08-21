@@ -38,7 +38,7 @@ class OpenAPITest {
       .toContainExactly(mapOf("name" to "my-tag", "description" to "My description"))
   }
 
-  @Test fun `annotated route`() {
+  @Test fun `annotated klite route`() {
     class MyRoutes {
       fun saveUser(@PathParam userId: UUID, @QueryParam force: Boolean = false) = null
     }
