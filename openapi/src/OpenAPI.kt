@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.*
+import klite.RequestMethod.GET
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
@@ -31,8 +32,8 @@ import kotlin.reflect.full.isSubclassOf
  * - @Parameter annotation can be used on method parameters directly.
  * - @Tag annotation is supported on route classes for grouping of routes.
  */
-fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0") {
-  get(path) {
+fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0", annotations: List<Annotation> = emptyList()) {
+  add(Route(GET, path.toRegex(), annotations) {
     mapOf(
       "openapi" to "3.0.0",
       "info" to mapOf("title" to title, "version" to version),
@@ -42,7 +43,7 @@ fun Router.openApi(path: String = "/openapi", title: String = "API", version: St
         routes.associate(::toOperation)
       }
     )
-  }
+  })
 }
 
 internal fun toTags(routes: List<Route>) = routes.asSequence()
