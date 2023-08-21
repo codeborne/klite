@@ -4,14 +4,14 @@ import java.nio.file.Path
 import kotlin.io.path.extension
 
 object MimeTypes {
-  val html = "text/html"
-  val text = "text/plain"
-  val json = "application/json"
-  val xml = "text/xml"
-  val csv = "application/csv"
-  val pdf = "application/pdf"
-  val wwwForm = "application/x-www-form-urlencoded"
-  val formData = "multipart/form-data"
+  const val html = "text/html"
+  const val text = "text/plain"
+  const val json = "application/json"
+  const val xml = "text/xml"
+  const val csv = "application/csv"
+  const val pdf = "application/pdf"
+  const val wwwForm = "application/x-www-form-urlencoded"
+  const val formData = "multipart/form-data"
 
   var unknown = "application/octet-stream"
   var textCharset = Charsets.UTF_8
