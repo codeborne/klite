@@ -36,6 +36,11 @@ suspension, rendering them useless in async use cases.
 Javalin also strives to be simple, but contains 7000 lines of code vs Klite's less than 1000.
 Also, it is blocking by design with no easy way to write coroutines.
 
+### http4k
+
+Very function-based, supports JDK built-in http server, but the core jar is 1Mb compared to 200k of Klite.
+Many integrations, but no JDBC/DB helpers. Also blocking, no coroutine support.
+
 ### General
 
 All of the above lack logging/jdbc/transaction/migrations that most projects need.
