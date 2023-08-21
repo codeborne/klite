@@ -26,6 +26,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.primaryConstructor
 
 // Spec: https://swagger.io/specification/
 // Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
@@ -75,7 +76,7 @@ fun toParameter(p: Param, op: Operation? = null) = mapOf(
   "name" to p.name,
   "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
   "in" to toParameterIn(p.source),
-  "schema" to p.p.type.toJsonSchema(),
+  "schema" to p.p.type.toJsonSchema(response = true),
 ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap())
 
 private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) {
@@ -86,7 +87,7 @@ private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) 
   else -> null
 }
 
-private fun KType.toJsonSchema(): Map<String, Any>? {
+private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any>? {
   val cls = classifier as? KClass<*> ?: return null
   val jsonType = when (cls) {
     Nothing::class -> "null"
@@ -108,8 +109,10 @@ private fun KType.toJsonSchema(): Map<String, Any>? {
     "type" to jsonType,
     "format" to jsonFormat,
     "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants.toList() else null,
-    "properties" to if (jsonType == "object") cls.publicProperties.associate { it.name to it.returnType.toJsonSchema() }.takeIf { it.isNotEmpty() } else null,
-    "required" to if (jsonType == "object") cls.publicProperties.filter { !it.returnType.isMarkedNullable }.map { it.name }.toSet().takeIf { it.isNotEmpty() } else null
+    "properties" to if (jsonType == "object") cls.publicProperties.associate { it.name to it.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() } else null,
+    "required" to if (jsonType == "object") cls.publicProperties.filter { p ->
+      !p.returnType.isMarkedNullable && (response || cls.primaryConstructor?.parameters?.find { it.name == p.name }?.isOptional != true)
+    }.map { it.name }.toSet().takeIf { it.isNotEmpty() } else null
   )
 }
 
@@ -131,14 +134,14 @@ private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, A
 private fun toResponsesByCode(route: Route, op: Operation?, returnType: KType?): Map<StatusCode, Any?> {
   val responses = LinkedHashMap<StatusCode, Any?>()
   if (returnType?.classifier == Unit::class) responses[NoContent] = mapOf("description" to "No content")
-  else if (op?.responses?.isEmpty() != false) responses[OK] = mapOfNotNull("description" to "OK", "content" to returnType?.toJsonContent())
+  else if (op?.responses?.isEmpty() != false) responses[OK] = mapOfNotNull("description" to "OK", "content" to returnType?.toJsonContent(response = true))
   (route.annotations.filterIsInstance<ApiResponse>() + (route.annotation<ApiResponses>()?.value ?: emptyArray()) + (op?.responses ?: emptyArray())).forEach {
     responses[StatusCode(it.responseCode.toInt())] = it.toNonEmptyValues { it.name != "responseCode" }
   }
   return responses
 }
 
-private fun KType.toJsonContent() = mapOf(MimeTypes.json to mapOf("schema" to toJsonSchema()))
+private fun KType.toJsonContent(response: Boolean = false) = mapOf(MimeTypes.json to mapOf("schema" to toJsonSchema(response)))
 
 internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = { true }): MutableMap<String, Any?> = HashMap<String, Any?>().also { map ->
   publicProperties.filter(filter).forEach { p ->

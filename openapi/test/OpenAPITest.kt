@@ -28,15 +28,15 @@ import java.time.LocalDate
 import java.util.*
 
 class OpenAPITest {
-  data class User(val name: String, val id: UUID)
-  val userSchema = mapOf(MimeTypes.json to mapOf(
+  data class User(val name: String, val id: UUID = UUID.randomUUID())
+  fun userSchema(response: Boolean = false) = mapOf(MimeTypes.json to mapOf(
     "schema" to mapOf(
       "type" to "object",
       "properties" to mapOf(
         "name" to mapOf("type" to "string"),
         "id" to mapOf("type" to "string", "format" to "uuid")
       ),
-      "required" to setOf("name", "id")
+      "required" to (if (response) setOf("name", "id") else setOf("name"))
     )
   ))
 
@@ -93,7 +93,7 @@ class OpenAPITest {
       "parameters" to listOf(
         mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid"))
       ),
-      "requestBody" to mapOf("content" to userSchema, "required" to true),
+      "requestBody" to mapOf("content" to userSchema(), "required" to true),
       "responses" to mapOf(NoContent to mapOf("description" to "No content"))
     ))
   }
@@ -109,9 +109,9 @@ class OpenAPITest {
       "operationId" to "MyRoutes.saveUser",
       "tags" to listOf("MyRoutes"),
       "parameters" to emptyList<Any>(),
-      "requestBody" to mapOf("description" to "Application and applicant", "required" to true, "content" to userSchema, "required" to true),
+      "requestBody" to mapOf("description" to "Application and applicant", "required" to true, "content" to userSchema(), "required" to true),
       "responses" to mapOf(
-        OK to mapOf("description" to "OK", "content" to userSchema),
+        OK to mapOf("description" to "OK", "content" to userSchema(response = true)),
         BadRequest to mapOf("description" to "Very bad request"),
         Unauthorized to mapOf("description" to "Unauthorized"),
       )
