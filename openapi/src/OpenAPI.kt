@@ -124,6 +124,7 @@ private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, A
       if (it.schema.implementation != Void::class.java) content["schema"] = it.schema.implementation.createType().toJsonSchema()
       it.mediaType to content
     }
+  requestBody.putIfAbsent("required", true)
   if (bodyParam != null) requestBody.putIfAbsent("content", bodyParam.type.toJsonContent())
   return requestBody.takeIf { it.isNotEmpty() }
 }
