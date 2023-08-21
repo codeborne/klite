@@ -16,8 +16,11 @@ import klite.MimeTypes
 import klite.RequestMethod.GET
 import klite.RequestMethod.POST
 import klite.Route
+import klite.StatusCode.Companion.BadRequest
+import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
+import klite.StatusCode.Companion.Unauthorized
 import klite.annotations.*
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
@@ -65,7 +68,7 @@ class OpenAPITest {
         mapOf("name" to "force", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "boolean"))
       ),
       "requestBody" to null,
-      "responses" to mapOf(OK.value to mapOf("description" to "OK", "content" to mapOf(MimeTypes.json to mapOf("schema" to mapOf("type" to "null")))))
+      "responses" to mapOf(OK to mapOf("description" to "OK", "content" to mapOf(MimeTypes.json to mapOf("schema" to mapOf("type" to "null")))))
     ))
   }
 
@@ -84,29 +87,34 @@ class OpenAPITest {
     class MyRoutes {
       fun saveUser(e: HttpExchange, @PathParam userId: UUID, body: User) {}
     }
-
     expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser)))).toEqual("post" to mapOf(
       "operationId" to "MyRoutes.saveUser",
       "tags" to listOf("MyRoutes"),
       "parameters" to listOf(
         mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid"))
       ),
-      "requestBody" to mapOf("content" to userSchema),
-      "responses" to mapOf(NoContent.value to mapOf("description" to "No content"))
+      "requestBody" to mapOf("content" to userSchema, "required" to true),
+      "responses" to mapOf(NoContent to mapOf("description" to "No content"))
     ))
   }
 
   @Test fun `request body from annotation's implementation field`() {
     class MyRoutes {
       @RequestBody(description = "Application and applicant", content = [Content(mediaType = MimeTypes.json, schema = Schema(implementation = User::class))])
+      @ApiResponse(responseCode = "400", description = "Very bad request")
+      @ApiResponse(responseCode = "401", description = "Unauthorized")
       fun saveUser(e: HttpExchange): User = User("x", UUID.randomUUID())
     }
     expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser), annotations = MyRoutes::saveUser.annotations))).toEqual("post" to mapOf(
       "operationId" to "MyRoutes.saveUser",
       "tags" to listOf("MyRoutes"),
       "parameters" to emptyList<Any>(),
-      "requestBody" to mapOf("description" to "Application and applicant", "required" to true, "content" to userSchema),
-      "responses" to mapOf(OK.value to mapOf("description" to "OK", "content" to userSchema))
+      "requestBody" to mapOf("description" to "Application and applicant", "required" to true, "content" to userSchema, "required" to true),
+      "responses" to mapOf(
+        OK to mapOf("description" to "OK", "content" to userSchema),
+        BadRequest to mapOf("description" to "Very bad request"),
+        Unauthorized to mapOf("description" to "Unauthorized"),
+      )
     ))
   }
 
@@ -116,7 +124,7 @@ class OpenAPITest {
       "tags" to emptyList<Any>(),
       "parameters" to null,
       "requestBody" to null,
-      "responses" to mapOf(OK.value to mapOf("description" to "OK"))
+      "responses" to mapOf(OK to mapOf("description" to "OK"))
     ))
   }
 
@@ -133,7 +141,7 @@ class OpenAPITest {
       "tags" to listOf("my-tag"),
       "parameters" to listOf(mapOf("name" to "param", "in" to QUERY, "description" to "description")),
       "requestBody" to null,
-      "responses" to mapOf("302" to mapOf("description" to "desc")),
+      "responses" to mapOf(Found to mapOf("description" to "desc")),
       "summary" to "summary"
     ))
   }

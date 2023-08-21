@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import io.swagger.v3.oas.annotations.parameters.RequestBody
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.*
 import klite.RequestMethod.GET
@@ -58,7 +60,6 @@ internal fun toTags(routes: List<Route>) = routes.asSequence()
 internal fun toOperation(route: Route): Pair<String, Any> {
   val op = route.annotation<Operation>()
   val funHandler = route.handler as? FunHandler
-  val returnType = funHandler?.f?.returnType
   return (op?.method?.trimToNull() ?: route.method.name).lowercase() to mapOf(
     "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
     "tags" to listOfNotNull(funHandler?.let { it.instance::class.annotation<Tag>()?.name ?: it.instance::class.simpleName }),
@@ -66,11 +67,8 @@ internal fun toOperation(route: Route): Pair<String, Any> {
       it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
     },
     "requestBody" to toRequestBody(route, route.annotation<RequestBody>() ?: op?.requestBody),
-    "responses" to if (returnType?.classifier == Unit::class) mapOf(NoContent.value to mapOf("description" to "No content"))
-                   else mapOf(OK.value to mapOfNotNull("description" to "OK", "content" to returnType?.toJsonContent()))
-  ) + (op?.let { it.toNonEmptyValues { it.name != "method" } + mapOf(
-    "responses" to op.responses.associate { it.responseCode to it.toNonEmptyValues { it.name != "responseCode" } }.takeIf { it.isNotEmpty() }
-  ) } ?: emptyMap())
+    "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType)
+  ) + (op?.let { it.toNonEmptyValues { it.name !in setOf("method", "requestBody", "responses") } } ?: emptyMap())
 }
 
 fun toParameter(p: Param, op: Operation? = null) = mapOf(
@@ -124,9 +122,20 @@ private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, A
       if (it.schema.implementation != Void::class.java) content["schema"] = it.schema.implementation.createType().toJsonSchema()
       it.mediaType to content
     }
-  requestBody.putIfAbsent("required", true)
   if (bodyParam != null) requestBody.putIfAbsent("content", bodyParam.type.toJsonContent())
-  return requestBody.takeIf { it.isNotEmpty() }
+  if (requestBody.isEmpty()) return null
+  requestBody.putIfAbsent("required", bodyParam == null || !bodyParam.isOptional)
+  return requestBody
+}
+
+private fun toResponsesByCode(route: Route, op: Operation?, returnType: KType?): Map<StatusCode, Any?> {
+  val responses = LinkedHashMap<StatusCode, Any?>()
+  if (returnType?.classifier == Unit::class) responses[NoContent] = mapOf("description" to "No content")
+  else if (op?.responses?.isEmpty() != false) responses[OK] = mapOfNotNull("description" to "OK", "content" to returnType?.toJsonContent())
+  (route.annotations.filterIsInstance<ApiResponse>() + (route.annotation<ApiResponses>()?.value ?: emptyArray()) + (op?.responses ?: emptyArray())).forEach {
+    responses[StatusCode(it.responseCode.toInt())] = it.toNonEmptyValues { it.name != "responseCode" }
+  }
+  return responses
 }
 
 private fun KType.toJsonContent() = mapOf(MimeTypes.json to mapOf("schema" to toJsonSchema()))
