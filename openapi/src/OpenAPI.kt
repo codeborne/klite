@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.*
 import klite.RequestMethod.GET
@@ -17,10 +18,10 @@ import java.net.URL
 import java.time.*
 import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 
@@ -64,7 +65,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "parameters" to funHandler?.let {
       it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
     },
-    "requestBody" to findRequestBody(route),
+    "requestBody" to toRequestBody(route, route.annotation<RequestBody>() ?: op?.requestBody),
     "responses" to if (returnType?.classifier == Unit::class) mapOf(NoContent.value to mapOf("description" to "No content"))
                    else mapOf(OK.value to mapOfNotNull("description" to "OK", "content" to returnType?.toJsonContent()))
   ) + (op?.let { it.toNonEmptyValues { it.name != "method" } + mapOf(
@@ -114,17 +115,28 @@ private fun KType.toJsonSchema(): Map<String, Any>? {
   )
 }
 
-private fun findRequestBody(route: Route) = (route.handler as? FunHandler)?.params?.
-  find { it.p.kind != INSTANCE && it.source == null && it.cls.java.packageName != "klite" }?.p?.toRequestBody()
+private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, Any?> {
+  val bodyParam = (route.handler as? FunHandler)?.params?.find { it.p.kind != INSTANCE && it.source == null && it.cls.java.packageName != "klite" }?.p
+  val requestBody = annotation?.toNonEmptyValues() ?: HashMap()
+  if (annotation != null && annotation.content.isNotEmpty())
+    requestBody["content"] = annotation.content.associate {
+      val content = it.toNonEmptyValues { it.name != "mediaType" }
+      if (it.schema.implementation != Void::class.java) content["schema"] = it.schema.implementation.createType().toJsonSchema()
+      it.mediaType to content
+    }
+  if (bodyParam != null) requestBody.putIfAbsent("content", bodyParam.type.toJsonContent())
+  return requestBody
+}
 
-private fun KParameter.toRequestBody() = mapOf("content" to type.toJsonContent())
 private fun KType.toJsonContent() = mapOf(MimeTypes.json to mapOf("schema" to toJsonSchema()))
 
-internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = { true }): Map<String, Any?> =
-  publicProperties.filter(filter).associate { it.name to when(val v = it.valueOf(this)) {
-    "", false, 0, Int.MAX_VALUE, Int.MIN_VALUE, 0.0, Void::class.java, AccessMode.AUTO -> null
-    is Enum<*> -> v.takeIf { v.name != "DEFAULT" }
-    is Annotation -> v.toNonEmptyValues().takeIf { it.isNotEmpty() }
-    is Array<*> -> v.map { (it as? Annotation)?.toNonEmptyValues() ?: it }.takeIf { it.isNotEmpty() }
-    else -> v
-  }}.filterValues { it != null }
+internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = { true }): MutableMap<String, Any?> = HashMap<String, Any?>().also { map ->
+  publicProperties.filter(filter).forEach { p ->
+    when(val v = p.valueOf(this)) {
+      "", false, 0, Int.MAX_VALUE, Int.MIN_VALUE, 0.0, Void::class.java, AccessMode.AUTO -> null
+      is Enum<*> -> v.takeIf { v.name != "DEFAULT" }
+      is Annotation -> v.toNonEmptyValues().takeIf { it.isNotEmpty() }
+      is Array<*> -> v.map { (it as? Annotation)?.toNonEmptyValues() ?: it }.takeIf { it.isNotEmpty() }
+      else -> v
+    }?.let { map[p.name] = it }
+  }}

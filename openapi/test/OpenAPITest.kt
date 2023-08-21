@@ -6,6 +6,9 @@ import ch.tutteli.atrium.api.verbs.expect
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.*
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.HttpExchange
@@ -22,9 +25,21 @@ import java.time.LocalDate
 import java.util.*
 
 class OpenAPITest {
+  data class User(val name: String, val id: UUID)
+  val userSchema = mapOf(MimeTypes.json to mapOf(
+    "schema" to mapOf(
+      "type" to "object",
+      "properties" to mapOf(
+        "name" to mapOf("type" to "string"),
+        "id" to mapOf("type" to "string", "format" to "uuid")
+      ),
+      "required" to setOf("name", "id")
+    )
+  ))
+
   @Test fun nonEmptyValues() {
     @Tag(name = "hello") class Dummy {}
-    expect(Dummy::class.annotation<Tag>()!!.toNonEmptyValues()).toEqual(mapOf("name" to "hello"))
+    expect(Dummy::class.annotation<Tag>()!!.toNonEmptyValues()).toEqual(mutableMapOf("name" to "hello"))
   }
 
   @Test fun `route classes to tags`() {
@@ -66,29 +81,32 @@ class OpenAPITest {
   }
 
   @Test fun `request body`() {
-    data class User(val name: String, val id: UUID)
     class MyRoutes {
       fun saveUser(e: HttpExchange, @PathParam userId: UUID, body: User) {}
     }
+
     expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser)))).toEqual("post" to mapOf(
       "operationId" to "MyRoutes.saveUser",
       "tags" to listOf("MyRoutes"),
       "parameters" to listOf(
         mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid"))
       ),
-      "requestBody" to mapOf("content" to
-        mapOf(MimeTypes.json to mapOf(
-          "schema" to mapOf(
-            "type" to "object",
-            "properties" to mapOf(
-              "name" to mapOf("type" to "string"),
-              "id" to mapOf("type" to "string", "format" to "uuid")
-            ),
-            "required" to setOf("name", "id")
-          )
-        ))
-      ),
+      "requestBody" to mapOf("content" to userSchema),
       "responses" to mapOf(NoContent.value to mapOf("description" to "No content"))
+    ))
+  }
+
+  @Test fun `request body from annotation's implementation field`() {
+    class MyRoutes {
+      @RequestBody(description = "Application and applicant", content = [Content(mediaType = MimeTypes.json, schema = Schema(implementation = User::class))])
+      fun saveUser(e: HttpExchange): User = User("x", UUID.randomUUID())
+    }
+    expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser), annotations = MyRoutes::saveUser.annotations))).toEqual("post" to mapOf(
+      "operationId" to "MyRoutes.saveUser",
+      "tags" to listOf("MyRoutes"),
+      "parameters" to emptyList<Any>(),
+      "requestBody" to mapOf("description" to "Application and applicant", "content" to userSchema),
+      "responses" to mapOf(OK.value to mapOf("description" to "OK", "content" to userSchema))
     ))
   }
 
