@@ -1,9 +1,11 @@
 package klite.openapi
 
 import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -33,22 +35,23 @@ import kotlin.reflect.full.primaryConstructor
 
 /**
  * Adds an /openapi endpoint to the context, listing all the routes.
- * - Use @Operation swagger annotation to describe the routes
- * - Use @Hidden to hide a route from the spec
- * - @Parameter annotation can be used on method parameters directly.
- * - @Tag annotation is supported on route classes for grouping of routes.
+ * - Pass [OpenAPIDefinition][io.swagger.v3.oas.annotations.OpenAPIDefinition] or only [Info][io.swagger.v3.oas.annotations.info.Info] annotation to this function to specify general info
+ * - Use [@Operation][io.swagger.v3.oas.annotations.Operation] annotation to describe each route
+ * - Use [@Hidden][io.swagger.v3.oas.annotations.Hidden] to hide a route from the spec
+ * - [@Parameter][io.swagger.v3.oas.annotations.Parameter] annotation can be used on method parameters directly
+ * - [@Tag][io.swagger.v3.oas.annotations.tags.Tag] annotation is supported on route classes for grouping of routes
  */
-fun Router.openApi(path: String = "/openapi", title: String = "API", version: String = "1.0.0", annotations: List<Annotation> = emptyList()) {
-  add(Route(GET, path.toRegex(), annotations) {
+fun Router.openApi(path: String = "/openapi", vararg annotations: Annotation) {
+  add(Route(GET, path.toRegex(), annotations.toList()) {
     mapOf(
-      "openapi" to "3.0.0",
-      "info" to mapOf("title" to title, "version" to version),
+      "openapi" to "3.1.0",
+      "info" to route.annotation<Info>()?.toNonEmptyValues(),
       "servers" to listOf(mapOf("url" to fullUrl(prefix))),
       "tags" to toTags(routes),
       "paths" to routes.filter { !it.hasAnnotation<Hidden>() }.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
         routes.associate(::toOperation)
       }
-    )
+    ) + (route.annotation<OpenAPIDefinition>()?.toNonEmptyValues() ?: emptyMap())
   })
 }
 
