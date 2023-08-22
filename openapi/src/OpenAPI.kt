@@ -41,7 +41,7 @@ import kotlin.reflect.full.primaryConstructor
  * - [@Parameter][io.swagger.v3.oas.annotations.Parameter] annotation can be used on method parameters directly
  * - [@Tag][io.swagger.v3.oas.annotations.tags.Tag] annotation is supported on route classes for grouping of routes
  */
-fun Router.openApi(path: String = "/openapi", vararg annotations: Annotation) {
+fun Router.openApi(path: String = "/openapi", annotations: List<Annotation> = emptyList()) {
   add(Route(GET, path.toRegex(), annotations.toList()) {
     mapOf(
       "openapi" to "3.1.0",
