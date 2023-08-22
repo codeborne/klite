@@ -50,6 +50,7 @@ subprojects {
   tasks.withType<KotlinCompile> {
     kotlinOptions {
       freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
+      freeCompilerArgs += "-Xcontext-receivers"
     }
   }
 

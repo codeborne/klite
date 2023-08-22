@@ -3,19 +3,27 @@ package klite.openapi
 import ch.tutteli.atrium.api.fluent.en_GB.toContainExactly
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.every
+import io.mockk.mockk
+import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.*
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
+import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityScheme
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.HttpExchange
 import klite.MimeTypes
 import klite.RequestMethod.GET
 import klite.RequestMethod.POST
 import klite.Route
+import klite.Router
 import klite.StatusCode.Companion.BadRequest
 import klite.StatusCode.Companion.Found
 import klite.StatusCode.Companion.NoContent
@@ -23,6 +31,7 @@ import klite.StatusCode.Companion.OK
 import klite.StatusCode.Companion.Unauthorized
 import klite.annotations.*
 import org.junit.jupiter.api.Test
+import java.net.URI
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.*
@@ -144,5 +153,28 @@ class OpenAPITest {
       "responses" to mapOf(Found to mapOf("description" to "desc")),
       "summary" to "summary"
     ))
+  }
+
+  @Test fun `definition and security`() {
+    @SecurityScheme(name = "bearerApiKey", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "API-Key", paramName = "Authorization")
+    @OpenAPIDefinition(info = Info(title = "Mega API", version = "1.x"), security = [SecurityRequirement(name = "bearerApiKey")])
+    class MyRoutes {}
+
+    mockk<HttpExchange>(relaxed = true).apply {
+      every { fullUrl(any()) } returns URI("https://base")
+      every { route } returns Route(GET, "/".toRegex(), MyRoutes::class.annotations) {}
+      val openApi = mockk<Router>(relaxed = true).generateOpenAPI()
+      expect(openApi).toEqual(mapOf(
+        "openapi" to "3.1.0",
+        "info" to mapOf("title" to "Mega API", "version" to "1.x"),
+        "servers" to listOf(mapOf("url" to URI("https://base"))),
+        "tags" to emptySet<String>(),
+        "components" to mapOf(
+          "securitySchemes" to mapOf("bearerApiKey" to mapOf("type" to SecuritySchemeType.HTTP, "scheme" to "bearer", "bearerFormat" to "API-Key", "name" to "Authorization"))
+        ),
+        "paths" to emptyMap<String, Any?>(),
+        "security" to mapOf("bearerApiKey" to emptyList<Any>())
+      ))
+    }
   }
 }

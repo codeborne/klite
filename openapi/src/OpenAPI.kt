@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityScheme
+import io.swagger.v3.oas.annotations.security.SecuritySchemes
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.*
 import klite.RequestMethod.GET
@@ -35,25 +37,34 @@ import kotlin.reflect.full.primaryConstructor
 
 /**
  * Adds an /openapi endpoint to the context, listing all the routes.
- * - Pass [OpenAPIDefinition][io.swagger.v3.oas.annotations.OpenAPIDefinition] or only [Info][io.swagger.v3.oas.annotations.info.Info] annotation to this function to specify general info
+ * - Pass [@OpenAPIDefinition][io.swagger.v3.oas.annotations.OpenAPIDefinition] or only [@Info][io.swagger.v3.oas.annotations.info.Info] annotation to this function to specify general info
+ * - Pass [@SecurityScheme][io.swagger.v3.oas.annotations.security.SecurityScheme] to define authorization
  * - Use [@Operation][io.swagger.v3.oas.annotations.Operation] annotation to describe each route
  * - Use [@Hidden][io.swagger.v3.oas.annotations.Hidden] to hide a route from the spec
  * - [@Parameter][io.swagger.v3.oas.annotations.Parameter] annotation can be used on method parameters directly
  * - [@Tag][io.swagger.v3.oas.annotations.tags.Tag] annotation is supported on route classes for grouping of routes
  */
 fun Router.openApi(path: String = "/openapi", annotations: List<Annotation> = emptyList()) {
-  add(Route(GET, path.toRegex(), annotations.toList()) {
-    mapOf(
-      "openapi" to "3.1.0",
-      "info" to route.annotation<Info>()?.toNonEmptyValues(),
-      "servers" to listOf(mapOf("url" to fullUrl(prefix))),
-      "tags" to toTags(routes),
-      "paths" to routes.filter { !it.hasAnnotation<Hidden>() }.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
-        routes.associate(::toOperation)
-      }
-    ) + (route.annotation<OpenAPIDefinition>()?.toNonEmptyValues() ?: emptyMap())
-  })
+  add(Route(GET, path.toRegex(), annotations.toList()) { generateOpenAPI() })
 }
+
+context(HttpExchange)
+internal fun Router.generateOpenAPI() = mapOf(
+  "openapi" to "3.1.0",
+  "info" to route.annotation<Info>()?.toNonEmptyValues(),
+  "servers" to listOf(mapOf("url" to fullUrl(prefix))),
+  "tags" to toTags(routes),
+  "components" to mapOfNotNull(
+    "securitySchemes" to (route.annotations.filterIsInstance<SecurityScheme>() + (route.annotation<SecuritySchemes>()?.value ?: emptyArray())).associate { s ->
+      s.name to s.toNonEmptyValues { it.name != "paramName" }.let { it + ("name" to s.paramName) }
+    }.takeIf { it.isNotEmpty() }
+  ).takeIf { it.isNotEmpty() },
+  "paths" to routes.filter { !it.hasAnnotation<Hidden>() }.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
+    routes.associate(::toOperation)
+  },
+) + (route.annotation<OpenAPIDefinition>()?.let {
+  it.toNonEmptyValues() + ("security" to it.security.associate { it.name to it.scopes.toList() })
+} ?: emptyMap())
 
 internal fun toTags(routes: List<Route>) = routes.asSequence()
   .map { it.handler }
