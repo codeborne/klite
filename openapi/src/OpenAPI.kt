@@ -82,7 +82,8 @@ internal fun toOperation(route: Route): Pair<String, Any> {
       it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
     },
     "requestBody" to toRequestBody(route, route.annotation<RequestBody>() ?: op?.requestBody),
-    "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType)
+    "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
+    "security" to op?.security?.associate { it.name to it.scopes.toList() }
   ) + (op?.let { it.toNonEmptyValues { it.name !in setOf("method", "requestBody", "responses") } } ?: emptyMap())
 }
 
