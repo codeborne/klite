@@ -74,12 +74,12 @@ class OpenAPITest {
 
   @Test fun parameters() {
     class MyRoutes {
-      fun withParams(@PathParam date: LocalDate, @QueryParam simpleString: String?, @CookieParam dow: DayOfWeek) = null
+      fun withParams(@PathParam date: LocalDate, @QueryParam simpleString: String?, @CookieParam dow: List<DayOfWeek>) = null
     }
     expect(FunHandler(MyRoutes(), MyRoutes::withParams).params.filter { it.source != null }.map { toParameter(it) }).toContainExactly(
       mapOf("name" to "date", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "date")),
       mapOf("name" to "simpleString", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "string")),
-      mapOf("name" to "dow", "required" to true, "in" to COOKIE, "schema" to mapOf("type" to "string", "enum" to DayOfWeek.values().toList()))
+      mapOf("name" to "dow", "required" to true, "in" to COOKIE, "schema" to mapOf("type" to "array", "items" to mapOf("type" to "string", "enum" to DayOfWeek.values().toList())))
     )
   }
 

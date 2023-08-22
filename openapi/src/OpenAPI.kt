@@ -89,14 +89,16 @@ private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) 
 
 private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any>? {
   val cls = classifier as? KClass<*> ?: return null
-  val jsonType = when (cls) {
-    Nothing::class -> "null"
-    Boolean::class -> "boolean"
-    Number::class -> "integer"
-    BigDecimal::class, Decimal::class, Float::class, Double::class -> "number"
-    else -> if (cls == String::class || Converter.supports(cls)) "string" else "object"
+  val jsonType = when {
+    cls == Nothing::class -> "null"
+    cls == Boolean::class -> "boolean"
+    cls == BigDecimal::class || cls == Decimal::class || cls == Float::class || cls == Double::class -> "number"
+    cls.isSubclassOf(Number::class) -> "integer"
+    cls.isSubclassOf(Array::class) || cls.isSubclassOf(Iterable::class) -> "array"
+    cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
+    else -> "object"
   }
-  val jsonFormat = when (cls) {
+  val jsonStringFormat = when (cls) {
     LocalDate::class, Date::class -> "date"
     LocalTime::class -> "time"
     Instant::class, LocalDateTime::class -> "date-time"
@@ -107,7 +109,8 @@ private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any>? {
   }
   return mapOfNotNull(
     "type" to jsonType,
-    "format" to jsonFormat,
+    "format" to jsonStringFormat,
+    "items" to if (jsonType == "array") arguments.firstOrNull()?.type?.toJsonSchema() else null,
     "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants.toList() else null,
     "properties" to if (jsonType == "object") cls.publicProperties.associate { it.name to it.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() } else null,
     "required" to if (jsonType == "object") cls.publicProperties.filter { p ->
