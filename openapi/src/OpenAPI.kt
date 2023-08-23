@@ -59,7 +59,7 @@ internal fun Router.generateOpenAPI() = mapOf(
     routes.associate(::toOperation)
   },
 ) + (route.findAnnotation<OpenAPIDefinition>()?.let {
-  it.toNonEmptyValues() + ("security" to it.security.associate { it.name to it.scopes.toList() })
+  it.toNonEmptyValues() + ("security" to it.security.associate { it.name to it.scopes.toList() }.takeIf { it.isNotEmpty() })
 } ?: emptyMap())
 
 internal fun toTags(routes: List<Route>) = routes.asSequence()
@@ -79,7 +79,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     },
     "requestBody" to toRequestBody(route, route.findAnnotation<RequestBody>() ?: op?.requestBody),
     "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
-    "security" to route.findAnnotations<SecurityRequirement>().associate { it.name to it.scopes.toList() }
+    "security" to route.findAnnotations<SecurityRequirement>().associate { it.name to it.scopes.toList() }.takeIf { it.isNotEmpty() }
   ) + (op?.let { it.toNonEmptyValues { it.name !in setOf("method", "requestBody", "responses") } } ?: emptyMap())
 }
 

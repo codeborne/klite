@@ -78,7 +78,7 @@ class OpenAPITest {
       ),
       "requestBody" to null,
       "responses" to mapOf(OK to mapOf("description" to "OK", "content" to mapOf(MimeTypes.json to mapOf("schema" to mapOf("type" to "null"))))),
-      "security" to emptyMap<String, Any>()
+      "security" to null
     ))
   }
 
@@ -105,7 +105,7 @@ class OpenAPITest {
       ),
       "requestBody" to mapOf("content" to userSchema(), "required" to true),
       "responses" to mapOf(NoContent to mapOf("description" to "No content")),
-      "security" to emptyMap<String, Any>()
+      "security" to null
     ))
   }
 
@@ -138,7 +138,7 @@ class OpenAPITest {
       "parameters" to null,
       "requestBody" to null,
       "responses" to mapOf(OK to mapOf("description" to "OK")),
-      "security" to emptyMap<String, Any>()
+      "security" to null
     ))
   }
 
@@ -157,7 +157,7 @@ class OpenAPITest {
       "requestBody" to null,
       "responses" to mapOf(Found to mapOf("description" to "desc")),
       "summary" to "summary",
-      "security" to emptyMap<String, Any>()
+      "security" to null
     ))
   }
 
