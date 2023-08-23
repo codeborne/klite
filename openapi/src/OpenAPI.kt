@@ -33,9 +33,13 @@ import kotlin.reflect.full.*
 
 /**
  * Adds an /openapi endpoint to the context, listing all the routes.
+ * This handler will try to gather all the information about request/parameters/response automatically, but you can use Swagger annotations to specify more details.
  * - Pass [@OpenAPIDefinition][io.swagger.v3.oas.annotations.OpenAPIDefinition] or only [@Info][io.swagger.v3.oas.annotations.info.Info] annotation to this function to specify general info
  * - Pass [@SecurityScheme][io.swagger.v3.oas.annotations.security.SecurityScheme] to define authorization
  * - Use [@Operation][io.swagger.v3.oas.annotations.Operation] annotation to describe each route
+ * - Use [@SecurityRequirement][io.swagger.v3.oas.annotations.SecurityRequirement] annotations to reference security requirements of the route
+ * - Use [@RequestBody][io.swagger.v3.oas.annotations.RequestBody] annotations to define the request body
+ * - Use [@ApiResponse][io.swagger.v3.oas.annotations.ApiResponse] annotations to define one or many possible responses
  * - Use [@Hidden][io.swagger.v3.oas.annotations.Hidden] to hide a route from the spec
  * - [@Parameter][io.swagger.v3.oas.annotations.Parameter] annotation can be used on method parameters directly
  * - [@Tag][io.swagger.v3.oas.annotations.tags.Tag] annotation is supported on route classes for grouping of routes
@@ -59,7 +63,7 @@ internal fun Router.generateOpenAPI() = mapOf(
     routes.associate(::toOperation)
   },
 ) + (route.findAnnotation<OpenAPIDefinition>()?.let {
-  it.toNonEmptyValues() + ("security" to it.security.associate { it.name to it.scopes.toList() }.takeIf { it.isNotEmpty() })
+  it.toNonEmptyValues() + ("security" to it.security.toList().toSecurity())
 } ?: emptyMap())
 
 internal fun toTags(routes: List<Route>) = routes.asSequence()
@@ -79,7 +83,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     },
     "requestBody" to toRequestBody(route, route.findAnnotation<RequestBody>() ?: op?.requestBody),
     "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
-    "security" to route.findAnnotations<SecurityRequirement>().associate { it.name to it.scopes.toList() }.takeIf { it.isNotEmpty() }
+    "security" to (op?.security?.toList() ?: route.findAnnotations<SecurityRequirement>()).toSecurity()
   ) + (op?.let { it.toNonEmptyValues { it.name !in setOf("method", "requestBody", "responses") } } ?: emptyMap())
 }
 
@@ -156,6 +160,8 @@ private fun toResponsesByCode(route: Route, op: Operation?, returnType: KType?):
 }
 
 private fun KType.toJsonContent(response: Boolean = false) = mapOf(MimeTypes.json to mapOf("schema" to toJsonSchema(response)))
+
+private fun List<SecurityRequirement>.toSecurity() = map { mapOf(it.name to it.scopes.toList()) }.takeIf { it.isNotEmpty() }
 
 internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = { true }): MutableMap<String, Any?> = HashMap<String, Any?>().also { map ->
   publicProperties.filter(filter).forEach { p ->

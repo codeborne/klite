@@ -127,7 +127,7 @@ class OpenAPITest {
         BadRequest to mapOf("description" to "Very bad request"),
         Unauthorized to mapOf("description" to "Unauthorized"),
       ),
-      "security" to mapOf("MySecurity" to emptyList<String>())
+      "security" to listOf(mapOf("MySecurity" to emptyList<String>()))
     ))
   }
 
@@ -179,7 +179,7 @@ class OpenAPITest {
           "securitySchemes" to mapOf("bearerApiKey" to mapOf("type" to SecuritySchemeType.HTTP, "scheme" to "bearer", "bearerFormat" to "API-Key", "name" to "Authorization"))
         ),
         "paths" to emptyMap<String, Any?>(),
-        "security" to mapOf("bearerApiKey" to emptyList<Any>())
+        "security" to listOf(mapOf("bearerApiKey" to emptyList<Any>()))
       ))
     }
   }
