@@ -11,7 +11,7 @@ open class BusinessException(messageKey: String, cause: Throwable? = null): Exce
 typealias ThrowableHandler<T> = HttpExchange.(e: T) -> ErrorResponse?
 
 open class ErrorHandler {
-  private val logger = logger(ErrorHandler::class.qualifiedName!!)
+  private val log = logger(ErrorHandler::class.qualifiedName!!)
   private val handlers = mutableMapOf<KClass<out Throwable>, ThrowableHandler<Throwable>>()
   private val statusCodes = mutableMapOf<KClass<out Throwable>, StatusCode>(
     IllegalArgumentException::class to BadRequest,
@@ -20,7 +20,7 @@ open class ErrorHandler {
   )
 
   init {
-    on<NoSuchElementException> { e -> logger.error(e); ErrorResponse(NotFound, e.message?.takeIf { "is empty" !in it }) }
+    on<NoSuchElementException> { e -> log.error(e); ErrorResponse(NotFound, e.message?.takeIf { "is empty" !in it }) }
     on<NullPointerException> { e ->
       if (e.message?.startsWith("Parameter specified as non-null is null") == true)
         ErrorResponse(BadRequest, e.message!!.substring(e.message!!.indexOf(", parameter ") + 12) + " is required")
@@ -39,7 +39,7 @@ open class ErrorHandler {
     if (!exchange.isResponseStarted) toResponse(exchange, e).let {
       if (it.statusCode.bodyAllowed) exchange.render(it.statusCode, it) else exchange.send(it.statusCode)
     } else if (e.message == null || e.message!!.let { "Broken pipe" !in it && "Connection reset" !in it })
-      logger.error("Error after headers sent", e)
+      log.error("Error after headers sent", e)
   }
 
   open fun toResponse(exchange: HttpExchange, e: Throwable): ErrorResponse {
@@ -51,14 +51,14 @@ open class ErrorHandler {
       exchange.handler(e)?.let { return it }
     }
     statusCodes[e::class]?.let {
-      logger.error(e)
+      log.error(e)
       return ErrorResponse(it, e.message)
     }
     return unhandled(e)
   }
 
   open fun unhandled(e: Throwable): ErrorResponse {
-    logger.error("Unhandled exception", e)
+    log.error("Unhandled exception", e)
     return ErrorResponse(InternalServerError, e.message.takeUnless { Config.isProd })
   }
 }

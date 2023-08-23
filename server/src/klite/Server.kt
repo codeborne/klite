@@ -39,10 +39,10 @@ class Server(
   init { currentThread().name += "/" + requestIdGenerator.prefix }
   private val http = HttpServer.create()
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
-  private val logger = logger()
+  private val log = logger()
 
   fun start(gracefulStopDelaySec: Int = 3) {
-    logger.info("Listening on $listen")
+    log.info("Listening on $listen")
     http.bind(listen, 0)
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
@@ -52,7 +52,7 @@ class Server(
   fun onStop(handler: Runnable) { onStopHandlers += handler }
 
   fun stop(delaySec: Int = 1) {
-    logger.info("Stopping gracefully")
+    log.info("Stopping gracefully")
     http.stop(delaySec)
     onStopHandlers.reversed().forEach { it.run() }
   }
@@ -97,7 +97,7 @@ class Server(
       if (route != null) exchange.route = route
       val result = (route?.decoratedHandler ?: wrappedNotFoundHandler).invoke(exchange)
       if (!exchange.isResponseStarted) exchange.handle(result)
-      else if (result != null && result != Unit) logger.warn("Response already started, cannot render $result")
+      else if (result != null && result != Unit) log.warn("Response already started, cannot render $result")
     } catch (ignore: BodyNotAllowedException) {
     } catch (e: Throwable) {
       handleError(exchange, e)
@@ -117,7 +117,7 @@ class Server(
     errors.handle(exchange, e)
   } catch (ignore: BodyNotAllowedException) {
   } catch (e2: Throwable) {
-    logger.error("While handling $e", e2)
+    log.error("While handling $e", e2)
   }
 }
 

@@ -52,14 +52,14 @@ open class SimpleRegistry: MutableRegistry {
  * You may extend this class to override how exactly constructor parameters are created.
  */
 open class DependencyInjectingRegistry: SimpleRegistry() {
-  private val logger = logger()
+  private val log = logger()
 
   override fun <T: Any> create(type: KClass<T>): T {
     val constructor = chooseConstructor(type) ?: throw RegistryException("$type has no usable constructor")
     try {
       val args = createArgs(constructor)
       return constructor.callBy(args).also {
-        logger.log(DEBUG) { "Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}" }
+        log.log(DEBUG) { "Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}" }
       }
     } catch (e: Exception) {
       throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}", e.cause ?: e)
