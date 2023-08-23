@@ -2,7 +2,7 @@ package klite
 
 import com.sun.net.httpserver.HttpServer
 import klite.RequestMethod.GET
-import klite.RequestMethod.HEAD
+import klite.RequestMethod.OPTIONS
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.NotFound
 import klite.StatusCode.Companion.OK
@@ -32,7 +32,7 @@ class Server(
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
   private val sessionStore: SessionStore? = registry.optional(),
-  val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
+  private val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
@@ -71,16 +71,15 @@ class Server(
   /** Adds a new router context. When handing a request, the longest matching router context is chosen */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
-      var notFoundHandler = notFoundHandler
-      addContext(prefix, router) { runHandler(this, router.route(this), notFoundHandler) }
+      val notFoundRoute = Route(OPTIONS, prefix.toRegex(), handler = notFoundHandler)
+      addContext(prefix, router) { runHandler(this, router.route(this) ?: notFoundRoute) }
       router.block()
-      notFoundHandler = router.decorators.wrap { notFoundHandler }
+      notFoundRoute.decoratedHandler = router.decorators.wrap { notFoundHandler }
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
     val route = Route(GET, prefix.toRegex(), handler::class.annotations, handler).apply { decoratedHandler = decorators.wrap(handler) }
-    val notFoundHandler = decorators.wrap(notFoundHandler)
-    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET || method == HEAD }, notFoundHandler) }
+    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route) }
   }
 
   private fun addContext(prefix: String, config: RouterConfig, extraCoroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
@@ -92,10 +91,10 @@ class Server(
     }
   }
 
-  private suspend fun runHandler(exchange: HttpExchange, route: Route?, wrappedNotFoundHandler: Handler) {
+  private suspend fun runHandler(exchange: HttpExchange, route: Route) {
     try {
-      if (route != null) exchange.route = route
-      val result = (route?.decoratedHandler ?: wrappedNotFoundHandler).invoke(exchange)
+      exchange.route = route
+      val result = route.decoratedHandler.invoke(exchange)
       if (!exchange.isResponseStarted) exchange.handle(result)
       else if (result != null && result != Unit) log.warn("Response already started, cannot render $result")
     } catch (ignore: BodyNotAllowedException) {

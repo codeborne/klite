@@ -1,5 +1,7 @@
 package klite
 
+import klite.RequestMethod.GET
+import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.OK
 import java.io.FileNotFoundException
 import java.nio.file.Path
@@ -23,6 +25,7 @@ open class AssetsHandler(
   }
 
   override suspend fun invoke(exchange: HttpExchange) {
+    if (exchange.method != GET && exchange.method != HEAD) throw NotFoundException(exchange.method.name)
     try {
       var file = path / exchange.path.substring(1)
       if (!file.startsWith(path)) throw ForbiddenException(exchange.path)
