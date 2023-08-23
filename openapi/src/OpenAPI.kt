@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import io.swagger.v3.oas.annotations.security.SecuritySchemes
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -55,7 +57,7 @@ internal fun Router.generateOpenAPI() = mapOf(
   "servers" to listOf(mapOf("url" to fullUrl(prefix))),
   "tags" to toTags(routes),
   "components" to mapOfNotNull(
-    "securitySchemes" to (route.annotations.filterIsInstance<SecurityScheme>() + (route.annotation<SecuritySchemes>()?.value ?: emptyArray())).associate { s ->
+    "securitySchemes" to route.repeatableAnnotations<SecurityScheme, SecuritySchemes>().associate { s ->
       s.name to s.toNonEmptyValues { it.name != "paramName" }.let { it + ("name" to s.paramName) }
     }.takeIf { it.isNotEmpty() }
   ).takeIf { it.isNotEmpty() },
@@ -65,6 +67,9 @@ internal fun Router.generateOpenAPI() = mapOf(
 ) + (route.annotation<OpenAPIDefinition>()?.let {
   it.toNonEmptyValues() + ("security" to it.security.associate { it.name to it.scopes.toList() })
 } ?: emptyMap())
+
+private inline fun <reified A: Annotation, reified R: Annotation> Route.repeatableAnnotations() =
+  annotations.filterIsInstance<A>() + (annotation<R>()?.let { it.publicProperties.first().valueOf(it) as Array<A> } ?: emptyArray())
 
 internal fun toTags(routes: List<Route>) = routes.asSequence()
   .map { it.handler }
@@ -83,7 +88,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     },
     "requestBody" to toRequestBody(route, route.annotation<RequestBody>() ?: op?.requestBody),
     "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
-    "security" to op?.security?.associate { it.name to it.scopes.toList() }
+    "security" to route.repeatableAnnotations<SecurityRequirement, SecurityRequirements>().associate { it.name to it.scopes.toList() }
   ) + (op?.let { it.toNonEmptyValues { it.name !in setOf("method", "requestBody", "responses") } } ?: emptyMap())
 }
 
@@ -153,7 +158,7 @@ private fun toResponsesByCode(route: Route, op: Operation?, returnType: KType?):
   val responses = LinkedHashMap<StatusCode, Any?>()
   if (returnType?.classifier == Unit::class) responses[NoContent] = mapOf("description" to "No content")
   else if (op?.responses?.isEmpty() != false) responses[OK] = mapOfNotNull("description" to "OK", "content" to returnType?.toJsonContent(response = true))
-  (route.annotations.filterIsInstance<ApiResponse>() + (route.annotation<ApiResponses>()?.value ?: emptyArray()) + (op?.responses ?: emptyArray())).forEach {
+  (route.repeatableAnnotations<ApiResponse, ApiResponses>() + (op?.responses ?: emptyArray())).forEach {
     responses[StatusCode(it.responseCode.toInt())] = it.toNonEmptyValues { it.name != "responseCode" }
   }
   return responses

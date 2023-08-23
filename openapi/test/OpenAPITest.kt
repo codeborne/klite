@@ -77,7 +77,8 @@ class OpenAPITest {
         mapOf("name" to "force", "required" to false, "in" to QUERY, "schema" to mapOf("type" to "boolean"))
       ),
       "requestBody" to null,
-      "responses" to mapOf(OK to mapOf("description" to "OK", "content" to mapOf(MimeTypes.json to mapOf("schema" to mapOf("type" to "null")))))
+      "responses" to mapOf(OK to mapOf("description" to "OK", "content" to mapOf(MimeTypes.json to mapOf("schema" to mapOf("type" to "null"))))),
+      "security" to emptyMap<String, Any>()
     ))
   }
 
@@ -103,7 +104,8 @@ class OpenAPITest {
         mapOf("name" to "userId", "required" to true, "in" to PATH, "schema" to mapOf("type" to "string", "format" to "uuid"))
       ),
       "requestBody" to mapOf("content" to userSchema(), "required" to true),
-      "responses" to mapOf(NoContent to mapOf("description" to "No content"))
+      "responses" to mapOf(NoContent to mapOf("description" to "No content")),
+      "security" to emptyMap<String, Any>()
     ))
   }
 
@@ -112,6 +114,7 @@ class OpenAPITest {
       @RequestBody(description = "Application and applicant", content = [Content(mediaType = MimeTypes.json, schema = Schema(implementation = User::class))])
       @ApiResponse(responseCode = "400", description = "Very bad request")
       @ApiResponse(responseCode = "401", description = "Unauthorized")
+      @SecurityRequirement(name = "MySecurity")
       fun saveUser(e: HttpExchange): User = User("x", UUID.randomUUID())
     }
     expect(toOperation(Route(POST, "/x".toRegex(), handler = FunHandler(MyRoutes(), MyRoutes::saveUser), annotations = MyRoutes::saveUser.annotations))).toEqual("post" to mapOf(
@@ -123,7 +126,8 @@ class OpenAPITest {
         OK to mapOf("description" to "OK", "content" to userSchema(response = true)),
         BadRequest to mapOf("description" to "Very bad request"),
         Unauthorized to mapOf("description" to "Unauthorized"),
-      )
+      ),
+      "security" to mapOf("MySecurity" to emptyList<String>())
     ))
   }
 
@@ -133,7 +137,8 @@ class OpenAPITest {
       "tags" to emptyList<Any>(),
       "parameters" to null,
       "requestBody" to null,
-      "responses" to mapOf(OK to mapOf("description" to "OK"))
+      "responses" to mapOf(OK to mapOf("description" to "OK")),
+      "security" to emptyMap<String, Any>()
     ))
   }
 
@@ -151,7 +156,8 @@ class OpenAPITest {
       "parameters" to listOf(mapOf("name" to "param", "in" to QUERY, "description" to "description")),
       "requestBody" to null,
       "responses" to mapOf(Found to mapOf("description" to "desc")),
-      "summary" to "summary"
+      "summary" to "summary",
+      "security" to emptyMap<String, Any>()
     ))
   }
 
