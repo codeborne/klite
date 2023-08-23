@@ -1,7 +1,8 @@
 package klite
 
 import klite.RequestMethod.*
-import kotlin.reflect.KClass
+import kotlin.reflect.KAnnotatedElement
+import kotlin.reflect.full.findAnnotation
 
 abstract class RouterConfig(
   decorators: List<Decorator>,
@@ -85,13 +86,10 @@ enum class RequestMethod(val hasBody: Boolean = true) {
   GET(false), POST, PUT, PATCH, DELETE(false), OPTIONS, HEAD(false)
 }
 
-class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler) {
+class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler): KAnnotatedElement {
   internal var decoratedHandler: Handler = handler
-  val annotations = anonymousHandlerAnnotations(handler) + annotations
-  @Suppress("UNCHECKED_CAST")
-  fun <T: Annotation> annotation(key: KClass<T>): T? = annotations.find { key.javaObjectType.isAssignableFrom(it.javaClass) } as? T
-  inline fun <reified T: Annotation> annotation() = annotation(T::class)
-  inline fun <reified T: Annotation> hasAnnotation() = annotation(T::class) != null
+  override val annotations = anonymousHandlerAnnotations(handler) + annotations
+  inline fun <reified T: Annotation> annotation() = findAnnotation<T>()
 
   private fun anonymousHandlerAnnotations(handler: Handler) =
     handler.javaClass.methods.find { it.name.startsWith("invoke") && it.annotations.isNotEmpty() }?.annotations?.toList() ?: emptyList()
