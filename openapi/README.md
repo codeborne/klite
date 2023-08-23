@@ -7,11 +7,14 @@ Use Swagger/OpenAPI annotations to specify descriptions or more details.
 
 Usage:
 ```kotlin
+  @OpenAPIDefinition(info = Info(title = "My API", version = "1.x"))
+  class MyRoutes { ... }
+
   context("/api") {
     useOnly<JsonBody>()
     annotated<MyRoutes>()
     // ... more routes
-    openApi() // adds /openapi endpoint to the /api context
+    openApi(annotations = MyRoutes::class.annotations) // adds /openapi endpoint to the /api context
   }
 ```
 
