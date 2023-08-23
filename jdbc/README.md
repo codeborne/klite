@@ -2,7 +2,8 @@
 
 Provides simple extension functions for JDBC standard classes for a simple way to query a DB. [Transaction](src/Transaction.kt) management is also supported.
 
-Tested mostly with PostgreSQL.
+A more concise alternative to [Spring's JdbcTemplate](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/jdbc/core/JdbcTemplate.html),
+and also includes SQL statement generation. Tested mostly with PostgreSQL.
 
 Registration with Server instance:
 
@@ -14,7 +15,7 @@ Registration with Server instance:
 
 Stand-alone usage without [klite-server](../server) is also possible:
 ```kotlin
-  val db = HikariDataSource(...) // or ConfigDataSource()
+  val db = PooledDataSource(...) // or ConfigDataSource / HikariDataSource
   DBMigrator(db).migrate()
 ```
 
