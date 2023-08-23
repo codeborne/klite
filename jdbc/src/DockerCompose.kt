@@ -25,8 +25,9 @@ fun dockerCompose(command: String): Int = try {
 fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Duration = 2.seconds) {
   if (service.isEmpty()) return
   try {
-    val ms = measureTimeMillis { dockerCompose("up -d ${if (timeout.inWholeMilliseconds == 0L) "--wait" else ""} $service") }
-    if (ms > timeout.inWholeMilliseconds / 5) sleep(timeout.inWholeMilliseconds) // give the db more time to start listening
+    val timeoutMs = timeout.inWholeMilliseconds
+    val ms = measureTimeMillis { dockerCompose("up -d ${if (timeoutMs == 0L) "--wait" else ""} $service") }
+    if (ms > timeoutMs / 5) sleep(timeoutMs) // give the db more time to start listening
   } catch (e: IOException) {
     getLogger("startDevDB").warn("Failed to automatically start $service: $e")
   }
