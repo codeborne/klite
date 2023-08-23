@@ -3,13 +3,16 @@ package klite
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import klite.RequestMethod.GET
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
 class AssetsHandlerTest {
   val handler = AssetsHandler(Path.of("../sample/public"), useIndexForUnknownPaths = true)
-  val exchange = mockk<HttpExchange>(relaxed = true)
+  val exchange = mockk<HttpExchange>(relaxed = true) {
+    every { method } returns GET
+  }
 
   @Test fun `index must be revalidated`() {
     every { exchange.path } returns "/"
