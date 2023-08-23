@@ -16,6 +16,7 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.util.*
 import kotlin.reflect.KType
+import kotlin.reflect.full.findAnnotation
 
 class AnnotationsTest {
   val exchange = mockk<HttpExchange>()
@@ -49,8 +50,8 @@ class AnnotationsTest {
   @Test fun `method annotations win class annotations`() {
     router.annotated(Routes())
     verify {
-      router.add(match { it.path.toString() == "/context" && it.annotation<CustomAnnotation>()!!.hello == "class" })
-      router.add(match { it.path.toString() == "/context/hello/specific" && it.annotation<CustomAnnotation>()!!.hello == "method" })
+      router.add(match { it.path.toString() == "/context" && it.findAnnotation<CustomAnnotation>()!!.hello == "class" })
+      router.add(match { it.path.toString() == "/context/hello/specific" && it.findAnnotation<CustomAnnotation>()!!.hello == "method" })
     }
   }
 

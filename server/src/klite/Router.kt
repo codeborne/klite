@@ -2,7 +2,6 @@ package klite
 
 import klite.RequestMethod.*
 import kotlin.reflect.KAnnotatedElement
-import kotlin.reflect.full.findAnnotation
 
 abstract class RouterConfig(
   decorators: List<Decorator>,
@@ -89,7 +88,6 @@ enum class RequestMethod(val hasBody: Boolean = true) {
 class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler): KAnnotatedElement {
   internal var decoratedHandler: Handler = handler
   override val annotations = anonymousHandlerAnnotations(handler) + annotations
-  inline fun <reified T: Annotation> annotation() = findAnnotation<T>()
 
   private fun anonymousHandlerAnnotations(handler: Handler) =
     handler.javaClass.methods.find { it.name.startsWith("invoke") && it.annotations.isNotEmpty() }?.annotations?.toList() ?: emptyList()

@@ -1,6 +1,7 @@
 import klite.Before
 import klite.ForbiddenException
 import klite.HttpExchange
+import kotlin.reflect.full.hasAnnotation
 
 @Target(AnnotationTarget.FUNCTION)
 annotation class AdminOnly

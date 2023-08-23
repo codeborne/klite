@@ -47,7 +47,7 @@ fun Router.openApi(path: String = "/openapi", annotations: List<Annotation> = em
 context(HttpExchange)
 internal fun Router.generateOpenAPI() = mapOf(
   "openapi" to "3.1.0",
-  "info" to route.annotation<Info>()?.toNonEmptyValues(),
+  "info" to route.findAnnotation<Info>()?.toNonEmptyValues(),
   "servers" to listOf(mapOf("url" to fullUrl(prefix))),
   "tags" to toTags(routes),
   "components" to mapOfNotNull(
@@ -58,7 +58,7 @@ internal fun Router.generateOpenAPI() = mapOf(
   "paths" to routes.filter { !it.hasAnnotation<Hidden>() }.groupBy { pathParamRegexer.toOpenApi(it.path) }.mapValues { (_, routes) ->
     routes.associate(::toOperation)
   },
-) + (route.annotation<OpenAPIDefinition>()?.let {
+) + (route.findAnnotation<OpenAPIDefinition>()?.let {
   it.toNonEmptyValues() + ("security" to it.security.associate { it.name to it.scopes.toList() })
 } ?: emptyMap())
 
@@ -69,7 +69,7 @@ internal fun toTags(routes: List<Route>) = routes.asSequence()
   .toSet()
 
 internal fun toOperation(route: Route): Pair<String, Any> {
-  val op = route.annotation<Operation>()
+  val op = route.findAnnotation<Operation>()
   val funHandler = route.handler as? FunHandler
   return (op?.method?.trimToNull() ?: route.method.name).lowercase() to mapOf(
     "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
@@ -77,7 +77,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "parameters" to funHandler?.let {
       it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
     },
-    "requestBody" to toRequestBody(route, route.annotation<RequestBody>() ?: op?.requestBody),
+    "requestBody" to toRequestBody(route, route.findAnnotation<RequestBody>() ?: op?.requestBody),
     "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
     "security" to route.findAnnotations<SecurityRequirement>().associate { it.name to it.scopes.toList() }
   ) + (op?.let { it.toNonEmptyValues { it.name !in setOf("method", "requestBody", "responses") } } ?: emptyMap())

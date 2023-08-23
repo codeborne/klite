@@ -16,7 +16,7 @@ import javax.sql.DataSource
 class RequestTransactionHandlerTest {
   val db = mockk<DataSource>(relaxed = true)
   val exchange = mockk<HttpExchange>(relaxed = true) {
-    every { route.annotation(NoTransaction::class) } returns null
+    every { route.annotations } returns emptyList()
   }
   val txHandler = RequestTransactionHandler()
 
