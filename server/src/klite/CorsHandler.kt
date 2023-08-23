@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.days
 
 /**
  * An easy way to enable CORS (cross-origin requests).
- * Currently, must be registered before Server.notFoundHandler, e.g. provided via the Registry.
+ * Enable with `before<CorsHandler>()`
  */
 open class CorsHandler(
   val maxAge: Duration = 7.days,

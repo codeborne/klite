@@ -32,7 +32,7 @@ class Server(
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
   private val sessionStore: SessionStore? = registry.optional(),
-  val notFoundHandler: Handler = decorators.wrap { ErrorResponse(NotFound, path) },
+  val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
@@ -68,16 +68,19 @@ class Server(
     }
   }
 
-  /** Adds a new router context. When handing a request, the longest matching router context is chosen. */
+  /** Adds a new router context. When handing a request, the longest matching router context is chosen */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
-      addContext(prefix, router) { runHandler(this, router.route(this)) }
+      var notFoundHandler = notFoundHandler
+      addContext(prefix, router) { runHandler(this, router.route(this), notFoundHandler) }
       router.block()
+      notFoundHandler = router.decorators.wrap { notFoundHandler }
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
     val route = Route(GET, prefix.toRegex(), handler::class.annotations, handler).apply { decoratedHandler = decorators.wrap(handler) }
-    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET || method == HEAD }) }
+    val notFoundHandler = decorators.wrap(notFoundHandler)
+    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route.takeIf { method == GET || method == HEAD }, notFoundHandler) }
   }
 
   private fun addContext(prefix: String, config: RouterConfig, extraCoroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
@@ -89,10 +92,10 @@ class Server(
     }
   }
 
-  private suspend fun runHandler(exchange: HttpExchange, route: Route?) {
+  private suspend fun runHandler(exchange: HttpExchange, route: Route?, wrappedNotFoundHandler: Handler) {
     try {
       if (route != null) exchange.route = route
-      val result = (route?.decoratedHandler ?: notFoundHandler).invoke(exchange)
+      val result = (route?.decoratedHandler ?: wrappedNotFoundHandler).invoke(exchange)
       if (!exchange.isResponseStarted) exchange.handle(result)
       else if (result != null && result != Unit) logger.warn("Response already started, cannot render $result")
     } catch (ignore: BodyNotAllowedException) {
