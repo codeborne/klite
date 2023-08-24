@@ -3,6 +3,7 @@ package klite.jdbc
 import klite.Config
 import klite.info
 import klite.warn
+import java.io.File
 import java.io.IOException
 import java.lang.ProcessBuilder.Redirect.INHERIT
 import java.lang.System.getLogger
@@ -14,6 +15,7 @@ import kotlin.time.Duration.Companion.seconds
 fun dockerCompose(command: String): Int = try {
   val fullCommand = Config.optional("DOCKER_COMPOSE", "docker compose") + " " + command
   getLogger("dockerCompose").info(fullCommand)
+  getLogger("dockerCompose").info(File(".").absolutePath)
   ProcessBuilder(fullCommand.split(' ')).redirectErrorStream(true).redirectOutput(INHERIT).start().waitFor()
 } catch (e: Exception) {
   if (Config.optional("DOCKER_COMPOSE") == null) {
@@ -26,7 +28,7 @@ fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Dur
   if (service.isEmpty()) return
   try {
     val timeoutMs = timeout.inWholeMilliseconds
-    val ms = measureTimeMillis { dockerCompose("up -d ${if (timeoutMs == 0L) "--wait" else ""} $service") }
+    val ms = measureTimeMillis { dockerCompose("up -d${if (timeoutMs == 0L) " --wait" else ""} $service") }
     if (ms > timeoutMs / 5) sleep(timeoutMs) // give the db more time to start listening
   } catch (e: IOException) {
     getLogger("startDevDB").warn("Failed to automatically start $service: $e")
