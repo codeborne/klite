@@ -61,7 +61,7 @@ Publicly announced at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/
 
 ## Performance
 
-Framework has sub-1ms overhead per request after a warmup.
+Klite (including jdk.httpserver) has sub-1ms overhead per request after warmup.
 Can be verified with Apache Benchmark after [the sample project](sample) is launched:
 
 This simple route produces ~19000 rps, with 99% taking less than 1ms:<br>
