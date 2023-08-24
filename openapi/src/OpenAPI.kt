@@ -28,9 +28,6 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.full.*
 
-// Spec: https://swagger.io/specification/
-// Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
-
 /**
  * Adds an /openapi endpoint to the context, listing all the routes.
  * This handler will try to gather all the information about request/parameters/response automatically, but you can use Swagger annotations to specify more details.

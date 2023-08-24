@@ -27,3 +27,8 @@ For nice visual representation of OpenAPI json output:
 * `docker run -d -p 8080:8088 swaggerapi/swagger-ui`
 * Open http://localhost:8088/?url=http://YOUR-IP:PORT/api/openapi
 * Alternatively, use https://petstore.swagger.io/?url= if your `/openapi` route is available over https.
+
+## Docs
+
+* Spec: https://swagger.io/specification/
+* Sample: https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/api-with-examples.json
