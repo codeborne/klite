@@ -23,8 +23,7 @@ See [sample Launcher](../sample/src/Launcher.kt).
 ## Swagger UI
 
 For nice visual representation of OpenAPI json output:
-* add `before(CorsHandler())` before `openApi()`, as Swagger UI requires CORS to request openapi.json from another host/domain
-* `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL=http://YOUR-IP:PORT/api/openapi swaggerapi/swagger-ui`
-* Open http://localhost:8088
-
-Alternatively, use https://petstore.swagger.io if your `/openapi` route is available over https.
+* add `before(CorsHandler())` before `openApi()`, as Swagger UI requires CORS to request openapi json from another host/domain
+* `docker run -d -p 8080:8088 -e SWAGGER_JSON_URL= swaggerapi/swagger-ui`
+* Open http://localhost:8088/?url=http://YOUR-IP:PORT/api/openapi
+* Alternatively, use https://petstore.swagger.io/?url= if your `/openapi` route is available over https.
