@@ -67,9 +67,6 @@ Can be verified with Apache Benchmark after [the sample project](sample) is laun
 This simple route produces ~19000 rps, with 99% taking less than 1ms:<br>
 `ab -n 10000 -c 10 http://localhost:8080/api/hello`
 
-This jdbc access route produces ~11000 rps, with 99% taking less than 1ms:<br>
-`ab -n 10000 -c 10 http://localhost:8080/api/hello/user/9725b054-426b-11ee-92a5-0bd2a151eea2`
-
 JDBC access route produces ~11000 rps, with 99% taking less than 1ms:<br>
 `ab -n 10000 -c 10 http://localhost:8080/api/hello/user/9725b054-426b-11ee-92a5-0bd2a151eea2`
 
