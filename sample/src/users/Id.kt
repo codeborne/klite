@@ -15,9 +15,10 @@ import java.util.*
 @JvmInline value class Id<T>(val uuid: UUID = UUID.randomUUID()) {
   constructor(uuid: String): this(uuid.uuid)
   override fun toString() = uuid.toString()
-  companion object {
-    init { Converter.use { Id<Any>(it) } }
-  }
+}
+
+fun Converter.registerValueTypes() {
+  use { Id<Any>(it) }
 }
 
 fun <T> String.toId(): Id<T> = Id(uuid)

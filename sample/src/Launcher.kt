@@ -4,10 +4,13 @@ import klite.jdbc.*
 import klite.json.JsonBody
 import klite.openapi.openApi
 import kotlinx.coroutines.delay
+import users.Id
+import users.registerValueTypes
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
 import java.nio.file.Path
 import java.time.Duration.ofSeconds
+import java.util.concurrent.Executors
 
 fun main() {
   sampleServer().start()
@@ -16,6 +19,7 @@ fun main() {
 fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).apply {
   Config.useEnvFile()
   use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
+  Converter.registerValueTypes() // register custom types for deserialization from request params/json/db
 
   if (Config.isDev) startDevDB() // start docker-compose db automatically
   use(DBModule(PooledDataSource())) // configure a DataSource
@@ -28,6 +32,8 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
 
   before<AdminChecker>()
   after { ex, err -> ex.header("X-Error", err?.message ?: "none") }
+
+  Id<Any>()
 
   context("/hello") {
     get { "Hello World" }

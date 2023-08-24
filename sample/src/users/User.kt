@@ -9,7 +9,7 @@ data class User(
   val firstName: String,
   val lastName: String,
   val locale: Locale,
-  val passwordHash: String,
+  val passwordHash: String? = null,
   override val id: Id<User> = Id()
 ): Entity<User> {
   data class Address(
