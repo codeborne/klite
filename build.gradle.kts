@@ -43,12 +43,11 @@ subprojects {
     }
   }
 
-  kotlin {
-    jvmToolchain(11)
-  }
+  java.sourceCompatibility = JavaVersion.VERSION_11
 
   tasks.withType<KotlinCompile> {
     kotlinOptions {
+      jvmTarget = "11"
       freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
       freeCompilerArgs += "-Xcontext-receivers"
     }
@@ -75,7 +74,7 @@ subprojects {
   tasks.test {
     useJUnitPlatform()
     // enable JUnitAssertionImprover from klite.jdbc-test
-    jvmArgs("-Djunit.jupiter.extensions.autodetection.enabled=true", "--add-opens=java.base/java.lang=ALL-UNNAMED")
+    jvmArgs("--enable-preview", "-Djunit.jupiter.extensions.autodetection.enabled=true", "--add-opens=java.base/java.lang=ALL-UNNAMED")
   }
 
   // disable publishing gradle .modules files as JitPack omits excludes from there: https://github.com/jitpack/jitpack.io/issues/5349

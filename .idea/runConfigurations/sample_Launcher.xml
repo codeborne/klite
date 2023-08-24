@@ -3,6 +3,7 @@
     <option name="MAIN_CLASS_NAME" value="LauncherKt" />
     <module name="klite.sample.main" />
     <shortenClasspath name="NONE" />
+    <option name="VM_PARAMETERS" value="--enable-preview" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/sample" />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />
