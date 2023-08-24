@@ -89,7 +89,7 @@ fun toParameter(p: Param, op: Operation? = null) = mapOf(
   "name" to p.name,
   "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
   "in" to toParameterIn(p.source),
-  "schema" to p.p.type.toJsonSchema(response = true),
+  "schema" to p.p.type.toJsonSchema(),
 ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap())
 
 private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) {
@@ -123,7 +123,7 @@ private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any>? {
   return mapOfNotNull(
     "type" to jsonType,
     "format" to jsonStringFormat,
-    "items" to if (jsonType == "array") arguments.firstOrNull()?.type?.toJsonSchema() else null,
+    "items" to if (jsonType == "array") arguments.firstOrNull()?.type?.toJsonSchema(response) else null,
     "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants.toList() else null,
     "properties" to if (jsonType == "object") cls.publicProperties.associate { it.name to it.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() } else null,
     "required" to if (jsonType == "object") cls.publicProperties.filter { p ->
