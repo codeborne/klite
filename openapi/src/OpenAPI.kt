@@ -34,9 +34,9 @@ import kotlin.reflect.full.*
  * - Pass [@OpenAPIDefinition][io.swagger.v3.oas.annotations.OpenAPIDefinition] or only [@Info][io.swagger.v3.oas.annotations.info.Info] annotation to this function to specify general info
  * - Pass [@SecurityScheme][io.swagger.v3.oas.annotations.security.SecurityScheme] to define authorization
  * - Use [@Operation][io.swagger.v3.oas.annotations.Operation] annotation to describe each route
- * - Use [@SecurityRequirement][io.swagger.v3.oas.annotations.SecurityRequirement] annotations to reference security requirements of the route
- * - Use [@RequestBody][io.swagger.v3.oas.annotations.RequestBody] annotations to define the request body
- * - Use [@ApiResponse][io.swagger.v3.oas.annotations.ApiResponse] annotations to define one or many possible responses
+ * - Use [@SecurityRequirement][io.swagger.v3.oas.annotations.security.SecurityRequirement] annotations to reference security requirements of the route
+ * - Use [@RequestBody][io.swagger.v3.oas.annotations.parameters.RequestBody] annotations to define the request body
+ * - Use [@ApiResponse][io.swagger.v3.oas.annotations.responses.ApiResponse] annotations to define one or many possible responses
  * - Use [@Hidden][io.swagger.v3.oas.annotations.Hidden] to hide a route from the spec
  * - [@Parameter][io.swagger.v3.oas.annotations.Parameter] annotation can be used on method parameters directly
  * - [@Tag][io.swagger.v3.oas.annotations.tags.Tag] annotation is supported on route classes for grouping of routes
