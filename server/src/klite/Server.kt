@@ -20,7 +20,7 @@ import kotlin.reflect.full.primaryConstructor
 
 class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
-  val workerPool: ExecutorService = Executors.newFixedThreadPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
+  val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBodyRenderer>()
