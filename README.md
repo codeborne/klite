@@ -64,16 +64,16 @@ Publicly announced at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/
 Framework has sub-1ms overhead per request after a warmup.
 Can be verified with Apache Benchmark after [the sample project](sample) is launched:
 
-This simple route produces ~19000 rps, with 99% taking less than 1ms:
+This simple route produces ~19000 rps, with 99% taking less than 1ms:<br>
 `ab -n 10000 -c 10 http://localhost:8080/api/hello`
 
-This jdbc access route produces ~11000 rps, with 99% taking less than 1ms:
+This jdbc access route produces ~11000 rps, with 99% taking less than 1ms:<br>
 `ab -n 10000 -c 10 http://localhost:8080/api/hello/user/9725b054-426b-11ee-92a5-0bd2a151eea2 # produces ~19000 rps`
 
-JDBC access route produces ~11000 rps, with 99% taking less than 1ms:
+JDBC access route produces ~11000 rps, with 99% taking less than 1ms:<br>
 `ab -n 10000 -c 10 http://localhost:8080/api/hello/user/9725b054-426b-11ee-92a5-0bd2a151eea2 # produces ~19000 rps`
 
-Coroutine suspension test with 1000 concurrent requests, ~7000 rps, 80% of requests complete within the specified delay of 100ms:
+Coroutine suspension test with 1000 concurrent requests, ~7000 rps, 80% of requests complete within the specified delay of 100ms:<br>
 `ab -n 10000 -c 1000 http://localhost:8080/api/hello/suspend`
 
 Tests ran on Ubuntu, Java 20, i9-9900T CPU from 2019.
