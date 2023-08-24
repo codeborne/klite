@@ -59,9 +59,28 @@ The main server module is only ~1000 lines of code.
 Klite powers a few known production apps already.
 Publicly announced at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/), see [the slides](https://docs.google.com/presentation/d/1m5UORE88nVRdZXyDEoj74c0alk1Ff_tX8mfB8oLMbk0).
 
+## Performance
+
+Framework has sub-1ms overhead per request after a warmup.
+Can be verified with Apache Benchmark after [the sample project](sample) is launched:
+
+This simple route produces ~19000 rps, with 99% taking less than 1ms:
+`ab -n 10000 -c 10 http://localhost:8080/api/hello`
+
+This jdbc access route produces ~11000 rps, with 99% taking less than 1ms:
+`ab -n 10000 -c 10 http://localhost:8080/api/hello/user/9725b054-426b-11ee-92a5-0bd2a151eea2 # produces ~19000 rps`
+
+JDBC access route produces ~11000 rps, with 99% taking less than 1ms:
+`ab -n 10000 -c 10 http://localhost:8080/api/hello/user/9725b054-426b-11ee-92a5-0bd2a151eea2 # produces ~19000 rps`
+
+Coroutine suspension test with 1000 concurrent requests, ~7000 rps, 80% of requests complete within the specified delay of 100ms:
+`ab -n 10000 -c 1000 http://localhost:8080/api/hello/suspend`
+
+Tests ran on Ubuntu, Java 20, i9-9900T CPU from 2019.
+
 ## Usage
 
-See [the sample subproject](sample) on how to build apps with Klite and run them in Docker.
+See [the sample project](sample) on how to build apps with Klite and run them in Docker.
 
 Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), see also [changelog](CHANGELOG.md)
 
