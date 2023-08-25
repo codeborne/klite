@@ -2,7 +2,6 @@ package klite.jdbc
 
 import klite.Config
 import klite.info
-import klite.warn
 import java.io.File
 import java.io.IOException
 import java.lang.ProcessBuilder.Redirect.INHERIT
@@ -26,11 +25,9 @@ fun dockerCompose(command: String): Int = try {
 
 fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Duration = 2.seconds) {
   if (service.isEmpty()) return
-  try {
-    val timeoutMs = timeout.inWholeMilliseconds
-    val ms = measureTimeMillis { dockerCompose("up -d${if (timeoutMs == 0L) " --wait" else ""} $service") }
-    if (ms > timeoutMs / 5) sleep(timeoutMs) // give the db more time to start listening
-  } catch (e: IOException) {
-    getLogger("startDevDB").warn("Failed to automatically start $service: $e")
+  val timeoutMs = timeout.inWholeMilliseconds
+  val ms = measureTimeMillis {
+    if (dockerCompose("up -d${if (timeoutMs == 0L) " --wait" else ""} $service") != 0) throw IOException("Failed to start $service")
   }
+  if (ms > timeoutMs / 5) sleep(timeoutMs) // give the db more time to start listening
 }

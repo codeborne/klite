@@ -4,6 +4,7 @@
 * server: ThrowableHandler now has HttpExchange as receiver for cleaner code, as it is not used in most handlers anyway
 * server: ThrowableHandler returning null will now proceed with next handler, eventually producing error 500 if not handled
 * server: Route is now a KAnnotatedElement, so that findAnnotation/hasAnnotation() functions from kotlin-reflect should be used on it (not backwards-compatible)
+* jdbc: startDevDB() will now throw an exception if docker-compose returns a non-zero exit code
 * openapi: new module that can generate OpenAPI json spec file for all routes in a context
 
 # 1.5.6
