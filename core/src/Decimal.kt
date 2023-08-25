@@ -64,7 +64,6 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   override fun toInt() = toLong().toInt()
   override fun toShort() = toLong().toShort()
   override fun toByte() = toLong().toByte()
-  override fun toChar() = toInt().toChar()
 }
 
 val Int.d get() = Decimal(multiplyExact(CENTS, this))
