@@ -1,9 +1,11 @@
-# Unreleased
+# 1.6.0
 * server: notFoundHandler is now decorated separately in each context, so that decorators can intercept and handle missing routes (e.g. CorsHandler)
 * server: ErrorHandler will now omit the default message thrown by first() function ("List/Collection is empty.") and generate a standard 404 NotFound response
 * server: ThrowableHandler now has HttpExchange as receiver for cleaner code, as it is not used in most handlers anyway
 * server: ThrowableHandler returning null will now proceed with next handler, eventually producing error 500 if not handled
 * server: Route is now a KAnnotatedElement, so that findAnnotation/hasAnnotation() functions from kotlin-reflect should be used on it (not backwards-compatible)
+* jdbc: startDevDB() will now throw an exception if docker-compose returns a non-zero exit code
+* jdbc: deprecated 1.4.x functions removed, please upgrade from 1.4.x to 1.5.0 first, fix deprecations, and then to 1.6.x
 * openapi: new module that can generate OpenAPI json spec file for all routes in a context
 
 # 1.5.6
