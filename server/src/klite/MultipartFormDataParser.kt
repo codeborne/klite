@@ -1,11 +1,11 @@
 package klite
 
 import java.io.InputStream
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 class MultipartFormDataParser(override val contentType: String = MimeTypes.formData): BodyParser {
   @Suppress("UNCHECKED_CAST")
-  override fun <T : Any> parse(input: InputStream, type: KClass<T>): T {
+  override fun <T: Any> parse(input: InputStream, type: KType): T {
     val reader = input.bufferedReader()
     val boundary = reader.readLine()
     val result = mutableMapOf<String, Any?>()
