@@ -17,7 +17,6 @@ import klite.RequestMethod.GET
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
-import java.math.BigDecimal
 import java.net.URI
 import java.net.URL
 import java.time.*
@@ -100,36 +99,33 @@ private fun toParameterIn(paramAnnotation: Annotation?) = when(paramAnnotation) 
   else -> null
 }
 
-private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any>? {
+private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any?>? {
   val cls = classifier as? KClass<*> ?: return null
-  val jsonType = when {
-    cls == Nothing::class -> "null"
-    cls == Boolean::class -> "boolean"
-    cls == BigDecimal::class || cls == Decimal::class || cls == Float::class || cls == Double::class -> "number"
-    cls.isSubclassOf(Number::class) -> "integer"
-    cls.isSubclassOf(Array::class) || cls.isSubclassOf(Iterable::class) -> "array"
-    cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
-    else -> "object"
+  return when {
+    cls == Nothing::class -> mapOf("type" to "null")
+    cls == Boolean::class -> mapOf("type" to "boolean")
+    cls == Int::class -> mapOf("type" to "integer", "format" to "int32")
+    cls == Long::class -> mapOf("type" to "integer", "format" to "int64")
+    cls == Float::class -> mapOf("type" to "number", "format" to "float")
+    cls == Double::class -> mapOf("type" to "number", "format" to "double")
+    cls.isSubclassOf(Number::class) -> mapOf("type" to "number")
+    cls.isSubclassOf(Enum::class) -> mapOf("type" to "string", "enum" to cls.java.enumConstants.toList())
+    cls.isSubclassOf(Array::class) || cls.isSubclassOf(Iterable::class) -> mapOf("type" to "array", "items" to arguments.firstOrNull()?.type?.toJsonSchema(response))
+    cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) && cls != Any::class -> mapOfNotNull("type" to "string", "format" to when (cls) {
+      LocalDate::class, Date::class -> "date"
+      LocalTime::class -> "time"
+      Instant::class, LocalDateTime::class -> "date-time"
+      Period::class, Duration::class -> "duration"
+      URI::class, URL::class -> "uri"
+      UUID::class -> "uuid"
+      else -> null
+    })
+    else -> mapOfNotNull("type" to "object",
+      "properties" to cls.publicProperties.associate { it.name to it.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() },
+      "required" to cls.publicProperties.filter { p ->
+        !p.returnType.isMarkedNullable && (response || cls.primaryConstructor?.parameters?.find { it.name == p.name }?.isOptional != true)
+      }.map { it.name }.toSet().takeIf { it.isNotEmpty() })
   }
-  val jsonStringFormat = when (cls) {
-    LocalDate::class, Date::class -> "date"
-    LocalTime::class -> "time"
-    Instant::class, LocalDateTime::class -> "date-time"
-    Period::class, Duration::class -> "duration"
-    URI::class, URL::class -> "uri"
-    UUID::class -> "uuid"
-    else -> null
-  }
-  return mapOfNotNull(
-    "type" to jsonType,
-    "format" to jsonStringFormat,
-    "items" to if (jsonType == "array") arguments.firstOrNull()?.type?.toJsonSchema(response) else null,
-    "enum" to if (cls.isSubclassOf(Enum::class)) cls.java.enumConstants.toList() else null,
-    "properties" to if (jsonType == "object") cls.publicProperties.associate { it.name to it.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() } else null,
-    "required" to if (jsonType == "object") cls.publicProperties.filter { p ->
-      !p.returnType.isMarkedNullable && (response || cls.primaryConstructor?.parameters?.find { it.name == p.name }?.isOptional != true)
-    }.map { it.name }.toSet().takeIf { it.isNotEmpty() } else null
-  )
 }
 
 private fun toRequestBody(route: Route, annotation: RequestBody?): Map<String, Any?>? {
