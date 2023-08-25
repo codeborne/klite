@@ -46,9 +46,9 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   fun abs() = if (c < 0) Decimal(-c) else this
   infix fun percent(p: Decimal) = times(p) / CENTS
 
-  override fun equals(o: Any?) = c == (o as? Decimal)?.c
+  override fun equals(other: Any?) = c == (other as? Decimal)?.c
   override fun hashCode() = c.hashCode()
-  override fun compareTo(o: Decimal) = c.compareTo(o.c)
+  override fun compareTo(other: Decimal) = c.compareTo(other.c)
 
   override fun toString(): String {
     val sb = StringBuilder((c / CENTS).toString())
