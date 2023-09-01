@@ -24,7 +24,7 @@ typealias Where = Collection<ColValue>
 typealias Values = Map<out Column, *>
 
 fun <R, ID> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, id: ID, column: String = "id", suffix: String = "", mapper: Mapper<R>): R =
-  select(table, listOf(column to id), suffix, ArrayList(1), mapper).firstOrNull() ?: throw NoSuchElementException("$table:$id not found")
+  select(table, listOf(column to id), suffix, ArrayList(1), mapper).firstOrNull() ?: throw NoSuchElementException("${table.substringBefore(" ")}:$id not found")
 
 fun <R, C: MutableCollection<R>> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, where: Where = emptyList(), @Language("SQL", prefix = selectFromTable) suffix: String = "", into: C, mapper: Mapper<R>): C =
   query(selectFrom + q(table), where, suffix, into, mapper)
