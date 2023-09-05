@@ -69,11 +69,15 @@ class NotIn(values: Iterable<*>): In(values) {
   override fun expr(key: String) = super.expr(key).replace(" in ", " not in ")
 }
 
-fun orExpr(vararg where: Pair<Column, Any?>?): SqlExpr = where.asSequence().filterNotNull().map { (k, v) -> k to whereValueConvert(v) }.let {
-  SqlExpr("(" + it.asIterable().join(" or ") + ")", it.map { it.second }.flatValues().toList())
+private fun seqExpr(where: Sequence<Pair<Column, Any?>?>, separator: String): SqlExpr = where.filterNotNull().map { (k, v) -> k to whereValueConvert(v) }.let {
+  SqlExpr("(" + it.asIterable().join(separator) + ")", it.map { it.second }.flatValues().toList())
 }
 
+fun orExpr(vararg where: Pair<Column, Any?>?) = seqExpr(where.asSequence(), " or ")
+fun andExpr(vararg where: Pair<Column, Any?>?) = seqExpr(where.asSequence(), " and ")
+
 fun <K: Column> or(vararg where: Pair<K, Any?>?) = where[0]!!.first to orExpr(*where)
+fun <K: Column> and(vararg where: Pair<K, Any?>?) = where[0]!!.first to andExpr(*where)
 
 @Suppress("UNCHECKED_CAST")
 fun <K: Column> sql(@Language("SQL", prefix = selectWhere) expr: String, vararg values: Any?): Pair<K, SqlExpr> = (expr as K) to SqlExpr(expr, *values)

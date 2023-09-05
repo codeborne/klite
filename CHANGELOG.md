@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: and() introduced in addition to or() for more convenient composition of where expressions
+
 # 1.6.0
 * server: notFoundHandler is now decorated separately in each context, so that decorators can intercept and handle missing routes (e.g. CorsHandler)
 * server: ErrorHandler will now omit the default message thrown by first() function ("List/Collection is empty.") and generate a standard 404 NotFound response
