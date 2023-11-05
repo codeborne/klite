@@ -1,5 +1,6 @@
-# Unreleased
+# 1.6.1
 * jdbc: and() introduced in addition to or() for more convenient composition of where expressions
+* Kotlin and other dependency updates
 
 # 1.6.0
 * server: notFoundHandler is now decorated separately in each context, so that decorators can intercept and handle missing routes (e.g. CorsHandler)
