@@ -1,3 +1,6 @@
+# Unreleased
+* core/json: KClass.createFrom will report missing parameters in a nicer way
+
 # 1.6.1
 * jdbc: and() introduced in addition to or() for more convenient composition of where expressions
 * Kotlin and other dependency updates

@@ -1,7 +1,9 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.message
 import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 
@@ -24,11 +26,17 @@ class ValuesTest {
     expect(values.create<SomeData>()).toEqual(SomeData("Hello", 34))
   }
 
-  @Test fun createWithExplicitNullable() {
+  @Test fun `create with explicit nullable`() {
     val values = mapOf("hello" to "", "world" to 0, "nullable" to null, "list" to null)
     expect(SomeData::class.createFrom(values)).toEqual(SomeData("", 0, nullable = null))
 
     expect(AnotherData::class.createFrom(emptyMap())).toEqual(AnotherData(null))
+  }
+
+  @Test fun `descriptive error message`() {
+    val values = mapOf("world" to 34)
+    expect { SomeData::class.createFrom(values) }.toThrow<IllegalArgumentException>()
+      .message.toEqual("Cannot create SomeData from {world=34}: missing hello")
   }
 
   data class SomeData(val hello: String, val world: Int, val nullable: String? = "default", val list: List<Int> = listOf(1, 2))

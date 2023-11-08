@@ -53,7 +53,8 @@ fun <T: Any> KClass<T>.create(valueOf: (KParameter) -> Any?): T {
   } catch (e: InvocationTargetException) {
     throw e.targetException
   } catch (e: IllegalArgumentException) {
-    throw IllegalArgumentException("Cannot create $this using " + args.mapKeys { it.key.name }, e)
+    throw IllegalArgumentException("Cannot create $simpleName from " + args.mapKeys { it.key.name } + ": " +
+      e.message?.replace(".*required parameter: parameter #\\d+ (.*) of.*".toRegex(), "missing $1"), e)
   }
 }
 
