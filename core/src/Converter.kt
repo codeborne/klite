@@ -53,8 +53,8 @@ object Converter {
     }
 
   private fun <T: Any> enumCreator(type: KClass<T>): FromStringConverter<T> {
-    val enumConstants = type.java.enumConstants
-    return { s -> enumConstants.find { (it as Enum<*>).name == s } ?: error("No $type constant: $s") }
+    val enumConstants = type.java.enumConstants.associateBy { (it as Enum<*>).name.uppercase() }
+    return { s -> enumConstants[s.uppercase()] ?: error("No $type constant: $s") }
   }
 
   private fun <T: Any> constructorCreator(type: KClass<T>): FromStringConverter<T>? {

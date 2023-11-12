@@ -41,6 +41,7 @@ class ConverterTest {
 
   @Test fun enum() {
     expect(Converter.from<AnnotationTarget>("FIELD")).toEqual(AnnotationTarget.FIELD)
+    expect(Converter.from<AnnotationTarget>("field")).toEqual(AnnotationTarget.FIELD)
   }
 
   @Test fun constructor() {
