@@ -18,7 +18,8 @@ class MultipartFormDataRenderer(val boundary: String = "------------------------
         is FileUpload -> {
           w.write("; filename=\"${v.fileName}\"\r\n")
           w.write("Content-Type: ${MimeTypes.withCharset(v.contentType ?: MimeTypes.unknown)}\r\n\r\n")
-          w.write(v.content)
+          w.flush()
+          v.stream.use { it.copyTo(output) }
         }
         else -> {
           w.write("\r\n\r\n")

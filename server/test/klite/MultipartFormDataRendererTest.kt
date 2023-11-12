@@ -9,7 +9,7 @@ class MultipartFormDataRendererTest {
   @Test fun render() {
     val renderer = MultipartFormDataRenderer("--MyBoundary")
     val output = ByteArrayOutputStream()
-    renderer.render(output, mapOf("name1" to "value1", "file2" to FileUpload("a.txt", "text/plain", "Content of a.txt.")))
+    renderer.render(output, mapOf("name1" to "value1", "file2" to FileUpload("a.txt", "text/plain", "Content of a.txt.".byteInputStream())))
     expect(output.toString()).toEqual("""
       --MyBoundary
       Content-Disposition: form-data; name="name1"

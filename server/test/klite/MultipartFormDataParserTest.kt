@@ -29,10 +29,17 @@ class MultipartFormDataParserTest {
       -----------------------------9051914041544843365972754266--
     """.trimIndent()
 
-    expect(parser.parse<Any>(body.byteInputStream(), typeOf<Map<String, Any>>())).toEqual(mapOf(
-      "text" to "text default",
-      "file1" to FileUpload("a.txt", "text/plain", "Content of a.txt.\n"),
-      "file2" to FileUpload("a.html", "text/html", "<!DOCTYPE html><title>Content of a.html.</title>\n")
-    ))
+    val result = parser.parse<Any>(body.byteInputStream(), typeOf<Map<String, Any>>()) as Map<String, Any>
+    expect(result["text"]).toEqual("text default")
+
+    val file1 = result["file1"] as FileUpload
+    expect(file1.fileName).toEqual("a.txt")
+    expect(file1.contentType).toEqual(MimeTypes.text)
+    expect(file1.stream.reader().readText()).toEqual("Content of a.txt.\n")
+
+    val file2 = result["file2"] as FileUpload
+    expect(file2.fileName).toEqual("a.html")
+    expect(file2.contentType).toEqual(MimeTypes.html)
+    expect(file2.stream.reader().readText()).toEqual("<!DOCTYPE html><title>Content of a.html.</title>\n")
   }
 }

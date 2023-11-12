@@ -29,7 +29,8 @@ class MultipartFormDataParser: BodyParser {
       } else {
         if (line.startsWith(boundary)) {
           if (state.name != null) result[state.name!!] = state.fileName?.let {
-            FileUpload(it, state.contentType, state.content.removeSuffix("\n").toString())
+            // TODO: this is experimental and supports text files only
+            FileUpload(it, state.contentType, state.content.removeSuffix("\n").toString().byteInputStream())
           } ?: state.content.toString().trim()
           state = State()
         }
@@ -47,7 +48,4 @@ class MultipartFormDataParser: BodyParser {
   }
 }
 
-/** Warning: this is experimental and supports text files only */
-data class FileUpload(val fileName: String, val contentType: String?, internal val content: String = "") {
-  val stream: InputStream get() = content.byteInputStream()
-}
+class FileUpload(val fileName: String, val contentType: String?, val stream: InputStream)
