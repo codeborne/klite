@@ -26,7 +26,7 @@ class Server(
     register<TextBodyRenderer>()
     register<TextBodyParser>()
     register<FormUrlEncodedParser>()
-    register<MultipartFormDataParser>()
+    register<FormDataParser>()
   },
   private val requestIdGenerator: RequestIdGenerator = registry.require(),
   val errors: ErrorHandler = registry.require(),

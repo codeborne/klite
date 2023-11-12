@@ -5,8 +5,8 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import kotlin.reflect.typeOf
 
-class MultipartFormDataParserTest {
-  val parser = MultipartFormDataParser()
+class FormDataParserTest {
+  val parser = FormDataParser()
 
   @Test fun parse() {
     val body = """

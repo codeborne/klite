@@ -5,9 +5,12 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 
-class MultipartFormDataRendererTest {
+class FormDataRendererTest {
   @Test fun render() {
-    val renderer = MultipartFormDataRenderer("--MyBoundary")
+    val renderer = FormDataRenderer("MyBoundary")
+    expect(renderer.contentType).toEqual(MimeTypes.formData)
+    expect(renderer.fullContentType).toEqual(MimeTypes.formData + "; boundary=MyBoundary")
+
     val output = ByteArrayOutputStream()
     renderer.render(output, mapOf("name1" to "value1", "file2" to FileUpload("a.txt", "text/plain", "Content of a.txt.".byteInputStream())))
     expect(output.toString()).toEqual("""

@@ -3,7 +3,10 @@ package klite
 import java.io.InputStream
 import kotlin.reflect.KType
 
-class MultipartFormDataParser: BodyParser {
+@Deprecated("Use FormDataParser")
+typealias MultipartFormDataParser = FormDataParser
+
+class FormDataParser: BodyParser {
   override val contentType: String = MimeTypes.formData
 
   @Suppress("UNCHECKED_CAST")

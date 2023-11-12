@@ -3,14 +3,16 @@ package klite
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 
-class MultipartFormDataRenderer(val boundary: String = "---------------------------" + System.currentTimeMillis()): BodyRenderer {
-  override val contentType: String = MimeTypes.formData
+class FormDataRenderer(val boundary: String = "---------------------------" + System.currentTimeMillis()): BodyRenderer {
+  override val contentType = MimeTypes.formData
+  val fullContentType = "$contentType; boundary=$boundary"
 
   override fun render(output: OutputStream, value: Any?) = render(output, value as Map<String, Any?>)
 
   fun render(output: OutputStream, value: Map<String, Any?>) {
     val w = OutputStreamWriter(output)
     value.forEach { (k, v) ->
+      w.write("--")
       w.write(boundary)
       w.write("\r\n")
       w.write("Content-Disposition: form-data; name=\"$k\"")
@@ -28,12 +30,13 @@ class MultipartFormDataRenderer(val boundary: String = "------------------------
       }
       w.write("\r\n")
     }
+    w.write("--")
     w.write(boundary)
     w.write("--\r\n")
     w.flush()
   }
 
   override fun render(e: HttpExchange, code: StatusCode, value: Any?) {
-    e.startResponse(code, contentType = contentType + "; boundary=" + boundary.substring(2)).use { render(it, value) }
+    e.startResponse(code, contentType = fullContentType).use { render(it, value) }
   }
 }
