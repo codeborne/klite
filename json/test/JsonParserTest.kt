@@ -82,6 +82,14 @@ class JsonParserTest {
     expect(mapper.parse<LocalDateTime>("\"2022-12-23 10:53:45\"")).toEqual(LocalDateTime.of(2022, 12, 23, 10, 53, 45))
   }
 
+  @Test fun `custom converter from number`() {
+    val mapper = mapper.copy(values = object: ValueConverter<Any?>() {
+      override fun from(o: Any?, type: KType?) =
+        if (o is String && type?.classifier == Instant::class) Instant.ofEpochSecond(o.toLong()) else o
+    })
+    expect(mapper.parse<Instant>("123123123")).toEqual(Instant.ofEpochSecond(123123123))
+  }
+
   @Test fun `snake case`() {
     val mapper = JsonMapper(keys = SnakeCase)
     expect(mapper.parse<Any>("""{"hello_world_is_good": 0}""")).toEqual(mapOf("helloWorldIsGood" to 0))

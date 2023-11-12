@@ -47,7 +47,7 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
   }
 
   private fun readNumber(c: Char, type: KType?) = readLettersOrDigits(c).let { s ->
-    type?.takeIfSpecific()?.from(s) ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
+    type?.let { opts.values.from(s, type) ?: it.takeIfSpecific()?.from(s) } ?: s.toIntOrNull() ?: s.toLongOrNull() ?: s.toDouble()
   }
 
   @Suppress("UNCHECKED_CAST")
