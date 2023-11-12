@@ -1,5 +1,6 @@
 # Unreleased
 * core/json: KClass.createFrom will report missing parameters in a nicer way
+* server: introduced MultipartFormDataRenderer
 
 # 1.6.1
 * jdbc: and() introduced in addition to or() for more convenient composition of where expressions

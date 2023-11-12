@@ -3,7 +3,9 @@ package klite
 import java.io.InputStream
 import kotlin.reflect.KType
 
-class MultipartFormDataParser(override val contentType: String = MimeTypes.formData): BodyParser {
+class MultipartFormDataParser: BodyParser {
+  override val contentType: String = MimeTypes.formData
+
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KType): T {
     val reader = input.bufferedReader()
@@ -46,6 +48,6 @@ class MultipartFormDataParser(override val contentType: String = MimeTypes.formD
 }
 
 /** Warning: this is experimental and supports text files only */
-data class FileUpload(val fileName: String, val contentType: String?, private val content: String = "") {
+data class FileUpload(val fileName: String, val contentType: String?, internal val content: String = "") {
   val stream: InputStream get() = content.byteInputStream()
 }
