@@ -51,4 +51,4 @@ class FormDataParser: BodyParser {
   }
 }
 
-class FileUpload(val fileName: String, val contentType: String?, val stream: InputStream)
+class FileUpload(val fileName: String, val contentType: String? = MimeTypes.typeFor(fileName), val stream: InputStream)
