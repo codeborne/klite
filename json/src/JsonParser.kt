@@ -6,11 +6,9 @@ import klite.publicProperties
 import klite.trimToNull
 import java.io.Reader
 import java.text.ParseException
-import kotlin.reflect.KClass
-import kotlin.reflect.KType
+import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.typeOf
 
 private const val EOF = '\uFFFF'
 
@@ -52,8 +50,10 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
 
   @Suppress("UNCHECKED_CAST")
   private fun readObject(type: KType?) = mutableMapOf<Any, Any?>().let { map ->
-    val mapTypes = if (type?.classifier == Map::class) type.arguments.let { it[0].type to it[1].type } else null
-    val props = if (mapTypes == null) (type?.classifier as? KClass<*>)?.publicProperties?.associateBy { prop ->
+    val typeClass = type?.classifier as? KClass<*>
+    val typeParams = typeClass?.typeParameters?.mapIndexed { i, t -> t.name to type.arguments[i].type }?.toMap() ?: emptyMap()
+    val mapTypes = if (typeClass == Map::class) type.arguments.let { it[0].type to it[1].type } else null
+    val props = if (mapTypes == null) typeClass?.publicProperties?.associateBy { prop ->
       prop.findAnnotation<JsonProperty>()?.value?.trimToNull() ?: prop.name
     } else null
 
@@ -65,7 +65,7 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
       nextNonSpace().expect(':')
 
       val prop = props?.get(key)
-      val value = readValue(mapTypes?.second ?: prop?.returnType)
+      val value = readValue(substituteArguments(mapTypes?.second ?: prop?.returnType, typeParams))
       if (prop == null || prop.findAnnotation<JsonProperty>()?.readOnly != true && !prop.hasAnnotation<JsonIgnore>())
         map[prop?.name ?: key] = value
 
@@ -74,6 +74,10 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
     }
     type?.takeIfSpecific()?.createFrom(map as Map<String, Any?>) ?: map
   }
+
+  private fun substituteArguments(type: KType?, typeParams: Map<String, KType?>): KType? =
+    if (typeParams.isNotEmpty() && type?.arguments?.isNotEmpty() == true)
+      KTypeWithKnownArguments(type, typeParams) else type
 
   private fun readArray(type: KType?) = collectionOf(type).also { readArrayElements<Any>(type?.arguments?.firstOrNull()?.type, it::add) }
 
@@ -128,3 +132,9 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
 }
 
 class JsonParseException(msg: String, pos: Int): ParseException("$msg at index $pos", pos)
+
+private class KTypeWithKnownArguments(val type: KType, val typeParams: Map<String, KType?>): KType by type {
+  override val arguments: List<KTypeProjection> = type.arguments.map { a ->
+    (a.type?.classifier as? KTypeParameter)?.let { KTypeProjection(a.variance, typeParams[it.name]) } ?: a
+  }
+}

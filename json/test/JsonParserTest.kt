@@ -9,6 +9,7 @@ import klite.TSID
 import klite.uuid
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.math.BigDecimal.ONE
 import java.math.BigDecimal.ZERO
 import java.time.Instant
 import java.time.LocalDate
@@ -55,6 +56,10 @@ class JsonParserTest {
     """)).toEqual(
       Hello("x", "b8ca58ec-ab15-11ed-93cc-8fdb43988a14".uuid, LocalDate.parse("2022-10-21"), Instant.parse("2022-10-21T10:55:00Z"), Nested(567.toBigDecimal()),
         listOf(Nested(), Nested(x = 2.toBigDecimal())), mapOf(LocalDate.parse("2022-10-21") to Nested(y = 1)), isBoolean = false))
+  }
+
+  @Test fun `parse type parameter passed to parameter type`() {
+    expect(mapper.parse<ListData<Nested>>("""{"data": [{"x": 1}, {}]}""")).toEqual(ListData(listOf(Nested(ONE), Nested())))
   }
 
   @Test fun trimToNull() {
@@ -107,3 +112,4 @@ data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val da
                  val array: List<Nested> = emptyList(), val map: Map<LocalDate, Nested> = emptyMap(), val nullable: String? = null,
                  @JsonIgnore val ignore: Boolean = true, @JsonProperty(readOnly = true) val readOnly: Boolean = true, val isBoolean: Boolean = true)
 data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
+data class ListData<T>(val data: List<T>)
