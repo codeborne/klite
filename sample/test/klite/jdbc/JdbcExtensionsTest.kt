@@ -58,7 +58,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     var loaded: SomeData = db.select(table, data.id) { create() }
     expect(loaded).toEqual(data)
 
-    expect(db.upsert(table, data.toValues(SomeData::world to 38), noUpdateFields = listOf(SomeData::world))).toEqual(1)
+    expect(db.upsert(table, data.toValues(SomeData::world to 38), skipUpdateFields = setOf(SomeData::world.name))).toEqual(1)
     loaded = db.select(table, data.id) { create() }
     expect(loaded).toEqual(data)
   }

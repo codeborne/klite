@@ -98,12 +98,9 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
   }
 }
 
-fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList(), noUpdateFields: List<Column> = emptyList()): Int =
+fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
   whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v }).let { where ->
-    val updateValues = if (noUpdateFields.isEmpty()) values else {
-      val skip = noUpdateFields.mapTo(mutableSetOf()) { name(it) }
-      values.filter { it.key !in skip }
-    }
+    val updateValues = if (skipUpdateFields.isEmpty()) values else values - skipUpdateFields
     exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(updateValues)}${whereExpr(where)}",
       setValues(values) + setValues(updateValues) + whereValues(where))
   }
