@@ -3,6 +3,7 @@
 * server: introduced FormDataRenderer
 * core: conversion of enum values from string is now case-insensitive
 * json: can convert number to a custom type using opts.values
+* jdbc: upsert() now has noUpdateFields parameter
 
 # 1.6.1
 * jdbc: and() introduced in addition to or() for more convenient composition of where expressions

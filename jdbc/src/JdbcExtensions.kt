@@ -98,9 +98,15 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
   }
 }
 
-fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList()): Int = whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v }).let { where ->
-  exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(values)}${whereExpr(where)}", setValues(values) + setValues(values) + whereValues(where))
-}
+fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList(), noUpdateFields: List<Column> = emptyList()): Int =
+  whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v }).let { where ->
+    val updateValues = if (noUpdateFields.isEmpty()) values else {
+      val skip = noUpdateFields.mapTo(mutableSetOf()) { name(it) }
+      values.filter { it.key !in skip }
+    }
+    exec(insertExpr(table, values) + " on conflict ($uniqueFields) do update set ${setExpr(updateValues)}${whereExpr(where)}",
+      setValues(values) + setValues(updateValues) + whereValues(where))
+  }
 
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
   "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${values.values.joinToString { placeholder(it) }})"
