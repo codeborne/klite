@@ -15,7 +15,7 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 /** Converts project data/enum/inline classes to TypeScript for front-end type-safety */
 open class TSGenerator(
@@ -55,7 +55,7 @@ open class TSGenerator(
   protected open fun renderEnum(cls: KClass<*>) = "enum " + tsName(cls) + " {" + cls.java.enumConstants.joinToString { "$it = '$it'" } + "}"
 
   protected open fun renderInline(cls: KClass<*>) = "type " + tsName(cls) + typeParams(cls, noVariance = true) +
-    " = " + tsType(cls.memberProperties.first().returnType)
+    " = " + tsType(cls.primaryConstructor?.parameters?.first()?.type)
 
   protected open fun typeParams(cls: KClass<*>, noVariance: Boolean = false) =
     cls.typeParameters.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { if (noVariance) it.name else it.toString() } ?: ""

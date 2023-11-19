@@ -3,6 +3,7 @@
 * server: introduced FormDataRenderer
 * core: conversion of enum values from string is now case-insensitive
 * json: can convert number to a custom type using opts.values
+* json: TSGenerator: better detection of types of inline classes with several computed properties
 * jdbc: upsert() now has skipUpdateFields parameter
 
 # 1.6.1
