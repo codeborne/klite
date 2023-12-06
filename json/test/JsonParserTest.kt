@@ -5,7 +5,9 @@ import ch.tutteli.atrium.api.fluent.en_GB.toContainExactly
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Converter
 import klite.TSID
+import klite.publicProperties
 import klite.uuid
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -15,6 +17,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 
 class JsonParserTest {
@@ -59,7 +62,7 @@ class JsonParserTest {
   }
 
   @Test fun `parse type parameter passed to parameter type`() {
-    expect(mapper.parse<ListData<Nested>>("""{"data": [{"x": 1}, {}]}""")).toEqual(ListData(listOf(Nested(ONE), Nested())))
+    expect(mapper.parse<TypedData<Nested>>("""{"list": [{"x": 1}, {}], "map": {"k": {"x": 2}}}""")).toEqual(TypedData(listOf(Nested(ONE), Nested()), mapOf("k" to Nested(2.toBigDecimal()))))
   }
 
   @Test fun trimToNull() {
@@ -79,7 +82,13 @@ class JsonParserTest {
     expect(mapper.parse<LocalDate>("\"2022-12-23\"")).toEqual(LocalDate.of(2022, 12, 23))
   }
 
-  @Test fun `custom converter from String`() {
+  @Test fun `custom converter with type params`() {
+    Converter.use { s -> Hello::class.publicProperties.find { it.name == s }!! }
+    expect(mapper.parse<FieldRule<UUID>>("""{"field": "id"}""")).toEqual(FieldRule(Hello::id))
+    expect(mapper.parse<FieldRule<*>>("""{"field": "hello"}""")).toEqual(FieldRule(Hello::hello))
+  }
+
+  @Test fun `value converter from String`() {
     val mapper = mapper.copy(values = object: ValueConverter<Any?>() {
       override fun from(o: Any?, type: KType?) =
         if (o is String && type?.classifier == LocalDateTime::class) LocalDateTime.parse(o.replace(" ", "T")) else o
@@ -87,7 +96,7 @@ class JsonParserTest {
     expect(mapper.parse<LocalDateTime>("\"2022-12-23 10:53:45\"")).toEqual(LocalDateTime.of(2022, 12, 23, 10, 53, 45))
   }
 
-  @Test fun `custom converter from number`() {
+  @Test fun `value converter from number`() {
     val mapper = mapper.copy(values = object: ValueConverter<Any?>() {
       override fun from(o: Any?, type: KType?) =
         if (o is String && type?.classifier == Instant::class) Instant.ofEpochSecond(o.toLong()) else o
@@ -112,4 +121,5 @@ data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val da
                  val array: List<Nested> = emptyList(), val map: Map<LocalDate, Nested> = emptyMap(), val nullable: String? = null,
                  @JsonIgnore val ignore: Boolean = true, @JsonProperty(readOnly = true) val readOnly: Boolean = true, val isBoolean: Boolean = true)
 data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
-data class ListData<T>(val data: List<T>)
+data class TypedData<T>(val list: List<T>, val map: Map<String, T> = emptyMap())
+data class FieldRule<T: Comparable<T>>(val field: KProperty1<out Hello, T>)

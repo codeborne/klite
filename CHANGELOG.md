@@ -1,3 +1,6 @@
+# Unreleased
+* json: improve parsing of complex types with parameters
+
 # 1.6.2
 * server: fix check for requested assets being inside of assets directory
 * server: introduced FormDataRenderer

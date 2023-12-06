@@ -136,6 +136,6 @@ class JsonParseException(msg: String, pos: Int): ParseException("$msg at index $
 
 private class KTypeWithKnownArguments(val type: KType, val typeParams: Map<String, KType?>): KType by type {
   override val arguments: List<KTypeProjection> = type.arguments.map { a ->
-    (a.type?.classifier as? KTypeParameter)?.let { KTypeProjection(a.variance, typeParams[it.name]) } ?: a
+    (a.type?.classifier as? KTypeParameter)?.let { typeParams[it.name] }?.let { KTypeProjection(a.variance, it) } ?: a
   }
 }
