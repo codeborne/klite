@@ -1,7 +1,7 @@
 # 1.6.2
-* core: bugfix: better check for paths being inside of assets directory
-* core/json: KClass.createFrom will report missing parameters in a nicer way
+* server: fix check for requested assets being inside of assets directory
 * server: introduced FormDataRenderer
+* core/json: KClass.createFrom will report missing parameters in a nicer way
 * core: conversion of enum values from string is now case-insensitive
 * json: can convert number to a custom type using opts.values
 * json: TSGenerator: better detection of types of inline classes with several computed properties
