@@ -10,7 +10,7 @@ import kotlin.io.path.*
 import kotlin.time.Duration.Companion.days
 
 open class AssetsHandler(
-  val path: Path,
+  path: Path,
   val indexFile: String = "index.html",
   val useIndexForUnknownPaths: Boolean = false,
   val additionalHeaders: Map<String, String> = mapOf("Cache-Control" to "max-age=${7.days.inWholeSeconds}"),
@@ -19,6 +19,7 @@ open class AssetsHandler(
   val headerModifier: HttpExchange.(file: Path) -> Unit = {}
 ): Handler {
   protected val log = logger()
+  val path = path.normalize()
 
   init {
     if (!path.isDirectory()) log.warn("Assets path ${path.toAbsolutePath()} is not a readable directory")
@@ -27,7 +28,7 @@ open class AssetsHandler(
   override suspend fun invoke(exchange: HttpExchange) {
     if (exchange.method != GET && exchange.method != HEAD) throw NotFoundException(exchange.method.name)
     try {
-      var file = path / exchange.path.substring(1)
+      var file = (path / exchange.path.substring(1)).normalize()
       if (!file.startsWith(path)) throw ForbiddenException(exchange.path)
       if (file.isDirectory()) file /= indexFile
       if (!file.exists()) {

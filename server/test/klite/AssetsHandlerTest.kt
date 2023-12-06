@@ -1,5 +1,7 @@
 package klite
 
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
+import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -12,6 +14,11 @@ class AssetsHandlerTest {
   val handler = AssetsHandler(Path.of("../sample/public"), useIndexForUnknownPaths = true)
   val exchange = mockk<HttpExchange>(relaxed = true) {
     every { method } returns GET
+  }
+
+  @Test fun `forbidden if trying to access paths outside of root`() {
+    every { exchange.path } returns "/../README.md"
+    expect { runBlocking { handler.invoke(exchange) } }.toThrow<ForbiddenException>()
   }
 
   @Test fun `index must be revalidated`() {

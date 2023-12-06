@@ -1,4 +1,5 @@
 # Unreleased
+* core: bugfix: better check for paths being inside of assets directory
 * core/json: KClass.createFrom will report missing parameters in a nicer way
 * server: introduced FormDataRenderer
 * core: conversion of enum values from string is now case-insensitive
