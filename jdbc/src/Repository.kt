@@ -38,4 +38,5 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
 
   open fun save(entity: E) = db.upsert(table, entity.persister())
+  // TODO: add safeSave() with optimistic locking
 }
