@@ -26,17 +26,29 @@ request and response.
 
 Anything returned from a handler will be passed to [BodyRenderer](src/klite/Body.kt) to output the response with correct Content-Type. BodyRenderer is chosen based on the Accept request header or first one if no matches.
 
-POST/PUT requests with body will be parsed using one of registered [BodyParsers](src/klite/Body.kt) according to the request Content-Type header; `text/plain` and `application/x-www-form-urlencoded` are enabled by default.
+POST/PUT requests with body will be parsed using one of registered [BodyParsers](src/klite/Body.kt) according to the request Content-Type header.
+The following body parsers are enabled by default:
+* `text/plain` - [TextBodyParser](src/klite/Body.kt)
+* `application/x-www-form-urlencoded` - [FormUrlEncodedParser](src/klite/Body.kt)
+* `multipart/form-data` - [FormDataParser](src/klite/FormDataParser.kt)
 
 use<[JsonBody](../json/src/JsonBody.kt)>() for `application/json` support.
+
+## Converter
+
+[Converter](src/klite/Converter.kt) is used everywhere to convert incoming strings the respective (value) types, e.g.
+request parameters, json fields, database values, etc.
+
+This allows you to bind types like `LocalDate` or `UUID` directly in your routes, as well as `Converter.use` any custom
+types very easily, like `Email`, `PhoneNumber`, etc.
 
 ## Contexts
 
 All routes must be organized into contexts with path prefixes. A context with the longest matching path prefix is chosen for handling a request.
 
-## Assets
+## Assets (static content)
 
-A simple [AssetsHandler](src/klite/AssetsHandler.kt) is provided to serve static resources.
+A simple [AssetsHandler](src/klite/AssetsHandler.kt) is provided to serve static files.
 
 ```kotlin
 assets("/", AssetsHandler(Path.of("public")))
