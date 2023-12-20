@@ -111,3 +111,10 @@ Proxies will forward some standard headers, that your app will need to understan
 ```
 
 Enable these only if you are sure that you will be running behind a trusted proxy in production.
+
+
+## Best practices
+
+* Organize your code into domain packages, e.g. `payments`, `accounting`, and not by type of class, e.g. `controllers`, `repostories`, `services`, etc.
+* Route handler's job is to parse the request, call a service method and transform/return the result. It should not implement business logic itself.
+* Prefer annotated route handlers for easier code separation and unit testing.
