@@ -12,7 +12,7 @@ Basic usage:
       get("/hello") { "Hello World" }
       post("/hello") { "You posted: $rawBody" }
 
-      // or take routes from annotated functions of a class (better for testing)
+      // or take routes from annotated functions of a class (better for unit tests)
       annotated<MyRoutes>()
     }
 
