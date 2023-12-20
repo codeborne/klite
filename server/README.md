@@ -124,3 +124,4 @@ Enable these only if you are sure that you will be running behind a trusted prox
 * Route handler's job is to parse the request, call a service method and transform/return the result. It should not implement business logic itself.
 * Prefer annotated route handlers for easier code separation and unit testing.
 * Do not catch common exceptions in your route handlers, but use `ErrorHandler.on` to add a global error handler instead based on Exception type, reducing code duplication.
+* Store only minimal state in a session, e.g. authenticated user id. Everything else should be part of the UI flow and support back/forward buttons.
