@@ -81,8 +81,6 @@ The order is important, and decorators apply to all *following routes* that are 
 Any exception thrown out of route handler will be passed to [ErrorHandler](src/klite/ErrorHandler.kt) to produce a response.
 The [ErrorResponse](src/klite/ErrorHandler.kt) is then passed to [BodyRenderer](src/klite/Body.kt), like normal responses.
 
-Do not catch common exceptions in your route handlers, but add global error handlers instead based on Exception type.
-
 ## Sessions
 
 Session support can be enabled by providing a [SessionStore](src/klite/Session.kt) implementation, e.g.
@@ -125,3 +123,4 @@ Enable these only if you are sure that you will be running behind a trusted prox
 * Organize your code into domain packages, e.g. `payments`, `accounting`, and not by type of class, e.g. `controllers`, `repostories`, `services`, etc.
 * Route handler's job is to parse the request, call a service method and transform/return the result. It should not implement business logic itself.
 * Prefer annotated route handlers for easier code separation and unit testing.
+* Do not catch common exceptions in your route handlers, but use `ErrorHandler.on` to add a global error handler instead based on Exception type, reducing code duplication.
