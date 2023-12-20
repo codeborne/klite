@@ -76,6 +76,13 @@ arguments (dependencies).
 You can add both global and context-specific [decorators](src/klite/Decorators.kt), including `Before` and `After` handlers.
 The order is important, and decorators apply to all *following routes* that are defined in the same context.
 
+## Error handling
+
+Any exception thrown out of route handler will be passed to [ErrorHandler](src/klite/ErrorHandler.kt) to produce a response.
+The [ErrorResponse](src/klite/ErrorHandler.kt) is then passed to [BodyRenderer](src/klite/Body.kt), like normal responses.
+
+Do not catch common exceptions in your route handlers, but add global error handlers instead based on Exception type.
+
 ## Sessions
 
 Session support can be enabled by providing a [SessionStore](src/klite/Session.kt) implementation, e.g.
