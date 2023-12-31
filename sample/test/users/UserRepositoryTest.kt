@@ -1,9 +1,8 @@
 package klite.sample.users
 
-import ch.tutteli.atrium.api.fluent.en_GB.toBeEmpty
-import ch.tutteli.atrium.api.fluent.en_GB.toContain
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
+import klite.jdbc.StaleEntityException
 import klite.sample.DBTest
 import org.junit.jupiter.api.Test
 import users.Email
@@ -23,5 +22,15 @@ class UserRepositoryTest: DBTest() {
 
     expect(repository.search("SER")).toContain(user)
     expect(repository.search("blah")).toBeEmpty()
+  }
+
+  @Test fun updatedAt() {
+    val oldUpdatedAt = user.updatedAt
+    repository.save(user)
+    expect(user.updatedAt).notToEqual(oldUpdatedAt)
+    repository.save(user)
+
+    user.updatedAt = user.updatedAt!!.plusMillis(123)
+    expect { repository.save(user) }.toThrow<StaleEntityException>()
   }
 }

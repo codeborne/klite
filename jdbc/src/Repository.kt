@@ -4,12 +4,18 @@ import klite.PropValue
 import klite.toValues
 import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
+import java.time.Instant
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KClass
 
 interface BaseEntity<ID> {
   val id: ID
+}
+
+/** Implement this for optimistic locking support in [BaseCrudRepository.save] */
+interface UpdatableEntity {
+  var updatedAt: Instant?
 }
 
 interface Entity: BaseEntity<UUID>
@@ -37,6 +43,12 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
   open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
 
-  open fun save(entity: E) = db.upsert(table, entity.persister())
-  // TODO: add safeSave() with optimistic locking
+  open fun save(entity: E) =
+    if (entity is UpdatableEntity) {
+      val now = Instant.now()
+      val numUpdated = db.upsert(table, entity.persister() + ("updatedAt" to now), where = listOf("updatedAt" to entity.updatedAt))
+      if (numUpdated == 0) throw StaleEntityException()
+      entity.updatedAt = now
+      numUpdated
+    } else db.upsert(table, entity.persister())
 }

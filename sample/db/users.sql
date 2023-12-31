@@ -14,3 +14,6 @@ create unique index users_email_idx on users (email);
 
 --changeset klite:test-user
 insert into users (id, email, firstName, lastName) values ('9725b054-426b-11ee-92a5-0bd2a151eea2', 'test@codeborne.com', 'Test', 'User');
+
+--changeset klite:users.updatedAt
+alter table users add column updatedAt timestamptz;
