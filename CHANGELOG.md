@@ -1,5 +1,7 @@
 # Unreleased
 * json: improve parsing of complex types with parameters
+* jdbc: introduce `NullableId` for entities with null ids until they are persisted.
+* jdbc: introduce `UpdatableEntity` for optimistic locking in `BaseRepository.save`
 
 # 1.6.2
 * server: fix check for requested assets being inside of assets directory

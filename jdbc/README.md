@@ -74,7 +74,14 @@ conversion of entities to Maps for use with insert/update/upsert.
 
 [JdbcConverter](src/JdbcConverter.kt) can be used to register conversion of custom types to be sent to the DB.
 
-[BaseRepository](src/Repository.kt) and [CrudRepository](src/Repository.kt) are also provided for convenience.
+## Base entity classes and repositories
+
+[BaseRepository](src/Repository.kt) and [CrudRepository](src/Repository.kt) are provided for convenience.
+
+They work with entity classes implementing `BaseEntity<ID>`, where you can provide your own ID class, like UUID or [TSID](../core/src/TSID.kt).
+
+* `NullableId<ID>` is also provided if you prefer not yet stored entitites not to have id assigned.
+* `UpdatabaleEntity` can be used to implement optimistic locking when saving, not letting concurrent users overwrite each other changes.
 
 ## Migrations
 
