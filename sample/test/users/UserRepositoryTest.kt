@@ -16,7 +16,10 @@ class UserRepositoryTest: DBTest() {
 
   @Test fun `save and load`() {
     repository.save(user)
-    expect(repository.get(user.id)).toEqual(user)
+    expect(user.id).notToEqualNull()
+    repository.save(user)
+
+    expect(repository.get(user.id!!)).toEqual(user)
     expect(repository.by(user.email)).toEqual(user)
     expect(repository.by(Email("no@email"))).toEqual(null)
 

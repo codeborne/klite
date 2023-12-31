@@ -8,9 +8,15 @@ import java.time.Instant
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KClass
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 interface BaseEntity<ID> {
   val id: ID
+}
+
+interface NullableId<ID>: BaseEntity<ID?> {
+  override var id: ID?
 }
 
 /** Implement this for optimistic locking support in [BaseCrudRepository.save] */
@@ -43,12 +49,22 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
   open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
 
-  open fun save(entity: E) =
+  open fun save(entity: E): Int {
+    if (entity is NullableId<*> && entity.id == null) {
+      (entity as NullableId<ID>).id = generateId()
+    }
     if (entity is UpdatableEntity) {
       val now = Instant.now()
       val numUpdated = db.upsert(table, entity.persister() + ("updatedAt" to now), where = listOf("updatedAt" to entity.updatedAt))
       if (numUpdated == 0) throw StaleEntityException()
       entity.updatedAt = now
-      numUpdated
-    } else db.upsert(table, entity.persister())
+      return numUpdated
+    }
+    return db.upsert(table, entity.persister())
+  }
+
+  open fun generateId(): ID {
+    val idClass = entityClass.memberProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
+    return idClass.primaryConstructor!!.callBy(emptyMap()) as ID
+  }
 }

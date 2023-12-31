@@ -12,13 +12,14 @@ data class User(
   val lastName: String,
   val locale: Locale,
   val passwordHash: String? = null,
-  override val id: Id<User> = Id(),
+  override var id: Id<User>? = null,
   override var updatedAt: Instant? = null
 ): Entity<User>, UpdatableEntity {
   data class Address(
     val userId: Id<User>,
     val city: String,
     val countryCode: String,
-    override val id: Id<Address> = Id()
+    override var id: Id<Address>? = null,
+    override var updatedAt: Instant? = null
   ): Entity<Address>
 }

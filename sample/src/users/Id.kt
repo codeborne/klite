@@ -2,10 +2,12 @@ package users
 
 import klite.Converter
 import klite.jdbc.BaseCrudRepository
-import klite.jdbc.BaseEntity
+import klite.jdbc.NullableId
+import klite.jdbc.UpdatableEntity
 import klite.uuid
 import java.sql.ResultSet
 import java.util.*
+import javax.sql.DataSource
 
 /**
  * A sample type-safe Id class.
@@ -26,5 +28,7 @@ fun <T> String.toId(): Id<T> = Id(uuid)
 fun <T> ResultSet.getId(column: String = "id") = getString(column).toId<T>()
 fun <T> ResultSet.getIdOrNull(column: String) = getString(column)?.toId<T>()
 
-typealias Entity<T> = BaseEntity<Id<T>>
-typealias CrudRepository<T> = BaseCrudRepository<T, Id<T>>
+interface Entity<T>: NullableId<Id<T>>, UpdatableEntity
+abstract class CrudRepository<T: Entity<T>>(db: DataSource, table: String): BaseCrudRepository<T, Id<T>?>(db, table) {
+  override fun generateId() = Id<T>()
+}
