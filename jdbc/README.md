@@ -103,15 +103,6 @@ Not supported:
 * No generation of scripts for existing DB schema - this is best to be done manually, or just existing tools like pg_dump
 * Only tested with PostgreSQL, PRs for other DBs welcome
 
-### Best practices
-
-It's more convenient to treat DB objects as maintainable code, e.g.
-* Create a separate .sql file for an entity like [users.sql](../sample/db/users.sql)
-* Use a dot notation for changeset names, like `users.personalCode`, which adds users.personalCode column
-* Backwards-compatible changesets between deploys, allowing for rollback of the app with already updated DB
-* You can add destructive changesets for future right away with some non-existent context, e.g. `context:TODO`
-* Run the same changesets before DB-related unit tests
-
 #### Different DB user for migration and running
 
 It is better for security to use a user with fewer rights for the running application.
@@ -129,3 +120,12 @@ Your changesets can actually create this user and grant only *select/insert/upda
     // override any other connection pool settings
   })
 ```
+
+### Best practices
+
+It's more convenient to treat DB objects as maintainable code, e.g.
+* Create a separate .sql file for an entity like [users.sql](../sample/db/users.sql)
+* Use a dot notation for changeset names, like `users.personalCode`, which adds users.personalCode column
+* Backwards-compatible changesets between deploys, allowing for rollback of the app with already updated DB
+* You can add destructive changesets for future right away with some non-existent context, e.g. `context:TODO`
+* Run the same changesets before DB-related unit tests
