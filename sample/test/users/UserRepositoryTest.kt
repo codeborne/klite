@@ -6,6 +6,7 @@ import klite.jdbc.StaleEntityException
 import klite.sample.DBTest
 import org.junit.jupiter.api.Test
 import users.Email
+import users.Id
 import users.User
 import users.UserRepository
 import java.util.Locale.ENGLISH
@@ -13,6 +14,12 @@ import java.util.Locale.ENGLISH
 class UserRepositoryTest: DBTest() {
   val user = User(Email("test@user.com"), "Test", "User", ENGLISH, "phash")
   val repository = UserRepository(db)
+
+  @Test fun `save with predefined id`() {
+    user.id = Id()
+    repository.save(user)
+    expect(repository.get(user.id!!)).toEqual(user)
+  }
 
   @Test fun `save and load`() {
     repository.save(user)
