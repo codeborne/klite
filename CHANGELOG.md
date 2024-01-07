@@ -1,4 +1,4 @@
-# Unreleased
+# 1.6.3
 * server: added support for SSE (Server-Side Events) to `HttpExchange`
 * json: improve parsing of complex types with parameters
 * jdbc: introduce `NullableId` for entities with null ids until they are persisted.
