@@ -9,7 +9,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.time.Instant
-import java.util.concurrent.atomic.AtomicLong
 import kotlin.LazyThreadSafetyMode.NONE
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -149,16 +148,6 @@ open class HttpExchange(
 }
 
 operator fun Headers.plusAssign(headers: Map<String, String>) = headers.forEach { (k, v) -> set(k, v) }
-
-open class RequestIdGenerator {
-  val prefix = (0xFFFF * Math.random()).toInt().toString(16)
-  private val counter = AtomicLong()
-  open operator fun invoke(headers: Headers) = "$prefix-${counter.incrementAndGet()}"
-}
-
-open class XRequestIdGenerator: RequestIdGenerator() {
-  override fun invoke(headers: Headers) = super.invoke(headers) + (headers.getFirst("X-Request-Id")?.let { "/$it" } ?: "")
-}
 
 class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
   HttpExchange(original, config, sessionStore, requestId) {
