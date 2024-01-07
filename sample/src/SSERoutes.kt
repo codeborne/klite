@@ -5,25 +5,25 @@ import klite.annotations.POST
 import klite.annotations.Path
 import klite.info
 import klite.logger
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import java.io.IOException
 import java.util.*
-import java.util.concurrent.ArrayBlockingQueue
 
 @Path("/sse")
 class SSERoutes {
-  private val queue = ArrayBlockingQueue<Message>(100)
+  private val channel = Channel<Message>(100)
   private val log = logger("sse")
 
   data class Message(val hello: String)
 
   // curl --data '{"hello":"World"}' -H 'Content-Type: application/json' http://localhost:8080/api/sse
-  @POST fun post(message: Message) = queue.put(message)
+  @POST suspend fun post(message: Message) = channel.send(message)
 
   // use EventSource in browser to receive
-  @GET fun listen(e: HttpExchange) = try {
+  @GET suspend fun listen(e: HttpExchange) = try {
     e.startEventStream()
-    while (true) e.send(ServerSentEvent(queue.take()))
+    while (true) e.send(ServerSentEvent(channel.receive()))
   } catch (e: IOException) {
     log.info(e.toString()) // client disconnect
   }
