@@ -125,15 +125,14 @@ get("/hello") {
 In most production environments your app will be running behind a load balancer and https proxy.
 Proxies will forward some standard headers, that your app will need to understand:
 
-* To support `X-Request-Id` header (e.g. in Heroku), pass *XRequestIdGenerator* instance to the Server
-* To support `X-Forwarded-For` and the like, pass *XForwardedHttpExchange* constructor to the Server
+* To support `X-Request-Id` header (e.g. in Heroku), pass [*XRequestIdGenerator*](src/klite/RequestIdGenerator.kt) instance to the Server
+* To support `X-Forwarded-For` and the like, pass [*XForwardedHttpExchange*](src/klite/XForwardedHttpExchange.kt) constructor to the Server
 
 ```kotlin
   Server(requestIdGenerator = XRequestIdGenerator(), httpExchangeCreator = XForwardedHttpExchange::class.primaryConstructor!!)
 ```
 
 Enable these only if you are sure that you will be running behind a trusted proxy in production.
-
 
 ## Best practices
 

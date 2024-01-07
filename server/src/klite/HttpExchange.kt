@@ -14,7 +14,9 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
+
 typealias Headers = com.sun.net.httpserver.Headers
+operator fun Headers.plusAssign(headers: Map<String, String>) = headers.forEach { (k, v) -> set(k, v) }
 
 open class HttpExchange(
   internal val original: OriginalHttpExchange,
@@ -138,17 +140,4 @@ open class HttpExchange(
   }
 
   override fun toString() = "$method ${original.requestURI}"
-}
-
-operator fun Headers.plusAssign(headers: Map<String, String>) = headers.forEach { (k, v) -> set(k, v) }
-
-class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
-  HttpExchange(original, config, sessionStore, requestId) {
-  companion object {
-    private val forwardedIPIndexFromEnd = Config.optional("XFORWARDED_IP_FROM_END", "1").toInt()
-  }
-  override val remoteAddress get() = header("X-Forwarded-For")?.split(", ")?.let { it.getOrNull(it.size - forwardedIPIndexFromEnd) } ?: super.remoteAddress
-  override val host get() = header("X-Forwarded-Host") ?: super.host
-  override val protocol get() = header("X-Forwarded-Proto") ?: "http"
-  override val isSecure get() = protocol == "https"
 }
