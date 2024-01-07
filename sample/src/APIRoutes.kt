@@ -10,7 +10,7 @@ import users.User
 import users.UserRepository
 
 @Path("/hello") @Tag(name = "cool", description = "Cool routes")
-class MyRoutes(private val userRepository: UserRepository) {
+class APIRoutes(private val userRepository: UserRepository) {
   @GET @Operation(summary = "Just a hello") fun sayHello() = MyData("Hello")
   @GET("2") fun withExchange(exchange: HttpExchange) = "Hello2 ${exchange.method} ${exchange.path}"
   @GET("3") fun HttpExchange.asContext() = "${translate("hello")} $method $path"

@@ -31,7 +31,7 @@ interface BodyParser: SupportsContentType {
 }
 
 class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
-  override fun render(output: OutputStream, value: Any?) = output.write(value.toString().toByteArray())
+  override fun render(output: OutputStream, value: Any?) = output.write(value.toString())
 }
 
 class TextBodyParser(

@@ -121,7 +121,7 @@ class HttpExchangeTest {
     verify {
       original.responseHeaders["Content-type"] = "text/custom; charset=UTF-8"
       original.sendResponseHeaders(200, 5)
-      original.responseBody.write("Hello".toByteArray())
+      original.responseBody.write("Hello")
     }
   }
 
@@ -130,7 +130,7 @@ class HttpExchangeTest {
     verify {
       original.responseHeaders["Content-type"] = "image/custom"
       original.sendResponseHeaders(201, 3)
-      original.responseBody.write("XXX".toByteArray())
+      original.responseBody.write("XXX")
     }
   }
 

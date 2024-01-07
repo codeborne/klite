@@ -127,22 +127,11 @@ open class HttpExchange(
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), contentType)
 
-  /** Use in a GET handler to implement SSE (Server-Sent Events), follow by [sendEvent] calls */
+  /** Use in a GET handler to implement SSE (Server-Sent Events), follow by [send] calls */
   fun startEventStream() = startResponse(OK, null, MimeTypes.eventStream)
-  fun sendEvent(event: String? = null, data: String = "", id: Any? = null) =
-    sendEvent(event, id) { it.write(data.replace("\n", "\ndata: ").toByteArray()) }
-  fun sendEvent(event: String? = null, data: Any?, id: Any? = null, renderer: BodyRenderer = config.renderers.first()) =
-    sendEvent(event, id) { renderer.render(it, data) }
-  private fun sendEvent(event: String? = null, id: Any? = null, writeData: (out: OutputStream) -> Unit) {
+  fun send(event: ServerSentEvent, dataRenderer: BodyRenderer? = config.renderers.first()) {
     if (!isResponseStarted) startEventStream()
-    original.responseBody.let { out ->
-      id?.let { out.write("id: $it\n".toByteArray()) }
-      event?.let { out.write("event: $it\n".toByteArray()) }
-      out.write("data: ".toByteArray())
-      writeData(out)
-      out.write("\n\n".toByteArray())
-      out.flush()
-    }
+    event.sendTo(original.responseBody, dataRenderer)
   }
 
   fun redirect(location: String, statusCode: StatusCode = Found): Nothing = throw RedirectException(location, statusCode)

@@ -1,10 +1,13 @@
 package klite
 
+import java.io.OutputStream
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 fun String?.trimToNull() = this?.trim()?.takeIf { it.isNotEmpty() }
+
+fun OutputStream.write(s: String) = write(s.toByteArray())
 
 @Suppress("UNCHECKED_CAST")
 fun <K, V> notNullValues(vararg pairs: Pair<K, V?>?) = pairs.filter { it?.second != null } as List<Pair<K, V>>

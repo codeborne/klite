@@ -96,7 +96,7 @@ You can implement your own store if you want sessions to be stored in e.g. a dat
 
 Supported using coroutines. Use `exchange.startEventStream()` and then `exchange.sendEvent()` in a loop.
 On the client-side, use browser's built-in `EventSource` class that will do reconnects automatically.
-See usage [sample](../sample/src/Launcher.kt).
+See usage [sample](../sample/src/SSERoutes.kt).
 
 ## HTML templates for server-side rendering
 

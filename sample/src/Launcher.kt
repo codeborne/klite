@@ -5,12 +5,10 @@ import klite.json.JsonBody
 import klite.openapi.openApi
 import kotlinx.coroutines.delay
 import users.registerValueTypes
-import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
 import java.nio.file.Path
 import java.time.Duration.ofSeconds
-import java.util.*
 
 fun main() {
   sampleServer().start()
@@ -56,24 +54,6 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
       body<JsonRequest>()
     }
 
-    get("/sse") {
-      val log = logger("sse")
-      startEventStream()
-      sendEvent("start")
-      try {
-        for (i in 1..100) {
-          val data = mapOf("message" to "Hello $i")
-          sendEvent(id = UUID.randomUUID(), data = data)
-          log.info("Sent $data")
-          delay(2000)
-        }
-        sendEvent("end")
-      } catch (e: IOException) {
-        // connection terminated by client
-        logger().info(e.toString())
-      }
-    }
-
     decorator { ex, h -> "<${h(ex)}>" }
     get("/decorated") { "!!!" }
   }
@@ -82,7 +62,8 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     useOnly<JsonBody>() // in case only json should be supported in this context
     before(CorsHandler()) // enable CORS for this context, so that Swagger-UI can access the API
     useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
-    annotated<MyRoutes>() // read routes from an annotated class - such classes are easier to unit-test
+    annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
+    annotated<SSERoutes>() // Server-Side Events sample
     openApi()
   }
 }
