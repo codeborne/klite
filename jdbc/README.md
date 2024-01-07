@@ -80,6 +80,7 @@ conversion of entities to Maps for use with insert/update/upsert.
 
 They work with entity classes implementing `BaseEntity<ID>`, where you can provide your own ID class, like UUID or [TSID](../core/src/TSID.kt).
 
+Experimental:
 * `NullableId<ID>` is also provided if you prefer not yet stored entitites not to have id assigned.
 * `UpdatabaleEntity` can be used to implement optimistic locking when saving, not letting concurrent users overwrite each other changes.
 
