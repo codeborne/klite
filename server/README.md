@@ -36,7 +36,7 @@ use<[JsonBody](../json/src/JsonBody.kt)>() for `application/json` support.
 
 ## Converter
 
-[Converter](src/klite/Converter.kt) is used everywhere to convert incoming strings the respective (value) types, e.g.
+[Converter](../core/src/Converter.kt) is used everywhere to convert incoming strings the respective (value) types, e.g.
 request parameters, json fields, database values, etc.
 
 This allows you to bind types like `LocalDate` or `UUID` directly in your routes, as well as `Converter.use` any custom
