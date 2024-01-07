@@ -10,6 +10,7 @@ import java.net.InetSocketAddress
 import java.net.http.HttpClient
 import java.nio.file.Path
 import java.time.Duration.ofSeconds
+import java.util.*
 
 fun main() {
   sampleServer().start()
@@ -58,13 +59,15 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     get("/sse") {
       val log = logger("sse")
       startEventStream()
+      sendEvent("start")
       try {
         for (i in 1..100) {
           val data = mapOf("message" to "Hello $i")
-          sendEvent("event", data)
+          sendEvent("event", data, mapOf("id" to UUID.randomUUID()))
           log.info("Sent $data")
           delay(2000)
         }
+        sendEvent("end")
       } catch (e: IOException) {
         // connection terminated by client
         logger().info(e.toString())

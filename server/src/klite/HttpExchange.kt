@@ -127,14 +127,18 @@ open class HttpExchange(
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), contentType)
 
-  /** SSE (Server-Sent Events) */
+  /** Use in a GET handler to implement SSE (Server-Sent Events), follow by [sendEvent] calls */
   fun startEventStream() = startResponse(OK, null, MimeTypes.eventStream)
-  fun sendEvent(event: String, data: String = "") = sendEvent(event) { it.write(data.toByteArray()) }
-  fun sendEvent(event: String, data: Any?) = sendEvent(event) { findRenderer(takeFirst = true).render(it, data) }
-  private fun sendEvent(event: String, writeData: (out: OutputStream) -> Unit) {
+  fun sendEvent(event: String, data: String = "", fields: Map<String, Any> = emptyMap()) =
+    sendEvent(event, fields) { it.write(data.toByteArray()) }
+  fun sendEvent(event: String, data: Any?, fields: Map<String, Any> = emptyMap(), renderer: BodyRenderer = config.renderers.first()) =
+    sendEvent(event, fields) { renderer.render(it, data) }
+  private fun sendEvent(event: String, fields: Map<String, Any> = emptyMap(), writeData: (out: OutputStream) -> Unit) {
     if (!isResponseStarted) startEventStream()
     original.responseBody.let { out ->
-      out.write("event: $event\r\ndata: ".toByteArray())
+      out.write("event: $event\r\n".toByteArray())
+      fields.forEach { (k, v) -> out.write("$k: $v\r\n".toByteArray()) }
+      out.write("data: ".toByteArray())
       writeData(out)
       out.write("\r\n\r\n".toByteArray())
       out.flush()
