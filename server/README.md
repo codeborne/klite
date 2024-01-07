@@ -107,6 +107,8 @@ Supported using coroutines. Use [`exchange.startEventStream()`](src/klite/sse/Ev
 On the client-side, use browser's built-in `EventSource` class that will do reconnects automatically.
 See usage [sample](../sample/src/SSERoutes.kt).
 
+This is a much lighter alternative to WebSockets, based on HTTP, not a separate protocol.
+
 ## HTML templates for server-side rendering
 
 No built-in support for that. You may either implement a [BodyRenderer](src/klite/Body.kt) that will pass route responses to your favorite template engine or just call the engine in your routes and produce html output directly with `send(OK, "html", "text/html")`.
