@@ -1,10 +1,12 @@
 import klite.HttpExchange
-import klite.ServerSentEvent
 import klite.annotations.GET
 import klite.annotations.POST
 import klite.annotations.Path
 import klite.info
 import klite.logger
+import klite.sse.Event
+import klite.sse.send
+import klite.sse.startEventStream
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import java.io.IOException
@@ -23,22 +25,21 @@ class SSERoutes {
   // use EventSource in browser to receive
   @GET suspend fun listen(e: HttpExchange) = try {
     e.startEventStream()
-    while (true) e.send(ServerSentEvent(channel.receive()))
+    while (true) e.send(Event(channel.receive()))
   } catch (e: IOException) {
     log.info(e.toString()) // client disconnect
   }
 
-  @GET("/demo") suspend fun coroutineDemo(e: HttpExchange) {
-    e.startEventStream()
-    e.send(ServerSentEvent(event = "start"))
+  @GET("/demo") suspend fun demo(e: HttpExchange) {
+    e.send(Event(name = "start"))
     try {
       for (i in 1..100) {
         val data = mapOf("message" to "Hello $i")
-        e.send(ServerSentEvent(data = data, id = UUID.randomUUID()))
+        e.send(Event(data = data, id = UUID.randomUUID()))
         log.info("Sent $data")
         delay(2000)
       }
-      e.send(ServerSentEvent(event = "end"))
+      e.send(Event(name = "end"))
     } catch (e: IOException) {
       log.info(e.toString()) // client disconnect
     }

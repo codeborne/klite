@@ -94,7 +94,7 @@ You can implement your own store if you want sessions to be stored in e.g. a dat
 
 ## (SSE) Server-Sent Events
 
-Supported using coroutines. Use `exchange.startEventStream()` and then `exchange.sendEvent()` in a loop.
+Supported using coroutines. Use [`exchange.startEventStream()`](src/klite/sse/Event.kt) and then `exchange.send()` in a loop.
 On the client-side, use browser's built-in `EventSource` class that will do reconnects automatically.
 See usage [sample](../sample/src/SSERoutes.kt).
 

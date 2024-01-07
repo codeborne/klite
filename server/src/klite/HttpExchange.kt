@@ -17,8 +17,8 @@ typealias OriginalHttpExchange = com.sun.net.httpserver.HttpExchange
 typealias Headers = com.sun.net.httpserver.Headers
 
 open class HttpExchange(
-  private val original: OriginalHttpExchange,
-  private val config: RouterConfig,
+  internal val original: OriginalHttpExchange,
+  internal val config: RouterConfig,
   private val sessionStore: SessionStore?,
   val requestId: String
 ): AutoCloseable {
@@ -125,13 +125,6 @@ open class HttpExchange(
 
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), contentType)
-
-  /** Use in a GET handler to implement SSE (Server-Sent Events), follow by [send] calls */
-  fun startEventStream() = startResponse(OK, null, MimeTypes.eventStream)
-  fun send(event: ServerSentEvent, dataRenderer: BodyRenderer? = config.renderers.first()) {
-    if (!isResponseStarted) startEventStream()
-    event.sendTo(original.responseBody, dataRenderer)
-  }
 
   fun redirect(location: String, statusCode: StatusCode = Found): Nothing = throw RedirectException(location, statusCode)
   fun redirect(url: URI, statusCode: StatusCode = Found): Nothing = redirect(url.toString(), statusCode)
