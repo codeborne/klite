@@ -63,7 +63,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
       try {
         for (i in 1..100) {
           val data = mapOf("message" to "Hello $i")
-          sendEvent("event", data, mapOf("id" to UUID.randomUUID()))
+          sendEvent(id = UUID.randomUUID(), data = data)
           log.info("Sent $data")
           delay(2000)
         }
