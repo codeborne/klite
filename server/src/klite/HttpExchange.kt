@@ -97,11 +97,12 @@ open class HttpExchange(
 
   val accept get() = Accept(header("Accept"))
 
-  fun render(code: StatusCode, body: Any?) {
+  fun render(code: StatusCode, body: Any?) = findRenderer(takeFirst = code != OK).render(this, code, body)
+
+  private fun findRenderer(takeFirst: Boolean = false): BodyRenderer {
     val accept = accept
-    val renderer = config.renderers.find { accept(it) } ?:
-      if (accept.isRelaxed || code != OK) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
-    renderer.render(this, code, body)
+    return config.renderers.find { accept(it) }
+      ?: if (accept.isRelaxed || takeFirst) config.renderers.first() else throw NotAcceptableException(accept.contentTypes)
   }
 
   /**
@@ -125,6 +126,20 @@ open class HttpExchange(
 
   fun send(code: StatusCode, body: String?, contentType: String? = null) =
     send(code, body?.toByteArray(), contentType)
+
+  /** SSE (Server-Sent Events) */
+  fun startEventStream() = startResponse(OK, null, MimeTypes.eventStream)
+  fun sendEvent(event: String, data: String = "") = sendEvent(event) { it.write(data.toByteArray()) }
+  fun sendEvent(event: String, data: Any?) = sendEvent(event) { findRenderer(takeFirst = true).render(it, data) }
+  private fun sendEvent(event: String, writeData: (out: OutputStream) -> Unit) {
+    if (!isResponseStarted) startEventStream()
+    original.responseBody.let { out ->
+      out.write("event: $event\r\ndata: ".toByteArray())
+      writeData(out)
+      out.write("\r\n\r\n".toByteArray())
+      out.flush()
+    }
+  }
 
   fun redirect(location: String, statusCode: StatusCode = Found): Nothing = throw RedirectException(location, statusCode)
   fun redirect(url: URI, statusCode: StatusCode = Found): Nothing = redirect(url.toString(), statusCode)

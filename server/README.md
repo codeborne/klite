@@ -92,6 +92,12 @@ The included [CookieSessionStore](src/klite/Session.kt) stores sessions in an en
 
 You can implement your own store if you want sessions to be stored in e.g. a database.
 
+## (SSE) Server-Sent Events
+
+Supported using coroutines. Use `exchange.startEventStream()` and then `exchange.sendEvent()` in a loop.
+On the client-side, use browser's built-in `EventSource` class that will do reconnects automatically.
+See usage [sample](../sample/src/Launcher.kt).
+
 ## HTML templates for server-side rendering
 
 No built-in support for that. You may either implement a [BodyRenderer](src/klite/Body.kt) that will pass route responses to your favorite template engine or just call the engine in your routes and produce html output directly with `send(OK, "html", "text/html")`.

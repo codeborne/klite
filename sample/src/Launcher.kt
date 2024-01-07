@@ -4,8 +4,8 @@ import klite.jdbc.*
 import klite.json.JsonBody
 import klite.openapi.openApi
 import kotlinx.coroutines.delay
-import users.Id
 import users.registerValueTypes
+import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
 import java.nio.file.Path
@@ -32,8 +32,6 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
   before<AdminChecker>()
   after { ex, err -> ex.header("X-Error", err?.message ?: "none") }
 
-  Id<Any>()
-
   context("/hello") {
     get { "Hello World" }
 
@@ -55,6 +53,22 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     post("/post") {
       data class JsonRequest(val required: String, val hello: String = "World")
       body<JsonRequest>()
+    }
+
+    get("/sse") {
+      val log = logger("sse")
+      startEventStream()
+      try {
+        for (i in 1..100) {
+          val data = mapOf("message" to "Hello $i")
+          sendEvent("event", data)
+          log.info("Sent $data")
+          delay(2000)
+        }
+      } catch (e: IOException) {
+        // connection terminated by client
+        logger().info(e.toString())
+      }
     }
 
     decorator { ex, h -> "<${h(ex)}>" }

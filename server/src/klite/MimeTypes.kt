@@ -12,6 +12,7 @@ object MimeTypes {
   const val pdf = "application/pdf"
   const val wwwForm = "application/x-www-form-urlencoded"
   const val formData = "multipart/form-data"
+  const val eventStream = "text/event-stream"
 
   var unknown = "application/octet-stream"
   var textCharset = Charsets.UTF_8
