@@ -36,8 +36,7 @@ use<[JsonBody](../json/src/JsonBody.kt)>() for `application/json` support.
 
 ## Converter
 
-[Converter](../core/src/Converter.kt) is used everywhere to convert incoming strings the respective (value) types, e.g.
-request parameters, json fields, database values, etc.
+[Converter](../core/src/Converter.kt) is used everywhere to convert incoming strings to the respective (value) types, e.g. request parameters, json fields, database values, etc.
 
 This allows you to bind types like `LocalDate` or `UUID` directly in your routes, as well as `Converter.use` any custom
 types very easily, like `Email`, `PhoneNumber`, etc.
