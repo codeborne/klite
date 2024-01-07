@@ -81,6 +81,16 @@ The order is important, and decorators apply to all *following routes* that are 
 Any exception thrown out of route handler will be passed to [ErrorHandler](src/klite/ErrorHandler.kt) to produce a response.
 The [ErrorResponse](src/klite/ErrorHandler.kt) is then passed to [BodyRenderer](src/klite/Body.kt), like normal responses.
 
+```kotlin
+  Server().apply {
+    errors.on<MyException>(BadRequest)
+    errors.on<OtherException> {
+      // some logic
+      ErrorResponse(BadRequest, "custom message")
+    }
+  }
+```
+
 ## Sessions
 
 Session support can be enabled by providing a [SessionStore](src/klite/Session.kt) implementation, e.g.
