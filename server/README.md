@@ -120,6 +120,8 @@ get("/hello") {
 }
 ```
 
+The latter will be even better once [string template processors](https://youtrack.jetbrains.com/issue/KT-64632/Support-Java-21-StringTemplate.Processor) become available in Kotlin.
+
 ## Running behind a https proxy
 
 In most production environments your app will be running behind a load balancer and https proxy.
