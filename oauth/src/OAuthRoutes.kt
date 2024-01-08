@@ -11,7 +11,7 @@ import klite.plus
 import java.net.URI
 
 open class OAuthRoutes(
-  private val oauthClient: GoogleOAuthClient, // TODO: support for other oauth clients
+  private val oauthClient: OAuthClient,
   private val userRepository: UserRepository
 ) {
   @GET open suspend fun start(e: HttpExchange) =
@@ -23,11 +23,11 @@ open class OAuthRoutes(
     val originalUrl = state?.let { URI(it) }
     if (code == null) e.redirectToLogin(originalUrl, "userCancelled")
 
-    val tokenResponse = oauthClient.authenticate(code, e.fullUrl)
-    val profile = oauthClient.profile(tokenResponse.accessToken)
+    val token = oauthClient.authenticate(code, e.fullUrl)
+    val profile = oauthClient.profile(token)
     if (profile.email == null) e.redirectToLogin(originalUrl, "emailNotProvided")
 
-    val user = userRepository.by(profile.email) ?: userRepository.create(profile, tokenResponse, e.lang)
+    val user = userRepository.by(profile.email) ?: userRepository.create(profile, token, e.lang)
     e.initSession(user)
     e.redirect(originalUrl ?: URI("/"))
   }
