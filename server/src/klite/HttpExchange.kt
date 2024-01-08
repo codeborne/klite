@@ -31,6 +31,7 @@ open class HttpExchange(
   open val isSecure: Boolean get() = original is HttpsExchange
   open val protocol: String get() = if (isSecure) "https" else "http"
 
+  val contextPath: String get() = original.httpContext.path
   val path: String get() = original.requestURI.path
   lateinit var pathParams: Params internal set
   fun path(param: String): String? = pathParams[param]
