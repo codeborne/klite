@@ -48,6 +48,8 @@ class ConverterTest {
     expect(Converter.from<URI>("http://hello/")).toEqual(URI("http://hello/"))
     expect(Converter.from<Int>("123")).toEqual(123)
     expect(Converter.from<Long>("123")).toEqual(123L)
+    expect(Converter.from<Email>("tere@tere.ee")).toEqual(Email("tere@tere.ee"))
+    expect(Converter.from<Phone>("+37256639535")).toEqual(Phone("+37256639535"))
   }
 
   @Test fun `no explicit data constructors`() {

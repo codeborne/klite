@@ -1,3 +1,6 @@
+# Unreleased
+* core: added common value types for Email and Phone, also StringValue base class
+
 # 1.6.3
 * server: added support for SSE (Server-Side Events) to `HttpExchange`
 * json: improve parsing of complex types with parameters

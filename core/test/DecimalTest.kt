@@ -1,10 +1,10 @@
+package klite
+
 import ch.tutteli.atrium.api.fluent.en_GB.toBeGreaterThan
 import ch.tutteli.atrium.api.fluent.en_GB.toBeLessThan
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
-import klite.Decimal
-import klite.d
 import org.junit.jupiter.api.Test
 import java.text.NumberFormat
 import java.util.*
