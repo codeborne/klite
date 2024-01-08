@@ -1,10 +1,9 @@
 package users
 
+import klite.Email
 import klite.jdbc.UpdatableEntity
 import java.time.Instant
 import java.util.*
-
-@JvmInline value class Email(val email: String)
 
 data class User(
   val email: Email,

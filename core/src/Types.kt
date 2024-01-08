@@ -8,6 +8,7 @@ abstract class StringValue(val value: String) {
 }
 
 class Email(email: String): StringValue(email.trim().lowercase()) {
+  companion object {}
   init { require(value.length > 3 && value.contains("@")) { "Invalid email: $email" } }
   val domain get() = value.substringAfter("@")
 }
