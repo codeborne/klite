@@ -11,19 +11,19 @@ import klite.plus
 import java.net.URI
 
 open class OAuthRoutes(
-  private val oauthClient: GoogleOAuthClient,
+  private val oauthClient: GoogleOAuthClient, // TODO: support for other oauth clients
   private val userRepository: UserRepository
 ) {
   @GET open suspend fun start(e: HttpExchange) =
     if (e.query("error_message") != null) e.redirectToLogin(null, "oauthProviderRefused")
     else if (e.query("state") != null) accept(e.query("code"), e.query("state")!!, e)
-    else e.redirect(oauthClient.startAuthUrl(e.safeRedirectParam?.toString(), e.fullUrl(e.contextPath), e.lang))
+    else e.redirect(oauthClient.startAuthUrl(e.safeRedirectParam?.toString(), e.fullUrl, e.lang))
 
   @POST open suspend fun accept(@BodyParam code: String?, @BodyParam state: String?, e: HttpExchange) {
     val originalUrl = state?.let { URI(it) }
     if (code == null) e.redirectToLogin(originalUrl, "userCancelled")
 
-    val tokenResponse = oauthClient.authenticate(code, e.fullUrl(e.contextPath))
+    val tokenResponse = oauthClient.authenticate(code, e.fullUrl)
     val profile = oauthClient.profile(tokenResponse.accessToken)
     if (profile.email == null) e.redirectToLogin(originalUrl, "emailNotProvided")
 
@@ -36,5 +36,5 @@ open class OAuthRoutes(
 val origin = Config.optional("ORIGIN") ?: ""
 val HttpExchange.safeRedirectParam get() = query("redirect")?.takeIf { it.startsWith("/") || it.startsWith(origin) }?.let { URI(it) }
 
-fun HttpExchange.redirectToLogin(originalUrl: URI? = fullUrl, errorKey: String? = null): Nothing =
-  redirect(fullUrl(contextPath) + mapOfNotNull("redirect" to originalUrl, "errorKey" to errorKey))
+private fun HttpExchange.redirectToLogin(originalUrl: URI? = fullUrl, errorKey: String? = null): Nothing =
+  redirect(fullUrl + mapOfNotNull("redirect" to originalUrl, "errorKey" to errorKey))
