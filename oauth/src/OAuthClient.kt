@@ -56,6 +56,20 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
       UserProfile(GOOGLE, res["id"]!!, firstName, lastName, res["email"]?.let { Email(it) }, res["picture"]?.let { URI(it) })
     }
   ),
+  APPLE(
+    Config.optional("APPLE_OAUTH_SCOPE", "email name"),
+    Config.optional("APPLE_OAUTH_URL", "https://appleid.apple.com/auth/authorize"),
+    Config.optional("APPLE_OAUTH_TOKEN_URL", "https://appleid.apple.com/auth/token"),
+    "",
+    { http, token ->
+      val email = token.idToken?.let {
+        val payload = it.split(".")[1]
+        val decodedPayload = payload.base64Decode()
+        JsonMapper().parse<JsonNode>(String(decodedPayload)).getString("email")
+      }
+      TODO()
+    }
+  ),
   // https://portal.azure.com/
   MICROSOFT(
     Config.optional("MICROSOFT_OAUTH_SCOPE", "email openid offline_access User.Read"),
