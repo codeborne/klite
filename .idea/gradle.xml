@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/jobs" />
             <option value="$PROJECT_DIR$/json" />
             <option value="$PROJECT_DIR$/liquibase" />
+            <option value="$PROJECT_DIR$/oauth" />
             <option value="$PROJECT_DIR$/openapi" />
             <option value="$PROJECT_DIR$/sample" />
             <option value="$PROJECT_DIR$/serialization" />

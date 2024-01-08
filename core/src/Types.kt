@@ -3,7 +3,7 @@ package klite
 /** Base class for String-based normalized value types */
 abstract class StringValue(val value: String) {
   override fun toString() = value
-  override fun equals(other: Any?) = value == (other as? StringValue)?.value
+  override fun equals(other: Any?) = other != null && javaClass == other.javaClass && value == (other as StringValue).value
   override fun hashCode() = value.hashCode()
 }
 
@@ -21,4 +21,8 @@ class Phone(phone: String): StringValue(phone.replace(removeChars, "")) {
   init { require(valid.matches(value)) {
     "International phone number should start with + and have at least 10 digits: $value" }
   }
+}
+
+class Password(value: String): StringValue(value) {
+  override fun toString() = "Password<***>"
 }
