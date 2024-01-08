@@ -33,4 +33,4 @@ dependencyResolutionManagement {
   }
 }
 
-include("core", "server", "json", "csv", "jackson", "i18n", "serialization", "jdbc", "jobs", "jdbc-test", "liquibase", "slf4j", "openapi", "sample")
+include("core", "server", "json", "csv", "jackson", "i18n", "serialization", "jdbc", "jobs", "jdbc-test", "oauth", "liquibase", "slf4j", "openapi", "sample")

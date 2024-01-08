@@ -1,5 +1,6 @@
 package users
 
+import klite.Email
 import klite.jdbc.ilike
 import klite.jdbc.or
 import javax.sql.DataSource

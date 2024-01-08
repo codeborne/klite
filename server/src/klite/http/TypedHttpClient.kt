@@ -99,3 +99,6 @@ open class TypedHttpClient(
 
 fun HttpClient.Builder.connectTimeout(duration: Duration): HttpClient.Builder = connectTimeout(duration.toJavaDuration())
 fun HttpRequest.Builder.timeout(duration: Duration): HttpRequest.Builder = timeout(duration.toJavaDuration())
+
+inline fun httpClient(builder: HttpClient.Builder.() -> Unit = {}) =
+  HttpClient.newBuilder().connectTimeout(5.seconds).apply(builder).build()
