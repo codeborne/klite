@@ -10,7 +10,7 @@ class OAuthClient(
   val provider: OAuthProvider,
   httpClient: HttpClient
 ) {
-  private val http = JsonHttpClient(json = JsonMapper(trimToNull = false), http = httpClient)
+  private val http = JsonHttpClient(json = JsonMapper(keys = SnakeCase, trimToNull = false), http = httpClient)
   private val clientId = Config["${provider}_OAUTH_CLIENT_ID"]
   private val clientSecret = Config["${provider}_OAUTH_CLIENT_SECRET"]
 
@@ -52,7 +52,7 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
     Config.optional("GOOGLE_OAUTH_PROFILE_URL", "https://www.googleapis.com/oauth2/v1/userinfo?alt=json"),
     { http, token ->
       val res = http.get<Map<String, String>>(GOOGLE.profileUrl) { authBearer(token.accessToken) }
-      UserProfile(GOOGLE, res["id"]!!, res["given_name"] ?: "", res["family_name"] ?: "", Email(res["email"]!!), res["picture"]?.let { URI(it) })
+      UserProfile(GOOGLE, res["id"]!!, res["givenName"] ?: "", res["familyName"] ?: "", Email(res["email"]!!), res["picture"]?.let { URI(it) })
     }
   ),
   APPLE(
@@ -78,7 +78,7 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
     { http, token ->
       val res = http.get<JsonNode>(MICROSOFT.profileUrl) { authBearer(token.accessToken) }
       val email = res.getOrNull<String>("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
-      UserProfile(MICROSOFT, res.getString("id"), res.getString("given_name"), res.getString("surname"), Email(email))
+      UserProfile(MICROSOFT, res.getString("id"), res.getString("givenName"), res.getString("surname"), Email(email))
     }
   ),
   // https://developers.facebook.com/apps/
@@ -91,7 +91,7 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
       val res = http.get<JsonNode>(FACEBOOK.profileUrl) { authBearer(token.accessToken) }
       val avatarData = res.getOrNull<JsonNode>("picture")?.getOrNull<JsonNode>("data")
       val avatarExists = avatarData?.getOrNull<Boolean>("is_silhouette") != true
-      UserProfile(FACEBOOK, res.getString("id"), res.getString("first_name"), res.getString("last_name"), Email(res.getString("email")), avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) })
+      UserProfile(FACEBOOK, res.getString("id"), res.getString("firstName"), res.getString("lastName"), Email(res.getString("email")), avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) })
     }
   )
 }
