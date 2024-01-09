@@ -27,9 +27,9 @@ class OAuthRoutesTest {
     every { id } returns "uid"
     every { email } returns profile.email!!
   }
-  val oauthClient = mockk<GoogleOAuthClient> {
+  val oauthClient = mockk<OAuthClient> {
     coEvery { authenticate("code", any()) } returns token
-    coEvery { profile("token") } returns profile
+    coEvery { profile(token) } returns profile
   }
   val userRepository = mockk<UserRepository>()
   val routes = OAuthRoutes(oauthClient, userRepository)
