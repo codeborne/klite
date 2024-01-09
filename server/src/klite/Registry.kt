@@ -36,11 +36,6 @@ open class SimpleRegistry: MutableRegistry {
   override fun <T: Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
   override fun <T: Any> register(type: KClass<T>, instance: T) {
     instances[type] = instance
-    for (supertype in type.supertypes) {
-      val stype = supertype.classifier as? KClass<T>
-      if (stype == null || stype == Any::class || stype in instances) break
-      register(stype, instance)
-    }
     if (instance::class != type) instances[instance::class] = instance
   }
 
