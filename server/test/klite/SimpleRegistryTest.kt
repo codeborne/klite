@@ -16,6 +16,7 @@ class SimpleRegistryTest {
   @Test fun require() {
     expect(registry.require<Registry>()).toBeTheInstance(registry)
     expect(registry.require<TextBodyParser>()).toBeAnInstanceOf<TextBodyParser>()
+    expect(registry.require<BodyParser>()).toBeAnInstanceOf<TextBodyParser>()
   }
 
   @Test fun requireAll() {

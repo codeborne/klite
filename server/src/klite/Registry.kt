@@ -36,13 +36,18 @@ open class SimpleRegistry: MutableRegistry {
   override fun <T: Any, I: T> register(type: KClass<T>, implementation: KClass<I>) = register(type, create(implementation))
   override fun <T: Any> register(type: KClass<T>, instance: T) {
     instances[type] = instance
+    for (supertype in type.supertypes) {
+      val stype = supertype.classifier as? KClass<T>
+      if (stype == null || stype == Any::class || stype in instances) break
+      register(stype, instance)
+    }
     if (instance::class != type) instances[instance::class] = instance
   }
 
   override fun contains(type: KClass<*>) = instances.contains(type)
   override fun <T: Any> optional(type: KClass<T>) = instances[type] as T?
   override fun <T: Any> require(type: KClass<T>) = optional(type) ?: create(type).also { register(type, it) }
-  override fun <T: Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) } as List<T>
+  override fun <T: Any> requireAll(type: KClass<T>): List<T> = instances.values.filter { type.java.isAssignableFrom(it.javaClass) }.distinct() as List<T>
 
   open fun <T: Any> create(type: KClass<T>): T = type.createInstance()
 }

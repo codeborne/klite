@@ -1,6 +1,7 @@
 # Unreleased
 * core: added common value types for Email, Phone, and Password, also StringValue base class
 * server: added path to annotated(), to make paths more visible in one place
+* server: Registry.register() will now register an implementation with it's supertypes/interfaces
 * oauth: new experimental reusable OAuth implementation module
 
 # 1.6.3
