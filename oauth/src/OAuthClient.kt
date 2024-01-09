@@ -1,6 +1,7 @@
 package klite.oauth
 
 import klite.*
+import klite.http.authBearer
 import klite.json.*
 import java.net.URI
 import java.net.http.HttpClient
@@ -36,7 +37,7 @@ class OAuthClient(
       "client_secret" to clientSecret,
       "redirect_uri" to redirectUrl?.toString()
     ))) {
-      setHeader("Content-Type", "${MimeTypes.wwwForm}; charset=UTF-8")
+      setHeader("Content-Type", MimeTypes.withCharset(MimeTypes.wwwForm))
     }
 
   suspend fun profile(token: OAuthTokenResponse) = provider.fetchProfile(http, token)
@@ -50,10 +51,8 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
     Config.optional("GOOGLE_OAUTH_TOKEN_URL", "https://oauth2.googleapis.com/token"),
     Config.optional("GOOGLE_OAUTH_PROFILE_URL", "https://www.googleapis.com/oauth2/v1/userinfo?alt=json"),
     { http, token ->
-      val res = http.get<Map<String, String>>(GOOGLE.profileUrl) { setHeader("Authorization", "Bearer " + token.accessToken) }
-      val firstName = res["givenName"] ?: ""
-      val lastName = res["familyName"] ?: ""
-      UserProfile(GOOGLE, res["id"]!!, firstName, lastName, res["email"]?.let { Email(it) }, res["picture"]?.let { URI(it) })
+      val res = http.get<Map<String, String>>(GOOGLE.profileUrl) { authBearer(token.accessToken) }
+      UserProfile(GOOGLE, res["id"]!!, res["givenName"] ?: "", res["familyName"] ?: "", Email(res["email"]!!), res["picture"]?.let { URI(it) })
     }
   ),
   APPLE(
@@ -61,7 +60,7 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
     Config.optional("APPLE_OAUTH_URL", "https://appleid.apple.com/auth/authorize"),
     Config.optional("APPLE_OAUTH_TOKEN_URL", "https://appleid.apple.com/auth/token"),
     "",
-    { http, token ->
+    { _, token ->
       val email = token.idToken?.let {
         val payload = it.split(".")[1]
         val decodedPayload = payload.base64Decode()
@@ -77,9 +76,9 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
     Config.optional("MICROSOFT_OAUTH_TOKEN_URL", "https://login.microsoftonline.com/common/oauth2/v2.0/token"),
     Config.optional("MICROSOFT_OAUTH_PROFILE_URL", "https://graph.microsoft.com/v1.0/me"),
     { http, token ->
-      val res = http.get<JsonNode>(MICROSOFT.profileUrl) { setHeader("Authorization", "Bearer " + token.accessToken) }
-      val email = res.getOrNull<String>("mail") ?: res.getOrNull<String>("userPrincipalName")
-      UserProfile(MICROSOFT, res.getString("id"), res.getString("givenName"), res.getString("surname"), email?.let { Email(it) })
+      val res = http.get<JsonNode>(MICROSOFT.profileUrl) { authBearer(token.accessToken) }
+      val email = res.getOrNull<String>("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
+      UserProfile(MICROSOFT, res.getString("id"), res.getString("givenName"), res.getString("surname"), Email(email))
     }
   ),
   // https://developers.facebook.com/apps/
@@ -89,7 +88,7 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
     Config.optional("FACEBOOK_OAUTH_TOKEN_URL", "https://graph.facebook.com/v12.0/oauth/access_token"),
     Config.optional("FACEBOOK_OAUTH_PROFILE_URL", "https://graph.facebook.com/v12.0/me?fields=id,first_name,last_name,email,picture"),
     { http, token ->
-      val res = http.get<JsonNode>(FACEBOOK.profileUrl) { setHeader("Authorization", "Bearer " + token.accessToken) }
+      val res = http.get<JsonNode>(FACEBOOK.profileUrl) { authBearer(token.accessToken) }
       val avatarData = res.getOrNull<JsonNode>("picture")?.getOrNull<JsonNode>("data")
       val avatarExists = avatarData?.getOrNull<Boolean>("is_silhouette") != true
       UserProfile(FACEBOOK, res.getString("id"), res.getString("firstName"), res.getString("lastName"), Email(res.getString("email")), avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) })
@@ -98,4 +97,4 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
 }
 
 data class OAuthTokenResponse(val accessToken: String, val expiresIn: Int, val scope: String? = null, val tokenType: String? = null, val idToken: String? = null, val refreshToken: String? = null)
-data class UserProfile(val provider: OAuthProvider, val id: String, val firstName: String, val lastName: String, val email: Email?, val avatarUrl: URI? = null)
+data class UserProfile(val provider: OAuthProvider, override val id: String, override val firstName: String, override val lastName: String, override val email: Email, override val avatarUrl: URI? = null): OAuthUser

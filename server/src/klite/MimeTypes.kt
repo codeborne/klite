@@ -55,6 +55,6 @@ object MimeTypes {
   fun typeFor(file: Path) = byExtension[file.extension]
   fun typeFor(fileName: String) = typeFor(Path.of(fileName))
 
-  fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml") || contentType.contains("csv")
+  fun isText(contentType: String) = contentType.startsWith("text/") || contentType.contains("json") || contentType.contains("xml") || contentType.contains("csv") || contentType == wwwForm
   fun withCharset(contentType: String) = if (!contentType.contains("charset") && isText(contentType)) "$contentType; charset=$textCharset" else contentType
 }

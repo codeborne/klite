@@ -12,7 +12,7 @@ import java.net.URI
 
 open class OAuthRoutes(
   private val oauthClient: OAuthClient,
-  private val userRepository: UserRepository
+  private val userRepository: OAuthUserRepository
 ) {
   @GET open suspend fun start(e: HttpExchange) =
     if (e.query("error_message") != null) e.redirectToLogin(null, "oauthProviderRefused")
@@ -25,7 +25,6 @@ open class OAuthRoutes(
 
     val token = oauthClient.authenticate(code, e.fullUrl(e.contextPath))
     val profile = oauthClient.profile(token)
-    if (profile.email == null) e.redirectToLogin(originalUrl, "emailNotProvided")
 
     val user = userRepository.by(profile.email) ?: userRepository.create(profile, token, e.lang)
     e.initSession(user)

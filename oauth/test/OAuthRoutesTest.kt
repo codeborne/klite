@@ -23,19 +23,15 @@ class OAuthRoutesTest {
   }
   val profile = UserProfile(GOOGLE, "gid", "Test", "User", Email("e@mail"))
   val token = OAuthTokenResponse("token", 100)
-  val user = mockk<User> {
-    every { id } returns "uid"
-    every { email } returns profile.email!!
-  }
   val oauthClient = mockk<OAuthClient> {
     coEvery { authenticate("code", any()) } returns token
     coEvery { profile(token) } returns profile
   }
-  val userRepository = mockk<UserRepository>()
+  val userRepository = mockk<OAuthUserRepository>()
   val routes = OAuthRoutes(oauthClient, userRepository)
 
   @Test fun `accept existing user`() {
-    every { userRepository.by(profile.email!!) } returns user
+    every { userRepository.by(profile.email) } returns profile
 
     expect { runBlocking { routes.accept("code", "/path", exchange) } }.toThrow<RedirectException>()
 
@@ -46,8 +42,8 @@ class OAuthRoutesTest {
   }
 
   @Test fun `accept new user`() {
-    every { userRepository.by(profile.email!!) } returns null
-    every { userRepository.create(any(), any(), any()) } returns user
+    every { userRepository.by(profile.email) } returns null
+    every { userRepository.create(any(), any(), any()) } returns profile
 
     expect { runBlocking { routes.accept("code", null, exchange) } }.toThrow<RedirectException>()
 
