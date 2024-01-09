@@ -2,8 +2,12 @@ import klite.*
 import klite.annotations.annotated
 import klite.jdbc.*
 import klite.json.JsonBody
+import klite.oauth.AuthRoutes
+import klite.oauth.OAuthRoutes
+import klite.oauth.OAuthUserRepository
 import klite.openapi.openApi
 import kotlinx.coroutines.delay
+import users.UserRepository
 import users.registerValueTypes
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
@@ -65,5 +69,11 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
     annotated<SSERoutes>("/sse") // Server-Side Events sample
     openApi()
+  }
+
+  context("/auth") {
+    register<OAuthUserRepository>(UserRepository::class)
+    annotated<AuthRoutes>()
+    annotated<OAuthRoutes>()
   }
 }
