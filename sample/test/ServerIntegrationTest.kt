@@ -33,8 +33,12 @@ class ServerIntegrationTest {
       expect(http.get<String>("/api/hello/params?required=xx&nullable=1&optional")).toEqual("\"true,xx,1\"")
       expect(http.post<String>("/api/hello/post", MyData("World"))).toEqual("\"Received MyData(hello=World, world=3.141592653589793) as json, optional = true\"")
     }
+
     expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>()
       .messageToContain("""{"message":"required is required","reason":"Bad Request","statusCode":400}""")
+
+    expect { runBlocking { http.get<String>("/api/notfound") } }.toThrow<IOException>()
+      .messageToContain("""{"message":"/api/notfound","reason":"Not Found","statusCode":404}""")
 
     server.stop()
   }
