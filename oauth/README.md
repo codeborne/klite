@@ -7,9 +7,8 @@ You need to provide implementations of [OAuthUser and OAuthUserRepository](src/O
 ```kotlin
 context("/oauth") {
   register<OAuthUserRepository>(UserRepository::class)
-  register(OAuthClient(GOOGLE, httpClient))
   annotated<OAuthRoutes>()
 }
 ```
 
-Then navigate to `/oauth` or `/oauth?redirect=/return/path` to start authentication.
+Then navigate to e.g. `/oauth/google` or `/oauth/google?redirect=/return/path` to start authentication.

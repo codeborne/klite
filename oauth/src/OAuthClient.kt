@@ -9,7 +9,7 @@ import java.net.http.HttpClient
 class OAuthClient(
   val provider: OAuthProvider,
   httpClient: HttpClient
-) {
+) { // TODO: will be nice to support custom subclasses
   private val http = JsonHttpClient(json = JsonMapper(keys = SnakeCase, trimToNull = false), http = httpClient)
   private val clientId = Config["${provider}_OAUTH_CLIENT_ID"]
   private val clientSecret = Config["${provider}_OAUTH_CLIENT_SECRET"]
