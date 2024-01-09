@@ -92,9 +92,9 @@ enum class OAuthProvider(val scope: String, val authUrl: String, val tokenUrl: S
       val res = http.get<JsonNode>(FACEBOOK.profileUrl) { setHeader("Authorization", "Bearer " + token.accessToken) }
       val avatarData = res.getOrNull<JsonNode>("picture")?.getOrNull<JsonNode>("data")
       val avatarExists = avatarData?.getOrNull<Boolean>("is_silhouette") != true
-      UserProfile(FACEBOOK, res.getString("id"), res.getString("first_name"), res.getString("last_name"), res.getOrNull<String>("email")?.let { Email(it) }, avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) })
+      UserProfile(FACEBOOK, res.getString("id"), res.getString("firstName"), res.getString("lastName"), Email(res.getString("email")), avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) })
     }
-  ),
+  )
 }
 
 data class OAuthTokenResponse(val accessToken: String, val expiresIn: Int, val scope: String? = null, val tokenType: String? = null, val idToken: String? = null, val refreshToken: String? = null)
