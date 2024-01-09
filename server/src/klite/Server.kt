@@ -64,6 +64,8 @@ class Server(
     when (it) {
       is Extension -> it.install(this)
       is Runnable -> it.run()
+      is BodyParser -> parsers += it
+      is BodyRenderer -> renderers += it
       else -> error("Cannot use $it, must be either Extension or Runnable")
     }
   }
