@@ -66,7 +66,7 @@ open class DependencyInjectingRegistry: SimpleRegistry() {
       return constructor.callBy(args).also {
         log.log(DEBUG) { "Auto-created ${type.simpleName}${args.values.map { it::class.simpleName }}" }
       }
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       throw RegistryException("Failed to auto-create ${type.simpleName} with dependencies on ${constructor.parameters.map {it.type}}", e.cause ?: e)
     }
   }
