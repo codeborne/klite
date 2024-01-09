@@ -63,7 +63,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
     before(CorsHandler()) // enable CORS for this context, so that Swagger-UI can access the API
     useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
     annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
-    annotated<SSERoutes>() // Server-Side Events sample
+    annotated<SSERoutes>("/sse") // Server-Side Events sample
     openApi()
   }
 }

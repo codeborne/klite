@@ -1,5 +1,6 @@
 # Unreleased
 * core: added common value types for Email, Phone, and Password, also StringValue base class
+* server: added path to annotated(), to make paths more visible in one place
 
 # 1.6.3
 * server: added support for SSE (Server-Side Events) to `HttpExchange`

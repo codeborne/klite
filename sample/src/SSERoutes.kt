@@ -1,7 +1,6 @@
 import klite.HttpExchange
 import klite.annotations.GET
 import klite.annotations.POST
-import klite.annotations.Path
 import klite.info
 import klite.logger
 import klite.sse.Event
@@ -12,7 +11,6 @@ import kotlinx.coroutines.delay
 import java.io.IOException
 import java.util.*
 
-@Path("/sse")
 class SSERoutes {
   private val channel = Channel<Message>(100)
   private val log = logger("sse")

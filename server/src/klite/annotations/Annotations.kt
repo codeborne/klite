@@ -37,9 +37,10 @@ import kotlin.reflect.jvm.javaMethod
  * Non-annotated binding of well known classes is possible, like [HttpExchange] and [Session].
  * Non-annotated custom class is interpreted as the whole POST/PUT body, e.g. a data class deserialized from json.
  */
-fun Router.annotated(routes: Any) {
+@Suppress("NAME_SHADOWING")
+fun Router.annotated(path: String = "", routes: Any) {
   val cls = routes::class
-  val path = cls.annotation<Path>()?.value ?: ""
+  val path = path + (cls.annotation<Path>()?.value ?: "")
   val classDecorators = mutableListOf<Decorator>()
   if (routes is Before) classDecorators += routes.toDecorator()
   if (routes is After) classDecorators += routes.toDecorator()
@@ -52,7 +53,7 @@ fun Router.annotated(routes: Any) {
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
-inline fun <reified T: Any> Router.annotated() = annotated(require<T>())
+inline fun <reified T: Any> Router.annotated(path: String = "") = annotated(path, require<T>())
 
 private val packageName = GET::class.java.packageName
 private val KAnnotatedElement.kliteAnnotation get() = annotations.filter { it.annotationClass.java.packageName == packageName }
