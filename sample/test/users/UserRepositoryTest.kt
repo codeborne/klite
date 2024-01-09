@@ -2,10 +2,10 @@ package klite.sample.users
 
 import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Email
 import klite.jdbc.StaleEntityException
 import klite.sample.DBTest
 import org.junit.jupiter.api.Test
-import users.Email
 import users.Id
 import users.User
 import users.UserRepository
