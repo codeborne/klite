@@ -38,7 +38,7 @@ import kotlin.reflect.jvm.javaMethod
  * Non-annotated custom class is interpreted as the whole POST/PUT body, e.g. a data class deserialized from json.
  */
 @Suppress("NAME_SHADOWING")
-fun Router.annotated(path: String, routes: Any) {
+fun Router.annotated(path: String = "", routes: Any, annotations: List<Annotation> = emptyList()) {
   val cls = routes::class
   val path = path + (cls.annotation<Path>()?.value ?: "")
   val classDecorators = mutableListOf<Decorator>()
@@ -49,12 +49,12 @@ fun Router.annotated(path: String, routes: Any) {
     val method = RequestMethod.valueOf(a.annotationClass.simpleName!!)
     val subPath = a.annotationClass.members.first().call(a) as String
     val handler = classDecorators.wrap(FunHandler(routes, f))
-    subPath to Route(method, pathParamRegexer.from(path + subPath), f.annotations + cls.annotations, handler)
+    subPath to Route(method, pathParamRegexer.from(path + subPath), annotations + f.annotations + cls.annotations, handler)
   }.sortedBy { it.first.replace(':', '~') }.forEach { add(it.second) }
 }
 
 fun Router.annotated(routes: Any) = annotated("", routes)
-inline fun <reified T: Any> Router.annotated(path: String = "") = annotated(path, require<T>())
+inline fun <reified T: Any> Router.annotated(path: String = "", annotations: List<Annotation> = emptyList()) = annotated(path, require<T>(), annotations)
 
 private val packageName = GET::class.java.packageName
 private val KAnnotatedElement.kliteAnnotation get() = annotations.filter { it.annotationClass.java.packageName == packageName }
