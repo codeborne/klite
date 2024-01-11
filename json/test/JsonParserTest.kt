@@ -62,6 +62,7 @@ class JsonParserTest {
   }
 
   @Test fun `parse type parameter passed to parameter type`() {
+    expect(mapper.parse<DataResponse<Nested>>("""{"data":{"x": 3}}""")).toEqual(DataResponse(Nested(3.toBigDecimal())))
     expect(mapper.parse<TypedData<Nested>>("""{"list": [{"x": 1}, {}], "map": {"k": {"x": 2}}}""")).toEqual(TypedData(listOf(Nested(ONE), Nested()), mapOf("k" to Nested(2.toBigDecimal()))))
   }
 
@@ -123,3 +124,4 @@ data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val da
 data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
 data class TypedData<T>(val list: List<T>, val map: Map<String, T> = emptyMap())
 data class FieldRule<T: Comparable<T>>(val field: KProperty1<out Hello, T>)
+data class DataResponse<T>(val data: T)
