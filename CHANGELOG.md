@@ -2,6 +2,7 @@
 * core: added common value types for Email, Phone, and Password, also StringValue base class
 * server: added path to annotated(), to make paths more visible in one place
 * server: bugfix after 1.6.0: wrap notFoundHandler correctly to produce correct 404 response
+* server: make a few more Server properties public (sessionStore, notFoundHandler, etc)
 * oauth: new experimental reusable OAuth implementation module
 
 # 1.6.3

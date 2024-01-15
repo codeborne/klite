@@ -28,11 +28,11 @@ class Server(
     register<FormUrlEncodedParser>()
     register<FormDataParser>()
   },
-  private val requestIdGenerator: RequestIdGenerator = registry.require(),
+  val requestIdGenerator: RequestIdGenerator = registry.require(),
   val errors: ErrorHandler = registry.require(),
   decorators: List<Decorator> = registry.requireAllDecorators(),
-  private val sessionStore: SessionStore? = registry.optional(),
-  private val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
+  val sessionStore: SessionStore? = registry.optional(),
+  val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
   override val pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
 ): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
@@ -42,8 +42,8 @@ class Server(
   private val log = logger()
 
   fun start(gracefulStopDelaySec: Int = 3) {
-    log.info("Listening on $listen")
     http.bind(listen, 0)
+    log.info("Listening on $listen")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
