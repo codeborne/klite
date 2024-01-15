@@ -85,13 +85,15 @@ enum class RequestMethod(val hasBody: Boolean = true) {
   GET(false), POST, PUT, PATCH, DELETE(false), OPTIONS, HEAD(false)
 }
 
-class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler): KAnnotatedElement {
+open class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler): KAnnotatedElement {
   internal var decoratedHandler: Handler = handler
   override val annotations = anonymousHandlerAnnotations(handler) + annotations
 
   private fun anonymousHandlerAnnotations(handler: Handler) =
     handler.javaClass.methods.find { it.name.startsWith("invoke") && it.annotations.isNotEmpty() }?.annotations?.toList() ?: emptyList()
 }
+
+class NotFoundRoute(path: String, notFoundHandler: Handler): Route(OPTIONS, path.toRegex(), handler = notFoundHandler)
 
 /** Converts parameterized paths like "/hello/:world/" to Regex with named parameters */
 open class PathParamRegexer(private val paramConverter: Regex = "(^|/):([^/]+)".toRegex()) {

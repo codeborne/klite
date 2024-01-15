@@ -2,7 +2,6 @@ package klite
 
 import com.sun.net.httpserver.HttpServer
 import klite.RequestMethod.GET
-import klite.RequestMethod.OPTIONS
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.NotFound
 import klite.StatusCode.Companion.OK
@@ -73,7 +72,7 @@ class Server(
   /** Adds a new router context. When handing a request, the longest matching router context is chosen */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
-      val notFoundRoute = Route(OPTIONS, prefix.toRegex(), handler = notFoundHandler)
+      val notFoundRoute = NotFoundRoute(prefix, notFoundHandler)
       addContext(prefix, router) { runHandler(this, router.route(this) ?: notFoundRoute) }
       router.block()
       notFoundRoute.decoratedHandler = router.decorators.wrap { notFoundHandler }
