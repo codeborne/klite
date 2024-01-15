@@ -75,6 +75,8 @@ arguments (dependencies).
 You can add both global and context-specific [decorators](src/klite/Decorators.kt), including `Before` and `After` handlers.
 The order is important, and decorators apply to all *following routes* that are defined in the same context.
 
+E.g. you can use the built-in [CorsHandler](src/klite/CorsHandler.kt).
+
 ## Error handling
 
 Any exception thrown out of route handler will be passed to [ErrorHandler](src/klite/ErrorHandler.kt) to produce a response.

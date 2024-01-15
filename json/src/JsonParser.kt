@@ -76,9 +76,8 @@ class JsonParser(private val reader: Reader, private val opts: JsonMapper) {
     type?.takeIfSpecific()?.createFrom(map as Map<String, Any?>) ?: map
   }
 
-  private fun substituteArguments(type: KType?, typeParams: Map<String, KType?>): KType? =
-    if (typeParams.isNotEmpty() && type?.arguments?.isNotEmpty() == true)
-      KTypeWithKnownArguments(type, typeParams) else type
+  private fun substituteArguments(type: KType?, typeParams: Map<String, KType?>): KType? = typeParams[type.toString()] ?:
+    if (typeParams.isNotEmpty() && type?.arguments?.isNotEmpty() == true) KTypeWithKnownArguments(type, typeParams) else type
 
   private fun readArray(type: KType?) = collectionOf(type).also { readArrayElements<Any>(type?.arguments?.firstOrNull()?.type, it::add) }
 
