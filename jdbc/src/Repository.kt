@@ -57,7 +57,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
     }
     if (entity is UpdatableEntity) {
       useInsert = useInsert || entity.updatedAt == null
-      val now = Instant.now()
+      val now = now()
       if (!useInsert) {
         val numUpdated = db.update(table, entity.persister() + ("updatedAt" to now), where = listOf("id" to entity.id, "updatedAt" to entity.updatedAt))
         if (numUpdated == 0) throw StaleEntityException()
@@ -75,3 +75,5 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
     return idClass.primaryConstructor!!.callBy(emptyMap()) as ID
   }
 }
+
+fun now(): Instant = Instant.ofEpochMilli(System.currentTimeMillis())
