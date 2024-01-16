@@ -4,6 +4,7 @@
 * server: bugfix after 1.6.0: wrap notFoundHandler correctly to produce correct 404 response
 * server: make a few more Server properties public (sessionStore, notFoundHandler, etc)
 * server: NotFoundRoute introduced to be easily distinguishable from normal routes
+* jdbc: introduced db.insertBatch()
 * oauth: new experimental reusable OAuth implementation module
 
 # 1.6.3

@@ -98,6 +98,20 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
   }
 }
 
+fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: List<Values>, suffix: String = ""): IntArray {
+  val valuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
+  val hasGeneratedKeys = valuesToSet.first().size != values.first().size
+  return withStatement(insertExpr(table, valuesToSet.first()) + suffix, if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
+    valuesToSet.forEach {
+      setAll(setValues(it))
+      addBatch()
+    }
+    executeBatch().also {
+      if (hasGeneratedKeys) processGeneratedKeys(values)
+    }
+  }
+}
+
 fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
   whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v }).let { where ->
     val updateValues = if (skipUpdateFields.isEmpty()) values else values - skipUpdateFields
