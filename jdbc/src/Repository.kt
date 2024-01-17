@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.PropValue
+import klite.publicProperties
 import klite.toValues
 import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
@@ -8,7 +9,6 @@ import java.time.Instant
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KClass
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 interface BaseEntity<ID> {
@@ -24,6 +24,7 @@ interface UpdatableEntity {
   var updatedAt: Instant?
 }
 
+@Deprecated("Declare your own Entity interface using BaseEntity and other interfaces", replaceWith = ReplaceWith("BaseEntity<UUID>"))
 interface Entity: BaseEntity<UUID>
 
 abstract class BaseRepository(protected val db: DataSource, val table: String) {
@@ -31,7 +32,10 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   protected open val orderDesc get() = "$orderAsc desc"
 }
 
-abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table)
+@Deprecated("Declare your own CrudRepository base class by extending BaseCrudRepository", replaceWith = ReplaceWith("BaseCrudRepository<Entity, UUID>"))
+abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table) {
+  override fun generateId() = UUID.randomUUID()
+}
 
 abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
@@ -57,7 +61,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
     }
     if (entity is UpdatableEntity) {
       useInsert = useInsert || entity.updatedAt == null
-      val now = Instant.now()
+      val now = now()
       if (!useInsert) {
         val numUpdated = db.update(table, entity.persister() + ("updatedAt" to now), where = listOf("id" to entity.id, "updatedAt" to entity.updatedAt))
         if (numUpdated == 0) throw StaleEntityException()
@@ -70,8 +74,11 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
     return db.upsert(table, entity.persister())
   }
 
+  /** Recommended to override if used with [NullableId] */
   open fun generateId(): ID {
-    val idClass = entityClass.memberProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
-    return idClass.primaryConstructor!!.callBy(emptyMap()) as ID
+    val idClass = entityClass.publicProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
+    return (idClass.constructors.find { it.parameters.isEmpty() } ?: idClass.primaryConstructor!!).callBy(emptyMap()) as ID
   }
 }
+
+fun now(): Instant = Instant.ofEpochMilli(System.currentTimeMillis())

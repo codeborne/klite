@@ -14,7 +14,8 @@ import javax.sql.DataSource
  * Beware: Mockk's any() matcher has [trouble with inline classes](https://github.com/mockk/mockk/issues/847).
  * Workaround: `fun <T> MockKMatcherScope.anyId(): Id<T> = Id(ofType(UUID::class))`
  */
-@JvmInline value class Id<T>(val uuid: UUID = UUID.randomUUID()) {
+@JvmInline value class Id<T>(val uuid: UUID) {
+  constructor(): this(UUID.randomUUID())
   constructor(uuid: String): this(uuid.uuid)
   override fun toString() = uuid.toString()
 }
@@ -29,6 +30,4 @@ fun <T> ResultSet.getId(column: String = "id") = getString(column).toId<T>()
 fun <T> ResultSet.getIdOrNull(column: String) = getString(column)?.toId<T>()
 
 interface Entity<T>: NullableId<Id<T>>, UpdatableEntity
-abstract class CrudRepository<T: Entity<T>>(db: DataSource, table: String): BaseCrudRepository<T, Id<T>?>(db, table) {
-  override fun generateId() = Id<T>()
-}
+abstract class CrudRepository<T: Entity<T>>(db: DataSource, table: String): BaseCrudRepository<T, Id<T>?>(db, table)

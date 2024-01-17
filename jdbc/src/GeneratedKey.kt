@@ -8,9 +8,10 @@ class GeneratedKey<T: Any>(val convertTo: KClass<T>? = null) {
 }
 
 @Suppress("UNCHECKED_CAST")
-internal fun Statement.processGeneratedKeys(values: Values) =
+internal fun Statement.processGeneratedKeys(values: Sequence<Values>) {
+  val i = values.iterator()
   generatedKeys.process {
-    values.forEach { (k, v) ->
+    i.next().forEach { (k, v) ->
       val n = name(k)
       (v as? GeneratedKey<Any>)?.let {
         val value = if (it.convertTo != null) getString(n) else getObject(n)
@@ -18,3 +19,6 @@ internal fun Statement.processGeneratedKeys(values: Values) =
       }
     }
   }
+}
+
+internal fun Statement.processGeneratedKeys(values: Values) = processGeneratedKeys(sequenceOf(values))

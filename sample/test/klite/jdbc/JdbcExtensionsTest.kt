@@ -20,6 +20,8 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val id2 = randomUUID()
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
 
+    db.insertBatch(table, (3..10).asSequence().map { mapOf("id" to randomUUID(), "hello" to "Hello$it", "world" to it) })
+
     expect(db.select(table, id) { getUuid() }).toEqual(id)
 
     expect(db.select(table, "hello" to "Hello") { getUuid() }).toContain(id)
@@ -30,7 +32,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     expect(db.select(table, "hello" to listOf("Hello", "Hello2")) { getUuid() }).toContain(id, id2)
     expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "order by hello desc") { getUuid() }).toContainExactly(id2, id)
     expect(db.select(table, "hello" to listOf("Hello", "Hello2"), suffix = "limit 1") { getUuid() }).toContainExactly(id)
-    expect(db.select(table, "hello" to NotIn("Hello2")) { getUuid() }).toContainExactly(id)
+    expect(db.select(table, "hello" to NotIn("Hello2")) { getUuid() }).toContain(id)
     expect(db.select(table, "world" to 42.d) { getUuid() }).toContainExactly(id)
 
     expect(db.select(table, emptyList(), "where world is null") { getUuid() }).toContainExactly(id2)
@@ -41,6 +43,14 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val generatedKey = GeneratedKey<Int>()
     db.insert(table, mapOf("id" to randomUUID(), "hello" to "Hello", "gen" to generatedKey))
     expect(generatedKey.value).toBeGreaterThanOrEqualTo(1)
+  }
+
+  @Test fun `generatedKeys batch`() {
+    val values = (1..2).map { mapOf("id" to randomUUID(), "hello" to "Hello", "gen" to GeneratedKey<Int>()) }
+    db.insertBatch(table, values.asSequence())
+    values.forEach {
+      expect((it["gen"] as GeneratedKey<Int>).value).toBeGreaterThanOrEqualTo(1)
+    }
   }
 
   @Test fun `generatedKey with type`() {
