@@ -32,7 +32,7 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   protected open val orderDesc get() = "$orderAsc desc"
 }
 
-@Deprecated("Declare your own CrudRepository interface using BaseCrudRepository", replaceWith = ReplaceWith("BaseCrudRepository<Entity, UUID>"))
+@Deprecated("Declare your own CrudRepository base class by extending BaseCrudRepository", replaceWith = ReplaceWith("BaseCrudRepository<Entity, UUID>"))
 abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table) {
   override fun generateId() = UUID.randomUUID()
 }
