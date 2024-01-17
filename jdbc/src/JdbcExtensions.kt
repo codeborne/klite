@@ -80,6 +80,16 @@ fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = empt
     }
   }
 
+fun DataSource.execBatch(@Language("SQL") expr: String, values: Sequence<Sequence<Any?>>, keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): IntArray =
+  withStatement(expr, keys) {
+    values.forEach {
+      setAll(it); addBatch()
+    }
+    executeBatch().also {
+      if (callback != null) callback()
+    }
+  }
+
 fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GENERATED_KEYS, block: PreparedStatement.() -> R): R = withConnection {
   try {
     prepareStatement(sql, keys).use { it.block() }
@@ -98,17 +108,16 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
   }
 }
 
-fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Iterable<Values>, suffix: String = ""): IntArray {
-  val valuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
-  val hasGeneratedKeys = valuesToSet.first().size != values.first().size
-  return withStatement(insertExpr(table, valuesToSet.first()) + suffix, if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
-    valuesToSet.forEach {
-      setAll(setValues(it))
-      addBatch()
-    }
-    executeBatch().also {
-      if (hasGeneratedKeys) processGeneratedKeys(values)
-    }
+fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Iterable<Values>, suffix: String = "") =
+  insertBatch(table, values.asSequence(), suffix)
+
+fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, suffix: String = ""): IntArray {
+  val keyValuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
+  val valuesToSet = keyValuesToSet.map { setValues(it) }
+  val first = keyValuesToSet.first()
+  val hasGeneratedKeys = first.size != values.first().size
+  return execBatch(insertExpr(table, first) + suffix, valuesToSet, if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
+    if (hasGeneratedKeys) processGeneratedKeys(values)
   }
 }
 
