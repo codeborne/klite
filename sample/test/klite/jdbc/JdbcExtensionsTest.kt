@@ -20,7 +20,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val id2 = randomUUID()
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
 
-    db.insertBatch(table, (3..10).map { mapOf("id" to randomUUID(), "hello" to "Hello$it", "world" to it) })
+    db.insertBatch(table, (3..10).asSequence().map { mapOf("id" to randomUUID(), "hello" to "Hello$it", "world" to it) })
 
     expect(db.select(table, id) { getUuid() }).toEqual(id)
 
@@ -47,7 +47,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
   @Test fun `generatedKeys batch`() {
     val values = (1..2).map { mapOf("id" to randomUUID(), "hello" to "Hello", "gen" to GeneratedKey<Int>()) }
-    db.insertBatch(table, values)
+    db.insertBatch(table, values.asSequence())
     values.forEach {
       expect((it["gen"] as GeneratedKey<Int>).value).toBeGreaterThanOrEqualTo(1)
     }
