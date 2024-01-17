@@ -98,7 +98,7 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
   }
 }
 
-fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: List<Values>, suffix: String = ""): IntArray {
+fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Iterable<Values>, suffix: String = ""): IntArray {
   val valuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
   val hasGeneratedKeys = valuesToSet.first().size != values.first().size
   return withStatement(insertExpr(table, valuesToSet.first()) + suffix, if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {

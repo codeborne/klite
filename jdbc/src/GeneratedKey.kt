@@ -8,7 +8,7 @@ class GeneratedKey<T: Any>(val convertTo: KClass<T>? = null) {
 }
 
 @Suppress("UNCHECKED_CAST")
-internal fun Statement.processGeneratedKeys(values: List<Values>) {
+internal fun Statement.processGeneratedKeys(values: Iterable<Values>) {
   val i = values.iterator()
   generatedKeys.process {
     i.next().forEach { (k, v) ->
