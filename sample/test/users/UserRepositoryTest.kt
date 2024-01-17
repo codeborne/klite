@@ -43,4 +43,8 @@ class UserRepositoryTest: DBTest() {
     user.updatedAt = user.updatedAt!!.plusMillis(123)
     expect { repository.save(user) }.toThrow<StaleEntityException>()
   }
+
+  @Test fun generateId() {
+    expect(repository.generateId()).toBeAnInstanceOf<Id<User>>()
+  }
 }

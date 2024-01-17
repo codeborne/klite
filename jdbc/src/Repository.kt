@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.PropValue
+import klite.publicProperties
 import klite.toValues
 import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
@@ -8,7 +9,6 @@ import java.time.Instant
 import java.util.*
 import javax.sql.DataSource
 import kotlin.reflect.KClass
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
 interface BaseEntity<ID> {
@@ -31,7 +31,9 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   protected open val orderDesc get() = "$orderAsc desc"
 }
 
-abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table)
+abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table) {
+  override fun generateId() = UUID.randomUUID()
+}
 
 abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
@@ -70,9 +72,10 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
     return db.upsert(table, entity.persister())
   }
 
+  /** Recommended to override if used with [NullableId] */
   open fun generateId(): ID {
-    val idClass = entityClass.memberProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
-    return idClass.primaryConstructor!!.callBy(emptyMap()) as ID
+    val idClass = entityClass.publicProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
+    return (idClass.constructors.find { it.parameters.isEmpty() } ?: idClass.primaryConstructor!!).callBy(emptyMap()) as ID
   }
 }
 
