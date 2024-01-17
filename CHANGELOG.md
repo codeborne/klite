@@ -5,6 +5,7 @@
 * server: make a few more Server properties public (sessionStore, notFoundHandler, etc)
 * server: NotFoundRoute introduced to be easily distinguishable from normal routes
 * jdbc: introduced db.insertBatch()
+* jdbc: Entity interface (UUID-based) and can be replaced with BaseEntity<UUID>
 * oauth: new experimental reusable OAuth implementation module
 
 # 1.6.3

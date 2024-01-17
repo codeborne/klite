@@ -24,6 +24,7 @@ interface UpdatableEntity {
   var updatedAt: Instant?
 }
 
+@Deprecated("Declare your own Entity interface using BaseEntity and other interfaces", replaceWith = ReplaceWith("BaseEntity<UUID>"))
 interface Entity: BaseEntity<UUID>
 
 abstract class BaseRepository(protected val db: DataSource, val table: String) {
@@ -31,6 +32,7 @@ abstract class BaseRepository(protected val db: DataSource, val table: String) {
   protected open val orderDesc get() = "$orderAsc desc"
 }
 
+@Deprecated("Declare your own CrudRepository interface using BaseCrudRepository", replaceWith = ReplaceWith("BaseCrudRepository<Entity, UUID>"))
 abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCrudRepository<E, UUID>(db, table) {
   override fun generateId() = UUID.randomUUID()
 }
