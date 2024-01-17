@@ -6,11 +6,8 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import klite.Email
-import klite.HttpExchange
-import klite.RedirectException
+import klite.*
 import klite.i18n.lang
-import klite.oauth.OAuthProvider.GOOGLE
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -21,14 +18,18 @@ class OAuthRoutesTest {
     every { redirect(any<URI>()) } throws RedirectException("/")
     every { lang } returns "en"
   }
-  val user = UserProfile(GOOGLE, "uid", "Test", "User", Email("e@mail"))
+  val user = UserProfile("GOOGLE", "uid", "Test", "User", Email("e@mail"))
   val token = OAuthTokenResponse("token", 100)
   val oauthClient = mockk<OAuthClient> {
+    every { provider } returns user.provider
     coEvery { authenticate("code", any()) } returns token
     coEvery { profile(token) } returns user
   }
   val userRepository = mockk<OAuthUserRepository>()
-  val routes = OAuthRoutes(oauthClient, userRepository)
+  val registry = mockk<Registry> {
+    every { requireAll<OAuthClient>() } returns listOf(oauthClient)
+  }
+  val routes = OAuthRoutes(userRepository, registry)
 
   @Test fun `accept existing user`() {
     every { userRepository.by(user.email) } returns user

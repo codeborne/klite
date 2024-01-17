@@ -17,3 +17,6 @@ insert into users (id, email, firstName, lastName) values ('9725b054-426b-11ee-9
 
 --changeset klite:users.updatedAt
 alter table users add column updatedAt timestamptz;
+
+--changeset klite:users.avatarUrl
+alter table users add column avatarUrl text;

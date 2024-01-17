@@ -41,6 +41,7 @@ Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotl
 * [jdbc](jdbc) - provides JDBC extensions for DB access, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner
+* [oauth](oauth) - implements OAuth 2.0 login with several providers
 * [openapi](openapi) - generates OpenAPI 3.0 spec for all routes in a context, viewable with [Swagger UI](https://swagger.io/tools/swagger-ui/)
 
 ### Integrations
