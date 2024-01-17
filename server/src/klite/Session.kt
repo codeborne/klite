@@ -28,8 +28,11 @@ open class CookieSessionStore(
   private val keyCipher = KeyCipher(keyGenerator.keyFromSecret(sessionSecret))
 
   override fun load(exchange: HttpExchange) = exchange.cookie(cookie.name)?.let {
-    val params = try { keyCipher.decrypt(it) } catch (e: Exception) { "".also { log.info("Failed to decrypt session cookie: $e") } }
-    Session(urlDecodeParams(params) as MutableMap<String, String?>, isNew = false)
+    try {
+      Session(urlDecodeParams(keyCipher.decrypt(it)) as MutableMap<String, String?>, isNew = false)
+    } catch (e: Exception) {
+      log.info("Failed to decrypt session cookie: $e"); null
+    }
   } ?: Session()
 
   override fun save(exchange: HttpExchange, session: Session) {
