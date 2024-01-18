@@ -11,6 +11,7 @@ import java.net.URI
 import java.net.URL
 import java.sql.Connection
 import java.sql.Date
+import java.sql.Time
 import java.sql.Timestamp
 import java.time.*
 import java.time.ZoneOffset.UTC
@@ -85,6 +86,7 @@ object JdbcConverter {
   fun from(v: Any?, target: KClass<*>?): Any? = when(target) {
     Instant::class -> (v as? Timestamp)?.toInstant()
     LocalDate::class -> (v as? Date)?.toLocalDate()
+    LocalTime::class -> (v as? Time)?.toLocalTime()
     LocalDateTime::class -> (v as? Timestamp)?.toLocalDateTime()
     Decimal::class -> v?.toString()?.d
     else -> if (target?.annotation<JvmInline>() != null || target == Decimal::class) target.primaryConstructor!!.call(v)
