@@ -97,6 +97,7 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
   }
 }
 
+@Deprecated("Incomplete untested class")
 class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   "email name",
   "https://appleid.apple.com/auth/authorize",
