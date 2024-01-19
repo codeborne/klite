@@ -111,7 +111,7 @@ fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, value
 fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, suffix: String = ""): IntArray {
   val keyValuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
   val valuesToSet = keyValuesToSet.map { setValues(it) }
-  val first = keyValuesToSet.first()
+  val first = keyValuesToSet.firstOrNull() ?: return intArrayOf()
   val hasGeneratedKeys = first.size != values.first().size
   return execBatch(insertExpr(table, first) + suffix, valuesToSet, if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
     if (hasGeneratedKeys) processGeneratedKeys(values)

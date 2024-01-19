@@ -21,6 +21,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     db.insert(table, mapOf("id" to id2, "hello" to "Hello2"))
 
     db.insertBatch(table, (3..10).asSequence().map { mapOf("id" to randomUUID(), "hello" to "Hello$it", "world" to it) })
+    db.insertBatch(table, emptySequence())
 
     expect(db.select(table, id) { getUuid() }).toEqual(id)
 
