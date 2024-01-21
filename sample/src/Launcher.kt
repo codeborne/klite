@@ -4,7 +4,7 @@ import klite.jdbc.*
 import klite.json.JsonBody
 import klite.oauth.AuthRoutes
 import klite.oauth.OAuthRoutes
-import klite.oauth.OAuthUserRepository
+import klite.oauth.OAuthUserCreator
 import klite.openapi.openApi
 import kotlinx.coroutines.delay
 import users.UserRepository
@@ -72,7 +72,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
   }
 
   context("/auth") {
-    register<OAuthUserRepository>(UserRepository::class)
+    register<OAuthUserCreator>(UserRepository::class)
     annotated<AuthRoutes>()
     annotated<OAuthRoutes>()
   }

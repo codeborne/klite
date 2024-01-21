@@ -2,11 +2,11 @@
 
 Implements OAuth 2.0 login with several [providers](src/OAuthClient.kt).
 
-You need to provide implementations of [OAuthUser and OAuthUserRepository](src/OAuthUser.kt).
+You need to provide implementations of [OAuthUser and OAuthUserCreator](src/OAuthUser.kt).
 
 ```kotlin
 context("/oauth") {
-  register<OAuthUserRepository>(UserRepository::class)
+  register<OAuthUserCreator>(MyUserCreator::class)
   register<GoogleOAuthClient>()
   register<MicrosoftOAuthClient>()
   ...

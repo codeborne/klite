@@ -1,6 +1,7 @@
 package klite.oauth
 
 import klite.Email
+import klite.HttpExchange
 
 interface OAuthUser {
   val email: Email
@@ -9,7 +10,7 @@ interface OAuthUser {
   val id: Any?
 }
 
-interface OAuthUserRepository {
+interface OAuthUserCreator {
   fun by(email: Email): OAuthUser?
-  fun create(profile: UserProfile, tokenResponse: OAuthTokenResponse): OAuthUser
+  fun create(profile: UserProfile, tokenResponse: OAuthTokenResponse, exchange: HttpExchange): OAuthUser
 }
