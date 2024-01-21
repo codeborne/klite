@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Time-Sorted unique ID, a more compact and DB index-friendly alternative to UUID.
  * Add a `typealias Id<T> = TSID<T>` or `Id = TSID<Any>` in your own project.
  */
-@JvmInline value class TSID<T>(private val value: Long) {
+@JvmInline value class TSID<T>(val value: Long) {
   companion object {
     const val RANDOM_BITS = 22
     const val RANDOM_MASK = 0x003fffff
