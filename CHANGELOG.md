@@ -6,7 +6,7 @@
 * server: NotFoundRoute introduced to be easily distinguishable from normal routes
 * jdbc: introduced db.insertBatch()
 * jdbc: Entity interface (UUID-based) and can be replaced with BaseEntity<UUID>
-* oauth: new experimental reusable OAuth implementation module
+* oauth: new OAuth 2.0 login module
 
 # 1.6.3
 * server: added support for SSE (Server-Side Events) to `HttpExchange`

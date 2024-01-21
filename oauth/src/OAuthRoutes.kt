@@ -9,7 +9,7 @@ import klite.i18n.lang
 import java.net.URI
 import java.util.*
 
-open class OAuthRoutes(private val userRepository: OAuthUserCreator, registry: Registry) {
+open class OAuthRoutes(private val userProvider: OAuthUserProvider, registry: Registry) {
   private val clients = registry.requireAll<OAuthClient>().associateBy { it.provider }
 
   private fun client(provider: String?) = (if (provider == null) clients.values.firstOrNull() else clients[provider.uppercase()]) ?:
@@ -33,7 +33,7 @@ open class OAuthRoutes(private val userRepository: OAuthUserCreator, registry: R
     var profile = client.profile(token)
     if (profile.locale == null) profile = profile.copy(locale = Locale.forLanguageTag(e.lang))
 
-    val user = userRepository.by(profile.email) ?: userRepository.create(profile, token, e)
+    val user = userProvider.provide(profile, token, e)
     e.initSession(user)
     e.redirect(originalUrl ?: URI("/"))
   }

@@ -26,33 +26,21 @@ class OAuthRoutesTest {
     coEvery { authenticate("code", any()) } returns token
     coEvery { profile(token) } returns user
   }
-  val userCreator = mockk<OAuthUserCreator>()
+  val userProvder = mockk<OAuthUserProvider>()
   val registry = mockk<Registry> {
     every { requireAll<OAuthClient>() } returns listOf(oauthClient)
   }
-  val routes = OAuthRoutes(userCreator, registry)
+  val routes = OAuthRoutes(userProvder, registry)
 
-  @Test fun `accept existing user`() {
-    every { userCreator.by(user.email) } returns user
+  @Test fun `accept user user`() {
+    every { userProvder.provide(any(), any(), any()) } returns user
 
     expect { runBlocking { routes.accept("code", "/path", exchange) } }.toThrow<RedirectException>()
 
     verify {
+      userProvder.provide(user.copy(locale = Locale.ENGLISH), token, exchange)
       exchange.session["userId"] = "uid"
       exchange.redirect(URI("/path"))
-    }
-  }
-
-  @Test fun `accept new user`() {
-    every { userCreator.by(user.email) } returns null
-    every { userCreator.create(any(), any(), any()) } returns user
-
-    expect { runBlocking { routes.accept("code", null, exchange) } }.toThrow<RedirectException>()
-
-    verify {
-      userCreator.create(user.copy(locale = Locale.ENGLISH), token, exchange)
-      exchange.session["userId"] = "uid"
-      exchange.redirect(URI("/"))
     }
   }
 }

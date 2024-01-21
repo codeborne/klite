@@ -10,7 +10,6 @@ interface OAuthUser {
   val id: Any?
 }
 
-interface OAuthUserCreator {
-  fun by(email: Email): OAuthUser?
-  fun create(profile: UserProfile, tokenResponse: OAuthTokenResponse, exchange: HttpExchange): OAuthUser
+interface OAuthUserProvider {
+  fun provide(profile: UserProfile, tokenResponse: OAuthTokenResponse, exchange: HttpExchange): OAuthUser
 }
