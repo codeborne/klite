@@ -5,6 +5,7 @@ import klite.http.authBearer
 import klite.json.*
 import java.net.URI
 import java.net.http.HttpClient
+import java.util.*
 
 abstract class OAuthClient(scope: String, authUrl: String, tokenUrl: String, profileUrl: String, httpClient: HttpClient) {
   protected open val http = JsonHttpClient(json = JsonMapper(keys = SnakeCase, trimToNull = false), http = httpClient)
@@ -62,7 +63,9 @@ class GoogleOAuthClient(httpClient: HttpClient): OAuthClient(
 ) {
   override suspend fun profile(token: OAuthTokenResponse): UserProfile {
     val res = fetchProfileResponse(token)
-    return UserProfile(provider, res.getString("id"), res.getString("givenName"), res.getString("familyName"), Email(res.getString("email")), res.getOrNull<String>("picture")?.let { URI(it) })
+    return UserProfile(provider, res.getString("id"), Email(res.getString("email")),
+      res.getString("givenName"), res.getString("familyName"),
+      res.getOrNull<String>("picture")?.let { URI(it) }, Locale.forLanguageTag(res.getString("locale")))
   }
 }
 
@@ -77,7 +80,8 @@ class MicrosoftOAuthClient(httpClient: HttpClient): OAuthClient(
   override suspend fun profile(token: OAuthTokenResponse): UserProfile {
     val res = fetchProfileResponse(token)
     val email = res.getOrNull<String>("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
-    return UserProfile(provider, res.getString("id"), res.getString("givenName"), res.getString("surname"), Email(email))
+    return UserProfile(provider, res.getString("id"), Email(email), res.getString("givenName"), res.getString("surname"),
+      locale = Locale.forLanguageTag(res.getString("preferredLanguage")))
   }
 }
 
@@ -86,14 +90,16 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
   "email public_profile",
   "https://www.facebook.com/v12.0/dialog/oauth",
   "https://graph.facebook.com/v12.0/oauth/access_token",
-  "https://graph.facebook.com/v12.0/me?fields=id,first_name,last_name,email,picture",
+  "https://graph.facebook.com/v12.0/me?fields=id,first_name,last_name,email,picture,locale",
   httpClient
 ) {
   override suspend fun profile(token: OAuthTokenResponse): UserProfile {
     val res = fetchProfileResponse(token)
     val avatarData = res.getOrNull<JsonNode>("picture")?.getOrNull<JsonNode>("data")
     val avatarExists = avatarData?.getOrNull<Boolean>("is_silhouette") != true
-    return UserProfile(provider, res.getString("id"), res.getString("firstName"), res.getString("lastName"), Email(res.getString("email")), avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) })
+    return UserProfile(provider, res.getString("id"), Email(res.getString("email")), res.getString("firstName"), res.getString("lastName"),
+      avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) },
+      Locale.forLanguageTag(res.getString("locale")))
   }
 }
 
@@ -116,4 +122,4 @@ class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
 }
 
 data class OAuthTokenResponse(val accessToken: String, val expiresIn: Int, val scope: String? = null, val tokenType: String? = null, val idToken: String? = null, val refreshToken: String? = null)
-data class UserProfile(val provider: String, override val id: String, override val firstName: String, override val lastName: String, override val email: Email, override val avatarUrl: URI? = null): OAuthUser
+data class UserProfile(val provider: String, override val id: String, override val email: Email, override val firstName: String, override val lastName: String, val avatarUrl: URI? = null, val locale: Locale? = null): OAuthUser

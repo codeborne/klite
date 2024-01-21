@@ -7,6 +7,7 @@ import klite.annotations.POST
 import klite.annotations.PathParam
 import klite.i18n.lang
 import java.net.URI
+import java.util.*
 
 open class OAuthRoutes(private val userRepository: OAuthUserRepository, registry: Registry) {
   private val clients = registry.requireAll<OAuthClient>().associateBy { it.provider }
@@ -29,9 +30,10 @@ open class OAuthRoutes(private val userRepository: OAuthUserRepository, registry
 
     val client = client(provider)
     val token = client.authenticate(code, e.fullUrl(e.path))
-    val profile = client.profile(token)
+    var profile = client.profile(token)
+    if (profile.locale == null) profile = profile.copy(locale = Locale.forLanguageTag(e.lang))
 
-    val user = userRepository.by(profile.email) ?: userRepository.create(profile, token, e.lang)
+    val user = userRepository.by(profile.email) ?: userRepository.create(profile, token)
     e.initSession(user)
     e.redirect(originalUrl ?: URI("/"))
   }

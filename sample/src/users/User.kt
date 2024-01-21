@@ -13,7 +13,7 @@ data class User(
   override val lastName: String,
   val locale: Locale,
   val passwordHash: String? = null,
-  override val avatarUrl: URI? = null,
+  val avatarUrl: URI? = null,
   override var id: Id<User>? = null,
   override var updatedAt: Instant? = null
 ): Entity<User>, UpdatableEntity, OAuthUser {

@@ -11,6 +11,7 @@ import klite.i18n.lang
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.net.URI
+import java.util.*
 
 class OAuthRoutesTest {
   val exchange = mockk<HttpExchange>(relaxed = true) {
@@ -18,7 +19,7 @@ class OAuthRoutesTest {
     every { redirect(any<URI>()) } throws RedirectException("/")
     every { lang } returns "en"
   }
-  val user = UserProfile("GOOGLE", "uid", "Test", "User", Email("e@mail"))
+  val user = UserProfile("GOOGLE", "uid", Email("e@mail"), "Test", "User")
   val token = OAuthTokenResponse("token", 100)
   val oauthClient = mockk<OAuthClient> {
     every { provider } returns user.provider
@@ -44,12 +45,12 @@ class OAuthRoutesTest {
 
   @Test fun `accept new user`() {
     every { userRepository.by(user.email) } returns null
-    every { userRepository.create(any(), any(), any()) } returns user
+    every { userRepository.create(any(), any()) } returns user
 
     expect { runBlocking { routes.accept("code", null, exchange) } }.toThrow<RedirectException>()
 
     verify {
-      userRepository.create(user, token, "en")
+      userRepository.create(user.copy(locale = Locale.ENGLISH), token)
       exchange.session["userId"] = "uid"
       exchange.redirect(URI("/"))
     }

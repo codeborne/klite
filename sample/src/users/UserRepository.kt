@@ -14,8 +14,8 @@ class UserRepository(db: DataSource): CrudRepository<User>(db, "users"), OAuthUs
 
   override fun by(email: Email): User? = list(User::email to email).firstOrNull()
 
-  override fun create(profile: UserProfile, tokenResponse: OAuthTokenResponse, lang: String) =
-    User(profile.email, profile.firstName, profile.lastName, Locale(lang), avatarUrl = profile.avatarUrl).also {
+  override fun create(profile: UserProfile, tokenResponse: OAuthTokenResponse) =
+    User(profile.email, profile.firstName, profile.lastName, profile.locale ?: Locale.ENGLISH, avatarUrl = profile.avatarUrl).also {
       save(it)
     }
 }
