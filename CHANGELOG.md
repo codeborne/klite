@@ -3,11 +3,11 @@
 * jdbc: introduced db.insertBatch()
 * jdbc: deprecated Entity interface (UUID-based), which can be replaced with BaseEntity<UUID>
 * jdbc: support SqlComputed with other operators, e.g. `where = "date" lte SqlComputed("currrent_date")`
-* oauth: new experimental OAuth 2.0 login module
 * server: added path to annotated(), to make paths more visible in one place
 * server: make a few more Server properties public (sessionStore, notFoundHandler, etc)
 * server: bugfix after 1.6.0: wrap notFoundHandler correctly to produce correct 404 response
 * server: NotFoundRoute introduced to be easily distinguishable from normal routes
+* oauth: new experimental OAuth 2.0 login module
 
 # 1.6.3
 * server: added support for SSE (Server-Side Events) to `HttpExchange`
