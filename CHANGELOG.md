@@ -1,12 +1,12 @@
-# Unreleased
+# 1.6.4
 * core: added common value types for Email, Phone, and Password, also StringValue base class
-* server: added path to annotated(), to make paths more visible in one place
-* server: bugfix after 1.6.0: wrap notFoundHandler correctly to produce correct 404 response
-* server: make a few more Server properties public (sessionStore, notFoundHandler, etc)
-* server: NotFoundRoute introduced to be easily distinguishable from normal routes
 * jdbc: introduced db.insertBatch()
-* jdbc: Entity interface (UUID-based) and can be replaced with BaseEntity<UUID>
-* oauth: new OAuth 2.0 login module
+* jdbc: deprecated Entity interface (UUID-based), which can be replaced with BaseEntity<UUID>
+* oauth: new experimental OAuth 2.0 login module
+* server: added path to annotated(), to make paths more visible in one place
+* server: make a few more Server properties public (sessionStore, notFoundHandler, etc)
+* server: bugfix after 1.6.0: wrap notFoundHandler correctly to produce correct 404 response
+* server: NotFoundRoute introduced to be easily distinguishable from normal routes
 
 # 1.6.3
 * server: added support for SSE (Server-Side Events) to `HttpExchange`
