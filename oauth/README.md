@@ -1,8 +1,8 @@
 # klite-oauth
 
-Implements OAuth 2.0 login with several [providers](src/OAuthClient.kt).
+Implements OAuth 2.0 login with several common [providers](src/OAuthClient.kt).
 
-You need to provide implementations of [OAuthUser and OAuthUserProvider](src/OAuthUser.kt).
+You need to provide implementations of [OAuthUser and OAuthUserProvider](src/OAuthUser.kt) in your project.
 
 ```kotlin
 context("/oauth") {
