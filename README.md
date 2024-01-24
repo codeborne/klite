@@ -6,7 +6,7 @@ Klite: a very light-weight (lite) non-blocking http framework for Kotlin corouti
 
 Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Comparisons.md).
 
-Includes very light [json](json) and [jdbc/migrations](jdbc) submodules for Kotlin, which can be used independently.
+Includes very light [json](json) and [jdbc & migrations](jdbc) submodules for Kotlin, which can be used independently.
 
 ## Goals
 
