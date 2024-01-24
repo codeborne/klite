@@ -15,7 +15,11 @@ class SqlComputed(expr: String, vararg values: Any?): SqlExpr(expr, *values) {
 }
 
 open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if (value != null) listOf(value) else emptyList()) {
-  override fun expr(key: String) = q(key) + " $operator" + (" ?".takeIf { values.firstOrNull() != null } ?: "")
+  override fun expr(key: String) = q(key) + " $operator" + (when (val v = values.firstOrNull()) {
+    null -> ""
+    is SqlComputed -> v.expr
+    else -> " ?"
+  })
 }
 
 @Deprecated("use or() instead")

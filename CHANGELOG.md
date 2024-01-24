@@ -2,6 +2,7 @@
 * core: added common value types for Email, Phone, and Password, also StringValue base class
 * jdbc: introduced db.insertBatch()
 * jdbc: deprecated Entity interface (UUID-based), which can be replaced with BaseEntity<UUID>
+* jdbc: support SqlComputed with other operators, e.g. `where = "date" lte SqlComputed("currrent_date")`
 * oauth: new experimental OAuth 2.0 login module
 * server: added path to annotated(), to make paths more visible in one place
 * server: make a few more Server properties public (sessionStore, notFoundHandler, etc)

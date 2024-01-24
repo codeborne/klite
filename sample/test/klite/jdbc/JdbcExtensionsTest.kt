@@ -81,7 +81,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     db.update(table, mapOf("world" to 39), "id" to data.id)
     expect(db.select(table, data.id) { create<SomeData>() }).toEqual(data.copy(world = 39))
 
-    db.delete(table, listOf("world" to 39))
+    db.delete(table, "world" to 39)
     expect { db.select(table, data.id) { } }.toThrow<NoSuchElementException>()
   }
 
