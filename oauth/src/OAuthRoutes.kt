@@ -39,8 +39,7 @@ open class OAuthRoutes(private val userProvider: OAuthUserProvider, registry: Re
   }
 }
 
-val origin = Config.optional("ORIGIN") ?: ""
-val HttpExchange.safeRedirectParam get() = query("redirect")?.takeIf { it.startsWith("/") || it.startsWith(origin) }?.let { URI(it) }
+val HttpExchange.safeRedirectParam get() = query("redirect")?.takeIf { it.startsWith("/") || it.startsWith(fullUrl("/").toString()) }?.let { URI(it) }
 
 private fun HttpExchange.redirectToLogin(originalUrl: URI? = fullUrl, errorKey: String? = null): Nothing =
   redirect(fullUrl(contextPath) + mapOfNotNull("redirect" to originalUrl, "errorKey" to errorKey))
