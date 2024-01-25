@@ -33,7 +33,7 @@ open class TypedHttpClient(
 ) {
   protected var trimToLog: String.() -> String = { if (length <= maxLoggedLen) this else substring(0, maxLoggedLen) + "…" }
   var logger = logger(Exception().stackTrace.first { it.className != TypedHttpClient::class.java.name && it.className !== javaClass.name }.className).apply {
-    info("Using $urlPrefix")
+    if (urlPrefix.isNotEmpty()) info("Using $urlPrefix")
   }
 
   private fun buildReq(urlSuffix: String) = HttpRequest.newBuilder().uri(URI("$urlPrefix$urlSuffix"))
