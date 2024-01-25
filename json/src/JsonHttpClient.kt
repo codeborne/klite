@@ -14,7 +14,7 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Configure a default java.net.HttpClient in your registry, e.g.
- * registry.register(HttpClient.newBuilder().connectTimeout(5.seconds).build())
+ * registry.register(httpClient { connectTimeout(5.seconds) })
  * or provide both http and json parameters to the constructor instead
  */
 open class JsonHttpClient(
