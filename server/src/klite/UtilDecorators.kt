@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.days
 fun RouterConfig.enforceHttps(maxAge: Duration = 365.days, canonicalOrigin: URI? = null) = before { e ->
   if (!e.isSecure) {
     e.header("Strict-Transport-Security", "max-age=${maxAge.inWholeSeconds}")
-    val url = canonicalOrigin?.let { it + e.path + e.query }?.toString() ?: e.fullUrl.toString().replaceFirst("http://", "https://")
+    val url = canonicalOrigin?.let { it.toString() + e.path + e.query } ?: e.fullUrl.toString().replaceFirst("http://", "https://")
     e.redirect(url, StatusCode.PermanentRedirect)
   }
 }
