@@ -1,6 +1,6 @@
 package klite
 
-class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
+open class XForwardedHttpExchange(original: OriginalHttpExchange, config: RouterConfig, sessionStore: SessionStore?, requestId: String):
   HttpExchange(original, config, sessionStore, requestId) {
   companion object {
     private val forwardedIPIndexFromEnd = Config.optional("XFORWARDED_IP_FROM_END", "1").toInt()
