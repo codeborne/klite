@@ -1,15 +1,17 @@
 package klite
 
+import java.net.URI
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
-fun RouterConfig.enforceHttps(maxAge: Duration = 365.days) = before { e ->
+fun RouterConfig.enforceHttps(maxAge: Duration = 365.days, canonicalOrigin: URI? = null) = before { e ->
   if (!e.isSecure) {
     e.header("Strict-Transport-Security", "max-age=${maxAge.inWholeSeconds}")
-    e.redirect(e.fullUrl.toString().replace("http://", "https://"), StatusCode.PermanentRedirect)
+    val url = canonicalOrigin?.let { it + e.path + e.query }?.toString() ?: e.fullUrl.toString().replaceFirst("http://", "https://")
+    e.redirect(url, StatusCode.PermanentRedirect)
   }
 }
 
