@@ -114,7 +114,7 @@ class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
     val email = token.idToken!!.let {
       val payload = it.split(".")[1]
       val decodedPayload = payload.base64Decode()
-      JsonMapper().parse<JsonNode>(String(decodedPayload)).getString("email")
+      http.json.parse<JsonNode>(String(decodedPayload)).getString("email")
     }
     return UserProfile(provider, email, Email(email), email.substringBefore("@").capitalize(), "")
   }
