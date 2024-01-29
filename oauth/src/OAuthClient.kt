@@ -50,7 +50,7 @@ abstract class OAuthClient(scope: String, authUrl: String, tokenUrl: String, pro
 
   protected suspend fun fetchProfileResponse(token: OAuthTokenResponse): JsonNode = http.get(profileUrl) { authBearer(token.accessToken) }
 
-  abstract suspend fun profile(token: OAuthTokenResponse): UserProfile
+  abstract suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile
 }
 
 /** https://console.cloud.google.com/apis/credentials */
@@ -61,7 +61,7 @@ class GoogleOAuthClient(httpClient: HttpClient): OAuthClient(
   "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
   httpClient
 ) {
-  override suspend fun profile(token: OAuthTokenResponse): UserProfile {
+  override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
     val res = fetchProfileResponse(token)
     return UserProfile(provider, res.getString("id"), Email(res.getString("email")),
       res.getString("givenName"), res.getString("familyName"),
@@ -77,7 +77,7 @@ class MicrosoftOAuthClient(httpClient: HttpClient): OAuthClient(
   "https://graph.microsoft.com/v1.0/me",
   httpClient
 ) {
-  override suspend fun profile(token: OAuthTokenResponse): UserProfile {
+  override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
     val res = fetchProfileResponse(token)
     val email = res.getOrNull<String>("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
     return UserProfile(provider, res.getString("id"), Email(email), res.getString("givenName"), res.getString("surname"),
@@ -93,7 +93,7 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
   "https://graph.facebook.com/v12.0/me?fields=id,first_name,last_name,email,picture,locale",
   httpClient
 ) {
-  override suspend fun profile(token: OAuthTokenResponse): UserProfile {
+  override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
     val res = fetchProfileResponse(token)
     val avatarData = res.getOrNull<JsonNode>("picture")?.getOrNull<JsonNode>("data")
     val avatarExists = avatarData?.getOrNull<Boolean>("is_silhouette") != true
@@ -103,6 +103,7 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
   }
 }
 
+/** https://developer.apple.com/acount/resources/authkeys/ */
 class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   "email name",
   "https://appleid.apple.com/auth/authorize",
@@ -110,14 +111,17 @@ class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   "",
   httpClient
 ) {
-  override suspend fun profile(token: OAuthTokenResponse): UserProfile {
+  override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
     val email = token.idToken!!.let {
       val payload = it.split(".")[1]
-      val decodedPayload = payload.base64Decode()
-      http.json.parse<JsonNode>(String(decodedPayload)).getString("email")
+      http.json.parse<JsonNode>(payload.base64Decode().decodeToString()).getString("email")
     }
-    return UserProfile(provider, email, Email(email), email.substringBefore("@").capitalize(), "")
+    val user = exchange.bodyParams["user"]?.let { http.json.parse<AppleUserProfile>(it.toString()) }
+    return UserProfile(provider, email, Email(email), user?.name?.firstName ?: email.substringBefore("@").capitalize(), user?.name?.lastName ?: "")
   }
+
+  data class AppleUserProfile(val name: AppleUserName, val email: Email)
+  data class AppleUserName(val firstName: String, val lastName: String)
 }
 
 data class OAuthTokenResponse(val accessToken: String, val expiresIn: Int, val scope: String? = null, val tokenType: String? = null, val idToken: String? = null, val refreshToken: String? = null)
