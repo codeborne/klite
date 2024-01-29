@@ -103,7 +103,6 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
   }
 }
 
-@Deprecated("Incomplete untested class")
 class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   "email name",
   "https://appleid.apple.com/auth/authorize",
@@ -112,12 +111,12 @@ class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   httpClient
 ) {
   override suspend fun profile(token: OAuthTokenResponse): UserProfile {
-    val email = token.idToken?.let {
+    val email = token.idToken!!.let {
       val payload = it.split(".")[1]
       val decodedPayload = payload.base64Decode()
       JsonMapper().parse<JsonNode>(String(decodedPayload)).getString("email")
     }
-    TODO()
+    return UserProfile(provider, email, Email(email), email.substringBefore("@").capitalize(), "")
   }
 }
 
