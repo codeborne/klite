@@ -6,7 +6,7 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 
 /** Simple in-memory cache with automatic expiration */
-class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true): AutoCloseable {
+class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, private val prolongOnAccess: Boolean = false): AutoCloseable {
   private val expirationMs = expiration.inWholeMilliseconds
   private val entries = ConcurrentHashMap<K, Entry<V>>()
   private val expirationTimer = if (autoRemoveExpired) thread(name = "${this}ExpirationTimer", isDaemon = true) {
@@ -16,9 +16,9 @@ class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true):
     }
   } else null
 
-  operator fun get(key: K) = entries[key]?.takeIf { !it.isExpired() }?.value
-  operator fun set(key: K, value: V) = entries.put(key, Entry(value))
-  fun getOrSet(key: K, compute: (key: K) -> V) = entries.getOrPut(key) { Entry(compute(key)) }.value
+  operator fun get(key: K) = entries[key]?.takeIf { !it.isExpired() }?.access()
+  operator fun set(key: K, value: V) { entries.put(key, Entry(value)) }
+  fun getOrSet(key: K, compute: (key: K) -> V) = entries.getOrPut(key) { Entry(compute(key)) }.access()
   fun isEmpty() = entries.isEmpty()
 
   fun removeExpired() {
@@ -35,7 +35,10 @@ class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true):
     expirationTimer?.interrupt()
   }
 
-  inner class Entry<V>(val value: V, val since: Long = currentTimeMillis()) {
+  private inner class Entry<V>(val value: V, var since: Long = currentTimeMillis()) {
+    fun access() = value.also {
+      if (prolongOnAccess) since = currentTimeMillis()
+    }
     fun isExpired(now: Long = currentTimeMillis()) = since + expirationMs < now
   }
 }
