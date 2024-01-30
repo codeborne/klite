@@ -24,7 +24,7 @@ class OAuthRoutesTest {
   val oauthClient = mockk<OAuthClient> {
     every { provider } returns user.provider
     coEvery { authenticate("code", any()) } returns token
-    coEvery { profile(token) } returns user
+    coEvery { profile(token, exchange) } returns user
   }
   val userProvder = mockk<OAuthUserProvider>()
   val registry = mockk<Registry> {

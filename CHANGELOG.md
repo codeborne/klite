@@ -1,3 +1,7 @@
+# 1.6.5
+* oauth: AppleOAuthClient updated and tested
+* oauth: JWT helper class introduced
+
 # 1.6.4
 * core: added common value types for Email, Phone, and Password, also StringValue base class
 * jdbc: introduced db.insertBatch()

@@ -30,7 +30,7 @@ open class OAuthRoutes(private val userProvider: OAuthUserProvider, registry: Re
 
     val client = client(provider)
     val token = client.authenticate(code, e.fullUrl(e.path))
-    var profile = client.profile(token)
+    var profile = client.profile(token, e)
     if (profile.locale == null) profile = profile.copy(locale = Locale.forLanguageTag(e.lang))
 
     val user = userProvider.provide(profile, token, e)

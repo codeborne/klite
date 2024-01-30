@@ -112,10 +112,7 @@ class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   httpClient
 ) {
   override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
-    val email = token.idToken!!.let {
-      val payload = it.split(".")[1]
-      http.json.parse<JsonNode>(payload.base64Decode().decodeToString()).getString("email")
-    }
+    val email = http.json.parse<JsonNode>(token.idToken!!.payload).getString("email")
     val user = exchange.bodyParams["user"]?.let { http.json.parse<AppleUserProfile>(it.toString()) }
     return UserProfile(provider, email, Email(email), user?.name?.firstName ?: email.substringBefore("@").capitalize(), user?.name?.lastName ?: "")
   }
@@ -124,5 +121,5 @@ class AppleOAuthClient(httpClient: HttpClient): OAuthClient(
   data class AppleUserName(val firstName: String, val lastName: String)
 }
 
-data class OAuthTokenResponse(val accessToken: String, val expiresIn: Int, val scope: String? = null, val tokenType: String? = null, val idToken: String? = null, val refreshToken: String? = null)
+data class OAuthTokenResponse(val accessToken: String, val expiresIn: Int, val scope: String? = null, val tokenType: String? = null, val idToken: JWT? = null, val refreshToken: String? = null)
 data class UserProfile(val provider: String, override val id: String, override val email: Email, override val firstName: String, override val lastName: String, val avatarUrl: URI? = null, val locale: Locale? = null): OAuthUser
