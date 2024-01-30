@@ -10,7 +10,9 @@ fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
 
 fun ByteArray.base64Encode() = Base64.getEncoder().encodeToString(this)
 fun String.base64Encode() = toByteArray().base64Encode()
+fun String.base64UrlEncode() = base64Encode().replace('+', '-').replace('/', '_').trimEnd('=')
 fun String.base64Decode() = Base64.getDecoder().decode(this)
+fun String.base64UrlDecode() = replace('-', '+').replace('_', '/').base64Decode()
 
 typealias Params = Map<String, String?>
 val URI.queryParams: Params get() = urlDecodeParams(rawQuery)

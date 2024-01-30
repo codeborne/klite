@@ -28,4 +28,14 @@ class UtilsTest {
     expect(urlEncodeParams(params)).toEqual("Hello=W%C3%B6rld&1=2")
     expect(urlDecodeParams("Hello=W%C3%B6rld&1=2")).toEqual(params - "null")
   }
+
+  @Test fun base64() {
+    expect("hellöu".base64Encode()).toEqual("aGVsbMO2dQ==")
+    expect("aGVsbMO2dQ==".base64Decode().decodeToString()).toEqual("hellöu")
+  }
+
+  @Test fun base64Url() {
+    expect("hellöu".base64UrlEncode()).toEqual("aGVsbMO2dQ")
+    expect("aGVsbMO2dQ".base64UrlDecode().decodeToString()).toEqual("hellöu")
+  }
 }
