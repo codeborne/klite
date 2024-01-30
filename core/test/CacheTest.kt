@@ -2,6 +2,8 @@ import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import klite.Cache
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.milliseconds
@@ -22,6 +24,7 @@ class CacheTest {
     expect(cache.isEmpty()).toEqual(true)
 
     expect(cache.getOrSet("key") { data }).toBeTheInstance(data)
+    runTest { expect(cache.getOrSet("key") { delay(100); data }).toBeTheInstance(data) }
     expect(cache["key"]).toBeTheInstance(data)
   }}
 

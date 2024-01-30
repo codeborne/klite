@@ -8,7 +8,7 @@ import kotlin.time.Duration
 /** Simple in-memory cache with automatic expiration */
 class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, private val prolongOnAccess: Boolean = false): AutoCloseable {
   private val expirationMs = expiration.inWholeMilliseconds
-  private val entries = ConcurrentHashMap<K, Entry<V>>()
+  val entries = ConcurrentHashMap<K, Entry<V>>()
   private val expirationTimer = if (autoRemoveExpired) thread(name = "${this}ExpirationTimer", isDaemon = true) {
     while (!Thread.interrupted()) {
       try { Thread.sleep(expirationMs) } catch (e: InterruptedException) { break }
@@ -18,7 +18,7 @@ class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, 
 
   operator fun get(key: K) = entries[key]?.takeIf { !it.isExpired() }?.access()
   operator fun set(key: K, value: V) { entries.put(key, Entry(value)) }
-  fun getOrSet(key: K, compute: (key: K) -> V) = entries.getOrPut(key) { Entry(compute(key)) }.access()
+  inline fun getOrSet(key: K, compute: (key: K) -> V) = entries.getOrPut(key) { Entry(compute(key)) }.access()
   fun isEmpty() = entries.isEmpty()
 
   fun removeExpired() {
@@ -35,7 +35,7 @@ class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, 
     expirationTimer?.interrupt()
   }
 
-  private inner class Entry<V>(val value: V, var since: Long = currentTimeMillis()) {
+  inner class Entry<V>(val value: V, var since: Long = currentTimeMillis()) {
     fun access() = value.also {
       if (prolongOnAccess) since = currentTimeMillis()
     }

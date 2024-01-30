@@ -1,4 +1,5 @@
 # 1.6.5
+* core: simple Cache with expiration timer implemented
 * oauth: AppleOAuthClient updated and tested
 * oauth: JWT helper class introduced
 
