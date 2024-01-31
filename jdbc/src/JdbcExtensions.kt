@@ -81,7 +81,7 @@ fun DataSource.execBatch(@Language("SQL") expr: String, values: Sequence<Sequenc
     var count = 0
     while (i.hasNext()) {
       setAll(i.next())
-      if (i.hasNext() || count > 0) addBatch()
+      if (count > 0 || i.hasNext()) addBatch()
       count++
     }
     (if (count == 1) intArrayOf(executeUpdate()) else executeBatch()).also {
