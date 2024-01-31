@@ -71,14 +71,8 @@ internal inline fun <R> ResultSet.process(consumer: (R) -> Unit = {}, mapper: Ma
 }
 
 fun DataSource.exec(@Language("SQL") expr: String, vararg values: Any?): Int = exec(expr, values.asSequence())
-
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): Int =
-  withStatement(expr, keys) {
-    setAll(values)
-    executeUpdate().also {
-      if (callback != null) callback()
-    }
-  }
+  execBatch(expr, sequenceOf(values), keys, callback).first()
 
 fun DataSource.execBatch(@Language("SQL") expr: String, values: Sequence<Sequence<Any?>>, keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): IntArray =
   withStatement(expr, keys) {
