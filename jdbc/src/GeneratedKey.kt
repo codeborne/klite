@@ -20,5 +20,3 @@ internal fun Statement.processGeneratedKeys(values: Sequence<Values>) {
     }
   }
 }
-
-internal fun Statement.processGeneratedKeys(values: Values) = processGeneratedKeys(sequenceOf(values))

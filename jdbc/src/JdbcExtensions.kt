@@ -100,13 +100,8 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
 }
 
 // TODO: add insert with mapper that returns the generated keys
-fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, values: Values, suffix: String = ""): Int {
-  val valuesToSet = values.filter { it.value !is GeneratedKey<*> }
-  val hasGeneratedKeys = valuesToSet.size != values.size
-  return exec(insertExpr(table, valuesToSet) + suffix, setValues(valuesToSet), if (hasGeneratedKeys) RETURN_GENERATED_KEYS else NO_GENERATED_KEYS) {
-    if (hasGeneratedKeys) processGeneratedKeys(values)
-  }
-}
+fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, values: Values, suffix: String = "") =
+  insertBatch(table, sequenceOf(values), suffix).first()
 
 fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, suffix: String = ""): IntArray {
   val keyValuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
