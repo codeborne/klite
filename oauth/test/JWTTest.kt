@@ -16,7 +16,7 @@ class JWTTest {
     expect(jwt.payload.subject).toEqual("1234567890")
     expect(jwt.payload.name).toEqual("John Doe")
     expect(jwt.payload.issuedAt).toEqual(Instant.ofEpochSecond(1516239022))
-    expect(jwt.signature).toEqual("SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c".base64UrlDecode().decodeToString())
+    expect(jwt.signature.decodeToString()).toEqual("SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c".base64UrlDecode().decodeToString())
   }
 
   @Test fun converter() {

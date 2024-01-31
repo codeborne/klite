@@ -13,9 +13,9 @@ data class JWT(private val token: String) {
 
   override fun toString() = token
 
-  private val parts = token.split(".").map { it.base64UrlDecode().decodeToString() }
-  val headerJson get() = parts[0]
-  val payloadJson get() = parts[1]
+  private val parts = token.split(".").map { it.base64UrlDecode() }
+  val headerJson get() = parts[0].decodeToString()
+  val payloadJson get() = parts[1].decodeToString()
   val signature get() = parts[2]
 
   val header by lazy { Header(jsonMapper.parse<JsonNode>(headerJson)) }
@@ -38,6 +38,4 @@ data class JWT(private val token: String) {
     val emailVerified get() = getOrNull<Boolean>("email_verified")
     val locale get() = getOrNull<String>("locale")?.let { Locale.forLanguageTag(it) }
   }
-
-  data class Signature(val fields: JsonNode): JsonNode by fields
 }
