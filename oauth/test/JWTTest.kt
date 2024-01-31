@@ -20,7 +20,6 @@ class JWTTest {
   }
 
   @Test fun converter() {
-    val jwt = JWT(token)
-    expect(Converter.from<JWT>(token)).toEqual(jwt)
+    expect(Converter.from<JWT>(token)).toEqual(JWT(token))
   }
 }
