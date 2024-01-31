@@ -116,16 +116,16 @@ fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, 
 fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
   upsertBatch(table, sequenceOf(values), uniqueFields, where, skipUpdateFields).first()
 
-fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray =
-  whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v }).let { where ->
-    val first = values.firstOrNull() ?: return intArrayOf()
-    val firstUpdateValues = if (skipUpdateFields.isEmpty()) first else first - skipUpdateFields
-    val whereValues = whereValues(where)
-    val valuesToSet = values.map {
-      setValues(it) + setValues(if (skipUpdateFields.isEmpty()) it else it - skipUpdateFields) + whereValues
-    }
-    execBatch(insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${setExpr(firstUpdateValues)}${whereExpr(where)}", valuesToSet)
+fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray {
+  val where = whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v })
+  val first = values.firstOrNull() ?: return intArrayOf()
+  val firstUpdateValues = if (skipUpdateFields.isEmpty()) first else first - skipUpdateFields
+  val whereValues = whereValues(where)
+  val valuesToSet = values.map {
+    setValues(it) + setValues(if (skipUpdateFields.isEmpty()) it else it - skipUpdateFields) + whereValues
   }
+  return execBatch(insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${setExpr(firstUpdateValues)}${whereExpr(where)}", valuesToSet)
+}
 
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
   "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${values.values.joinToString { placeholder(it) }})"
