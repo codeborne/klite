@@ -16,10 +16,10 @@ class Email(email: String): StringValue(email.trim().lowercase()) {
 class Phone(phone: String): StringValue(phone.replace(removeChars, "")) {
   companion object {
     private val removeChars = "[\\s-()]+".toRegex()
-    private val valid = "\\+[0-9]{10,}".toRegex()
+    private val valid = "\\+[0-9]{9,}".toRegex()
   }
   init { require(valid.matches(value)) {
-    "International phone number should start with + and have at least 10 digits: $value" }
+    "International phone number should start with + and have at least 9 digits: $value" }
   }
 }
 
