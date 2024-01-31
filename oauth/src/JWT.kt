@@ -1,15 +1,19 @@
 package klite.oauth
 
+import klite.Converter
 import klite.Email
 import klite.base64UrlDecode
 import klite.json.*
 import java.time.Instant
 import java.util.*
 
-data class JWT(val token: String) {
+data class JWT(private val token: String) {
   companion object {
     private val jsonMapper = JsonMapper()
+    init { Converter.use { JWT(it) } }
   }
+
+  override fun toString() = token
 
   private val parts = token.split(".").map { it.base64UrlDecode().decodeToString() }
   val headerJson get() = parts[0]
