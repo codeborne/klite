@@ -74,15 +74,21 @@ fun DataSource.exec(@Language("SQL") expr: String, vararg values: Any?): Int = e
 fun DataSource.exec(@Language("SQL") expr: String, values: Sequence<Any?> = emptySequence(), keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): Int =
   execBatch(expr, sequenceOf(values), keys, callback).first()
 
-fun DataSource.execBatch(@Language("SQL") expr: String, values: Sequence<Sequence<Any?>>, keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): IntArray =
-  withStatement(expr, keys) {
-    values.forEach {
-      setAll(it); addBatch()
+fun DataSource.execBatch(@Language("SQL") expr: String, values: Sequence<Sequence<Any?>>, keys: Int = NO_GENERATED_KEYS, callback: (Statement.() -> Unit)? = null): IntArray {
+  val i = values.iterator()
+  if (!i.hasNext()) return intArrayOf()
+  return withStatement(expr, keys) {
+    var count = 0
+    while (i.hasNext()) {
+      setAll(i.next())
+      if (i.hasNext() || count > 0) addBatch()
+      count++
     }
-    executeBatch().also {
+    (if (count == 1) intArrayOf(executeUpdate()) else executeBatch()).also {
       if (callback != null) callback()
     }
   }
+}
 
 fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GENERATED_KEYS, block: PreparedStatement.() -> R): R = withConnection {
   try {
