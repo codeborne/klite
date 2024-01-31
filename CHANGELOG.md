@@ -1,6 +1,5 @@
 # 1.6.5
 * core: simple Cache with expiration timer implemented
-* core: Converter now supports single-field data classes by default, but only if they implement a matching toString()
 * oauth: AppleOAuthClient updated and tested
 * oauth: JWT helper class introduced
 

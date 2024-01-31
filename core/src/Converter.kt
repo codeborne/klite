@@ -38,16 +38,16 @@ object Converter {
   fun forEach(block: (type: KClass<*>, converter: FromStringConverter<*>) -> Unit) = converters.forEach { block(it.key, it.value) }
 
   fun <T: Any> from(s: String, type: KType): T = (type.classifier as? KClass<T>)?.let { from(s, it) } ?: s as T
-  fun <T: Any> from(s: String, type: KClass<T>): T = of(type, s).invoke(s)
+  fun <T: Any> from(s: String, type: KClass<T>): T = of(type).invoke(s)
   fun from(o: Any?, type: KType): Any? = if (o is String) from(o, type) else o
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
-  internal fun <T: Any> of(type: KClass<T>, sample: String? = null) =
-    converters[type] as? FromStringConverter<T> ?: (findCreator(type, sample) ?: NoConverter(type)).also { set(type, it) }
+  internal fun <T: Any> of(type: KClass<T>) =
+    converters[type] as? FromStringConverter<T> ?: (findCreator(type) ?: NoConverter(type)).also { set(type, it) }
 
-  private fun <T: Any> findCreator(type: KClass<T>, sample: String?): FromStringConverter<T>? =
+  private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T>? =
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
-    try { constructorCreator(type, sample) }
+    try { constructorCreator(type) }
     catch (e: NoSuchMethodException) {
       try { parseMethodCreator(type) }
       catch (e2: NoSuchMethodException) { null }
@@ -58,9 +58,9 @@ object Converter {
     return { s -> enumConstants[s.uppercase()] ?: error("No $type constant: $s") }
   }
 
-  private fun <T: Any> constructorCreator(type: KClass<T>, sample: String?): FromStringConverter<T>? {
+  private fun <T: Any> constructorCreator(type: KClass<T>): FromStringConverter<T>? {
     val constructor = type.javaObjectType.getDeclaredConstructor(String::class.java)
-    if (type.isData && constructor.newInstance(sample).toString() != sample) return null
+    if (type.isData) return null
     if (type.isValue && type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
     return { s ->
       try { constructor.newInstance(s) }

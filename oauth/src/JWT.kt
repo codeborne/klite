@@ -6,12 +6,10 @@ import klite.json.*
 import java.time.Instant
 import java.util.*
 
-data class JWT(private val token: String) {
+class JWT(private val token: String) {
   companion object {
     private val jsonMapper = JsonMapper()
   }
-
-  override fun toString() = token
 
   private val parts = token.split(".").map { it.base64UrlDecode() }
   val headerJson get() = parts[0].decodeToString()
@@ -20,6 +18,10 @@ data class JWT(private val token: String) {
 
   val header by lazy { Header(jsonMapper.parse<JsonNode>(headerJson)) }
   val payload by lazy { Payload(jsonMapper.parse<JsonNode>(payloadJson)) }
+
+  override fun toString() = token
+  override fun equals(other: Any?) = (other as? JWT)?.token == token
+  override fun hashCode() = token.hashCode()
 
   data class Header(val fields: JsonNode): JsonNode by fields {
     val alg by fields
