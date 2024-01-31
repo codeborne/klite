@@ -2,6 +2,7 @@
 * core: simple Cache with expiration timer implemented
 * oauth: AppleOAuthClient updated and tested
 * oauth: JWT helper class introduced
+* jdbc: introduced db.upsertBatch()
 
 # 1.6.4
 * core: added common value types for Email, Phone, and Password, also StringValue base class
