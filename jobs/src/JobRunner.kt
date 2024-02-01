@@ -75,6 +75,8 @@ open class JobRunner(
 
   open suspend fun run(job: Job) = job.run()
 
+  open fun runOnce(job: Job) = workerPool.submit { runInTransaction(job, UNDISPATCHED) }
+
   open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) {
     val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
     log.info("${job.name} will start at $startAt and run every $period $unit")

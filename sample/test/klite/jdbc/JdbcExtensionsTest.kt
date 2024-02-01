@@ -79,7 +79,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     val data = SomeData("World", 37)
     db.insert(table, data.toValues())
 
-    db.update(table, mapOf("world" to 39), "id" to data.id)
+    expect(db.update(table, mapOf("world" to 39), "id" to data.id)).toEqual(1)
     expect(db.select(table, data.id) { create<SomeData>() }).toEqual(data.copy(world = 39))
 
     db.delete(table, "world" to 39)
