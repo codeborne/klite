@@ -73,7 +73,7 @@ open class JobRunner(
     }
   }
 
-  open suspend fun run(job: Job) = job.run()
+  protected open suspend fun run(job: Job) = job.run()
 
   open fun runOnce(job: Job) = workerPool.submit { runInTransaction(job, UNDISPATCHED) }
 
