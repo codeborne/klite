@@ -1,6 +1,8 @@
 import ch.tutteli.atrium.api.fluent.en_GB.toBeTheInstance
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.mockk
+import io.mockk.verify
 import klite.Cache
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -28,12 +30,13 @@ class CacheTest {
     expect(cache["key"]).toBeTheInstance(data)
   }}
 
-  @Test fun prolongOnAccess() { Cache<String, LocalDate>(10.milliseconds, prolongOnAccess = true).use { cache ->
+  @Test fun prolongOnAccess() { Cache<String, LocalDate>(10.milliseconds, prolongOnAccess = true, keepAlive = mockk(relaxed = true)).use { cache ->
     cache["key"] = data
     Thread.sleep(9)
     expect(cache["key"]).toBeTheInstance(data)
     Thread.sleep(9)
     expect(cache["key"]).toBeTheInstance(data)
+    verify { cache.keepAlive(match { it.key == "key" && it.value.value == data }) }
     Thread.sleep(11)
     expect(cache["key"]).toEqual(null)
   }}

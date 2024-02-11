@@ -6,7 +6,7 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 
 /** Simple in-memory cache with automatic expiration */
-class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, private val prolongOnAccess: Boolean = false): AutoCloseable {
+class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, val prolongOnAccess: Boolean = false, val keepAlive: (Map.Entry<K, Cache<K, V>.Entry<V>>) -> Unit = {}): AutoCloseable {
   private val expirationMs = expiration.inWholeMilliseconds
   val entries = ConcurrentHashMap<K, Entry<V>>()
   private val expirationTimer = if (autoRemoveExpired) thread(name = "${this}ExpirationTimer", isDaemon = true) {
@@ -26,6 +26,7 @@ class Cache<K: Any, V>(expiration: Duration, autoRemoveExpired: Boolean = true, 
     val i = entries.iterator()
     while (i.hasNext()) {
       val entry = i.next()
+      keepAlive(entry)
       if (entry.value.isExpired(now)) i.remove()
     }
   }
