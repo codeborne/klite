@@ -58,6 +58,10 @@ class ConverterTest {
     expect(Converter.from<SingleValueData>("hello")).toEqual(SingleValueData("hello"))
   }
 
+  @Test fun `companion object initialization`() {
+    expect(Converter.from<DataWithCompanion>("hello")).toEqual(DataWithCompanion("hello"))
+  }
+
   @Test fun jvmInline() {
     expect(Converter.from<Inline>("hello")).toEqual(Inline("hello"))
     val id = randomUUID()
@@ -89,4 +93,11 @@ class ConverterTest {
 
 @JvmInline value class Inline(val string: String)
 @JvmInline value class InlineId(val id: UUID)
+
 data class SingleValueData(val s: String)
+
+data class DataWithCompanion(val s: String) {
+  companion object {
+    init { Converter.use { DataWithCompanion(it) } }
+  }
+}

@@ -1,3 +1,6 @@
+# Unreleased
+* core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
+
 # 1.6.5
 * core: simple Cache with expiration timer implemented
 * oauth: AppleOAuthClient updated and tested

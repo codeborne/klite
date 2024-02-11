@@ -5,6 +5,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
@@ -43,7 +44,11 @@ object Converter {
   inline fun <reified T: Any> from(s: String) = from(s, T::class)
 
   internal fun <T: Any> of(type: KClass<T>) =
-    converters[type] as? FromStringConverter<T> ?: (findCreator(type) ?: NoConverter(type)).also { set(type, it) }
+    (converters[type] ?: forceInitAndCheckAgain(type)) as FromStringConverter<T>? ?:
+    (findCreator(type) ?: NoConverter(type)).also { set(type, it) }
+
+  private fun <T: Any> forceInitAndCheckAgain(type: KClass<T>) =
+    type.companionObjectInstance.run { converters[type] }
 
   private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T>? =
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
