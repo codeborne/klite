@@ -41,6 +41,15 @@ Also, it is blocking by design with no easy way to write coroutines.
 Very function-based, supports JDK built-in http server, but the core jar is 1Mb compared to 200k of Klite.
 Many integrations, but no JDBC/DB helpers. Also blocking, no coroutine support.
 
+### Spring (Boot) / Hibernate
+
+These are for Annotation-Driven Development lovers. In Kotlin (and actually Java 8+), it is not necessary to add behavior with annotations,
+which are hard to debug and test. Often annotations are present, but not work as expected.
+
+Both Spring and Hibernate have become very huge and "enterprise".
+Hibernate does a lot of unexpected unnecessary things and requires you to debug your annotations to get the SQL right.
+In contrast, klite-jdbc greatly simplifies mapping of classes to queries, but doesn't get in your way, allowing for full power of SQL if necessary.
+
 ### General
 
 All of the above lack logging/jdbc/transaction/migrations that most projects need.
