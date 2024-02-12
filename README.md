@@ -8,6 +8,8 @@ Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Compar
 
 Includes very light [json](json) and [jdbc & migrations](jdbc) submodules for Kotlin, which can be used independently.
 
+Please **star the repo** to let us know you are interested.
+
 ## Goals
 
 * Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
