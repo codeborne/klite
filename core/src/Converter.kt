@@ -12,8 +12,7 @@ import kotlin.reflect.full.isSubclassOf
 typealias FromStringConverter<T> = (s: String) -> T
 
 private class NoConverter<T: Any>(val type: KClass<T>): FromStringConverter<T> {
-  override fun invoke(s: String) = error("No known converter from String to $type, register with Converter.use()" +
-    if (type.isData) " or implement matching toString() for a data class" else "")
+  override fun invoke(s: String) = error("No known converter from String to $type, register with Converter.use()")
 }
 
 /**
