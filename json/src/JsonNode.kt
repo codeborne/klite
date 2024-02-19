@@ -8,7 +8,7 @@ typealias JsonList = List<JsonNode>
 
 @kotlin.internal.HidesMembers
 inline fun <T: Any> JsonNode.get(key: String) = (get(key) ?: throw NullPointerException("$key is absent")) as T
-inline fun <T> JsonNode.getOrNull(key: String) = get(key) as T?
+inline fun <T: Any> JsonNode.getOrNull(key: String) = get(key) as T?
 
 inline fun JsonNode.getString(key: String) = get<String>(key)
 inline fun JsonNode.getInt(key: String) = get<Number>(key).toInt()
