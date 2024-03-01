@@ -1,7 +1,7 @@
 package klite.crypto
 
-import klite.base64Decode
-import klite.base64Encode
+import klite.base64UrlDecode
+import klite.base64UrlEncode
 import javax.crypto.Cipher
 import javax.crypto.Cipher.DECRYPT_MODE
 import javax.crypto.Cipher.ENCRYPT_MODE
@@ -13,8 +13,8 @@ class KeyCipher(private val key: SecretKey) {
   }
 
   fun encrypt(input: String): String =
-    cipherFor(ENCRYPT_MODE).doFinal(input.toByteArray()).base64Encode()
+    cipherFor(ENCRYPT_MODE).doFinal(input.toByteArray()).base64UrlEncode()
 
   fun decrypt(input: String): String =
-    cipherFor(DECRYPT_MODE).doFinal(input.base64Decode()).decodeToString()
+    cipherFor(DECRYPT_MODE).doFinal(input.base64UrlDecode()).decodeToString()
 }

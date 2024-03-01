@@ -8,10 +8,11 @@ import java.util.*
 fun String.urlDecode() = URLDecoder.decode(this, Charsets.UTF_8)!!
 fun String.urlEncode() = URLEncoder.encode(this, Charsets.UTF_8)!!
 
-fun ByteArray.base64Encode() = Base64.getEncoder().encodeToString(this)
+fun ByteArray.base64Encode() = Base64.getEncoder().encodeToString(this)!!
 fun String.base64Encode() = toByteArray().base64Encode()
-fun String.base64UrlEncode() = base64Encode().replace('+', '-').replace('/', '_').trimEnd('=')
-fun String.base64Decode() = Base64.getDecoder().decode(this)
+fun ByteArray.base64UrlEncode() = base64Encode().replace('+', '-').replace('/', '_').trimEnd('=')
+fun String.base64UrlEncode() = toByteArray().base64UrlEncode()
+fun String.base64Decode() = Base64.getDecoder().decode(this)!!
 fun String.base64UrlDecode() = replace('-', '+').replace('_', '/').base64Decode()
 
 typealias Params = Map<String, String?>

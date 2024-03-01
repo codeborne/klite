@@ -9,7 +9,8 @@ class KeyCipherTest {
   val keyCipher = KeyCipher(keyGenerator.keyFromSecret("my secret"))
 
   @Test fun `encrypt and decrypt`() {
-    expect(keyCipher.encrypt("Hello")).toEqual("Toy5Uw8i+HGTYN49WJtarw==")
+    expect(keyCipher.encrypt("Hello")).toEqual("Toy5Uw8i-HGTYN49WJtarw")
+    expect(keyCipher.decrypt("Toy5Uw8i-HGTYN49WJtarw")).toEqual("Hello")
     expect(keyCipher.decrypt("Toy5Uw8i+HGTYN49WJtarw==")).toEqual("Hello")
   }
 }
