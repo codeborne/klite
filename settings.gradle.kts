@@ -8,7 +8,7 @@ dependencyResolutionManagement {
       val coroutines = version("coroutines", "1.7.3")
       library("kotlinx-coroutines", "org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8").versionRef(coroutines)
       library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef(coroutines)
-      library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+      library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
       library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
       val junit5 = version("junit", "5.10.1")
@@ -28,7 +28,7 @@ dependencyResolutionManagement {
 
       library("hikari", "com.zaxxer:HikariCP:5.1.0")
       library("liquibase-core", "org.liquibase:liquibase-core:4.26.0")
-      library("postgresql", "org.postgresql:postgresql:42.7.1")
+      library("postgresql", "org.postgresql:postgresql:42.7.2")
     }
   }
 }
