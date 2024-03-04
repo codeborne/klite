@@ -1,6 +1,7 @@
 # Unreleased
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
 * core: Converter now supports inline classes with multiple constructors automatically
+* core: Converter now supports any static(String) method automatically, not only parse()
 * core: Cache keepAlive function introduced to prolong external cache entries
 * server: KeyCipher now uses base64UrlEncode() internally instead of plain base64
 * jdbc: db.upsert() now uses `excluded` special table name for update part instead of setting values twice

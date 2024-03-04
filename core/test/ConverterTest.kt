@@ -18,20 +18,24 @@ import kotlin.reflect.typeOf
 
 class ConverterTest {
   @Test fun `pre-defined`() {
-    expect(Converter.from<UUID>("05e1cebe-67dc-4780-b5df-472edd55fab6")).toEqual("05e1cebe-67dc-4780-b5df-472edd55fab6".uuid)
-    expect(Converter.from<Currency>("EUR")).toEqual(Currency.getInstance("EUR"))
     expect(Converter.from<Locale>("et_EE")).toEqual(Locale("et", "EE"))
     expect(Converter.from<Decimal>("123.45")).toEqual("123.45".d)
+    expect(Converter.supports(Locale::class)).toEqual(true)
+  }
+
+  @Test fun `static method`() {
+    expect(Converter.from<UUID>("05e1cebe-67dc-4780-b5df-472edd55fab6")).toEqual("05e1cebe-67dc-4780-b5df-472edd55fab6".uuid)
+    expect(Converter.from<Currency>("EUR")).toEqual(Currency.getInstance("EUR"))
+    expect(Converter.from<LocalDate>("2021-10-21")).toEqual(LocalDate.parse("2021-10-21"))
+    expect(Converter.from<Period>("P1D")).toEqual(Period.parse("P1D"))
+    expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
   }
 
   @Test fun custom() {
-    expect(Converter.supports(Pattern::class)).toEqual(false)
-    expect { Converter.from<Pattern>("[a-z]") }.toThrow<IllegalStateException>()
-    expect(Converter.of(Pattern::class)).toBeTheInstance(Converter.of(Pattern::class))
-
-    Converter.use<Pattern> { Pattern.compile(it) }
-    expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
-    expect(Converter.supports(Pattern::class)).toEqual(true)
+    expect(Converter.supports(Converter::class)).toEqual(false)
+    Converter.use { Converter }
+    expect(Converter.supports(Converter::class)).toEqual(true)
+    expect(Converter.from<Converter>("any")).toBeTheInstance(Converter)
   }
 
   @Test fun `super classes`() {
@@ -52,7 +56,8 @@ class ConverterTest {
     expect(Converter.from<Phone>("+37256639535")).toEqual(Phone("+37256639535"))
   }
 
-  @Test fun `no explicit data constructors`() {
+  @Test fun `no-auto creation of data`() {
+    expect(Converter.supports(SingleValueData::class)).toEqual(false)
     expect { Converter.from<SingleValueData>("hello") }.toThrow<IllegalStateException>().messageToContain("No known converter from String to class klite.SingleValueData, register with Converter.use()")
     Converter.use { SingleValueData(it) }
     expect(Converter.from<SingleValueData>("hello")).toEqual(SingleValueData("hello"))
@@ -77,15 +82,9 @@ class ConverterTest {
     expect(Converter.from<Any>("s", type.arguments.first().type!!)).toEqual("s")
   }
 
-  @Test fun parse() {
-    expect(Converter.supports(Locale::class)).toEqual(true)
-    expect(Converter.from<LocalDate>("2021-10-21")).toEqual(LocalDate.parse("2021-10-21"))
-    expect(Converter.from<Period>("P1D")).toEqual(Period.parse("P1D"))
-  }
-
   @Test fun `no creator`() {
     assertThrows<IllegalStateException> {
-      Converter.from<Converter>("some string")
+      Converter.from<ConverterTest>("some string")
     }
   }
 }

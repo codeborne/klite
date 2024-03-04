@@ -26,8 +26,6 @@ object Converter {
   private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     Any::class to Any::toString,
     CharSequence::class to Any::toString,
-    UUID::class to UUID::fromString,
-    Currency::class to Currency::getInstance,
     Locale::class to { Locale.forLanguageTag(it.replace('_', '-')) }
   ))
 
@@ -54,7 +52,7 @@ object Converter {
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
     try { javaConstructorCreator(type) }
     catch (e: NoSuchMethodException) {
-      try { parseMethodCreator(type) }
+      try { staticMethodCreator(type) }
       catch (e2: NoSuchMethodException) {
         try { kotlinConstructorCreator(type) }
         catch (e3: Exception) { null }
@@ -84,8 +82,8 @@ object Converter {
   }
 
   @Suppress("UNCHECKED_CAST")
-  private fun <T: Any> parseMethodCreator(type: KClass<T>): FromStringConverter<T> {
-    val parse = type.java.getMethod("parse", CharSequence::class.java)
+  private fun <T: Any> staticMethodCreator(type: KClass<T>): FromStringConverter<T> {
+    val parse = type.java.declaredMethods.find { it.returnType == type.java && it.parameterCount == 1 && it.parameterTypes[0].isAssignableFrom(String::class.java) } ?: throw NoSuchMethodException()
     return { s ->
       try { parse.invoke(null, s) as T }
       catch (e: InvocationTargetException) { throw e.targetException }
