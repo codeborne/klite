@@ -355,7 +355,42 @@ Then no extra validation code is needed in route handlers, that is easy to forge
 
 ## Login/access/sessions
 
-TODO
+To enable sessions support, pass a `SessionStore` implementation to Server's constructor:
+
+```kotlin
+Server(sessionStore = CookieSessionStore())
+```
+
+CookieSessionStore will store session data in a cookie, which survives server restarts and works with multiple server instances. Session data is encrypted and cannot be tamprered with, but can be subject to replay attacks.
+
+Store as few data as possible in the session, and use it mostly for user identification and authorization.
+Any state-related data in session will be problematic with the browser's back button.
+
+Then you can use `session` object to store and retrieve session data, e.g:
+
+```kotlin
+@POST fun login(credentials: Credentials) {
+  val user = userRepository.by(credentials) ?: throw UnauthorizedException()
+  session["userId"] = user.id.toString()
+}
+```
+
+and then have a before handler to load current user:
+
+```kotlin
+context("/api") {
+  ...
+  before {
+    val userId = it.session["userId"] ?: throw ForbiddenException()
+    it.attr("user", userRepository.get(userId))
+  }
+}
+```
+
+`attr()` values can be accessed in annotated routes with `@AttrParam` annotation.
+
+`before, after, decorate` handlers can be used to add common logic to all routes in a context.
+They affect only the routes that follow them.
 
 ## HTML
 
