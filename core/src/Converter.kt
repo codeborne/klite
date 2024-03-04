@@ -1,6 +1,7 @@
 package klite
 
 import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Modifier.isStatic
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
@@ -83,7 +84,7 @@ object Converter {
 
   @Suppress("UNCHECKED_CAST")
   private fun <T: Any> staticMethodCreator(type: KClass<T>): FromStringConverter<T> {
-    val parse = type.java.declaredMethods.find { it.returnType == type.java && it.parameterCount == 1 && it.parameterTypes[0].isAssignableFrom(String::class.java) } ?: throw NoSuchMethodException()
+    val parse = type.java.methods.find { isStatic(it.modifiers) && it.returnType == type.java && it.parameterCount == 1 && it.parameterTypes[0].isAssignableFrom(String::class.java) } ?: throw NoSuchMethodException()
     return { s ->
       try { parse.invoke(null, s) as T }
       catch (e: InvocationTargetException) { throw e.targetException }
