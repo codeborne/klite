@@ -134,3 +134,15 @@ If you want to render HTML server-side, you can implement your own `BodyRenderer
 You can now get the json response using `http://localhost:8080/html/klite`.
 
 Note the `+` before `path("name")`. This is a special operator to escape HTML characters in the string, import it from `klite.html.unaryPlus`.
+
+## Assets / Static files
+
+Instead, modern applications would use a frontend framework, such as Svelte or React, and serve the frontend as a static site.
+
+Klite has a built-in static file server, which you can use to serve your frontend files.
+
+```kotlin
+  assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
+```
+
+The latter parameter is useful for SPA (single-page applications), where the frontend router handles the URL.
