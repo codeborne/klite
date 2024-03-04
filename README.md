@@ -10,6 +10,8 @@ Includes very light [json](json) and [jdbc & migrations](jdbc) submodules for Ko
 
 Please **star the repo** to let us know you are interested.
 
+See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
+
 ## Goals
 
 * Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging

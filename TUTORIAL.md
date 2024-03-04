@@ -1,6 +1,8 @@
 # Klite Tutorial
 
-This tutorial will guide you through the process of creating a TODO API backend appliation.
+This tutorial will guide you through the process of creating a TODO REST API backend application using Kotlin & Klite, including Postgres database.
+
+To get more information about any class or function, navigate freely inside to see how it works and what optional parameters does it provide.
 
 ## Dependencies
 
@@ -17,6 +19,8 @@ dependencies {
   implementation("com.github.codeborne.klite:klite-server:$kliteVersion")
 }
 ```
+
+Fortunately, you won't get anything extra besides Klite itself, as it has no other dependencies, not even 3rd-party http server.
 
 ## Launcher
 
@@ -145,8 +149,8 @@ Let's create a basic in-memory repository for storing of our todos:
 class TodoRepository {
   private val todos = mutableListOf<Todo>()
 
-  fun all() = todos.toList()
-  fun add(todo: Todo) = todos.add(todo)
+  fun list() = todos.toList()
+  fun save(todo: Todo) = todos.add(todo)
 }
 ```
 
@@ -154,10 +158,12 @@ Now, we can inject this repository into our `TodoRoutes`:
 
 ```kotlin
 class TodoRoutes(private val repo: TodoRepository) {
-  @GET fun todos() = repo.all()
-  @POST fun add(todo: Todo) = repo.add(todo)
+  @GET fun todos() = repo.list()
+  @POST fun save(todo: Todo) = repo.save(todo)
 }
 ```
+
+`JsonBody` will deserialize Todo instance from json request automatically.
 
 Klite uses `Server.registry` for dependency injection.
 [Registry](server/src/klite/Registry.kt) will create singleton classes recursively by default.
@@ -188,6 +194,168 @@ Now, we can add a route to get a single todo by its id:
 ```kotlin
   @GET("/todos/:id") fun todoById(@PathParam id: Id<Todo>) = repo.get(id)
 ```
+
+## Database
+
+In real applications, you would use a database to store your data.
+
+Let's spin-up a Postgres database using Docker.
+
+Create the following `docker-compose.yml` file:
+
+```yml
+service:
+  db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: todo
+      POSTGRES_PASSWORD: todo
+    ports:
+      - "5432:5432"
+```
+
+Then add [klite-jdbc](jdbc) dependency to your `build.gradle.kts`:
+
+```kts
+implementation("com.github.codeborne.klite:klite-jdbc:$kliteVersion")
+```
+
+Now we can auto-start the DB and connect to it in our Launcher:
+
+```kotlin
+Server().apply {
+  if (Config.isDev) startDevDB()
+  use<DBModule>()
+  ...
+}
+```
+
+DBModule uses [PooledDataSource](jdbc/src/PooledDataSource.kt), wrapping [ConfigDataSource](jdbc/src/ConfigDataSource.kt) by default.
+
+For the connection to succeed, you need to add the following to your `.env` file:
+
+```env
+DB_URL=jdbc:postgresql://localhost:5432/todo
+DB_USER=todo
+DB_PASS=todo
+```
+
+Now, we can reimplement TodoRepository to use the `todo` table in the DB:
+
+```kotlin
+import klite.jdbc.*
+
+class TodoRepository(private val db: DataSource) {
+  fun list() = db.select<Todo>("todos")
+  fun save(todo: Todo) = db.upsert("todos", todo.toValues())
+  fun get(id: Id<Todo>) = db.select<Todo>(Todo::id to id).first()
+}
+```
+
+See [klite-jdbc](jdbc) docs for more examples of how to use it.
+
+## DB migrator
+
+If you ran the previous code, you probably have realized that the `todo` table does not exist in the database yet.
+
+Let's use [DBMigrator](jdbc/src/migrator/DBMigrator.kt) to create the table for us:
+
+```kotlin
+use<DBModule>()
+use<DBMigrator>()
+```
+
+DBMigrator will look for `db.sql` file in the root of the classpath (resources) and run it against the database, let's create it:
+
+```sql
+--changeset todos
+create table todos (
+  id bigint primary key,
+  item text not null,
+  completed_at timestamptz
+);
+
+--changeset todos:initial-data context:dev
+insert into todos (id, item) values (123, 'Buy groceries');
+```
+
+Later, you can add more changesets to the same file, and DBMigrator will run only new ones, or even extract them to separate files and use `--include file.sql`. See [ChangeSet](jdbc/src/migrator/ChangeSet.kt) for more attributes.
+
+## CrudRepository
+
+To make it even easier to implement repositories, klite-jdbc includes BaseCrudRepository:
+
+```kotlin
+data class Todo(...): BaseEntity<Id<Todo>>
+class TodoRepository(db: DataSource): BaseCrudRepository<Todo, Id<Todo>>(db, "todos")
+```
+
+And then you will have the common list(), get(), save() methods already implemented for you.
+
+## Transactions
+
+By default, JDBC Connections work in autoCommit mode, which means that every statement is a separate transaction.
+
+In real life it makes sense to use **transaction per request** model, which will issue a rollback automatically in case anything fails with an exception.
+
+Add `use<RequestTransactionHandler>()`, which will do it for you.
+
+Then, @NoTransaction can be used to disable transaction for a specific route.
+
+## Error handling
+
+Klite makes it easy to handle errors without extra code by default.
+
+You can register custom exception types to produce specific HTTP error responses:
+
+```kotlin
+errors.on<IllegalAccessException>(StatusCode.Forbidden)
+```
+
+In fact, many Klite modules add their own error handlers, e.g. `require()` and `error()` will produce BadRequest 400 responses.
+
+## Converter & Validation
+
+Data validation is also already done by default, e.g. Kotlin nullability is respected and reported to the user automatically.
+
+The most convenient for additional validation is to use correct data types (e.g. Email, Phone, URL, not just String).
+
+With Klite, it's easy to add custom value types, that would work across request parameters, json and database columns.
+In fact, Klite already provides [Email, Phone, Password types](core/src/Types.kt).
+
+Any type with String constructor or String static factory method will be supported by default.
+
+```kotlin
+class EstonianPersonalCode(value: String): StringValue(value) {
+  init {
+    require(value.length == 11) { "EE personal code should be 11 characters long" }
+  }
+}
+```
+
+Custom type creation can be registered with [Converter](core/src/Converter.kt):
+
+```kotlin
+Converter.use { Locale.forLanguageTag(it.replace('_', '-')) }
+```
+
+If value type are not enough, then add require calls to entity constructor:
+
+```kotlin
+data class Todo(...) {
+  init {
+    require(item[0].isUpperCase()) { "Item should start with upper case" }
+  }
+}
+```
+
+Then no extra validation code is needed in route handlers, that is easy to forget.
+
+`JsonMapper.trimToNull` is enabled by default, so you get more clean data into your objects, and won't get empty strings into required (non-null) fields.
+
+## Login/access/sessions
+
+TODO
 
 ## HTML
 
