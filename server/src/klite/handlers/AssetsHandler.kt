@@ -1,5 +1,6 @@
-package klite
+package klite.handlers
 
+import klite.*
 import klite.RequestMethod.GET
 import klite.RequestMethod.HEAD
 import klite.StatusCode.Companion.OK

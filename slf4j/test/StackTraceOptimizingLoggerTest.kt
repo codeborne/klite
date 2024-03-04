@@ -6,9 +6,9 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEndWith
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.mockk
-import klite.Decorator
-import klite.Handler
-import klite.wrap
+import klite.handlers.Decorator
+import klite.handlers.Handler
+import klite.handlers.wrap
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream

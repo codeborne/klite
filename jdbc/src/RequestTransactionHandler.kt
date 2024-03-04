@@ -1,6 +1,7 @@
 package klite.jdbc
 
 import klite.*
+import klite.handlers.Handler
 import kotlinx.coroutines.withContext
 import javax.sql.DataSource
 import kotlin.annotation.AnnotationTarget.CLASS

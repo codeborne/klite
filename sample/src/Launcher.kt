@@ -1,11 +1,17 @@
-import klite.*
+import klite.Config
+import klite.Server
 import klite.annotations.annotated
+import klite.handlers.AssetsHandler
+import klite.handlers.CorsHandler
+import klite.handlers.useHashCodeAsETag
+import klite.isDev
 import klite.jdbc.*
 import klite.json.JsonBody
 import klite.oauth.AuthRoutes
 import klite.oauth.OAuthRoutes
 import klite.oauth.OAuthUserProvider
 import klite.openapi.openApi
+import klite.register
 import kotlinx.coroutines.delay
 import users.UserRepository
 import java.net.InetSocketAddress
@@ -31,7 +37,7 @@ fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).ap
   register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
 
   before<AdminChecker>()
-  after { ex, err -> ex.header("X-Error", err?.message ?: "none") }
+  after { err -> header("X-Error", err?.message ?: "none") }
 
   context("/hello") {
     get { "Hello World" }

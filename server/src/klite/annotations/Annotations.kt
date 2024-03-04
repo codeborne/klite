@@ -1,6 +1,7 @@
 package klite.annotations
 
 import klite.*
+import klite.handlers.*
 import java.io.InputStream
 import java.lang.reflect.InvocationTargetException
 import kotlin.annotation.AnnotationTarget.*

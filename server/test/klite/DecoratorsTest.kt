@@ -6,6 +6,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import klite.handlers.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.IOException
@@ -20,14 +21,14 @@ class DecoratorsTest {
     val before = mockk<Before>(relaxed = true)
     val wrapped = before.toDecorator().wrap(handler)
     expect(runBlocking { wrapped(exchange) }).toEqual("Result")
-    coVerify { before.before(exchange) }
+    coVerify { before.run { exchange.before() } }
   }
 
   @Test fun after() {
     val after = mockk<After>(relaxed = true)
     val wrapped = after.toDecorator().wrap(handler)
     expect(runBlocking { wrapped(exchange) }).toEqual("Result")
-    coVerify { after.after(exchange, null) }
+    coVerify { after.run { exchange.after(null) } }
   }
 
   @Test fun `after with exception`() {
@@ -35,7 +36,7 @@ class DecoratorsTest {
     coEvery { handler(exchange) } throws IOException()
     val wrapped = after.toDecorator().wrap(handler)
     expect { runBlocking { wrapped(exchange) }}.toThrow<IOException>()
-    coVerify { after.after(exchange, any<IOException>()) }
+    coVerify { after.run { exchange.after(any<IOException>()) } }
   }
 
   @Test fun around() {

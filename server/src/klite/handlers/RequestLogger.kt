@@ -1,4 +1,6 @@
-package klite
+package klite.handlers
+
+import klite.*
 
 typealias RequestLogFormatter = HttpExchange.(ms: Long) -> String?
 val defaultRequestLogFormatter: RequestLogFormatter = { ms ->

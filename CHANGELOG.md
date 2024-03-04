@@ -1,3 +1,9 @@
+# Unreleased 1.7.0
+* Before/After/Decorator should use receiver as HttpExchange, to be more similar to Handler
+* TODO: migrate some packages, e.g. klite.core and klite.server
+* TODO: implement logger without slf4j, making slf4j module a bridge only
+* TODO: AssetHandler could be a normal handler
+
 # 1.6.6
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
 * core: Converter now supports inline classes with multiple constructors automatically

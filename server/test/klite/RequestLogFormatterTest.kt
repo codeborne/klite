@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.mockk
 import klite.RequestMethod.GET
 import klite.StatusCode.Companion.Forbidden
+import klite.handlers.defaultRequestLogFormatter
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.io.IOException

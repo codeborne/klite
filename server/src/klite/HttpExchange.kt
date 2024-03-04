@@ -35,6 +35,7 @@ open class HttpExchange(
   val path: String get() = original.requestURI.path
   lateinit var pathParams: Params internal set
   fun path(param: String): String? = pathParams[param]
+  inline fun <reified T: Any> path(param: String): T? = path(param)?.let { Converter.from<T>(it) }
 
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Params by lazy { original.requestURI.queryParams }

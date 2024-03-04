@@ -1,4 +1,8 @@
-package klite
+package klite.handlers
+
+import klite.HttpExchange
+import klite.Registry
+import klite.requireAll
 
 typealias Handler = suspend HttpExchange.() -> Any?
 typealias Decorator = suspend (exchange: HttpExchange, handler: Handler) -> Any?
@@ -7,22 +11,22 @@ fun Decorator.wrap(handler: Handler): Handler = { invoke(this, handler) }
 fun List<Decorator>.wrap(handler: Handler) = foldRight(handler) { d, h -> d.wrap(h) }
 
 fun interface Before {
-  suspend fun before(exchange: HttpExchange)
+  suspend fun HttpExchange.before()
 }
 
 fun Before.toDecorator(): Decorator = { ex, handler ->
-  before(ex); handler(ex)
+  ex.before(); ex.handler()
 }
 
 fun interface After {
-  suspend fun after(exchange: HttpExchange, error: Throwable?)
+  suspend fun HttpExchange.after(error: Throwable?)
 }
 
 fun After.toDecorator(): Decorator = { ex, handler ->
   var error: Throwable? = null
   try { handler(ex) }
   catch (e: Throwable) { error = e; throw e }
-  finally { after(ex, error) }
+  finally { ex.after(error) }
 }
 
 fun Registry.requireAllDecorators() =

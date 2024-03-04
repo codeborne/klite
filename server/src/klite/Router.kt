@@ -1,6 +1,7 @@
 package klite
 
 import klite.RequestMethod.*
+import klite.handlers.*
 import kotlin.reflect.KAnnotatedElement
 
 abstract class RouterConfig(
