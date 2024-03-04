@@ -1,6 +1,6 @@
-# Klite tutorial
+# Klite Tutorial
 
-This tutorial will guide you through the process of creating a simple Klite application. We will start by creating a new project, and then we will create a simple API application.
+This tutorial will guide you through the process of creating a TODO API backend appliation.
 
 ## Dependencies
 
@@ -60,7 +60,7 @@ Even if you don't add this `if`, Config still has precedence for environment var
 
 ## Routes
 
-It's time to add our routes. Klite routes must be defined in a context (URL prefix with common meaning).
+It's time to add our routes. Klite routes must be defined in a **context** (URL prefix with common meaning).
 
 ```kotlin
 Server().apply {
@@ -76,9 +76,9 @@ This will also handle request logging for you.
 
 ## JSON
 
-What if you want to serialize responses to json?
+As is typical, we want our API to return JSON.
 
-Klite uses BodyRenderer to render the response. By default, it uses `TextRenderer` to render plain text.
+Klite uses registered [BodyRenderer](server/src/klite/Body.kt)s to render the response. By default, it uses `TextRenderer` to render plain text.
 
 You can register more renderers to handle different content types.
 Klite uses the `Accept` header to determine which content type the client wants.
@@ -96,26 +96,22 @@ Now you can register the `JsonBody` renderer and parser for the whole applicatio
 ```kotlin
   use<JsonBody>()
   context("/api") {
-    get("/hello") { Hello("Hello, world!") }
+    get("/todos") { listOf(Todo("Buy groceries")) }
   }
 
-  data class Hello(val message: String)
+  data class Todo(val item: String)
 ```
 
 Or you may want to support only json within the `/api` context:
 
 ```kotlin
-  use<JsonBody>()
   context("/api") {
     useOnly<JsonBody>()
-    get("/hello") {
-      val name = query("name") ?: "world"
-      Hello("Hello, $name!")
-    }
+    ...
   }
 ```
 
-You can now get the json response using `http://localhost:8080/api/hello?name=Klite`.
+You can now get the json response using `http://localhost:8080/api/todos`.
 
 ## HTML
 
@@ -144,5 +140,7 @@ Klite has a built-in static file server, which you can use to serve your fronten
 ```kotlin
   assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 ```
+
+This adds its own context, it is a good idea to use `/` as the path, so that files are available from shorter URLs.
 
 The latter parameter is useful for SPA (single-page applications), where the frontend router handles the URL.
