@@ -9,9 +9,9 @@ jobs:
       contents: write # The Dependency Submission API requires write permission
       packages: write
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - run: java -version
+      - uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'liberica'
