@@ -8,7 +8,6 @@ import klite.oauth.OAuthUserProvider
 import klite.openapi.openApi
 import kotlinx.coroutines.delay
 import users.UserRepository
-import users.registerValueTypes
 import java.net.InetSocketAddress
 import java.net.http.HttpClient
 import java.nio.file.Path
@@ -21,7 +20,6 @@ fun main() {
 fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).apply {
   Config.useEnvFile()
   use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
-  Converter.registerValueTypes() // register custom types for deserialization from request params/json/db
 
   if (Config.isDev) startDevDB() // start docker-compose db automatically
   use(DBModule(PooledDataSource())) // configure a DataSource

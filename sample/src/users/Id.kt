@@ -1,6 +1,5 @@
 package users
 
-import klite.Converter
 import klite.jdbc.BaseCrudRepository
 import klite.jdbc.NullableId
 import klite.jdbc.UpdatableEntity
@@ -18,10 +17,6 @@ import javax.sql.DataSource
   constructor(): this(UUID.randomUUID())
   constructor(uuid: String): this(uuid.uuid)
   override fun toString() = uuid.toString()
-}
-
-fun Converter.registerValueTypes() {
-  use { Id<Any>(it) }
 }
 
 fun <T> String.toId(): Id<T> = Id(uuid)

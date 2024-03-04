@@ -65,7 +65,6 @@ class ConverterTest {
   @Test fun jvmInline() {
     expect(Converter.from<Inline>("hello")).toEqual(Inline("hello"))
     val id = randomUUID()
-    Converter.use { InlineId(fromString(it)) }
     expect(Converter.from<InlineId>(id.toString())).toEqual(InlineId(id))
   }
 
@@ -92,7 +91,9 @@ class ConverterTest {
 }
 
 @JvmInline value class Inline(val string: String)
-@JvmInline value class InlineId(val id: UUID)
+@JvmInline value class InlineId(val id: UUID) {
+  constructor(s: String): this(fromString(s))
+}
 
 data class SingleValueData(val s: String)
 

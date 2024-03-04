@@ -50,11 +50,15 @@ object Converter {
     type.companionObjectInstance.run { converters[type] }
 
   private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T>? =
+    if (type.isData) null else
     if (type.isSubclassOf(Enum::class)) enumCreator(type) else
-    try { constructorCreator(type) }
+    try { javaConstructorCreator(type) }
     catch (e: NoSuchMethodException) {
       try { parseMethodCreator(type) }
-      catch (e2: NoSuchMethodException) { null }
+      catch (e2: NoSuchMethodException) {
+        try { kotlinConstructorCreator(type) }
+        catch (e3: Exception) { null }
+      }
     }
 
   private fun <T: Any> enumCreator(type: KClass<T>): FromStringConverter<T> {
@@ -62,12 +66,19 @@ object Converter {
     return { s -> enumConstants[s.uppercase()] ?: error("No $type constant: $s") }
   }
 
-  private fun <T: Any> constructorCreator(type: KClass<T>): FromStringConverter<T>? {
+  private fun <T: Any> javaConstructorCreator(type: KClass<T>): FromStringConverter<T> {
     val constructor = type.javaObjectType.getDeclaredConstructor(String::class.java)
-    if (type.isData) return null
     if (type.isValue && type.hasAnnotation<JvmInline>()) constructor.isAccessible = true
     return { s ->
       try { constructor.newInstance(s) }
+      catch (e: InvocationTargetException) { throw e.targetException }
+    }
+  }
+
+  private fun <T: Any> kotlinConstructorCreator(type: KClass<T>): FromStringConverter<T>? {
+    val constructor = type.constructors.find { it.parameters.size == 1 && it.parameters.first().type.classifier == String::class } ?: return null
+    return { s ->
+      try { constructor.call(s) }
       catch (e: InvocationTargetException) { throw e.targetException }
     }
   }
