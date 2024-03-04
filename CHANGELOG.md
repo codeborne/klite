@@ -1,4 +1,4 @@
-# Unreleased
+# 1.6.6
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
 * core: Converter now supports inline classes with multiple constructors automatically
 * core: Converter now supports any static(String) method automatically, not only parse()
