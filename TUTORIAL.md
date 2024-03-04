@@ -96,22 +96,98 @@ Now you can register the `JsonBody` renderer and parser for the whole applicatio
 ```kotlin
   use<JsonBody>()
   context("/api") {
+    useOnly<JsonBody>() // this removes other renderers in /api context
     get("/todos") { listOf(Todo("Buy groceries")) }
   }
 
-  data class Todo(val item: String)
+  data class Todo(val item: String, val completedAt: Instant? = null)
 ```
 
-Or you may want to support only json within the `/api` context:
+Klite [JsonMapper](json/src/JsonMapper.kt) will omit nulls by default to make responses smaller.
+
+You can now get the json response using `http://localhost:8080/api/todos`.
+
+## Annotated routes
+
+In real applications, it makes sense to divide routes into separate classes, which can also be unit-tested just like normal classes, independent of the framework.
+
+Klite provides `klite.annotations` package with annotations to make it possible.
+
+Let's create a `TodoRoutes`:
+
+```kotlin
+import klite.annotations.*
+
+class TodoRoutes {
+  @GET("/todos") fun todos() = listOf(Todo("Buy groceries"))
+}
+```
+
+Then, you can register this class in the /api context:
 
 ```kotlin
   context("/api") {
     useOnly<JsonBody>()
-    ...
+    annotated<TodoRoutes>("/todos")
   }
 ```
 
-You can now get the json response using `http://localhost:8080/api/todos`.
+This will add all annotated methods from `TodoRoutes` to the context as route handlers.
+In some frameworks, this can is called "Controller" or "Resource". You free to use any name in Klite.
+
+## Dependency injection (later)
+
+Why not use `annotated(TodoRoutes())`? Because you may want Klite to create the instance and inject any dependencies into it that it declares as constructor parameters.
+
+Let's create a basic in-memory repository for storing of our todos:
+
+```kotlin
+class TodoRepository {
+  private val todos = mutableListOf<Todo>()
+
+  fun all() = todos.toList()
+  fun add(todo: Todo) = todos.add(todo)
+}
+```
+
+Now, we can inject this repository into our `TodoRoutes`:
+
+```kotlin
+class TodoRoutes(private val repo: TodoRepository) {
+  @GET fun todos() = repo.all()
+  @POST fun add(todo: Todo) = repo.add(todo)
+}
+```
+
+Klite uses `Server.registry` for dependency injection.
+[Registry](server/src/klite/Registry.kt) will create singleton classes recursively by default.
+
+If you need to register instances of interfaces, you can use the `register()` function.
+
+## Path parameters
+
+Let's add a route to get a single todo.
+
+First, our Todo class should have an id field:
+
+```kotlin
+typealias Id<T> = TSID<T>
+data class Todo(val item: String, val completedAt: Instant? = null, val id: Id<Todo> = Id())
+```
+
+We use [TSID](core/src/TSID.kt) to generate unique and type-safe IDs for our todos, let's have it auto-generate when a new Todo is posted. Alternatively, you can use UUID or any type that you like.
+
+Let's add a corresponding method to the TodoRepository:
+
+```kotlin
+  fun get(id: Id<Todo>) = todos.first { it.id == id }
+```
+
+Now, we can add a route to get a single todo by its id:
+
+```kotlin
+  @GET("/todos/:id") fun todoById(@PathParam id: Id<Todo>) = repo.get(id)
+```
 
 ## HTML
 
