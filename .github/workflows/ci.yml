@@ -10,11 +10,10 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - run: java -version
       - uses: actions/setup-java@v4
         with:
           java-version: '11'
-          distribution: 'liberica'
+          distribution: 'temurin'
           cache: 'gradle'
 
       - run: ./gradlew jar testClasses
