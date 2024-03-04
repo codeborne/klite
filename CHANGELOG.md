@@ -2,6 +2,7 @@
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
 * core: Cache keepAlive function introduced to prolong external cache entries
 * server: KeyCipher now uses base64UrlEncode() internally instead of plain base64
+* jdbc: db.upsert() now uses `excluded` special table name for update part instead of setting values twice
 
 # 1.6.5
 * core: simple Cache with expiration timer implemented

@@ -117,14 +117,13 @@ fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, value
   upsertBatch(table, sequenceOf(values), uniqueFields, where, skipUpdateFields).first()
 
 fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray {
-  val where = whereConvert(where.map { (k, v) -> "$table.${name(k)}" to v })
+  val where = whereConvert(where.map { (k, v) -> "$table.${q(name(k))}" to v })
   val first = values.firstOrNull() ?: return intArrayOf()
-  val firstUpdateValues = if (skipUpdateFields.isEmpty()) first else first - skipUpdateFields
+  val updateExpr = first.keys.let { if (skipUpdateFields.isEmpty()) it else it - skipUpdateFields }
+                   .joinToString { k -> q(name(k)).let { "$it=excluded.$it" } }
   val whereValues = whereValues(where)
-  val valuesToSet = values.map {
-    setValues(it) + setValues(if (skipUpdateFields.isEmpty()) it else it - skipUpdateFields) + whereValues
-  }
-  return execBatch(insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${setExpr(firstUpdateValues)}${whereExpr(where)}", valuesToSet)
+  val valuesToSet = values.map { setValues(it) + whereValues }
+  return execBatch(insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}", valuesToSet)
 }
 
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
