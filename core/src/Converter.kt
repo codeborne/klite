@@ -91,7 +91,7 @@ object Converter {
   @Suppress("UNCHECKED_CAST")
   private fun <T: Any> staticMethodCreator(type: KClass<T>): FromStringConverter<T> {
     val parse = type.java.methods.find {
-      isStatic(it.modifiers) && it.returnType == type.java && it.parameterCount == 1 && CharSequence::class.java.isAssignableFrom(it.parameterTypes[0])
+      isStatic(it.modifiers) && it.returnType == type.java && it.parameterCount == 1 && it.parameterTypes[0].let { it == String::class.java || it == CharSequence::class.java }
     } ?: throw NoSuchMethodException()
     return { s ->
       try { parse.invoke(null, s) as T }
