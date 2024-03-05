@@ -1,3 +1,6 @@
+# Unreleased
+* server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
+
 # 1.6.6
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
 * core: Converter now supports inline classes with multiple constructors automatically
