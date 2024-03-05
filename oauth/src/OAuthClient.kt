@@ -63,8 +63,9 @@ class GoogleOAuthClient(httpClient: HttpClient): OAuthClient(
 ) {
   override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
     val res = fetchProfileResponse(token)
-    return UserProfile(provider, res.getString("id"), Email(res.getString("email")),
-      res.getString("givenName"), res.getString("familyName"),
+    val email = Email(res.getString("email"))
+    return UserProfile(provider, res.getString("id"), email,
+      res.getOrNull("givenName") ?: email.value.substringBefore("@").capitalize(), res.getOrNull("familyName") ?: "",
       res.getOrNull<String>("picture")?.let { URI(it) }, Locale.forLanguageTag(res.getString("locale")))
   }
 }
@@ -79,8 +80,8 @@ class MicrosoftOAuthClient(httpClient: HttpClient): OAuthClient(
 ) {
   override suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile {
     val res = fetchProfileResponse(token)
-    val email = res.getOrNull<String>("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
-    return UserProfile(provider, res.getString("id"), Email(email), res.getString("givenName"), res.getString("surname"),
+    val email = res.getOrNull("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
+    return UserProfile(provider, res.getString("id"), Email(email), res.getOrNull("givenName") ?: email.substringBefore("@").capitalize(), res.getOrNull("surname") ?: "",
       locale = Locale.forLanguageTag(res.getString("preferredLanguage")))
   }
 }
@@ -97,7 +98,9 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
     val res = fetchProfileResponse(token)
     val avatarData = res.getOrNull<JsonNode>("picture")?.getOrNull<JsonNode>("data")
     val avatarExists = avatarData?.getOrNull<Boolean>("is_silhouette") != true
-    return UserProfile(provider, res.getString("id"), Email(res.getString("email")), res.getString("firstName"), res.getString("lastName"),
+    val email = Email(res.getString("email"))
+    return UserProfile(provider, res.getString("id"),
+      email, res.getOrNull("firstName") ?: email.value.substringBefore("@").capitalize(), res.getOrNull("lastName") ?: "",
       avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) },
       Locale.forLanguageTag(res.getString("locale")))
   }

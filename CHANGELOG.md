@@ -1,6 +1,7 @@
 # Unreleased
 * core: Converter can now force initialize type arguments' companion objects
 * server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
+* oauth: support for missing first or last names
 
 # 1.6.6
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
