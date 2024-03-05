@@ -15,7 +15,7 @@ import kotlin.reflect.typeOf
 typealias FromStringConverter<T> = (s: String) -> T
 
 private class NoConverter<T: Any>(val type: KClass<T>): FromStringConverter<T> {
-  override fun invoke(s: String) = error("No known converter from String to $type, register with Converter.use()")
+  override fun invoke(s: String) = throw UnsupportedOperationException("No known converter from String to $type, register with Converter.use()")
 }
 
 /**
@@ -90,7 +90,9 @@ object Converter {
 
   @Suppress("UNCHECKED_CAST")
   private fun <T: Any> staticMethodCreator(type: KClass<T>): FromStringConverter<T> {
-    val parse = type.java.methods.find { isStatic(it.modifiers) && it.returnType == type.java && it.parameterCount == 1 && it.parameterTypes[0].isAssignableFrom(String::class.java) } ?: throw NoSuchMethodException()
+    val parse = type.java.methods.find {
+      isStatic(it.modifiers) && it.returnType == type.java && it.parameterCount == 1 && CharSequence::class.java.isAssignableFrom(it.parameterTypes[0])
+    } ?: throw NoSuchMethodException()
     return { s ->
       try { parse.invoke(null, s) as T }
       catch (e: InvocationTargetException) { throw e.targetException }

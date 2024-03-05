@@ -6,7 +6,6 @@ import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.net.URI
 import java.time.LocalDate
 import java.time.Period
@@ -30,6 +29,7 @@ class ConverterTest {
     expect(Converter.from<LocalDate>("2021-10-21")).toEqual(LocalDate.parse("2021-10-21"))
     expect(Converter.from<Period>("P1D")).toEqual(Period.parse("P1D"))
     expect(Converter.from<Pattern>("[a-z]").pattern()).toEqual("[a-z]")
+    expect { Converter.from<List<Any>>("s") }.toThrow<UnsupportedOperationException>()
   }
 
   @Test fun custom() {
@@ -59,7 +59,7 @@ class ConverterTest {
 
   @Test fun `no-auto creation of data`() {
     expect(Converter.supports(SingleValueData::class)).toEqual(false)
-    expect { Converter.from<SingleValueData>("hello") }.toThrow<IllegalStateException>().messageToContain("No known converter from String to class klite.SingleValueData, register with Converter.use()")
+    expect { Converter.from<SingleValueData>("hello") }.toThrow<UnsupportedOperationException>().messageToContain("No known converter from String to class klite.SingleValueData, register with Converter.use()")
     Converter.use { SingleValueData(it) }
     expect(Converter.from<SingleValueData>("hello")).toEqual(SingleValueData("hello"))
   }
@@ -89,9 +89,7 @@ class ConverterTest {
   }
 
   @Test fun `no creator`() {
-    assertThrows<IllegalStateException> {
-      Converter.from<ConverterTest>("some string")
-    }
+    expect { Converter.from<ConverterTest>("some string") }.toThrow<UnsupportedOperationException>()
   }
 }
 
