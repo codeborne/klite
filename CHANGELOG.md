@@ -1,4 +1,5 @@
 # Unreleased
+* core: Converter can now force initialize type arguments' companion objects
 * server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
 
 # 1.6.6

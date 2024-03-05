@@ -14,6 +14,7 @@ import java.util.*
 import java.util.UUID.fromString
 import java.util.UUID.randomUUID
 import java.util.regex.Pattern
+import kotlin.reflect.KProperty1
 import kotlin.reflect.typeOf
 
 class ConverterTest {
@@ -65,6 +66,7 @@ class ConverterTest {
 
   @Test fun `companion object initialization`() {
     expect(Converter.from<DataWithCompanion>("hello")).toEqual(DataWithCompanion("hello"))
+    expect(Converter.from<KProperty1<IndirectDataWithCompanion, Any>>("s")).toEqual(IndirectDataWithCompanion::s)
   }
 
   @Test fun jvmInline() {
@@ -99,5 +101,11 @@ data class SingleValueData(val s: String)
 data class DataWithCompanion(val s: String) {
   companion object {
     init { Converter.use { DataWithCompanion(it) } }
+  }
+}
+
+data class IndirectDataWithCompanion(val s: String) {
+  companion object {
+    init { Converter.use { IndirectDataWithCompanion::class.publicProperties.first { p -> p.name == it } } }
   }
 }

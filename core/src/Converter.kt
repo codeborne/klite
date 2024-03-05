@@ -9,6 +9,8 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.typeOf
 
 typealias FromStringConverter<T> = (s: String) -> T
 
@@ -33,20 +35,22 @@ object Converter {
   operator fun <T: Any> set(type: KClass<T>, converter: FromStringConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: FromStringConverter<T>) = set(T::class, converter)
 
-  fun supports(type: KClass<*>) = of(type) !is NoConverter
+  fun supports(cls: KClass<*>) = of(cls = cls) !is NoConverter
   fun forEach(block: (type: KClass<*>, converter: FromStringConverter<*>) -> Unit) = converters.forEach { block(it.key, it.value) }
 
-  fun <T: Any> from(s: String, type: KType): T = (type.classifier as? KClass<T>)?.let { from(s, it) } ?: s as T
-  fun <T: Any> from(s: String, type: KClass<T>): T = of(type).invoke(s)
+  fun <T: Any> from(s: String, type: KType): T = of<T>(type).invoke(s)
+  fun <T: Any> from(s: String, cls: KClass<T>): T = of(cls = cls).invoke(s)
   fun from(o: Any?, type: KType): Any? = if (o is String) from(o, type) else o
-  inline fun <reified T: Any> from(s: String) = from(s, T::class)
+  inline fun <reified T: Any> from(s: String) = from<T>(s, typeOf<T>())
 
-  internal fun <T: Any> of(type: KClass<T>) =
-    (converters[type] ?: forceInitAndCheckAgain(type)) as FromStringConverter<T>? ?:
-    (findCreator(type) ?: NoConverter(type)).also { set(type, it) }
+  internal fun <T: Any> of(type: KType? = null, cls: KClass<T> = type!!.jvmErasure as KClass<T>) =
+    (converters[cls] ?: type?.forceInit()?.let { converters[cls] }) as FromStringConverter<T>? ?:
+    (findCreator(cls) ?: NoConverter(cls)).also { set(cls, it) }
 
-  private fun <T: Any> forceInitAndCheckAgain(type: KClass<T>) =
-    type.companionObjectInstance.run { converters[type] }
+  private fun KType.forceInit(): Unit = jvmErasure.let { cls ->
+    cls.companionObjectInstance
+    arguments.forEach { it.type?.forceInit() }
+  }
 
   private fun <T: Any> findCreator(type: KClass<T>): FromStringConverter<T>? =
     if (type.isData) null else
