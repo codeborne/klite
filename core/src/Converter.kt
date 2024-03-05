@@ -28,7 +28,9 @@ private class NoConverter<T: Any>(val type: KClass<T>): FromStringConverter<T> {
 object Converter {
   private val converters: MutableMap<KClass<*>, FromStringConverter<*>> = ConcurrentHashMap(mapOf(
     Any::class to Any::toString,
+    String::class to Any::toString,
     CharSequence::class to Any::toString,
+    Comparable::class to Any::toString,
     Locale::class to { Locale.forLanguageTag(it.replace('_', '-')) }
   ))
 

@@ -69,6 +69,10 @@ class ConverterTest {
     expect(Converter.from<KProperty1<IndirectDataWithCompanion, Any>>("s")).toEqual(IndirectDataWithCompanion::s)
   }
 
+  @Test fun `backwards-compatibility for not exact types deserialized from json`() {
+    expect(Converter.from("s", NotExactField<*>::f.returnType) as Any).toEqual("s")
+  }
+
   @Test fun jvmInline() {
     expect(Converter.from<Inline>("hello")).toEqual(Inline("hello"))
     val id = randomUUID()
@@ -109,3 +113,5 @@ data class IndirectDataWithCompanion(val s: String) {
     init { Converter.use { IndirectDataWithCompanion::class.publicProperties.first { p -> p.name == it } } }
   }
 }
+
+class NotExactField<T: Any>(val f: Comparable<T>)
