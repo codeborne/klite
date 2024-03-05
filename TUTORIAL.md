@@ -381,8 +381,8 @@ and then have a before handler to load current user:
 context("/api") {
   ...
   before {
-    val userId = it.session["userId"] ?: throw ForbiddenException()
-    it.attr("user", userRepository.get(userId))
+    val userId = session["userId"] ?: throw ForbiddenException()
+    attr("user", userRepository.get(userId))
   }
 }
 ```
