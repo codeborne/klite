@@ -4,6 +4,7 @@ import klite.Decimal.Companion.CENTS
 import java.lang.Math.*
 import kotlin.math.absoluteValue
 import kotlin.math.roundToLong
+import kotlin.math.sign
 
 /**
  * A decimal fixed-point number with 2 fraction digits, suitable for e.g. monetary amounts.
@@ -43,7 +44,11 @@ class Decimal internal constructor(private val c: Long): Comparable<Decimal>, Nu
   operator fun inc() = plus(1.d)
   operator fun dec() = minus(1.d)
 
-  fun abs() = if (c < 0) Decimal(-c) else this
+  @Deprecated("Use absoluteValue instead", ReplaceWith("absoluteValue"))
+  fun abs() = absoluteValue
+  val absoluteValue get() = if (c < 0) Decimal(-c) else this
+  val sign get() = c.sign
+
   infix fun percent(p: Decimal) = times(p) / CENTS
 
   override fun equals(other: Any?) = c == (other as? Decimal)?.c

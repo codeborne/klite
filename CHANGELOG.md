@@ -1,5 +1,6 @@
 # Unreleased
 * core: Converter can now force initialize type arguments' companion objects
+* core: Decimal.absoluteValue and Decimal.sign introduced, like other numeric types in Kotlin
 * server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
 * oauth: support for missing first or last names
 

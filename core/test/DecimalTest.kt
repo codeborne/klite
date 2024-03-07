@@ -5,6 +5,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toBeLessThan
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Decimal.Companion.ZERO
 import org.junit.jupiter.api.Test
 import java.text.NumberFormat
 import java.util.*
@@ -41,9 +42,15 @@ class DecimalTest {
     expect(--x).toEqual(1.d)
   }
 
-  @Test fun abs() {
-    expect(1.d.abs()).toEqual(1.d)
-    expect((-1).d.abs()).toEqual(1.d)
+  @Test fun absoluteValue() {
+    expect(1.d.absoluteValue).toEqual(1.d)
+    expect((-1).d.absoluteValue).toEqual(1.d)
+  }
+
+  @Test fun sign() {
+    expect("0.01".d.sign).toEqual(1)
+    expect(ZERO.sign).toEqual(0)
+    expect("-0.01".d.sign).toEqual(-1)
   }
 
   @Test fun overflow() {
