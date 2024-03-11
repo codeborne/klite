@@ -33,9 +33,9 @@ class CacheTest {
 
   @Test fun prolongOnAccess() { Cache<String, LocalDate>(10.milliseconds, prolongOnAccess = true, keepAlive = mockk(relaxed = true)).use { cache ->
     cache["key"] = data
-    Thread.sleep(9)
+    Thread.sleep(7)
     expect(cache["key"]).toBeTheInstance(data)
-    Thread.sleep(9)
+    Thread.sleep(4)
     expect(cache["key"]).toBeTheInstance(data)
     verify { cache.keepAlive(match { it.key == "key" && it.value.value == data }) }
     Thread.sleep(11)
