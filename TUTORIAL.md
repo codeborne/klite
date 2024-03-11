@@ -168,7 +168,7 @@ class TodoRoutes(private val repo: TodoRepository) {
 `JsonBody` will deserialize Todo instance from json request automatically.
 
 Klite uses `Server.registry` for dependency injection.
-[Registry](server/src/klite/Registry.kt) will create singleton classes recursively by default.
+[Registry](core/src/Registry.kt) will create singleton classes recursively by default.
 
 If you need to register instances of interfaces, you can use the `register()` function.
 

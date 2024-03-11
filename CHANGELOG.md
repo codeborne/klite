@@ -1,7 +1,7 @@
 # Unreleased
 * core: Converter can now force initialize type arguments' companion objects
 * core: Decimal.absoluteValue and Decimal.sign introduced, like other numeric types in Kotlin
-* core: TypedHttpClient moved from server module, so that JsonHttpClient can be used without the server
+* core: Registry and TypedHttpClient moved from server module, so that JsonHttpClient can be used without the server
 * server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
 * oauth: support for missing first or last names
 

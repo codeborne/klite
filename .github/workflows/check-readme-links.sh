@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for f in `find -name '*.md'`; do
+for f in `find . -name '*.md'`; do
   echo "Checking $f"
   PATHS=`grep -oP "(?<=\]\()[^)]*(?=\))" $f | grep -v '^http'`
   for l in $PATHS; do
