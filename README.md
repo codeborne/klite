@@ -22,6 +22,7 @@ See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
   * Perfect for microservices
   * But still possible to easily add support for other servers if needed
   * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on used modules
+  * Production applications can run with as low as 50Mb of heap memory, suitable for very cheap plans at Fly.io or Heroku
 * 12-factor apps by default
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
