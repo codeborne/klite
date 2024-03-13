@@ -3,6 +3,7 @@
 * core: Decimal.absoluteValue and Decimal.sign introduced, like other numeric types in Kotlin
 * core: Registry and TypedHttpClient moved from server module, so that JsonHttpClient can be used without the server
 * server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
+* jobs: deprecated non-Duration schedule() methods
 * oauth: support for missing first or last names
 
 # 1.6.6

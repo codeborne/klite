@@ -22,7 +22,10 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.toJavaDuration
+import kotlin.time.toKotlinDuration
 
 interface Job {
   suspend fun run()
@@ -77,24 +80,24 @@ open class JobRunner(
 
   open fun runOnce(job: Job) = workerPool.submit { runInTransaction(job, UNDISPATCHED) }
 
-  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) {
-    val startAt = LocalDateTime.now().plus(delay, unit.toChronoUnit())
-    log.info("${job.name} will start at $startAt and run every $period $unit")
-    workerPool.scheduleAtFixedRate({ runInTransaction(job, UNDISPATCHED) }, delay, period, unit)
+  @Deprecated("Use version with Duration parameters instead", ReplaceWith("schedule(job, period.milliseconds, delay.milliseconds)"))
+  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) = schedule(job, period.milliseconds, delay.milliseconds)
+
+  open fun schedule(job: Job, period: Duration, delay: Duration = period) {
+    val startAt = LocalDateTime.now().plus(delay.toJavaDuration())
+    log.info("${job.name} will start at $startAt and run every $period")
+    workerPool.scheduleAtFixedRate({ runInTransaction(job, UNDISPATCHED) }, delay.inWholeMilliseconds, period.inWholeMilliseconds, MILLISECONDS)
   }
 
-  open fun schedule(job: Job, period: Duration, delay: Duration = period) =
-    schedule(job, delay.inWholeMilliseconds, period.inWholeMilliseconds, MILLISECONDS)
-
-  fun scheduleDaily(job: Job, delayMinutes: Long = (Math.random() * 10).toLong()) =
-    schedule(job, 24.hours, delayMinutes.minutes)
+  fun scheduleDaily(job: Job, delay: Duration = (Math.random() * 10).toLong().minutes) =
+    schedule(job, 24.hours, delay)
 
   fun scheduleDaily(job: Job, vararg at: LocalTime) {
     val now = LocalDateTime.now()
     for (time in at) {
       val todayAt = time.atDate(now.toLocalDate())
       val runAt = if (todayAt.isAfter(now)) todayAt else todayAt.plusDays(1)
-      scheduleDaily(job, between(now, runAt).toMinutes())
+      scheduleDaily(job, between(now, runAt).toKotlinDuration())
     }
   }
 
