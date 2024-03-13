@@ -11,8 +11,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.util.concurrent.TimeUnit.SECONDS
 import javax.sql.DataSource
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class JobRunnerTest {
   val db = mockk<DataSource>()
@@ -38,12 +39,12 @@ class JobRunnerTest {
   }
 
   @Test fun schedule() {
-    runner.schedule(job, 10, 20, SECONDS)
-    verify { executor.scheduleAtFixedRate(any(), 10, 20, SECONDS) }
+    runner.schedule(job, 20.seconds, 10.seconds)
+    verify { executor.scheduleAtFixedRate(any(), 10000, 20000, MILLISECONDS) }
   }
 
   @Test fun `scheduleDaily with delay`() {
-    runner.scheduleDaily(job, delayMinutes = 10)
+    runner.scheduleDaily(job, delay = 10.minutes)
     verify { executor.scheduleAtFixedRate(any(), 10 * 60 * 1000, 86400000, MILLISECONDS) }
   }
 
