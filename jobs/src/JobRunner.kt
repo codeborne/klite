@@ -12,6 +12,7 @@ import java.time.Duration.between
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -84,8 +85,8 @@ open class JobRunner(
   open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) = schedule(job, period.milliseconds, delay.milliseconds)
 
   open fun schedule(job: Job, period: Duration, delay: Duration = period) {
-    val startAt = LocalDateTime.now().plus(delay.toJavaDuration())
-    log.info("${job.name} will start at $startAt and run every $period")
+    val startAt = LocalDateTime.now().plus(delay.toJavaDuration()).truncatedTo(ChronoUnit.SECONDS)
+    log.info("${job.name} will start at ${startAt.toString().replace("T", " ")} and run every $period")
     workerPool.scheduleAtFixedRate({ runInTransaction(job, UNDISPATCHED) }, delay.inWholeMilliseconds, period.inWholeMilliseconds, MILLISECONDS)
   }
 
