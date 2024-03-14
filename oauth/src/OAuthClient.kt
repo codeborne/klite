@@ -51,6 +51,8 @@ abstract class OAuthClient(scope: String, authUrl: String, tokenUrl: String, pro
   protected suspend fun fetchProfileResponse(token: OAuthTokenResponse): JsonNode = http.get(profileUrl) { authBearer(token.accessToken) }
 
   abstract suspend fun profile(token: OAuthTokenResponse, exchange: HttpExchange): UserProfile
+
+  protected fun JsonNode.getLocale(key: String = "locale") = getOrNull<String>(key)?.let { Locale.forLanguageTag(it) }
 }
 
 /** https://console.cloud.google.com/apis/credentials */
@@ -66,7 +68,7 @@ class GoogleOAuthClient(httpClient: HttpClient): OAuthClient(
     val email = Email(res.getString("email"))
     return UserProfile(provider, res.getString("id"), email,
       res.getOrNull("givenName") ?: email.value.substringBefore("@").capitalize(), res.getOrNull("familyName") ?: "",
-      res.getOrNull<String>("picture")?.let { URI(it) }, Locale.forLanguageTag(res.getString("locale")))
+      res.getOrNull<String>("picture")?.let { URI(it) }, res.getLocale())
   }
 }
 
@@ -82,7 +84,7 @@ class MicrosoftOAuthClient(httpClient: HttpClient): OAuthClient(
     val res = fetchProfileResponse(token)
     val email = res.getOrNull("mail") ?: res.getOrNull<String>("userPrincipalName") ?: error("Cannot obtain user's email")
     return UserProfile(provider, res.getString("id"), Email(email), res.getOrNull("givenName") ?: email.substringBefore("@").capitalize(), res.getOrNull("surname") ?: "",
-      locale = Locale.forLanguageTag(res.getString("preferredLanguage")))
+      locale = res.getLocale("preferredLanguage"))
   }
 }
 
@@ -102,7 +104,7 @@ class FacebookOAuthClient(httpClient: HttpClient): OAuthClient(
     return UserProfile(provider, res.getString("id"),
       email, res.getOrNull("firstName") ?: email.value.substringBefore("@").capitalize(), res.getOrNull("lastName") ?: "",
       avatarData?.getOrNull<String>("url")?.takeIf { avatarExists }?.let { URI(it) },
-      Locale.forLanguageTag(res.getString("locale")))
+      res.getLocale())
   }
 }
 

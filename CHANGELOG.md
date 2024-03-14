@@ -4,7 +4,7 @@
 * core: Registry and TypedHttpClient moved from server module, so that JsonHttpClient can be used without the server
 * server: HttpExchange.path<>() and query<>() now allow for automatic String conversion into value types
 * jobs: deprecated non-Duration schedule() methods
-* oauth: support for missing first or last names
+* oauth: support for missing first or last names or locale
 
 # 1.6.6
 * core: Converter will force initialize companion objects to better support `init { Converter.use {...} }`
