@@ -22,12 +22,11 @@ open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
     }
   }
 
-  protected fun findUsefulStackTraceEnd(it: Array<out StackTraceElement>): Int {
-    var until = it.lastIndex
-    for (i in until downTo 0) {
-      if (it[i].className.run { startsWith("klite") || until > 0 && startsWith("kotlinx.coroutines") }) until = i
-      else if (until > 0) break
-    }
-    return until
+  protected fun findUsefulStackTraceEnd(trace: Array<out StackTraceElement>): Int {
+    var until = trace.lastIndex
+    val predicate: StackTraceElement.() -> Boolean = { className.run { startsWith("klite") || contains(".coroutines.") } }
+    while (until > 0 && !trace[until].predicate()) until--
+    while (until > 0 && trace[until].predicate()) until--
+    return if (until < trace.lastIndex) until + 1 else until
   }
 }
