@@ -54,7 +54,7 @@ class ConverterTest {
     expect(Converter.from<Int>("123")).toEqual(123)
     expect(Converter.from<Long>("123")).toEqual(123L)
     expect(Converter.from<Email>("tere@tere.ee")).toEqual(Email("tere@tere.ee"))
-    expect(Converter.from<Phone>("+37256639535")).toEqual(Phone("+37256639535"))
+    expect(Converter.from<Phone>("+3726123456")).toEqual(Phone("+3726123456"))
   }
 
   @Test fun `no-auto creation of data`() {
