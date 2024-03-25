@@ -2,6 +2,7 @@ package klite.jdbc
 
 import klite.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import org.postgresql.PGConnection
 import org.postgresql.PGNotification
 import java.sql.Connection
@@ -10,16 +11,19 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class PostgresNotificationsListener<T: Any>(vararg channels: T): Extension {
-  val channels = channels.associate { it.toString() to Channel<String?>() }
+class PostgresNotifier<K: Any>(val channels: Map<K, Channel<String>>): Extension {
+  constructor(channels: Iterable<K>): this(channels.associateWith { Channel<String>(UNLIMITED) })
+  private lateinit var db: DataSource
 
-  suspend fun receive(channel: T) = channels[channel.toString()]!!.receive()
+  fun send(channel: K, payload: String = "") = db.notify(channel.toString(), payload)
+  suspend fun receive(channel: K) = channels[channel]!!.receive()
 
   override fun install(server: Server) = server.run {
-    val db = require<DataSource>()
+    db = require<DataSource>()
     val listener = thread(name = this::class.simpleName) {
-      db.readNotificationsLoop(channels)
+      db.readNotificationsLoop(channels.mapKeys { it.toString() })
     }
+    register(this)
     server.onStop { listener.interrupt() }
   }
 }
@@ -31,7 +35,7 @@ fun DataSource.notify(channel: String, payload: String = "") = withStatement("se
 }
 
 /** Dedicate a separate thread to listen to Postgres notifications and send them to the corresponding channels. */
-fun DataSource.readNotificationsLoop(channels: Map<String, Channel<String?>>, timeout: Duration = 10.seconds) = withConnection {
+fun DataSource.readNotificationsLoop(channels: Map<String, Channel<String>>, timeout: Duration = 10.seconds) = withConnection {
   listen(channels)
   while (!Thread.interrupted()) {
     pgNotifications(timeout).forEach {
@@ -40,7 +44,7 @@ fun DataSource.readNotificationsLoop(channels: Map<String, Channel<String?>>, ti
   }
 }
 
-fun Connection.listen(channels: Map<String, Channel<String?>>) = createStatement().use { s ->
+fun Connection.listen(channels: Map<String, Channel<String>>) = createStatement().use { s ->
   channels.keys.forEach { s.execute("listen $it") }
 }
 

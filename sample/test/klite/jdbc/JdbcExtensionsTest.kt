@@ -7,6 +7,7 @@ import klite.jdbc.*
 import klite.sample.TempTableDBTest
 import klite.toValues
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -92,13 +93,15 @@ open class JdbcExtensionsTest: TempTableDBTest() {
   }
 
   @Test fun `postgres notify and listen`() = runTest {
-    val channel = Channel<String?>()
+    val channel = Channel<String>(UNLIMITED)
     val reader = thread {
       db.readNotificationsLoop(mapOf("hello" to channel), 100.milliseconds)
     }
     delay(100)
+    db.notify("hello")
     db.notify("hello", "world")
     Transaction.current()!!.commit()
+    expect(channel.receive()).toEqual("")
     expect(channel.receive()).toEqual("world")
     reader.interrupt()
     reader.join()
