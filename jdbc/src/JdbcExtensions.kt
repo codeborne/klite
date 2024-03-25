@@ -23,6 +23,8 @@ typealias ColValue = Pair<Column, Any?>
 typealias Where = Collection<ColValue>
 typealias Values = Map<out Column, *>
 
+// TODO: return streaming sequences instead of in-memory Lists, be able to convert sequence to json
+
 fun <R, ID> DataSource.select(@Language("SQL", prefix = selectFrom) table: String, id: ID, column: String = "id", suffix: String = "", mapper: Mapper<R>): R =
   select(table, listOf(column to id), suffix, ArrayList(1), mapper).firstOrNull() ?: throw NoSuchElementException("${table.substringBefore(" ")}:$id not found")
 

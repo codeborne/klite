@@ -15,6 +15,7 @@ import java.math.BigDecimal.ZERO
 import java.util.*
 import java.util.UUID.randomUUID
 import kotlin.concurrent.thread
+import kotlin.time.Duration.Companion.milliseconds
 
 open class JdbcExtensionsTest: TempTableDBTest() {
   @Test fun `insert & query`() {
@@ -93,10 +94,10 @@ open class JdbcExtensionsTest: TempTableDBTest() {
   @Test fun `postgres notify and listen`() = runTest {
     val channel = Channel<String?>()
     val reader = thread {
-      db.readNotificationsLoop(mapOf("hello" to channel), checkTimeoutMs = 100)
+      db.readNotificationsLoop(mapOf("hello" to channel), 100.milliseconds)
     }
     delay(100)
-    db.sendNotification("hello", "world")
+    db.notify("hello", "world")
     Transaction.current()!!.commit()
     expect(channel.receive()).toEqual("world")
     reader.interrupt()
