@@ -10,7 +10,7 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class PostgresNotificationsListener(channels: Set<String>): Extension {
+class PostgresNotificationsListener(vararg channels: String): Extension {
   val channels = channels.associateWith { Channel<String?>() }
 
   suspend fun receive(channel: String) = channels[channel]!!.receive()
