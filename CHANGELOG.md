@@ -6,6 +6,7 @@
 * server: Browser class better detects various iOS browsers that run on Apple WebKit
 * jobs: deprecated non-Duration schedule() methods
 * oauth: support for missing first or last names or locale
+* jdbc: [initial support](jdbc/src/PostgresNotifications.kt) for Postgres listen/notify
 * slf4j: fix length optimization of stack traces in StackTraceOptimizingLogger
 
 # 1.6.6

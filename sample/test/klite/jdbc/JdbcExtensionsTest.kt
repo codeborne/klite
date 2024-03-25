@@ -6,11 +6,15 @@ import klite.d
 import klite.jdbc.*
 import klite.sample.TempTableDBTest
 import klite.toValues
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
 import java.util.*
 import java.util.UUID.randomUUID
+import kotlin.concurrent.thread
 
 open class JdbcExtensionsTest: TempTableDBTest() {
   @Test fun `insert & query`() {
@@ -84,6 +88,19 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
     db.delete(table, "world" to 39)
     expect { db.select(table, data.id) { } }.toThrow<NoSuchElementException>()
+  }
+
+  @Test fun `postgres notify and listen`() = runTest {
+    val channel = Channel<String?>()
+    val reader = thread {
+      db.readNotificationsLoop(mapOf("hello" to channel), checkTimeoutMs = 100)
+    }
+    delay(100)
+    db.sendNotification("hello", "world")
+    Transaction.current()!!.commit()
+    expect(channel.receive()).toEqual("world")
+    reader.interrupt()
+    reader.join()
   }
 
   data class SomeData(val hello: String, val world: Int?, val id: UUID = randomUUID())
