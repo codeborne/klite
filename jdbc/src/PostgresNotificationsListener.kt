@@ -1,14 +1,28 @@
 package klite.jdbc
 
-import klite.logger
-import klite.warn
+import klite.*
 import kotlinx.coroutines.channels.Channel
 import org.postgresql.PGConnection
 import org.postgresql.PGNotification
 import java.sql.Connection
 import javax.sql.DataSource
+import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+
+class PostgresNotificationsListener(channels: Set<String>): Extension {
+  val channels = channels.associateWith { Channel<String?>() }
+
+  suspend fun receive(channel: String) = channels[channel]!!.receive()
+
+  override fun install(server: Server) = server.run {
+    val db = require<DataSource>()
+    val listener = thread(name = this::class.simpleName) {
+      db.readNotificationsLoop(channels)
+    }
+    server.onStop { listener.interrupt() }
+  }
+}
 
 /** Send Postgres notification to the specified channel. Delivered after commit */
 fun DataSource.notify(channel: String, payload: String = "") = withStatement("select pg_notify(?, ?)") {
