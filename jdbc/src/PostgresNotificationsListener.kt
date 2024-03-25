@@ -10,10 +10,10 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class PostgresNotificationsListener(vararg channels: String): Extension {
-  val channels = channels.associateWith { Channel<String?>() }
+class PostgresNotificationsListener<T: Any>(vararg channels: T): Extension {
+  val channels = channels.associate { it.toString() to Channel<String?>() }
 
-  suspend fun receive(channel: String) = channels[channel]!!.receive()
+  suspend fun receive(channel: T) = channels[channel.toString()]!!.receive()
 
   override fun install(server: Server) = server.run {
     val db = require<DataSource>()
