@@ -49,8 +49,8 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
 
   open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table.id", if (forUpdate) "for update" else "") { mapper() }
   open fun list(vararg where: PropValue<E>?, order: String = defaultOrder): List<E> =
-    db.select(selectFrom, where.filterNotNull(), order) { mapper() }
-  open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull()
+    db.select(selectFrom, where.filterNotNull(), order) { mapper() } // TODO: rename order to suffix
+  open fun by(vararg where: PropValue<E>?): E? = list(*where).firstOrNull() // TODO: add suffix
   open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
 
   open fun save(entity: E): Int {

@@ -95,7 +95,7 @@ open class JdbcExtensionsTest: TempTableDBTest() {
   @Test fun `postgres notify and listen`() = runTest {
     val channel = Channel<String>(UNLIMITED)
     val reader = thread {
-      db.readNotificationsLoop(mapOf("hello" to channel), 100.milliseconds)
+      db.consumeNotifications(setOf("hello"), 100.milliseconds) { channel.trySend(it.parameter) }
     }
     delay(100)
     db.notify("hello")
