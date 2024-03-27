@@ -10,5 +10,6 @@ fun detectBrowser(userAgent: String?) = userAgent?.run {
 
   (if (contains("Mobile")) "Mobile/" else "") + (
     detect("Edg") ?: detect("Chrome") ?: detect("Firefox") ?: detect("Trident") ?: detect("MSIE") ?: detect("iOS") ?:
-    if (contains("Safari")) detect("Version")?.replace("Version", "Safari") else split(' ', ';').find { it.contains("bot") } ?: this)
+    if (contains("Safari")) detect("Version")?.replace("Version", "Safari")
+    else detect("AppleWebKit") ?: split(' ', ';').find { it.contains("bot") } ?: this)
 }
