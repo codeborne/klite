@@ -34,11 +34,13 @@ open class ErrorHandler {
 
   fun on(e: KClass<out Throwable>, statusCode: StatusCode) { statusCodes[e] = statusCode }
 
+  private val ioErrorsToSkip = setOf("Broken pipe", "Connection reset", "Operation timed out")
+
   fun handle(exchange: HttpExchange, e: Throwable) {
     exchange.failure = e
     if (!exchange.isResponseStarted) toResponse(exchange, e).let {
       if (it.statusCode.bodyAllowed) exchange.render(it.statusCode, it) else exchange.send(it.statusCode)
-    } else if (e.message == null || e.message!!.let { "Broken pipe" !in it && "Connection reset" !in it })
+    } else if (e.message == null || e.message !in ioErrorsToSkip)
       log.error("Error after headers sent", e)
   }
 
