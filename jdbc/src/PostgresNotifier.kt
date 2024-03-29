@@ -14,6 +14,7 @@ import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+@Deprecated("Experimental", level = DeprecationLevel.WARNING)
 class PostgresNotifier<K: Any>(val events: Iterable<K>): Extension {
   private val channels = events.associate { it.toString() to Channel<String>(UNLIMITED) }
   private lateinit var db: DataSource
