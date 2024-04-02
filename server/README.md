@@ -70,9 +70,9 @@ a simple way to register and require both Klite components and repositories/serv
 `DependencyInjectingRegistry` is used by default and can create any classes by recursively creating their constructor
 arguments (dependencies).
 
-You can use `register<MyInterface>(MyImplementation::class)` or `register<MyImplementation>()` to register a specific implementation that needs to be used for an interface.
+You can use `register<MyInterface>(MyImplementation::class)` or `register<MyImplementation>()` to register a specific implementation that needs to be used for an interface. Otherwise, calling `require<MyClass>()` will try to auto-create MyClass and all its dependencies, if any.
 
-See [it's tests](test/klite/DependencyInjectingRegistry.kt) for usage examples.
+See [it's tests](test/klite/DependencyInjectingRegistryTest.kt) for usage examples.
 
 ## Decorators
 
