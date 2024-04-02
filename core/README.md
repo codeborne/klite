@@ -7,3 +7,4 @@ Some core concepts that can be useful without [klite-server](../server). Depende
 * [Logger](src/Logger.kt) - convenient extensions for JDK System.Logger
 * [toValues/create](src/Values.kt) - functions for conversion of objects to maps and back; can be used for DTO mapping, but also jdbc/json/etc
 * [Decimal](src/Decimal.kt) - an alternative for BigDecimal for monetary amounts
+* [Registry/DependencyInjectingRegistry](src/Registry.kt) - simple registry of class instances and Dependency Injection

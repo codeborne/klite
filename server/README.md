@@ -62,13 +62,17 @@ For SPA client-side routing support, create AssetsHandler with `useIndexForUnkno
 
 Use `Config.fromEnvFile()` if you want to load default config from an `.env`. This is useful for local development.
 
-## Registry
+## Registry (and Dependency Injection)
 
 [Registry](../core/src/Registry.kt) and it's default implementation - `DependencyInjectingRegistry` - provide
 a simple way to register and require both Klite components and repositories/services of your application.
 
 `DependencyInjectingRegistry` is used by default and can create any classes by recursively creating their constructor
 arguments (dependencies).
+
+You can use `register<MyInterface>(MyImplementation::class)` or `register<MyImplementation>()` to register a specific implementation that needs to be used for an interface.
+
+See [it's tests](test/klite/DependencyInjectingRegistry.kt) for usage examples.
 
 ## Decorators
 

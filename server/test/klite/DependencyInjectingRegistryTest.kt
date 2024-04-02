@@ -18,7 +18,7 @@ class DependencyInjectingRegistryTest {
     expect(registry.optional<BodyParser>()).toBeAnInstanceOf<TextBodyParser>()
   }
 
-  @Test fun `use existing instance even for arguments with default values`() {
+  @Test fun `use registered instance even for arguments having default values`() {
     class Subject(val nonDefault: BodyParser = TextBodyParser(), val default: FormUrlEncodedParser = FormUrlEncodedParser())
 
     val registeredParser = TextBodyParser()
