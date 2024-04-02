@@ -1,3 +1,6 @@
+# Unreleased
+* core: MutableRegistry.create() is marked protected, as it should not be used directly. Use `require<MyClass>()` instead.
+
 # 1.6.7
 * core: Converter can now force initialize type arguments' companion objects
 * core: Decimal.absoluteValue and Decimal.sign introduced, like other numeric types in Kotlin
