@@ -27,7 +27,7 @@ open class ConfigDataSource(
   }
 
   init {
-    logger().info("Connecting to $url${user?.let { ", user: $user" }}")
+    logger().info("Connecting to $url${user?.let { ", user: $user" } ?: ""}")
   }
 
   override fun getConnection(): Connection = DriverManager.getConnection(url, props)
