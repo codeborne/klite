@@ -26,6 +26,11 @@ class ErrorHandlerTest {
       .toEqual(ErrorResponse(BadRequest, "hello is required"))
   }
 
+  @Test fun `subclassed exception`() {
+    expect(errorHandler.toResponse(exchange, SubIllegalArgumentException("Something happened")))
+      .toEqual(ErrorResponse(BadRequest, "Something happened"))
+  }
+
   @Test fun `no such element`() {
     expect(errorHandler.toResponse(exchange, NoSuchElementException("List is empty."))).toEqual(ErrorResponse(NotFound, null))
     expect(errorHandler.toResponse(exchange, NoSuchElementException("Custom message"))).toEqual(ErrorResponse(NotFound, "Custom message"))
@@ -57,4 +62,6 @@ class ErrorHandlerTest {
       exchange.render(InternalServerError, ErrorResponse(InternalServerError, "Any exception"))
     }
   }
+
+  class SubIllegalArgumentException(message: String): IllegalArgumentException(message)
 }

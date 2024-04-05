@@ -5,6 +5,7 @@ import klite.StatusCode.Companion.InternalServerError
 import klite.StatusCode.Companion.NotFound
 import klite.StatusCode.Companion.UnprocessableEntity
 import kotlin.reflect.KClass
+import kotlin.reflect.full.superclasses
 
 open class BusinessException(messageKey: String, cause: Throwable? = null): Exception(messageKey, cause)
 
@@ -49,15 +50,19 @@ open class ErrorHandler {
     if (e is StatusCodeException) return ErrorResponse(e.statusCode, e.message)
 
     // TODO: look for subclasses
-    handlers[e::class]?.let { handler ->
+    handlers.find(e::class)?.let { handler ->
       exchange.handler(e)?.let { return it }
     }
-    statusCodes[e::class]?.let {
+    statusCodes.find(e::class)?.let {
       log.error(e)
       return ErrorResponse(it, e.message)
     }
     return unhandled(e)
   }
+
+  @Suppress("UNCHECKED_CAST")
+  private fun <T> Map<KClass<out Throwable>, T>.find(cls: KClass<out Throwable>): T? =
+    get(cls) ?: cls.superclasses.firstNotNullOfOrNull { find(it as KClass<out Throwable>) }
 
   open fun unhandled(e: Throwable): ErrorResponse {
     log.error("Unhandled exception", e)
