@@ -1,6 +1,6 @@
 # Unreleased
 * core: MutableRegistry.create() is marked protected, as it should not be used directly. Use `require<MyClass>()` instead.
-* server: ErrorHandler now supports finding of handlers using exception subclasses
+* server: ErrorHandler now supports finding of handlers using exception super classes
 
 # 1.6.7
 * core: Converter can now force initialize type arguments' companion objects
