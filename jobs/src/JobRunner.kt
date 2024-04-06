@@ -81,8 +81,8 @@ open class JobRunner(
 
   open fun runOnce(job: Job) = workerPool.submit { runInTransaction(job, UNDISPATCHED) }
 
-  @Deprecated("Use version with Duration parameters instead", ReplaceWith("schedule(job, period.milliseconds, delay.milliseconds)"))
-  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) = schedule(job, period.milliseconds, delay.milliseconds)
+  @Deprecated("Use version with Duration parameters instead", ReplaceWith("schedule(job, period.seconds, delay.seconds)"))
+  open fun schedule(job: Job, delay: Long, period: Long, unit: TimeUnit) = schedule(job, unit.toMillis(period).milliseconds, unit.toMillis(delay).milliseconds)
 
   open fun schedule(job: Job, period: Duration, delay: Duration = period) {
     val startAt = LocalDateTime.now().plus(delay.toJavaDuration()).truncatedTo(ChronoUnit.SECONDS)

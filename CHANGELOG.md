@@ -1,5 +1,6 @@
-# Unreleased
+# 1.6.8
 * server: ErrorHandler now supports finding of handlers using exception super classes
+* jobs: fix deprecated schedule() method implementation
 
 # 1.6.7
 * core: Converter can now force initialize type arguments' companion objects
