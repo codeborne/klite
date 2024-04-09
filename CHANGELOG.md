@@ -1,3 +1,6 @@
+# Unreleased
+* server: errors.on<SomeException>(StatusCode) convenience reified function added
+
 # 1.6.8
 * server: ErrorHandler now supports finding of handlers using exception super classes
 * jobs: fix deprecated schedule() method implementation

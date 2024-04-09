@@ -34,6 +34,7 @@ open class ErrorHandler {
   inline fun <reified T: Throwable> on(noinline handler: ThrowableHandler<T>) = on(T::class, handler)
 
   fun on(e: KClass<out Throwable>, statusCode: StatusCode) { statusCodes[e] = statusCode }
+  inline fun <reified T: Throwable> on(statusCode: StatusCode) { on(T::class, statusCode) }
 
   private val ioErrorsToSkip = setOf("Broken pipe", "Connection reset", "Operation timed out")
 
