@@ -4,6 +4,7 @@ import klite.error
 import klite.logger
 import kotlinx.coroutines.ThreadContextElement
 import java.sql.Connection
+import java.sql.SQLException
 import javax.sql.DataSource
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
@@ -32,6 +33,8 @@ class Transaction(private val db: DataSource): AutoCloseable {
           autoCommit = true
         }
       }
+    } catch (e: SQLException) {
+      log.error("Failed to ${if (commit) "commit" else "rollback"}", e)
     } finally {
       try { conn?.close() } catch (e: Exception) { log.error("Failed to close $conn: $e") }
       conn = null
