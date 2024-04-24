@@ -15,14 +15,20 @@ open class ConfigDataSource(
   val url: String = Config["DB_URL"],
   val user: String? = Config.optional("DB_USER"),
   pass: String? = Config.optional("DB_PASS"),
-  val isReadOnly: Boolean = Config.optional("DB_READONLY") == "true"
+  val isReadOnly: Boolean = Config.optional("DB_READONLY") == "true",
+  val props: Properties = Properties()
 ): DataSource {
-  private val props = Properties().apply {
-    user?.let { put("user", it) }
-    pass?.let { put("password", it) }
+  init {
+    user?.let { props["user"] = it }
+    pass?.let { props["password"] = it }
+    if (url.startsWith("jdbc:postgresql") && "autosave" !in props) {
+      // handle "cached plan must not change result type" Postgres error if schema changes
+      // https://stackoverflow.com/questions/2783813/postgres-error-cached-plan-must-not-change-result-type
+      props["autosave"] = "conservative"
+    }
     if (isReadOnly) {
-      put("readOnly", "true")
-      put("readOnlyMode", "always")
+      props["readOnly"] = "true"
+      props["readOnlyMode"] = "always"
     }
   }
 

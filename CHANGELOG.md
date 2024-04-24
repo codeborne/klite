@@ -1,6 +1,7 @@
 # Unreleased
 * server: errors.on<SomeException>(StatusCode) convenience reified function added
 * jdbc: BaseCrudRepository.list() and by() now both have the suffix parameter
+* jdbc: handle Postgres "cached plan must not change result type" exception by enabling autosave=conservative by default
 
 # 1.6.8
 * server: ErrorHandler now supports finding of handlers using exception super classes
