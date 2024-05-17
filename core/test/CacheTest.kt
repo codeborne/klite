@@ -27,7 +27,7 @@ class CacheTest {
     expect(cache.isEmpty()).toEqual(true)
 
     expect(cache.getOrSet("key") { data }).toBeTheInstance(data)
-    runTest { expect(cache.getOrSet("key") { delay(100); data }).toBeTheInstance(data) }
+    runTest { expect(cache.getOrSet("key") { delay(11); data }).toBeTheInstance(data) }
     expect(cache["key"]).toBeTheInstance(data)
   }}
 
