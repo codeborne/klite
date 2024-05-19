@@ -1,4 +1,5 @@
 # Unreleased
+* core: logger(name) is now accessible without a class instance context
 * server: errors.on<SomeException>(StatusCode) convenience reified function added
 * jdbc: BaseCrudRepository.list() and by() now both have the suffix parameter
 * jdbc: handle Postgres "cached plan must not change result type" exception by enabling autosave=conservative by default
