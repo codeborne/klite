@@ -3,6 +3,7 @@
 [![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite) [![Build & Test](https://github.com/codeborne/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/codeborne/klite/actions/workflows/ci.yml)
 
 Klite: a very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
+Probably the most sustainable JVM web framework (low resource usage and CO₂ emissions).
 
 Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Comparisons.md).
 
@@ -14,7 +15,6 @@ See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
 
 ## Goals
 
-* Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
 * Minimal amount of code
   * Simple to maintain & change
   * Performance is also important, but simplicity is preferred
@@ -24,6 +24,7 @@ See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
   * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on used modules
   * Production applications can run with as low as 50Mb of heap memory, suitable for very cheap plans at Fly.io or Heroku
 * 12-factor apps by default
+* Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
