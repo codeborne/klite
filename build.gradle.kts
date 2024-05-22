@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -46,10 +47,10 @@ subprojects {
   java.sourceCompatibility = JavaVersion.VERSION_11
 
   tasks.withType<KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "11"
-      freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
-      freeCompilerArgs += "-Xcontext-receivers"
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_11)
+      freeCompilerArgs.add("-opt-in=kotlin.ExperimentalStdlibApi")
+      freeCompilerArgs.add("-Xcontext-receivers")
     }
   }
 
