@@ -38,7 +38,7 @@ class Router(
   parsers: List<BodyParser>
 ): RouterConfig(decorators, renderers, parsers), Registry by registry {
   private val log = logger()
-  val routes = mutableListOf<Route>() // TODO: after Kotlin 2, use immutable getter and mutable setter
+  val routes: List<Route> field = mutableListOf<Route>()
 
   internal fun route(exchange: HttpExchange): Route? {
     val suffix = exchange.path.removePrefix(prefix)

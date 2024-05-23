@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -49,6 +50,7 @@ subprojects {
   tasks.withType<KotlinCompile> {
     compilerOptions {
       jvmTarget.set(JvmTarget.JVM_11)
+      languageVersion.set(KotlinVersion.KOTLIN_2_0)
       freeCompilerArgs.add("-opt-in=kotlin.ExperimentalStdlibApi")
       freeCompilerArgs.add("-Xcontext-receivers")
     }
@@ -66,6 +68,12 @@ subprojects {
 
   java {
     withSourcesJar()
+  }
+
+  kotlin {
+    sourceSets.all {
+      languageSettings.enableLanguageFeature("ExplicitBackingFields")
+    }
   }
 
   tasks.named<Jar>("sourcesJar") {
