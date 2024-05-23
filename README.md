@@ -24,11 +24,12 @@ See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
   * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on used modules
   * Production applications can run with as low as 50Mb of heap memory, suitable for very cheap plans at Fly.io or Heroku
 * 12-factor apps by default
-* Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
 * Most behaviour can be overridden if necessary
 * Both route builder and annotated classes
 * Very easy to do simple things, e.g.
   `@GET suspend fun route() = provider.fetchData()`
+* Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
+* Shared [type-safe value classes](core/src/Types.kt) across http parameters, database columns and json fields
 * Most app code will not depend on the framework, easy to switch
 * Not much need for documentation - the source code is short and readable.
 
