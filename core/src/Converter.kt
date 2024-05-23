@@ -21,7 +21,7 @@ private class NoConverter<T: Any>(val type: KClass<T>): FromStringConverter<T> {
 /**
  * Converts Strings to value types.
  * Supports enums, constructor invocation, parse() methods (e.g. java.time).
- * Can register custom converters with `use` method.
+ * Can register custom converters with `use` method or extend [StringValue] for automatic handling.
  * Note: @JvmInline classes are converted by default, but Kotlin data are not; register them with `use` explicitly if needed.
  */
 @Suppress("UNCHECKED_CAST")

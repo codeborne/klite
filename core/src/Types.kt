@@ -1,6 +1,6 @@
 package klite
 
-/** Base class for String-based normalized value types */
+/** Base class for String-based normalized value types, handled automatically by [Converter] */
 abstract class StringValue(val value: String) {
   override fun toString() = value
   override fun equals(other: Any?) = other != null && javaClass == other.javaClass && value == (other as StringValue).value
