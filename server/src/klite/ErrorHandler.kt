@@ -12,7 +12,7 @@ open class BusinessException(messageKey: String, cause: Throwable? = null): Exce
 typealias ThrowableHandler<T> = HttpExchange.(e: T) -> ErrorResponse?
 
 open class ErrorHandler {
-  private val log = logger(ErrorHandler::class.java.name)
+  private val log = logger()
   private val handlers = mutableMapOf<KClass<out Throwable>, ThrowableHandler<Throwable>>()
   private val statusCodes = mutableMapOf<KClass<out Throwable>, StatusCode>(
     IllegalArgumentException::class to BadRequest,
