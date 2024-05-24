@@ -12,7 +12,7 @@ open class BusinessException(messageKey: String, cause: Throwable? = null): Exce
 typealias ThrowableHandler<T> = HttpExchange.(e: T) -> ErrorResponse?
 
 open class ErrorHandler {
-  private val log = logger(ErrorHandler::class.qualifiedName!!)
+  private val log = logger(ErrorHandler::class.java.name)
   private val handlers = mutableMapOf<KClass<out Throwable>, ThrowableHandler<Throwable>>()
   private val statusCodes = mutableMapOf<KClass<out Throwable>, StatusCode>(
     IllegalArgumentException::class to BadRequest,
@@ -72,6 +72,6 @@ open class ErrorHandler {
 }
 
 data class ErrorResponse(val statusCode: StatusCode, val message: String?) {
-  val reason: String = StatusCode.reasons[statusCode] ?: ""
+  val reason: String = ""//StatusCode.reasons[statusCode] ?: ""
   override fun toString() = "${statusCode.value} $reason\n${message ?: ""}"
 }
