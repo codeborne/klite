@@ -1,7 +1,5 @@
 package klite
 
-import kotlin.reflect.full.memberProperties
-
 @JvmInline value class StatusCode(val value: Int) {
   companion object {
     val OK = StatusCode(200)
@@ -37,8 +35,10 @@ import kotlin.reflect.full.memberProperties
     val GatewayTimeout = StatusCode(504)
     val InsufficientStorage = StatusCode(507)
 
-    val reasons = Companion::class.memberProperties.associate {
-      it.get(StatusCode) to it.name.replace("[A-Z]".toRegex(), " $0").trim()
+    val reasons by lazy {
+      publicProperties.associate {
+        it.get(StatusCode) to it.name.replace("[A-Z]".toRegex(), " $0").trim()
+      }
     }
   }
 
