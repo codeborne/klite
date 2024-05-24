@@ -12,7 +12,7 @@ class KliteLoggerFactoryTest {
   }
 
   @Test fun `custom class`() {
-    expect(factory.findConstructor(CustomLogger::class.qualifiedName!!).call("")).toBeAnInstanceOf<CustomLogger>()
+    expect(factory.findConstructor(CustomLogger::class.qualifiedName!!).newInstance("")).toBeAnInstanceOf<CustomLogger>()
   }
 }
 
