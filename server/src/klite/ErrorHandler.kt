@@ -72,6 +72,6 @@ open class ErrorHandler {
 }
 
 data class ErrorResponse(val statusCode: StatusCode, val message: String?) {
-  val reason: String = ""//StatusCode.reasons[statusCode] ?: ""
+  val reason: String = statusCode.reason ?: ""
   override fun toString() = "${statusCode.value} $reason\n${message ?: ""}"
 }

@@ -43,3 +43,4 @@ class ServerIntegrationTest {
     server.stop()
   }
 }
+
