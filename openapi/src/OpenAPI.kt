@@ -17,7 +17,6 @@ import klite.RequestMethod.GET
 import klite.StatusCode.Companion.NoContent
 import klite.StatusCode.Companion.OK
 import klite.annotations.*
-import kotlinx.reflect.lite.*
 import java.net.URI
 import java.net.URL
 import java.time.*
@@ -27,6 +26,7 @@ import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
+import kotlin.reflect.full.*
 
 /**
  * Adds an /openapi endpoint to the context, listing all the routes.
