@@ -68,12 +68,6 @@ subprojects {
     withSourcesJar()
   }
 
-  kotlin {
-    sourceSets.all {
-      languageSettings.enableLanguageFeature("ExplicitBackingFields")
-    }
-  }
-
   tasks.named<Jar>("sourcesJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   }
