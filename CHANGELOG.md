@@ -2,6 +2,7 @@
 * core: logger(name) is now accessible without a class instance context
 * core: Any.logger() will now take the closest non-anonymous superclass
 * server: errors.on<SomeException>(StatusCode) convenience reified function added
+* server: AssetsHandler will now allow serving of SPA index.html even if requested directory in assets exists
 * jdbc: BaseCrudRepository.list() and by() now both have the suffix parameter
 * jdbc: handle Postgres "cached plan must not change result type" exception by enabling autosave=conservative by default
 

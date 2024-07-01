@@ -32,7 +32,7 @@ open class AssetsHandler(
       if (!file.startsWith(path)) throw ForbiddenException(exchange.path)
       if (file.isDirectory()) file /= indexFile
       if (!file.exists()) {
-        if (useIndexForUnknownPaths && !file.name.contains(".")) file = path / indexFile
+        if (useIndexForUnknownPaths && !exchange.path.contains(".")) file = path / indexFile
         else throw NotFoundException(exchange.path)
       }
       send(exchange, file)
