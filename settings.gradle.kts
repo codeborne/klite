@@ -27,7 +27,7 @@ dependencyResolutionManagement {
       library("jackson-kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").versionRef(jackson)
 
       library("hikari", "com.zaxxer:HikariCP:5.1.0")
-      library("liquibase-core", "org.liquibase:liquibase-core:4.28.0")
+      library("liquibase-core", "org.liquibase:liquibase-core:4.29.1")
       library("postgresql", "org.postgresql:postgresql:42.7.3")
     }
   }
