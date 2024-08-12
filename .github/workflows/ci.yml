@@ -17,10 +17,10 @@ jobs:
           cache: 'gradle'
 
       - run: ./gradlew jar testClasses
-      - run: cd sample && docker-compose up -d db && cd -
+      - run: cd sample && docker compose up -d db && cd -
       - run: ./gradlew test --info
-      - run: cd sample && docker-compose stop db && cd -
-      - run: cd sample && docker-compose build && cd -
+      - run: cd sample && docker compose stop db && cd -
+      - run: cd sample && docker compose build && cd -
       - run: .github/workflows/check-readme-links.sh
 
       - uses: mikepenz/gradle-dependency-submission@v0.8.6
