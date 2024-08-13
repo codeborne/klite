@@ -134,7 +134,7 @@ Then, you can register this class in the /api context:
 ```kotlin
   context("/api") {
     useOnly<JsonBody>()
-    annotated<TodoRoutes>("/todos")
+    annotated<TodoRoutes>()
   }
 ```
 
