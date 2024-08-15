@@ -3,7 +3,7 @@ rootProject.name = "klite"
 dependencyResolutionManagement {
   versionCatalogs {
     create("libs") {
-      version("kotlin", "2.0.0")
+      version("kotlin", "2.0.10")
 
       val coroutines = version("coroutines", "1.7.3")
       library("kotlinx-coroutines", "org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8").versionRef(coroutines)
