@@ -3,7 +3,7 @@ rootProject.name = "klite"
 dependencyResolutionManagement {
   versionCatalogs {
     create("libs") {
-      version("kotlin", "2.0.0")
+      version("kotlin", "2.0.20")
 
       val coroutines = version("coroutines", "1.7.3")
       library("kotlinx-coroutines", "org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8").versionRef(coroutines)
@@ -16,7 +16,7 @@ dependencyResolutionManagement {
       library("junit-api", "org.junit.jupiter", "junit-jupiter-api").versionRef(junit5)
       library("junit-engine", "org.junit.jupiter", "junit-jupiter-engine").versionRef(junit5)
       library("atrium", "ch.tutteli.atrium:atrium-fluent:1.2.0")
-      library("mockk", "io.mockk:mockk:1.13.11")
+      library("mockk", "io.mockk:mockk:1.13.12")
 
       val slf4j = version("slf4j", "2.0.9")
       library("slf4j-api", "org.slf4j", "slf4j-api").versionRef(slf4j)
