@@ -11,6 +11,7 @@ WORKDIR /app
 
 COPY --from=build /app/jre /app/jre
 COPY build/libs /app
+COPY public /app/public
 
 # Run under non-privileged user with minimal write permissions
 USER user
