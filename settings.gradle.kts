@@ -11,7 +11,7 @@ dependencyResolutionManagement {
       library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
       library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
 
-      val junit5 = version("junit", "5.11.0")
+      val junit5 = version("junit", "5.11.1")
       library("junit", "org.junit.jupiter", "junit-jupiter").versionRef(junit5)
       library("junit-api", "org.junit.jupiter", "junit-jupiter-api").versionRef(junit5)
       library("junit-engine", "org.junit.jupiter", "junit-jupiter-engine").versionRef(junit5)
@@ -26,9 +26,9 @@ dependencyResolutionManagement {
       library("jackson-jsr310", "com.fasterxml.jackson.datatype", "jackson-datatype-jsr310").versionRef(jackson)
       library("jackson-kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").versionRef(jackson)
 
-      library("hikari", "com.zaxxer:HikariCP:5.1.0")
-      library("liquibase-core", "org.liquibase:liquibase-core:4.29.1")
-      library("postgresql", "org.postgresql:postgresql:42.7.3")
+      library("hikari", "com.zaxxer:HikariCP:6.0.0")
+      library("liquibase-core", "org.liquibase:liquibase-core:4.29.2")
+      library("postgresql", "org.postgresql:postgresql:42.7.4")
     }
   }
 }
