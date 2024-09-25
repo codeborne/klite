@@ -21,7 +21,7 @@ class JsonHttpClientTest {
     retryCount = 2, retryAfter = ZERO, http = httpClient, json = kliteJsonMapper())
 
   @Test fun `logger name from stack trace`() {
-    expect(http.logger.name).toEqual(javaClass.name)
+    expect(http.logger.name).toEqual(http.javaClass.name)
   }
 
   @Test fun get() {

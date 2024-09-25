@@ -2,7 +2,6 @@ package klite.http
 
 import klite.error
 import klite.info
-import klite.logger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import java.io.IOException
@@ -32,9 +31,7 @@ open class TypedHttpClient(
   val contentType: String
 ) {
   protected var trimToLog: String.() -> String = { if (length <= maxLoggedLen) this else substring(0, maxLoggedLen) + "…" }
-  var logger = logger(Exception().stackTrace.first { it.className != TypedHttpClient::class.java.name && it.className !== javaClass.name }.className).apply {
-    if (urlPrefix.isNotEmpty()) info("Using $urlPrefix")
-  }
+  var logger = System.getLogger(this::class.java.name).apply { if (urlPrefix.isNotEmpty()) info("Using $urlPrefix") }
 
   private fun buildReq(urlSuffix: String) = HttpRequest.newBuilder().uri(URI("$urlPrefix$urlSuffix"))
     .setHeader("Content-Type", "application/json; charset=UTF-8").setHeader("Accept", "application/json")
