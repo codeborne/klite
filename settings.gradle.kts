@@ -3,13 +3,13 @@ rootProject.name = "klite"
 dependencyResolutionManagement {
   versionCatalogs {
     create("libs") {
-      version("kotlin", "2.0.10")
+      version("kotlin", "2.0.20")
 
-      val coroutines = version("coroutines", "1.8.1")
+      val coroutines = version("coroutines", "1.9.0")
       library("kotlinx-coroutines", "org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8").versionRef(coroutines)
       library("kotlinx-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").versionRef(coroutines)
-      library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
-      library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+      library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+      library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
 
       val junit5 = version("junit", "5.11.0")
       library("junit", "org.junit.jupiter", "junit-jupiter").versionRef(junit5)
