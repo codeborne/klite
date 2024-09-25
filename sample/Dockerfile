@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine as build
+FROM amazoncorretto:17-alpine3.20 as build
 
 WORKDIR /app
 RUN apk add binutils # for objcopy, needed by jlink
@@ -11,6 +11,7 @@ WORKDIR /app
 
 COPY --from=build /app/jre /app/jre
 COPY build/libs /app
+COPY public /app/public
 
 # Run under non-privileged user with minimal write permissions
 USER user
