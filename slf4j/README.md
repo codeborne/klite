@@ -10,7 +10,7 @@ The following Config properties are supported:
 
 If you want to redefine the logging format, extend [KliteLogger](src/KliteLogger.kt) and specify it's full class name as `LOGGER_CLASS`.
 
-There are two non-default implemtations available:
+There are two non-default implementations available:
 * `klite.slf4j.StackTraceOptimizingLogger` - this one will omit some lower stack trace frames that are not very useful
 * `klite.slf4j.StackTraceOptimizingJsonLogger` - this one will output exception and stack trace as a single-line json, friendly for log indexing services
 
@@ -21,4 +21,4 @@ When deploying as a 12-factor app, this is all you need - logging to standard ou
 This module uses the slf4j 2.x ServiceLoader mechanism to provide a simple logger to slf4j.
 This implementation is much lighter than `slf4j-simple.jar` and is easier to extend/configure.
 
-If you want to use another (much bigger) backend (e.g. logback), then ensure that it supports slfj4 2.x ServiceLoader and that it is before this module on classpath.
+If you want to use another (much bigger) backend (e.g. logback), then ensure that it supports slf4j 2.x ServiceLoader and that it is before this module on classpath.

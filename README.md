@@ -102,7 +102,7 @@ Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), 
     implementation("com.github.codeborne.klite:klite-jackson:$kliteVersion")
     implementation("com.github.codeborne.klite:klite-jdbc:$kliteVersion")
     testImplementation("com.github.codeborne.klite:klite-jdbc-test:$kliteVersion")
-    ...
+    // ...
   }
 ```
 
@@ -119,7 +119,7 @@ Publish to `~/.m2/repository` by running `./gradlew publishToMavenLocal`
 
 Then add `mavenLocal()` repository to your project and use Klite version of `master-SNAPSHOT`.
 
-### Depenending on the Git repository (source) directly
+### Depending on the Git repository (source) directly
 
 If there is a problem with Jitpack, then it's possible to add the following to your `settings.gradle.kts`:
 
@@ -128,7 +128,7 @@ sourceControl {
   gitRepository(java.net.URI("https://github.com/codeborne/klite.git")) {
     producesModule("com.github.codeborne.klite:server")
     producesModule("com.github.codeborne.klite:jdbc")
-    // list all subprojects you depend on in build.gradle.kts, use their unprefixed names, e.g. server, not klite-server
+    // list all subprojects you depend on in build.gradle.kts, use their un-prefixed names, e.g. server, not klite-server
   }
 }
 ```
