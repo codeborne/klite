@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: between operator introduced with open and closed ranges
+
 # 1.6.9
 * core: logger(name) is now accessible without a class instance context
 * core: Any.logger() will now take the closest non-anonymous superclass

@@ -52,6 +52,8 @@ infix fun <T, V> KProperty1<T, V>.lte(value: V) = this to SqlOp("<=", value)
 infix fun <T, V> KProperty1<T, V>.like(value: String) = this to SqlOp("like", value)
 infix fun <T, V> KProperty1<T, V>.ilike(value: String) = this to SqlOp("ilike", value)
 infix fun <T, V> KProperty1<T, V>.any(value: Any) = this to SqlExpr("?=any($name)", value)
+infix fun <T, V: Comparable<V>> KProperty1<T, V>.between(range: ClosedRange<V>) = this to Between(range.start, range.endInclusive)
+infix fun <T, V: Comparable<V>> KProperty1<T, V>.between(range: OpenEndRange<V>) = this to BetweenExcl(range.start, range.endExclusive)
 
 class Between(from: Comparable<*>, to: Comparable<*>): SqlExpr("", from, to) {
   constructor(range: ClosedRange<*>): this(range.start, range.endInclusive)
