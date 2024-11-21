@@ -22,7 +22,6 @@ open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if
   })
 }
 
-@Deprecated("use or() instead")
 class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
   override fun expr(key: String) = "(${q(key)} is null or ${q(key)} $operator ?)"
 }
