@@ -13,7 +13,7 @@ class ServerTest {
       server.start(gracefulStopDelaySec = -1)
       expect(server.boundAddress.port).toBeGreaterThan(0)
     } finally {
-      server.stop()
+      server.stop(0)
     }
   }
 
@@ -24,7 +24,7 @@ class ServerTest {
       server.start(gracefulStopDelaySec = -1)
       expect(server.boundAddress.port).toEqual(port)
     } finally {
-      server.stop()
+      server.stop(0)
     }
   }
 
