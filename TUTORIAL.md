@@ -38,7 +38,7 @@ fun main() {
 ```
 
 This will start a server on the default port 8080.
-You can change the listening IP and port by passing it as an argument to the `Server` constructor.
+You can change the listening IP and port by passing it as an argument to the `Server` constructor. Passing `InetSocketAddress(0)` will bind to any available port.
 
 ## Config
 
