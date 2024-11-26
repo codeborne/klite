@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.Language
 import java.io.PrintStream
 import java.lang.System.err
 import java.nio.file.Path
+import java.time.*
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.PathWalkOption.INCLUDE_DIRECTORIES
 import kotlin.io.path.extension
@@ -17,9 +18,18 @@ import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 
+internal const val tsDate = "\${number}-\${number}-\${number}"
+internal const val tsTime = "\${number}:\${number}:\${number}"
+
 /** Converts project data/enum/inline classes to TypeScript for front-end type-safety */
 open class TSGenerator(
-  private val customTypes: Map<String, String?> = emptyMap(),
+  private val customTypes: Map<String, String?> = mapOf(
+    LocalDate::class.qualifiedName!! to "`${tsDate}`",
+    LocalTime::class.qualifiedName!! to "`${tsTime}`",
+    LocalDateTime::class.qualifiedName!! to "`${tsDate}T${tsTime}`",
+    OffsetDateTime::class.qualifiedName!! to "`${tsDate}T${tsTime}+\${number}:\${number}`",
+    Instant::class.qualifiedName!! to "`${tsDate}T${tsTime}Z`"
+  ),
   private val typePrefix: String = "export ",
   private val out: PrintStream = System.out
 ) {
@@ -76,7 +86,7 @@ open class TSGenerator(
 
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
-    val ts = customTypes[type.toString()] ?: when {
+    val ts = customTypes[type?.toString()] ?: customTypes[(type?.classifier as KClass<*>).qualifiedName] ?: when {
       cls == null || cls == Any::class -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
