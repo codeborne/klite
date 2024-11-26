@@ -139,7 +139,7 @@ Then, you can register this class in the /api context:
 ```
 
 This will add all annotated methods from `TodoRoutes` to the context as route handlers.
-In some frameworks, this can is called "Controller" or "Resource". You free to use any name in Klite.
+In some frameworks, this can is called "Controller" or "Resource". You are free to use any name in Klite.
 
 ## Dependency injection
 
