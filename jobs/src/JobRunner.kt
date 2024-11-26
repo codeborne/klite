@@ -1,10 +1,7 @@
 package klite.jobs
 
 import klite.*
-import klite.jdbc.Transaction
-import klite.jdbc.TransactionContext
-import klite.jdbc.tryLock
-import klite.jdbc.unlock
+import klite.jdbc.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
@@ -21,6 +18,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
+import kotlin.reflect.full.hasAnnotation
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
@@ -54,7 +52,7 @@ open class JobRunner(
 
   internal fun runInTransaction(job: Job, start: CoroutineStart = DEFAULT): kotlinx.coroutines.Job {
     val threadName = ThreadNameContext("${requestIdGenerator.prefix}/${job.name}#${seq.incrementAndGet()}")
-    val tx = Transaction(db)
+    val tx = if (this::class.hasAnnotation<NoTransaction>()) null else Transaction(db)
     return launch(threadName + TransactionContext(tx), start) {
       var commit = true
       try {
@@ -69,7 +67,7 @@ open class JobRunner(
         commit = false
         log.error("${job.name} failed", e)
       } finally {
-        tx.close(commit)
+        tx?.close(commit)
       }
     }.also { launched ->
       runningJobs += launched

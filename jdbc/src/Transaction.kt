@@ -6,8 +6,13 @@ import kotlinx.coroutines.ThreadContextElement
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
+import kotlin.annotation.AnnotationTarget.CLASS
+import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
+
+/** Disable transaction for a route or a job. This will most likely leave the connection in auto-commit mode (depending on connection pool settings). */
+@Target(FUNCTION, CLASS) annotation class NoTransaction
 
 class Transaction(private val db: DataSource): AutoCloseable {
   companion object {

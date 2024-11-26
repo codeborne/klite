@@ -1,5 +1,6 @@
 # Unreleased
 * jdbc: between operator introduced with open and closed ranges, also in and notIn
+* jdbc: @NoTransaction can now be used on jobs
 
 # 1.6.9
 * core: logger(name) is now accessible without a class instance context

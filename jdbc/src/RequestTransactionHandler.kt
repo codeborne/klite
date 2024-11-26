@@ -3,12 +3,7 @@ package klite.jdbc
 import klite.*
 import kotlinx.coroutines.withContext
 import javax.sql.DataSource
-import kotlin.annotation.AnnotationTarget.CLASS
-import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.reflect.full.hasAnnotation
-
-/** Disable transaction for a route. This will most likely leave the connection in auto-commit mode (depending on connection pool settings). */
-@Target(FUNCTION, CLASS) annotation class NoTransaction
 
 /**
  * Will start and close DB transaction for each request.
