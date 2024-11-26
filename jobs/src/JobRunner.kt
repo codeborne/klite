@@ -30,6 +30,7 @@ interface Job {
   suspend fun run()
   val name get() = this::class.simpleName!!
   val allowParallelRun get() = false
+  val noTransaction get() = this::class.hasAnnotation<NoTransaction>() || this::run.hasAnnotation<NoTransaction>()
 }
 
 class NamedJob(override val name: String, override val allowParallelRun: Boolean, private val job: suspend () -> Unit): Job {
@@ -52,7 +53,7 @@ open class JobRunner(
 
   internal fun runInTransaction(job: Job, start: CoroutineStart = DEFAULT): kotlinx.coroutines.Job {
     val threadName = ThreadNameContext("${requestIdGenerator.prefix}/${job.name}#${seq.incrementAndGet()}")
-    val tx = if (this::class.hasAnnotation<NoTransaction>()) null else Transaction(db)
+    val tx = if (job.noTransaction) null else Transaction(db)
     return launch(threadName + TransactionContext(tx), start) {
       var commit = true
       try {
