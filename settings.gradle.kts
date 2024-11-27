@@ -31,6 +31,26 @@ dependencyResolutionManagement {
       library("postgresql", "org.postgresql:postgresql:42.7.4")
     }
   }
+
+  repositories {
+    mavenCentral()
+  }
 }
 
-include("core", "server", "json", "csv", "jackson", "i18n", "serialization", "jdbc", "jobs", "jdbc-test", "oauth", "liquibase", "slf4j", "openapi", "sample")
+include(
+  "core",
+  "server",
+  "json",
+  "csv",
+  "jackson",
+  "i18n",
+  "serialization",
+  "jdbc",
+  "jobs",
+  "jdbc-test",
+  "oauth",
+  "liquibase",
+  "slf4j",
+  "openapi",
+  "sample"
+)
