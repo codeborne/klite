@@ -1,6 +1,7 @@
 # Unreleased
 * jdbc: between operator introduced with open and closed ranges, also in and notIn
 * jdbc: @NoTransaction can now be used on jobs
+* jdbc: fixed usage of multiple different DataSources when there is an active transaction
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
 
 # 1.6.9

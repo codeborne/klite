@@ -14,7 +14,7 @@ import kotlin.coroutines.CoroutineContext
 /** Disable transaction for a route or a job. This will most likely leave the connection in auto-commit mode (depending on connection pool settings). */
 @Target(FUNCTION, CLASS) annotation class NoTransaction
 
-class Transaction(private val db: DataSource): AutoCloseable {
+class Transaction(val db: DataSource): AutoCloseable {
   companion object {
     private val log = logger()
     private val threadLocal = ThreadLocal<Transaction>()
@@ -56,7 +56,7 @@ class Transaction(private val db: DataSource): AutoCloseable {
 
 fun <R> DataSource.withConnection(block: Connection.() -> R): R {
   val tx = Transaction.current()
-  return if (tx != null) tx.connection.block()
+  return if (tx?.db == this) tx.connection.block()
          else connection.use(block)
 }
 
