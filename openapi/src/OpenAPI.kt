@@ -87,7 +87,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
 fun toParameter(p: Param, op: Operation? = null) = mapOf(
   "name" to p.name,
   "required" to (!p.p.isOptional && !p.p.type.isMarkedNullable),
-  "in" to toParameterIn(p.source),
+  "in" to toParameterIn(p.source)?.name?.lowercase(),
   "schema" to p.p.type.toJsonSchema(),
 ) + ((p.p.findAnnotation<Parameter>() ?: op?.parameters?.find { it.name == p.name })?.toNonEmptyValues() ?: emptyMap())
 
