@@ -40,9 +40,12 @@ class Server(
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val log = logger()
 
+  val boundAddress: InetSocketAddress
+    get() = http.address ?: error("The server is not yet started, hence no bound address is available.")
+
   fun start(gracefulStopDelaySec: Int = 3) {
     http.bind(listen, 0)
-    log.info("Listening on $listen")
+    log.info("Listening on $boundAddress")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
