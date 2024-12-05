@@ -3,6 +3,7 @@ package klite.json
 import klite.Converter
 import klite.publicProperties
 import org.intellij.lang.annotations.Language
+import java.io.File
 import java.io.PrintStream
 import java.lang.System.err
 import java.nio.file.Path
@@ -36,7 +37,7 @@ open class TSGenerator(
   @OptIn(ExperimentalPathApi::class)
   open fun printFrom(dir: Path) {
     dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.sorted().forEach {
-      val className = dir.relativize(it).toString().removeSuffix(".class").replace("/", ".")
+      val className = dir.relativize(it).toString().removeSuffix(".class").replace(File.separatorChar, '.')
       printClass(className)
     }
   }

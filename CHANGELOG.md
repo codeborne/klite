@@ -1,4 +1,5 @@
 # Unreleased
+* json: fix TSGenerator on Windows
 * jdbc: between operator introduced with open and closed ranges, also in and notIn
 * jdbc: @NoTransaction can now be used on jobs
 * jdbc: fixed usage of multiple different DataSources when there is an active transaction
