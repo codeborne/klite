@@ -42,10 +42,9 @@ class Router(
 
   internal fun route(exchange: HttpExchange): Route? {
     val suffix = exchange.path.removePrefix(prefix)
-    return match(exchange.method, suffix)?.let { m ->
-      exchange.pathParams = PathParams(m.second.groups)
-      m.first
-    }
+    val m = match(exchange.method, suffix)
+    exchange.pathParams = PathParams(m?.second?.groups)
+    return m?.first
   }
 
   private fun match(method: RequestMethod, path: String): Pair<Route, MatchResult>? {
@@ -102,13 +101,13 @@ open class PathParamRegexer(private val paramConverter: Regex = "(^|/):([^/]+)".
   open fun toOpenApi(path: Regex) = path.pattern.replace("\\(\\?<(.+?)>.*?\\)".toRegex(), "{$1}")
 }
 
-class PathParams(val groups: MatchGroupCollection): Params {
+class PathParams(private val groups: MatchGroupCollection?): Params {
   override val entries get() = throw NotImplementedError()
   override val keys get() = throw NotImplementedError()
-  override val values get() = groups.map { it?.value }
-  override val size get() = groups.size
-  override fun isEmpty() = groups.isEmpty()
-  override fun get(key: String) = runCatching { groups[key] }.getOrNull()?.value
+  override val values get() = groups?.map { it?.value } ?: emptyList()
+  override val size get() = groups?.size ?: 0
+  override fun isEmpty() = groups?.isEmpty() ?: true
+  override fun get(key: String) = runCatching { groups?.get(key) }.getOrNull()?.value
   override fun containsKey(key: String) = get(key) != null
-  override fun containsValue(value: String?) = groups.find { it != null && it.value == value } != null
+  override fun containsValue(value: String?) = groups?.find { it != null && it.value == value } != null
 }
