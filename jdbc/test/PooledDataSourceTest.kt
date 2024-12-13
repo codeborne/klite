@@ -86,4 +86,21 @@ class PooledDataSourceTest {
     expect(pool.available).toHaveSize(0)
     expect(pool.used.keys).toHaveSize(0)
   }
+
+  @Test fun `close same connection multiple times`() {
+    val conn = pool.connection
+    expect(pool.used.keys).toHaveSize(1)
+    expect(pool.available).toHaveSize(0)
+
+    conn.close()
+    conn.close()
+    conn.close()
+
+    expect(pool.used.keys).toHaveSize(0)
+    expect(pool.available).toHaveSize(1)
+
+    val conn2 = pool.connection
+    expect(pool.connection).notToEqual(conn2)
+    expect(pool.connection).notToEqual(conn2)
+  }
 }

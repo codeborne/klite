@@ -1,12 +1,13 @@
 # Unreleased
-* json: fix TSGenerator on Windows
-* jdbc: between operator introduced with open and closed ranges, also in and notIn
-* jdbc: @NoTransaction can now be used on jobs
-* jdbc: fixed usage of multiple different DataSources when there is an active transaction
-* json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
 * server: make idle restarts quick #96
 * server: initialize `HttpExchange.pathParams` even no route is matched (404), for decorators #82
+* jdbc: between operator introduced with open and closed ranges, also in and notIn
+* jdbc: @NoTransaction can now be used on jobs
+* jdbc: fixed usage of multiple different DataSources when there is an active transaction
+* jdbc: allow calling of `PooledConnection.close()` multiple times #80
+* json: fix TSGenerator on Windows
+* json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
 * jackson: serialize enums using their toString() method by default, this fixes `openapi` module usage with `jackson` #88
 * liquibase: do not close jdbc connection if it was passed by user #81
 
