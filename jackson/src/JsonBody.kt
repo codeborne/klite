@@ -1,6 +1,7 @@
 package klite.jackson
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
@@ -29,6 +30,7 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), javaTimeModule:
   serializationInclusion(JsonInclude.Include.NON_NULL)
   addModule(SimpleModule().apply {
     addDeserializer(String::class.java, EmptyStringToNullDeserializer)
+    addSerializer(Enum::class.java, EnumToStringSerializer)
     addConverterDeserializers()
   })
   withCoercionConfigDefaults {
@@ -41,6 +43,12 @@ fun kliteJsonMapper(kotlinModule: KotlinModule = kotlinModule(), javaTimeModule:
 object EmptyStringToNullDeserializer: JsonDeserializer<String?>() {
   override fun deserialize(jsonParser: JsonParser, context: DeserializationContext?): String? =
     jsonParser.valueAsString?.trimToNull()
+}
+
+object EnumToStringSerializer: JsonSerializer<Enum<*>>() {
+  override fun serialize(value: Enum<*>, gen: JsonGenerator, serializers: SerializerProvider) {
+    gen.writeString(value.toString())
+  }
 }
 
 fun SimpleModule.addConverterDeserializers() = Converter.forEach { type, converter ->
