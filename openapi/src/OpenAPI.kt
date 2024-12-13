@@ -162,7 +162,7 @@ internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Bo
   publicProperties.filter(filter).forEach { p ->
     when(val v = p.valueOf(this)) {
       "", false, 0, Int.MAX_VALUE, Int.MIN_VALUE, 0.0, Void::class.java, AccessMode.AUTO, RequiredMode.AUTO, AdditionalPropertiesValue.USE_ADDITIONAL_PROPERTIES_ANNOTATION -> null
-      is Enum<*> -> v.takeIf { v.name != "DEFAULT" }
+      is Enum<*> -> v.takeIf { v.name != "DEFAULT" && v.name != "AUTO" }
       is Annotation -> v.toNonEmptyValues().takeIf { it.isNotEmpty() }
       is Array<*> -> v.map { (it as? Annotation)?.toNonEmptyValues() ?: it }.takeIf { it.isNotEmpty() }
       else -> v

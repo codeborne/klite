@@ -164,7 +164,7 @@ class OpenAPITest {
   @Test fun `definition and security`() {
     @SecurityScheme(name = "bearerApiKey", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "API-Key", paramName = "Authorization")
     @OpenAPIDefinition(info = Info(title = "Mega API", version = "1.x"), security = [SecurityRequirement(name = "bearerApiKey")])
-    class MyRoutes {}
+    class MyRoutes
 
     mockk<HttpExchange>(relaxed = true).apply {
       every { fullUrl(any()) } returns URI("https://base")
