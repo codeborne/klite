@@ -42,7 +42,7 @@ class Server(
   private val http = HttpServer.create(listen, 0)
   val listen: InetSocketAddress get() = http.address
 
-  fun start(gracefulStopDelaySec: Int = 3) {
+  fun start(gracefulStopDelaySec: Int = if (Config.isProd) 3 else 0) {
     log.info("Listening on $listen")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
