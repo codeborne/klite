@@ -4,8 +4,9 @@
 * jdbc: @NoTransaction can now be used on jobs
 * jdbc: fixed usage of multiple different DataSources when there is an active transaction
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
-* jackson: serialize enums using their toString() method by default, this fixes `openapi` module usage with `jackson`
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
+* jackson: serialize enums using their toString() method by default, this fixes `openapi` module usage with `jackson` #88
+* liquibase: do not close jdbc connection if it was passed by user #81
 
 # 1.6.9
 * core: logger(name) is now accessible without a class instance context

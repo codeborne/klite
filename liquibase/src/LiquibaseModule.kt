@@ -33,15 +33,21 @@ open class LiquibaseModule(
   }
 
   fun exec(connection: Connection? = null, block: Liquibase.() -> Unit) {
-    (connection ?: DriverManager.getConnection(Config["DB_URL"], Config.optional("DB_USER"), Config.optional("DB_PASS"))).use { conn ->
+    val conn = connection ?: openConnection()
+    try {
       val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(conn))
       val liquibase = Liquibase(changeSetPath, resourceAccessor, database)
       val shutdownHook = thread(start = false) { liquibase.forceReleaseLocks() }
       Runtime.getRuntime().addShutdownHook(shutdownHook)
       liquibase.block()
       Runtime.getRuntime().removeShutdownHook(shutdownHook)
+    } finally {
+      if (conn != connection) conn.close()
     }
   }
+
+  private fun openConnection(): Connection =
+    DriverManager.getConnection(Config["DB_URL"], Config.optional("DB_USER"), Config.optional("DB_PASS"))
 
   fun migrate(contexts: Collection<String> = Config.active, connection: Connection? = null) = exec(connection) {
     if (dropAllBeforeUpdate) dropAll()
