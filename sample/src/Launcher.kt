@@ -14,11 +14,11 @@ import java.nio.file.Path
 import java.time.Duration.ofSeconds
 
 fun main() {
+  Config.useEnvFile()
   sampleServer().start()
 }
 
 fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).apply {
-  Config.useEnvFile()
   use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
 
   if (Config.isDev) startDevDB() // start docker-compose db automatically

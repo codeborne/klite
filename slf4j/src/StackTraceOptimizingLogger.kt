@@ -2,7 +2,7 @@ package klite.slf4j
 
 /**
  * Use this logger if you want shorter stack traces:
- * Config["LOGGER_CLASS"] = StacktraceOptimizingLogger::class
+ * `Config["LOGGER_CLASS"] = StackTraceOptimizingLogger::class.qualifiedName!!`
  */
 open class StackTraceOptimizingLogger(name: String): KliteLogger(name) {
   public override fun print(formatted: String, t: Throwable?): Unit = synchronized(out) {

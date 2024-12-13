@@ -8,6 +8,7 @@
 * jdbc: allow calling of `PooledConnection.close()` multiple times #80
 * json: fix TSGenerator on Windows
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
+* slf4j: allow providing of `LOGGER_CLASS` via `.env` file if `Config.useEnvFile()` is called before any logging calls #92
 * jackson: serialize enums using their toString() method by default, this fixes `openapi` module usage with `jackson` #88
 * liquibase: do not close jdbc connection if it was passed by user #81
 
