@@ -76,14 +76,17 @@ class Server(
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
       val notFoundRoute = NotFoundRoute(prefix, notFoundHandler)
-      addContext(prefix, router) { runHandler(this, router.route(this) ?: notFoundRoute) }
+      addContext(prefix, router) {
+        val r = router.route(this)
+        runHandler(this, r.first ?: notFoundRoute, r.second)
+      }
       router.block()
       notFoundRoute.decoratedHandler = router.decorators.wrap(notFoundHandler)
     }
 
   fun assets(prefix: String, handler: AssetsHandler) {
     val route = Route(GET, prefix.toRegex(), handler::class.annotations, handler).apply { decoratedHandler = decorators.wrap(handler) }
-    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route) }
+    addContext(prefix, this, Dispatchers.IO) { runHandler(this, route, PathParams.EMPTY) }
   }
 
   private fun addContext(prefix: String, config: RouterConfig, extraCoroutineContext: CoroutineContext = EmptyCoroutineContext, handler: Handler) {
@@ -95,10 +98,11 @@ class Server(
     }
   }
 
-  private suspend fun runHandler(exchange: HttpExchange, route: Route) {
+  private suspend fun runHandler(exchange: HttpExchange, route: Route, pathParams: PathParams) {
     try {
       numActiveRequests.incrementAndGet()
       exchange.route = route
+      exchange.pathParams = pathParams
       val result = route.decoratedHandler.invoke(exchange)
       if (!exchange.isResponseStarted) exchange.handle(result)
       else if (result != null && result != Unit) log.warn("Response already started, cannot render $result")
