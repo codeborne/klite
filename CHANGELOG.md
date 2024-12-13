@@ -4,6 +4,7 @@
 * jdbc: @NoTransaction can now be used on jobs
 * jdbc: fixed usage of multiple different DataSources when there is an active transaction
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
+* openapi: fix compliancy: output parameter types as lowercase in OpenAPI spec
 
 # 1.6.9
 * core: logger(name) is now accessible without a class instance context
