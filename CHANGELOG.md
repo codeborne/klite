@@ -5,6 +5,7 @@
 * jdbc: fixed usage of multiple different DataSources when there is an active transaction
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
 * openapi: fix compliancy: output parameter types as lowercase in OpenAPI spec
+* server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
 
 # 1.6.9
 * core: logger(name) is now accessible without a class instance context
