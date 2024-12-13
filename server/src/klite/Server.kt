@@ -11,6 +11,7 @@ import java.lang.Thread.currentThread
 import java.net.InetSocketAddress
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -41,8 +42,9 @@ class Server(
 
   private val http = HttpServer.create(listen, 0)
   val listen: InetSocketAddress get() = http.address
+  private val numActiveRequests = AtomicInteger()
 
-  fun start(gracefulStopDelaySec: Int = if (Config.isProd) 3 else 0) {
+  fun start(gracefulStopDelaySec: Int = 3) {
     log.info("Listening on $listen")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
@@ -53,7 +55,7 @@ class Server(
 
   fun stop(delaySec: Int = 1) {
     log.info("Stopping gracefully")
-    http.stop(delaySec)
+    http.stop(if (numActiveRequests.get() == 0) 0 else delaySec)
     onStopHandlers.reversed().forEach { it.run() }
   }
 
@@ -95,6 +97,7 @@ class Server(
 
   private suspend fun runHandler(exchange: HttpExchange, route: Route) {
     try {
+      numActiveRequests.incrementAndGet()
       exchange.route = route
       val result = route.decoratedHandler.invoke(exchange)
       if (!exchange.isResponseStarted) exchange.handle(result)
@@ -104,6 +107,7 @@ class Server(
       handleError(exchange, e)
     } finally {
       exchange.close()
+      numActiveRequests.decrementAndGet()
     }
   }
 
