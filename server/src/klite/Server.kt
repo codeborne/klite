@@ -78,7 +78,7 @@ class Server(
       val notFoundRoute = NotFoundRoute(prefix, notFoundHandler)
       addContext(prefix, router) {
         val r = router.route(this)
-        runHandler(this, r.first ?: notFoundRoute, r.second)
+        runHandler(this, r?.first ?: notFoundRoute, r?.second ?: PathParams.EMPTY)
       }
       router.block()
       notFoundRoute.decoratedHandler = router.decorators.wrap(notFoundHandler)

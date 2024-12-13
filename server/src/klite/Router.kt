@@ -40,11 +40,11 @@ class Router(
   private val log = logger()
   val routes = mutableListOf<Route>() // TODO: use ExplicitBackingFields feature when it is more stable for immutable getter
 
-  internal fun route(exchange: HttpExchange): Pair<Route?, PathParams> {
+  internal fun route(exchange: HttpExchange): Pair<Route, PathParams>? {
     val suffix = exchange.path.removePrefix(prefix)
     return match(exchange.method, suffix)?.let {
       it.first to PathParams(it.second.groups)
-    } ?: (null to PathParams.EMPTY)
+    }
   }
 
   private fun match(method: RequestMethod, path: String): Pair<Route, MatchResult>? {

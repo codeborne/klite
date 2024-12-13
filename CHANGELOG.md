@@ -6,6 +6,7 @@
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
 * server: make idle restarts quick #96
+* server: initialize `HttpExchange.pathParams` even no route is matched (404), for decorators #82
 * jackson: serialize enums using their toString() method by default, this fixes `openapi` module usage with `jackson` #88
 * liquibase: do not close jdbc connection if it was passed by user #81
 
