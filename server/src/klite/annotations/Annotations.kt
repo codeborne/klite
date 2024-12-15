@@ -87,7 +87,7 @@ class Param(val p: KParameter) {
         is PathParam -> e.path(name)?.toType()
         is QueryParam ->
           if (p.type.jvmErasure.isSuperclassOf(List::class)) e.queryList(name).map { Converter.from<Any>(it, p.type.arguments[0].type!!) }
-          else (e.query(name)).let { if (it !is String) it else if (e.isValueLessQueryParam(it)) true else it.toType()
+          else (e.query(name)).let { if (e.isValueLessQueryParam(it)) true else it?.toType()
         }
         is HeaderParam -> e.header(name)?.toType()
         is CookieParam -> e.cookie(name)?.toType()

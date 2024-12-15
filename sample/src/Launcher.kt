@@ -14,64 +14,66 @@ import java.nio.file.Path
 import java.time.Duration.ofSeconds
 
 fun main() {
-  Config.useEnvFile()
   sampleServer().start()
 }
 
-fun sampleServer(port: Int = 8080) = Server(listen = InetSocketAddress(port)).apply {
-  use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
+fun sampleServer(port: Int = 8080): Server {
+  Config.useEnvFile()
+  return Server(listen = InetSocketAddress(port)).apply {
+    use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
 
-  if (Config.isDev) startDevDB() // start docker-compose db automatically
-  use(DBModule(PooledDataSource())) // configure a DataSource
-  use<DBMigrator>() //  migrate the DB
-  use<RequestTransactionHandler>() // runs each request in a transaction
+    if (Config.isDev) startDevDB() // start docker-compose db automatically
+    use(DBModule(PooledDataSource())) // configure a DataSource
+    use<DBMigrator>() //  migrate the DB
+    use<RequestTransactionHandler>() // runs each request in a transaction
 
-  assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
+    assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 
-  register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
+    register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
 
-  before<AdminChecker>()
-  after { ex, err -> ex.header("X-Error", err?.message ?: "none") }
+    before<AdminChecker>()
+    after { ex, err -> ex.header("X-Error", err?.message ?: "none") }
 
-  context("/hello") {
-    get { "Hello World" }
+    context("/hello") {
+      get { "Hello World" }
 
-    get("/delay") {
-      delay(1000)
-      "Waited for 1 sec"
+      get("/delay") {
+        delay(1000)
+        "Waited for 1 sec"
+      }
+
+      get("/failure") { error("Failure") }
+
+      get("/admin") @AdminOnly {
+        "Only for admins"
+      }
+
+      get("/param/:param") {
+        "Path: ${path("param")}, Query: $queryParams"
+      }
+
+      post("/post") {
+        data class JsonRequest(val required: String, val hello: String = "World")
+        body<JsonRequest>()
+      }
+
+      decorator { ex, h -> "<${h(ex)}>" }
+      get("/decorated") { "!!!" }
     }
 
-    get("/failure") { error("Failure") }
-
-    get("/admin") @AdminOnly {
-      "Only for admins"
+    context("/api") {
+      useOnly<JsonBody>() // in case only json should be supported in this context
+      before(CorsHandler()) // enable CORS for this context, so that Swagger-UI can access the API
+      useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
+      annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
+      annotated<SSERoutes>("/sse") // Server-Side Events sample
+      openApi()
     }
 
-    get("/param/:param") {
-      "Path: ${path("param")}, Query: $queryParams"
+    context("/auth") {
+      register<OAuthUserProvider>(UserRepository::class)
+      annotated<AuthRoutes>()
+      annotated<OAuthRoutes>()
     }
-
-    post("/post") {
-      data class JsonRequest(val required: String, val hello: String = "World")
-      body<JsonRequest>()
-    }
-
-    decorator { ex, h -> "<${h(ex)}>" }
-    get("/decorated") { "!!!" }
-  }
-
-  context("/api") {
-    useOnly<JsonBody>() // in case only json should be supported in this context
-    before(CorsHandler()) // enable CORS for this context, so that Swagger-UI can access the API
-    useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
-    annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
-    annotated<SSERoutes>("/sse") // Server-Side Events sample
-    openApi()
-  }
-
-  context("/auth") {
-    register<OAuthUserProvider>(UserRepository::class)
-    annotated<AuthRoutes>()
-    annotated<OAuthRoutes>()
   }
 }
