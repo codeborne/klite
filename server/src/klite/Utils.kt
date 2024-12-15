@@ -19,7 +19,17 @@ typealias Params = Map<String, String?>
 val URI.queryParams: Params get() = urlDecodeParams(rawQuery)
 
 fun urlEncodeParams(params: Map<String, Any?>) = params.mapNotNull { e -> e.value?.let { e.key + "=" + it.toString().urlEncode() } }.joinToString("&")
-fun urlDecodeParams(params: String?): Params = params?.split('&')?.associate(::keyValue) ?: emptyMap()
+
+fun urlDecodeParams(params: String?): Params = params?.split('&')?.fold(mutableMapOf<String, Any>()) { m, p ->
+  val (name, value) = keyValue(p)
+  m.compute(name) { _, v ->
+    if (v == null) value
+    else if (v is List<*>) v + value
+    else listOf(v, value)
+  }
+  m
+} as Params? ?: emptyMap()
+
 internal fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.getOrNull(1)?.urlDecode() }
 
 operator fun URI.plus(suffix: String) = URI(toString().substringBefore("#") + suffix + (fragment?.let { "#$it" } ?: ""))

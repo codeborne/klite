@@ -27,6 +27,7 @@ class UtilsTest {
     val params = mapOf("Hello" to "Wörld", "1" to "2", "null" to null)
     expect(urlEncodeParams(params)).toEqual("Hello=W%C3%B6rld&1=2")
     expect(urlDecodeParams("Hello=W%C3%B6rld&1=2")).toEqual(params - "null")
+    expect(urlDecodeParams("a=1&a=2&b=x&a=3") as Map<String, Any?>).toEqual(mapOf("a" to listOf("1", "2", "3"), "b" to "x"))
   }
 
   @Test fun base64() {
