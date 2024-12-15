@@ -2,7 +2,7 @@
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
 * server: make idle restarts quick #96
 * server: initialize `HttpExchange.pathParams` even no route is matched (404), for decorators #82
-* server: put list into queryParams if user specifies multiple parameters with the same name, introduce `e.queryList` #62
+* server: put list into queryParams if user specifies multiple parameters with the same name, introduce `e.queryList` #63
 * jdbc: between operator introduced with open and closed ranges, also in and notIn
 * jdbc: @NoTransaction can now be used on jobs
 * jdbc: fixed usage of multiple different DataSources when there is an active transaction
