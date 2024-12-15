@@ -1,4 +1,4 @@
 dependencies {
-  api("org.jetbrains.kotlin:kotlin-reflect")
+  api("org.jetbrains.kotlin:kotlin-reflect:${kotlin.coreLibrariesVersion}")
   implementation(libs.kotlinx.coroutines)
 }
