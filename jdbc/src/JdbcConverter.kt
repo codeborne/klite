@@ -5,6 +5,7 @@ import klite.Decimal
 import klite.annotations.annotation
 import klite.d
 import klite.unboxInline
+import java.lang.reflect.Modifier.STATIC
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
@@ -46,11 +47,11 @@ object JdbcConverter {
   operator fun <T: Any> set(type: KClass<T>, converter: ToJdbcConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: ToJdbcConverter<T>) = set(T::class, converter)
 
-  fun to(v: Any?, conn: Connection? = null) = when (v) {
+  fun to(v: Any?, conn: Connection? = null): Any? = when (v) {
     null -> null
     is Enum<*> -> v.name
-    is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass), v.toTypedArray())
-    is Array<*> -> conn!!.createArrayOf(arrayType(v.javaClass.componentType), v)
+    is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass), v.map { to(it, conn) }.toTypedArray())
+    is Array<*> -> conn!!.createArrayOf(arrayType(v.javaClass.componentType), v.map { to(it, conn) }.toTypedArray())
     else -> {
       val cls = v::class
       @Suppress("UNCHECKED_CAST") when {
@@ -63,14 +64,15 @@ object JdbcConverter {
     }
   }
 
-  private fun arrayType(c: Class<*>?) = when {
+  private fun arrayType(c: Class<*>?): String = when {
     c == null -> "varchar"
     UUID::class.java.isAssignableFrom(c) -> "uuid"
-    Number::class.java.isAssignableFrom(c) -> "numeric"
+    Number::class.java.isAssignableFrom(c) || c.isPrimitive -> "numeric"
     LocalDate::class.java.isAssignableFrom(c) -> "date"
     LocalTime::class.java.isAssignableFrom(c) -> "time"
     LocalDateTime::class.java.isAssignableFrom(c) -> "timestamp"
     Instant::class.java.isAssignableFrom(c) -> "timestamptz"
+    c.isAnnotationPresent(JvmInline::class.java) -> arrayType(c.declaredFields.find { it.modifiers and STATIC == 0 }?.type)
     else -> "varchar"
   }
 

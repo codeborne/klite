@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Decimal
+import klite.TSID
 import klite.d
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -17,6 +18,8 @@ import java.sql.Connection
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.*
+import java.time.Month.DECEMBER
+import java.time.Month.OCTOBER
 import java.time.ZoneOffset.UTC
 import java.util.*
 import java.util.UUID.randomUUID
@@ -70,6 +73,33 @@ class JdbcConverterTest {
     expect(JdbcConverter.from(array, typeOf<Array<BigDecimal>>())).toEqual(array.array)
     expect(JdbcConverter.from(array, typeOf<Set<BigDecimal>>())).toEqual(setOf(ONE, TEN))
     expect(JdbcConverter.from(array, typeOf<List<Decimal>>())).toEqual(listOf(1.d, 10.d))
+  }
+
+  @Test fun `to array of convertible types`() {
+    val conn = mockk<Connection>(relaxed = true)
+    expect(JdbcConverter.to(listOf(OCTOBER, Year.of(2024)), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("varchar", arrayOf(OCTOBER.toString(), "2024")) }
+  }
+
+  @Test fun `from array of convertible types`() {
+    val array = mockk<java.sql.Array>(relaxed = true) {
+      every { array } returns arrayOf(OCTOBER.toString(), DECEMBER.toString())
+    }
+    expect(JdbcConverter.from(array, typeOf<Set<Month>>())).toEqual(setOf(OCTOBER, DECEMBER))
+    expect(JdbcConverter.from(array, typeOf<List<Month>>())).toEqual(listOf(OCTOBER, DECEMBER))
+  }
+
+  @Test fun `to array of inline TSID`() {
+    val conn = mockk<Connection>(relaxed = true)
+    expect(JdbcConverter.to(listOf(TSID<Any>(12345)), conn)).toBeAnInstanceOf<java.sql.Array>()
+    verify { conn.createArrayOf("numeric", arrayOf(12345L)) }
+  }
+
+  @Test fun `from array of inline TSID`() {
+    val array = mockk<java.sql.Array>(relaxed = true) {
+      every { array } returns arrayOf(12345L)
+    }
+    expect(JdbcConverter.from(array, typeOf<List<TSID<Any>>>())).toEqual(listOf(TSID<Any>(12345L)))
   }
 
   @Test fun `to local date and time`() {

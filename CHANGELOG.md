@@ -7,6 +7,7 @@
 * jdbc: @NoTransaction can now be used on jobs
 * jdbc: fixed usage of multiple different DataSources when there is an active transaction
 * jdbc: allow calling of `PooledConnection.close()` multiple times #80
+* jdbc: support for automatic persisting/mapping of arrays of @JvmInline classes (e.g. TSID)
 * json: fix TSGenerator on Windows
 * json: TSGenerator will now use more type-safe string template types for java.time classes, e.g. `${number}-${number}-${number}` instead of `string`
 * slf4j: allow providing of `LOGGER_CLASS` via `.env` file if `Config.useEnvFile()` is called before any logging calls #92
