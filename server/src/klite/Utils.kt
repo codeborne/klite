@@ -20,6 +20,7 @@ val URI.queryParams: Params get() = urlDecodeParams(rawQuery)
 
 fun urlEncodeParams(params: Map<String, Any?>) = params.mapNotNull { e -> e.value?.let { e.key + "=" + it.toString().urlEncode() } }.joinToString("&")
 
+@Suppress("UNCHECKED_CAST")
 fun urlDecodeParams(params: String?): Params = params?.split('&')?.fold(mutableMapOf<String, Any?>()) { m, p ->
   val (name, value) = keyValue(p)
   m.apply {
@@ -36,3 +37,10 @@ internal fun keyValue(s: String) = s.split('=', limit = 2).let { it[0] to it.get
 
 operator fun URI.plus(suffix: String) = URI(toString().substringBefore("#") + suffix + (fragment?.let { "#$it" } ?: ""))
 operator fun URI.plus(params: Map<String, Any?>) = plus((if (rawQuery == null) "?" else "&") + urlEncodeParams(params))
+
+@Suppress("UNCHECKED_CAST")
+fun <T> Any?.asList(): List<T> = when (this) {
+  null -> emptyList()
+  is List<*> -> this as List<T>
+  else -> listOf(this as T)
+}

@@ -11,7 +11,9 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KParameter.Kind.INSTANCE
 import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.functions
+import kotlin.reflect.full.isSuperclassOf
 import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.jvm.jvmErasure
 
 @Target(CLASS) annotation class Path(val value: String)
 @Target(FUNCTION) annotation class GET(val value: String = "")
@@ -83,7 +85,10 @@ class Param(val p: KParameter) {
     else {
       when (source) {
         is PathParam -> e.path(name)?.toType()
-        is QueryParam -> e.query(name).let { if (it == null && p.type.classifier == Boolean::class && name in e.queryParams) true else it?.toType() }
+        is QueryParam ->
+          if (p.type.jvmErasure.isSuperclassOf(List::class)) e.queryList(name).map { Converter.from<Any>(it, p.type.arguments[0].type!!) }
+          else (e.query(name)).let { if (it !is String) it else if (e.isValueLessQueryParam(it)) true else it.toType()
+        }
         is HeaderParam -> e.header(name)?.toType()
         is CookieParam -> e.cookie(name)?.toType()
         is SessionParam -> e.session[name]?.toType()
@@ -96,6 +101,9 @@ class Param(val p: KParameter) {
     if (e is IllegalArgumentException || e.message?.contains(name) == true) throw e
     throw IllegalArgumentException("Cannot get $name: ${e.message}", e)
   }
+
+  private fun HttpExchange.isValueLessQueryParam(v: String?) =
+    v == null && p.type.classifier == Boolean::class && name in queryParams
 
   private val Annotation.value: String? get() = (javaClass.getMethod("value").invoke(this) as String).takeIf { it.isNotEmpty() }
   private fun String.toType() = Converter.from<Any>(this, p.type)

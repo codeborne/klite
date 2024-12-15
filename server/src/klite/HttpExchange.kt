@@ -40,6 +40,7 @@ open class HttpExchange(
   val query: String get() = original.requestURI.query?.let { "?$it" } ?: ""
   val queryParams: Params by lazy { original.requestURI.queryParams }
   fun query(param: String): String? = queryParams[param]
+  fun queryList(param: String) = (queryParams[param] as Any?).asList<String>()
   inline fun <reified T: Any> query(param: String): T? = query(param)?.let { Converter.from<T>(it) }
 
   val fullUrl get() = fullUrl(original.requestURI.toString())
