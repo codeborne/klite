@@ -1,4 +1,4 @@
-# Unreleased
+# 1.6.10
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
 * server: make idle restarts quick #96
 * server: initialize `HttpExchange.pathParams` even no route is matched (404), for decorators #82
