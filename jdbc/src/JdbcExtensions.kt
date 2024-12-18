@@ -21,7 +21,10 @@ typealias Column = Any // String | KProperty1
 typealias ColValue = Pair<Column, Any?>
 
 typealias Where = Collection<ColValue>
-typealias Values = Map<out Column, *>
+typealias ValueMap = Map<out Column, *>
+
+@Deprecated(replaceWith = ReplaceWith("ValueMap"), message = "Use ValueMap instead")
+typealias Values = ValueMap
 
 // TODO: return streaming sequences instead of in-memory Lists, be able to convert sequence to json
 
@@ -102,10 +105,10 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
 }
 
 // TODO: add insert with mapper that returns the generated keys
-fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, values: Values, suffix: String = "") =
+fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, suffix: String = "") =
   insertBatch(table, sequenceOf(values), suffix).first()
 
-fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, suffix: String = ""): IntArray {
+fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<ValueMap>, suffix: String = ""): IntArray {
   val keyValuesToSet = values.map { it.filter { it.value !is GeneratedKey<*> } }
   val valuesToSet = keyValuesToSet.map { setValues(it) }
   val first = keyValuesToSet.firstOrNull() ?: return intArrayOf()
@@ -115,10 +118,10 @@ fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, 
   }
 }
 
-fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: Values, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
+fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
   upsertBatch(table, sequenceOf(values), uniqueFields, where, skipUpdateFields).first()
 
-fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<Values>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray {
+fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<ValueMap>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray {
   val where = whereConvert(where.map { (k, v) -> "$table.${q(name(k))}" to v })
   val first = values.firstOrNull() ?: return intArrayOf()
   val updateExpr = first.keys.let { if (skipUpdateFields.isEmpty()) it else it - skipUpdateFields }
@@ -128,13 +131,13 @@ fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, 
   return execBatch(insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}", valuesToSet)
 }
 
-internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: Values) =
+internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap) =
   "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${values.values.joinToString { placeholder(it) }})"
 
-inline fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: Values, vararg where: ColValue?): Int =
+inline fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, vararg where: ColValue?): Int =
   update(table, values, where.filterNotNull())
 
-fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: Values, where: Where): Int = whereConvert(where).let { where ->
+fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, where: Where): Int = whereConvert(where).let { where ->
   exec("update ${q(table)} set ${setExpr(values)}${whereExpr(where)}", setValues(values) + whereValues(where))
 }
 
@@ -156,7 +159,7 @@ internal fun whereValueConvert(v: Any?) = if (isEmptyCollection(v)) emptyArray e
   else -> v
 }
 
-internal fun setExpr(values: Values) = values.entries.map { (k, v) -> k to v }.join(", ")
+internal fun setExpr(values: ValueMap) = values.entries.map { (k, v) -> k to v }.join(", ")
 internal fun whereExpr(where: Where) = if (where.isEmpty()) "" else " where " + where.join(" and ")
 
 internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator) { (k, v) ->
@@ -179,7 +182,7 @@ private fun placeholder(v: Any?) = when {
   else -> "?"
 }
 
-internal fun setValues(values: Values) = values.values.asSequence().flatMap { it.toIterable() }
+internal fun setValues(values: ValueMap) = values.values.asSequence().flatMap { it.toIterable() }
 internal fun whereValues(where: Where) = where.asSequence().map { it.second }.flatValues()
 internal fun Sequence<Any?>.flatValues() = filterNotNull().flatMap { it.toIterable() }
 private fun Any?.toIterable(): Iterable<Any?> = if (isEmptyCollection(this)) emptyList() else if (this is SqlExpr) values else listOf(this)
