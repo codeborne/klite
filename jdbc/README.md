@@ -62,7 +62,7 @@ Usage:
 
 *Note: before Klite 1.5 query/select functions had the opposite meaning, but users found select("select...") not nice.*
 
-See [all available functions](src/JdbcExtensions.kt).
+See [all available operations](src/JdbcExtensions.kt) and [comparison operators](src/SqlExpr.kt).
 
 All the above can run without a transaction: in this case, every query will obtain and release its own connection from the pool,
 in autocommit mode. If [Transaction](src/Transaction.kt) is active, then it will obtain a connection on first use,
@@ -81,8 +81,8 @@ conversion of entities to Maps for use with insert/update/upsert.
 They work with entity classes implementing `BaseEntity<ID>`, where you can provide your own ID class, like UUID or [TSID](../core/src/TSID.kt).
 
 Experimental:
-* `NullableId<ID>` is also provided if you prefer not yet stored entitites not to have id assigned.
-* `UpdatabaleEntity` can be used to implement optimistic locking when saving, not letting concurrent users overwrite each other changes.
+* `NullableId<ID>` is also provided if you prefer to assign ids only during saving.
+* `UpdatabaleEntity` can be used for [optimistic locking](https://en.wikipedia.org/wiki/Optimistic_concurrency_control) when saving, not letting concurrent users overwrite each other's changes.
 
 ## Migrations
 
