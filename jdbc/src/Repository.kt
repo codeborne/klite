@@ -57,8 +57,8 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
 
   open fun save(entity: E): Int {
     var useInsert = false
-    if (entity is NullableId<*> && entity.id == null) {
-      (entity as NullableId<ID>).id = generateId()
+    (entity as? NullableId<ID>)?.takeIf { it.id == null }?.let {
+      it.id = generateId()
       useInsert = true
     }
     if (entity is UpdatableEntity) {
