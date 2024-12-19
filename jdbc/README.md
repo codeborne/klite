@@ -37,7 +37,7 @@ Usage:
   db.select("table", "column" to value) { MyEntity(getId(), getString("column")) }
   // or if all entity properties are contained in the result set
   db.select("table", "column" to value) { create<MyEntity>() }
-  // if you need to add several criteria for a single column (map key), use SqlExpr and friends
+  // you can write more complex custom sql conditions easily
   db.select("table", sql("(column is null or column >= ?)", 10))
   // where can also be written in a type-safe way, and some common operators are available
   db.select("table", MyEntity::column gte 123) { create<MyEntity>() }

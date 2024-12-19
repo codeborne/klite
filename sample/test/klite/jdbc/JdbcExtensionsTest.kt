@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
+import java.sql.Types
 import java.util.*
 import java.util.UUID.randomUUID
 import kotlin.concurrent.thread
@@ -89,6 +90,10 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
     db.delete(table, "world" to 39)
     expect { db.select(table, data.id) { } }.toThrow<NoSuchElementException>()
+  }
+
+  @Test fun call() {
+    expect(db.call("length", "hello", returnSqlType = Types.INTEGER)).toEqual(5)
   }
 
   @Test fun `postgres notify and listen`() = runTest {

@@ -104,6 +104,20 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
   }
 }
 
+fun <R> DataSource.withCall(@Language("SQL") sql: String, block: CallableStatement.() -> R): R = withConnection {
+  prepareCall(sql).use { it.block() }
+}
+
+@Deprecated("Experimental API")
+fun DataSource.call(callable: String, vararg parameters: Any?, returnSqlType: Int? = null): Any =
+  withCall("{${returnSqlType?.let { "?=" } ?: ""}call $callable(${parameters.joinToString { placeholder(it) }})}") {
+    var i = 1
+    returnSqlType?.let { registerOutParameter(i++, it) }
+    setAll(parameters.asSequence(), i)
+    execute()
+    (returnSqlType?.let { getObject(1) } ?: Unit)
+  }
+
 // TODO: add insert with mapper that returns the generated keys
 fun DataSource.insert(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, suffix: String = "") =
   insertBatch(table, sequenceOf(values), suffix).first()
@@ -192,7 +206,10 @@ operator fun PreparedStatement.set(i: Int, value: Any?) {
   else setObject(i, JdbcConverter.to(value, connection))
 }
 
-fun PreparedStatement.setAll(values: Sequence<Any?>) = values.forEachIndexed { i, v -> this[i + 1] = v }
+fun PreparedStatement.setAll(values: Sequence<Any?>, startIndex: Int = 1) {
+  var i = startIndex
+  values.forEach { v -> this[i++] = v }
+}
 
 var Connection.applicationName get() = getClientInfo("ApplicationName")
                                set(value) { setClientInfo("ApplicationName", value) }
