@@ -1,6 +1,6 @@
 # Unreleased
-* server: useOnly<>() will now add parser/renderer if it wasn't yet registered
 * server: Server.use() can register extensions that implement multiple supported interfaces at the same time
+* server: useOnly() will now add parser/renderer if it wasn't yet registered, to avoid confusion
 
 # 1.6.10
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
