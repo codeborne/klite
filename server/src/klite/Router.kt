@@ -2,6 +2,7 @@ package klite
 
 import klite.RequestMethod.*
 import kotlin.reflect.KAnnotatedElement
+import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
 abstract class RouterConfig(
@@ -25,13 +26,14 @@ abstract class RouterConfig(
   inline fun <reified T: After> after() = after(registry.require<T>())
 
   inline fun <reified T> useOnly() where T: BodyParser, T: BodyRenderer {
-    if (T::class.isSubclassOf(BodyRenderer::class)) {
-      renderers.retainAll { it is T }
-      if (renderers.isEmpty()) renderers += registry.require<T>()
-    }
-    if (T::class.isSubclassOf(BodyParser::class)) {
-      parsers.retainAll { it is T }
-      if (parsers.isEmpty()) parsers += registry.require<T>()
+    useOnly(renderers, BodyRenderer::class, T::class)
+    useOnly(parsers, BodyParser::class, T::class)
+  }
+
+  fun <T: Any> useOnly(list: MutableList<T>, type: KClass<out T>, impl: KClass<out T>) {
+    if (impl.isSubclassOf(type)) {
+      list.retainAll { it::class.isSubclassOf(impl) }
+      if (list.isEmpty()) list += registry.require(impl)
     }
   }
 }
