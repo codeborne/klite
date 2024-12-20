@@ -18,7 +18,7 @@ abstract class DBTest {
       startDevDB()
     }
 
-    val db: DataSource by lazy { DBModule().dataSource }
+    @JvmStatic protected val db: DataSource by lazy { DBModule().dataSource }
   }
 
   @BeforeEach open fun startTx() {
