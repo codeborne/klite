@@ -106,6 +106,8 @@ Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), 
   }
 ```
 
+Also configure your IDE to download dependency sources (in Intellij -> Settings -> Advanced Settings), which will serve as documentation during development.
+
 ### Using unreleased commits
 
 Jitpack builds requested versions on the fly, so it is also good if you want to fork Klite and customize for your own needs -
