@@ -23,8 +23,7 @@ class Server(
   val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
-    register<TextBodyRenderer>()
-    register<TextBodyParser>()
+    register<TextBody>()
     register<FormUrlEncodedParser>()
     register<FormDataParser>()
   },
@@ -63,13 +62,12 @@ class Server(
   inline fun <reified E: Any> use() = require<E>().also { use(it) }
   fun use(extension: Any) = extension.also {
     register(it)
-    when (it) {
-      is Extension -> it.install(this)
-      is Runnable -> it.run()
-      is BodyParser -> parsers += it
-      is BodyRenderer -> renderers += it
-      else -> error("Cannot use $it, must be either Extension or Runnable")
-    }
+    var used = false
+    if (it is Extension) it.install(this).also { used = true }
+    if (it is Runnable) it.run().also { used = true }
+    if (it is BodyParser) parsers += it.also { used = true }
+    if (it is BodyRenderer) renderers += it.also { used = true }
+    if (!used) error("Cannot use $it, not an Extension, Runnable, BodyParser or BodyRenderer")
   }
 
   /** Adds a new router context. When handing a request, the longest matching router context is chosen */

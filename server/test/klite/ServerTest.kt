@@ -1,8 +1,11 @@
 package klite
 
 import ch.tutteli.atrium.api.fluent.en_GB.toBeGreaterThan
+import ch.tutteli.atrium.api.fluent.en_GB.toContain
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import java.net.InetSocketAddress
 import kotlin.random.Random
@@ -29,8 +32,29 @@ class ServerTest {
     }
   }
 
+  val server = Server()
+
   @Test fun `expose bound address if server is not started`() {
-    expect(Server().listen.port).toEqual(8080)
+    expect(server.listen.port).toEqual(8080)
+  }
+
+  @Test fun `use Extension`() {
+    val extension = mockk<Extension>(relaxUnitFun = true)
+    server.use(extension)
+    verify { extension.install(server) }
+  }
+
+  @Test fun `use Runnable`() {
+    val extension = mockk<Runnable>(relaxUnitFun = true)
+    server.use(extension)
+    verify { extension.run() }
+  }
+
+  @Test fun `use BodyRenderer & BodyParser`() {
+    val body = TextBody()
+    server.use(body)
+    expect(server.renderers).toContain(body)
+    expect(server.parsers).toContain(body)
   }
 }
 
