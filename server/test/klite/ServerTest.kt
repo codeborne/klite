@@ -1,8 +1,6 @@
 package klite
 
-import ch.tutteli.atrium.api.fluent.en_GB.toBeGreaterThan
-import ch.tutteli.atrium.api.fluent.en_GB.toContain
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
 import io.mockk.mockk
 import io.mockk.verify
@@ -12,10 +10,10 @@ import kotlin.random.Random
 
 class ServerTest {
   @Test fun `bind server to any available port`() {
-    val server = Server(listen = InetSocketAddress( 0))
+    val server = Server(listen = InetSocketAddress(0))
     try {
       server.start(gracefulStopDelaySec = -1)
-      expect(server.listen.port).toBeGreaterThan(0)
+      expect(server.address.port).toBeGreaterThan(0)
     } finally {
       server.stop(0)
     }
@@ -26,7 +24,7 @@ class ServerTest {
     val server = Server(listen = InetSocketAddress(port))
     try {
       server.start(gracefulStopDelaySec = -1)
-      expect(server.listen.port).toEqual(port)
+      expect(server.address.port).toEqual(port)
     } finally {
       server.stop(0)
     }
@@ -34,8 +32,9 @@ class ServerTest {
 
   val server = Server()
 
-  @Test fun `expose bound address if server is not started`() {
+  @Test fun `expose bound address if server is started`() {
     expect(server.listen.port).toEqual(8080)
+    expect { server.address.port }.toThrow<IllegalStateException>().message.toEqual("Server not started")
   }
 
   @Test fun `use Extension`() {

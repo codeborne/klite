@@ -16,7 +16,7 @@ class ServerIntegrationTest {
   @Test fun requests() {
     val server = sampleServer(0).apply { start(gracefulStopDelaySec = -1) }
 
-    val http = JsonHttpClient("http://localhost:${server.listen.port}", registry = server.registry)
+    val http = JsonHttpClient("http://localhost:${server.address.port}", registry = server.registry)
     runBlocking {
       expect(http.get<String>("/hello")).toEqual("\"Hello World\"")
       expect(http.get<String>("/hello/param/123456?query=123")).toEqual("\"Path: 123456, Query: {query=123}\"")

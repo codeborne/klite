@@ -19,7 +19,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
 class Server(
-  listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
+  val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
   override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
@@ -39,12 +39,14 @@ class Server(
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val log = logger()
 
-  private val http = HttpServer.create(listen, 0)
-  val listen: InetSocketAddress get() = http.address
+  private val http = HttpServer.create()
   private val numActiveRequests = AtomicInteger()
 
+  val address: InetSocketAddress get() = http.address ?: error("Server not started")
+
   fun start(gracefulStopDelaySec: Int = 3) {
-    log.info("Listening on $listen")
+    http.bind(listen, 0)
+    log.info("Listening on $address")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
