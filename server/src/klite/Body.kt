@@ -30,19 +30,23 @@ interface BodyParser: SupportsContentType {
   fun <T> parse(e: HttpExchange, type: KType): T = e.requestStream.use { parse(it, type) }
 }
 
-class TextBodyRenderer(override val contentType: String = "text/plain"): BodyRenderer {
+class TextBodyRenderer(override val contentType: String = MimeTypes.text): BodyRenderer {
   override fun render(output: OutputStream, value: Any?) = output.write(value.toString())
 }
 
-class TextBodyParser(
-  override val contentType: String = "text/plain"
-): BodyParser {
+class TextBodyParser(override val contentType: String = MimeTypes.text): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KType): T {
     val s = input.reader().readText()
     return if (type == String::class) s as T else Converter.from(s, type)
   }
 }
+
+class TextBody(
+  override val contentType: String = MimeTypes.text,
+  private val renderer: TextBodyRenderer = TextBodyRenderer(contentType),
+  private val parser: TextBodyParser = TextBodyParser(contentType)
+): BodyRenderer by renderer, BodyParser by parser
 
 class FormUrlEncodedParser(override val contentType: String = MimeTypes.wwwForm): BodyParser {
   @Suppress("UNCHECKED_CAST")

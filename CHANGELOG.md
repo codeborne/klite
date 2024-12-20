@@ -1,3 +1,6 @@
+# Unreleased
+* server: useOnly<>() will now add parser/renderer if it wasn't yet registered
+
 # 1.6.10
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.
 * server: make idle restarts quick #96
