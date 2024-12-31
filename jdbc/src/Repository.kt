@@ -19,7 +19,10 @@ interface NullableId<ID>: BaseEntity<ID?> {
   override var id: ID?
 }
 
-/** Implement this for optimistic locking support in [BaseCrudRepository.save] */
+/**
+ * Implement this for optimistic locking support in [BaseCrudRepository.save],
+ * `add column updatedAt timestamptz not null default now()`
+ */
 interface UpdatableEntity {
   var updatedAt: Instant?
 }
