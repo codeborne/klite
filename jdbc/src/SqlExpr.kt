@@ -14,12 +14,11 @@ class SqlComputed(expr: String, vararg values: Any?): SqlExpr(expr, *values) {
   override fun expr(key: String) = q(key) + "=" + expr
 }
 
-open class SqlOp(val operator: String, value: Any? = null): SqlExpr(operator, if (value != null) listOf(value) else emptyList()) {
-  override fun expr(key: String) = q(key) + " $operator" + (when (val v = values.firstOrNull()) {
-    null -> ""
-    is SqlComputed -> v.expr
-    else -> " ?"
-  })
+open class SqlOp(val operator: String, values: Iterable<*>): SqlExpr(operator, values) {
+  constructor(operator: String, value: Any?): this(operator, listOf(value))
+  constructor(operator: String): this(operator, emptyList<Any>())
+  override fun expr(key: String) = q(key) + " $operator" +
+    if ((values as? Collection)?.isEmpty() == true) "" else " " + placeholder(values.first())
 }
 
 class NullOrOp(operator: String, value: Any?): SqlOp(operator, value) {
@@ -33,7 +32,9 @@ val emptyArray = SqlComputed("'{}'")
 fun jsonb(value: String?) = SqlComputed("?::jsonb", value)
 
 infix fun String.eq(value: Any) = this to value
-infix fun String.neq(value: Any) = this to SqlOp("!=", value)
+infix fun String.neq(value: Any) = this to value
+infix fun String.distinct(value: Any?) = this to SqlOp("is distinct from", value)
+infix fun String.notDistinct(value: Any?) = this to SqlOp("is not distinct from", value)
 infix fun String.gt(value: Any) = this to SqlOp(">", value)
 infix fun String.gte(value: Any) = this to SqlOp(">=", value)
 infix fun String.lt(value: Any) = this to SqlOp("<", value)
@@ -44,6 +45,8 @@ infix fun String.any(value: Any) = this to SqlExpr("?=any($this)", value)
 
 infix fun <T, V> KProperty1<T, V>.eq(value: V) = this to value
 infix fun <T, V> KProperty1<T, V>.neq(value: V) = this to SqlOp("!=", value)
+infix fun <T, V> KProperty1<T, V>.distinct(value: V) = this to SqlOp("is distinct from", value)
+infix fun <T, V> KProperty1<T, V>.notDistinct(value: V) = this to SqlOp("is not distinct from", value)
 infix fun <T, V> KProperty1<T, V>.gt(value: V) = this to SqlOp(">", value)
 infix fun <T, V> KProperty1<T, V>.gte(value: V) = this to SqlOp(">=", value)
 infix fun <T, V> KProperty1<T, V>.lt(value: V) = this to SqlOp("<", value)

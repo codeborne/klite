@@ -32,6 +32,12 @@ open class JdbcExtensionsTest: TempTableDBTest() {
     expect(db.select(table, id) { getUuid() }).toEqual(id)
 
     expect(db.select(table, "hello" to "Hello") { getUuid() }).toContain(id)
+
+    expect(db.select(table, "world" to null) { getUuid() }).toContain(id2)
+    expect(db.select(table, "world" to isNull) { getUuid() }).toContain(id2)
+    expect(db.select(table, "world" to notNull) { getUuid() }).notToContain(id2)
+    expect(db.select(table, "world" notDistinct null) { getUuid() }).toContain(id2)
+
     expect(db.select<SomeData>(table)).toContain(SomeData("Hello", 42, id))
     expect(db.select(table, "hello" to "World") { getUuid() }).toBeEmpty()
 

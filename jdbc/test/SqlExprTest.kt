@@ -27,7 +27,7 @@ class SqlExprTest {
 
   @Test fun SqlOp() {
     expect(SqlOp("<", 1).expr("n")).toEqual("n < ?")
-    expect(SqlOp("<=", SqlComputed("current_date")).expr("date")).toEqual("date <=current_date")
-    expect(("date" lte SqlComputed("123")).second.expr("x")).toEqual("x <=123")
+    expect(SqlOp("<=", SqlComputed("current_date")).expr("date")).toEqual("date <= current_date")
+    expect(("date" lte SqlComputed("123")).second.expr("x")).toEqual("x <= 123")
   }
 }

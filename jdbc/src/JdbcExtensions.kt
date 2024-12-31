@@ -189,7 +189,7 @@ internal fun name(key: Any) = when(key) {
 
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
-private fun placeholder(v: Any?) = when {
+internal fun placeholder(v: Any?) = when {
   v is SqlExpr -> v.expr
   isEmptyCollection(v) -> emptyArray.expr
   v is Decimal -> "?::decimal"
