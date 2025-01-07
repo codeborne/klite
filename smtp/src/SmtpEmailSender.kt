@@ -1,45 +1,15 @@
 package klite.smtp
 
-import klite.*
-import klite.i18n.Lang
-import klite.i18n.Lang.translate
+import klite.Config
+import klite.Email
+import klite.MimeTypes
 import java.util.*
 import javax.activation.DataHandler
-import javax.mail.Authenticator
-import javax.mail.Message.RecipientType.CC
-import javax.mail.Message.RecipientType.TO
-import javax.mail.Part.ATTACHMENT
-import javax.mail.PasswordAuthentication
-import javax.mail.Session
-import javax.mail.Transport
+import javax.mail.*
 import javax.mail.internet.*
 import javax.mail.util.ByteArrayDataSource
 
-interface EmailService {
-  val defaultFrom: InternetAddress get() = InternetAddress(Config["MAIL_FROM"], Config.optional("MAIL_FROM_NAME", translate(Lang.available.first(), "title")))
-
-  fun send(to: Email, subject: String, body: String, bodyMimeType: String = MimeTypes.text, attachments: Map<String, ByteArray> = emptyMap(), cc: List<Email> = emptyList(), from: InternetAddress = defaultFrom)
-
-  fun send(to: Email, content: EmailContent, attachments: Map<String, ByteArray> = emptyMap(), cc: List<Email> = emptyList()) =
-    send(to, content.subject, content.fullHtml(), MimeTypes.html, attachments, cc, content.from ?: defaultFrom)
-}
-
-open class FakeEmailService: EmailService {
-  private val log = logger()
-  lateinit var lastSentEmail: String
-
-  override fun send(to: Email, subject: String, body: String, bodyMimeType: String, attachments: Map<String, ByteArray>, cc: List<Email>, from: InternetAddress) {
-    lastSentEmail = """
-      Email to $to, CC: $cc
-      Subject: $subject
-      Body ($bodyMimeType): $body
-      ${if (attachments.isNotEmpty()) "Attachments: ${attachments.keys}" else ""}
-    """
-    log.info(lastSentEmail)
-  }
-}
-
-open class RealEmailService(
+open class SmtpEmailSender(
   smtpUser: String? = Config.optional("SMTP_USER"),
   smtpPort: String? = Config.optional("SMTP_PORT", "25"),
   props: Properties = Properties().apply {
@@ -53,10 +23,10 @@ open class RealEmailService(
     override fun getPasswordAuthentication() = PasswordAuthentication(smtpUser, Config.required("SMTP_PASS"))
   },
   private val session: Session = Session.getInstance(props, authenticator.takeIf { smtpUser != null })
-): EmailService {
+): EmailSender {
   override fun send(to: Email, subject: String, body: String, bodyMimeType: String, attachments: Map<String, ByteArray>, cc: List<Email>, from: InternetAddress) {
     send(to, subject, from) {
-      cc.forEach { setRecipient(CC, InternetAddress(it.value)) }
+      cc.forEach { setRecipient(Message.RecipientType.CC, InternetAddress(it.value)) }
       if (attachments.isEmpty())
         setBody(body, bodyMimeType)
       else
@@ -66,7 +36,7 @@ open class RealEmailService(
             addBodyPart(MimeBodyPart().apply {
               dataHandler = DataHandler(ByteArrayDataSource(it.value, MimeTypes.typeFor(it.key)))
               fileName = it.key
-              disposition = ATTACHMENT
+              disposition = Part.ATTACHMENT
               setHeader("Content-ID", UUID.randomUUID().toString())
             })
           }
@@ -78,7 +48,7 @@ open class RealEmailService(
 
   protected fun send(to: Email, subject: String, from: InternetAddress, block: MimeMessage.() -> Unit) = MimeMessage(session).apply {
     setFrom(from)
-    setRecipient(TO, InternetAddress(to.value))
+    setRecipient(Message.RecipientType.TO, InternetAddress(to.value))
     setSubject(subject, MimeTypes.textCharset.name())
     block()
     Transport.send(this)
