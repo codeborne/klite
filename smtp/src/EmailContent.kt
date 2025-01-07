@@ -6,11 +6,13 @@ import klite.i18n.Lang.translate
 import org.intellij.lang.annotations.Language
 import java.net.URI
 import java.util.*
+import javax.mail.internet.InternetAddress
 
 open class EmailContent(val lang: String, val labelKey: String, val substitutions: Map<String, String> = emptyMap(), val actionUrl: URI? = null) {
   open val subject get() = translate(lang, "emails.$labelKey.subject", substitutions)
   open val body get() = translate(lang, "emails.$labelKey.body", substitutions)
   open val actionLabel get() = translate(lang, "emails.$labelKey.action", substitutions)
+  open val from: InternetAddress? get() = null
 
   override fun equals(other: Any?) = other is EmailContent && lang == other.lang && labelKey == other.labelKey && substitutions == other.substitutions && actionUrl == other.actionUrl
   override fun hashCode() = Objects.hash(lang, labelKey, substitutions, actionUrl)

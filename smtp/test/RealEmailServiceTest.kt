@@ -8,9 +8,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import klite.Config
+import klite.MimeTypes
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import javax.mail.Message.RecipientType.BCC
 import javax.mail.Session
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
@@ -25,19 +25,18 @@ class RealEmailServiceTest {
     service.send(email, subject = "Subject", body = "Body")
     val message = slot<MimeMessage>()
     val toAddress = InternetAddress(email.value)
-    verify { session.getTransport(toAddress).sendMessage(capture(message), arrayOf(toAddress, service.mailFrom)) }
-    expect(message.captured.from.toList()).toContainExactly(service.mailFrom)
-    expect(message.captured.getRecipients(BCC).toList()).toContainExactly(service.mailFrom)
+    verify { session.getTransport(toAddress).sendMessage(capture(message), arrayOf(toAddress)) }
+    expect(message.captured.from.toList()).toContainExactly(service.defaultFrom)
     expect(message.captured.subject).toEqual("Subject")
     expect(message.captured.contentType).toEqual("text/plain; charset=UTF-8")
     expect(message.captured.content).toEqual("Body")
   }
 
   @Test fun `send html`() = runTest {
-    service.send(email, subject = "Subject", body = "<Body>", bodyMimeType = "text/html")
+    service.send(email, subject = "Subject", body = "<Body>", bodyMimeType = MimeTypes.html)
     val message = slot<MimeMessage>()
     val toAddress = InternetAddress(email.value)
-    verify { session.getTransport(toAddress).sendMessage(capture(message), arrayOf(toAddress, service.mailFrom)) }
+    verify { session.getTransport(toAddress).sendMessage(capture(message), arrayOf(toAddress)) }
     expect(message.captured.contentType).toEqual("text/html; charset=UTF-8")
     expect(message.captured.content).toEqual("<Body>")
   }
@@ -46,7 +45,7 @@ class RealEmailServiceTest {
     service.send(email, subject = "Subject", body = "Body", attachments = mapOf("hello.pdf" to ByteArray(0)))
     val message = slot<MimeMessage>()
     val toAddress = InternetAddress(email.value)
-    verify { session.getTransport(toAddress).sendMessage(capture(message), arrayOf(toAddress, service.mailFrom)) }
+    verify { session.getTransport(toAddress).sendMessage(capture(message), arrayOf(toAddress)) }
     expect(message.captured.from.size).toEqual(1)
     expect(message.captured.subject).toEqual("Subject")
     expect(message.captured.getHeader("Content-Type")[0]).toStartWith("multipart/mixed")
