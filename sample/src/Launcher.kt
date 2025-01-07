@@ -1,5 +1,6 @@
 import klite.*
 import klite.annotations.annotated
+import klite.http.httpClient
 import klite.jdbc.*
 import klite.json.JsonBody
 import klite.oauth.AuthRoutes
@@ -9,9 +10,7 @@ import klite.openapi.openApi
 import kotlinx.coroutines.delay
 import users.UserRepository
 import java.net.InetSocketAddress
-import java.net.http.HttpClient
 import java.nio.file.Path
-import java.time.Duration.ofSeconds
 
 fun main() {
   sampleServer().start()
@@ -29,7 +28,7 @@ fun sampleServer(port: Int = 8080): Server {
 
     assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
 
-    register(HttpClient.newBuilder().connectTimeout(ofSeconds(5)).build())
+    register(httpClient())
 
     before<AdminChecker>()
     after { ex, err -> ex.header("X-Error", err?.message ?: "none") }
