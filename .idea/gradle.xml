@@ -26,6 +26,7 @@
             <option value="$PROJECT_DIR$/serialization" />
             <option value="$PROJECT_DIR$/server" />
             <option value="$PROJECT_DIR$/slf4j" />
+            <option value="$PROJECT_DIR$/smtp" />
           </set>
         </option>
       </GradleProjectSettings>
