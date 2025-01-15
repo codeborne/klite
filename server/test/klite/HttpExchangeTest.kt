@@ -6,6 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import klite.Cookie.SameSite.Strict
+import klite.RequestMethod.POST
 import klite.StatusCode.Companion.Created
 import klite.StatusCode.Companion.OK
 import org.junit.jupiter.api.Test
@@ -16,10 +17,12 @@ import kotlin.reflect.typeOf
 
 class HttpExchangeTest {
   abstract class MockableHttpExchange: OriginalHttpExchange()
+  val requestStream = "Input".byteInputStream()
   val original = mockk<MockableHttpExchange>(relaxed = true) {
     every { requestMethod } returns "POST"
     every { requestURI } returns URI("/hello?hello=world")
     every { responseCode } returns -1
+    every { requestBody } returns requestStream
   }
   val bodyRenderer = mockk<BodyRenderer>()
   val customParser = mockk<BodyParser> {
@@ -32,13 +35,18 @@ class HttpExchangeTest {
   val exchange = HttpExchange(original, routerConfig, null, "req-id")
 
   @Test fun path() {
-    expect(exchange.method).toEqual(RequestMethod.POST)
+    expect(exchange.method).toEqual(POST)
     expect(exchange.path).toEqual("/hello")
   }
 
   @Test fun queryParams() {
     expect(exchange.query).toEqual("?hello=world")
     expect(exchange.queryParams).toEqual(mapOf("hello" to "world"))
+  }
+
+  @Test fun rawBody() {
+    expect(exchange.rawBody).toEqual("Input")
+    expect(exchange.rawBody).toEqual(exchange.rawBody)
   }
 
   @Test fun fullUrl() {
