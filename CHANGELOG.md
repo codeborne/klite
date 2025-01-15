@@ -3,6 +3,7 @@
 * server: expose Server.listen and bound Server.address as separate properties #93
 * server: Server.use() can register extensions that implement multiple supported interfaces at the same time
 * server: useOnly() will now add parser/renderer if it wasn't yet registered, to avoid confusion
+* server: HttpExchange.rawBody can now be accessed more than once (is a lazy property now)
 * jdbc: `distinct` and `notDistinct` operators introduced for where expressions
 
 # 1.6.10

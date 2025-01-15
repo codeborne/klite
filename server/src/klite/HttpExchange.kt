@@ -50,15 +50,14 @@ open class HttpExchange(
 
   @Suppress("UNCHECKED_CAST")
   fun <T: Any> body(type: KType): T {
-    if (type.classifier == String::class) return rawBody as T
+    if (type.classifier == String::class) return requestStream.reader().use { it.readText() } as T
     if (type.classifier == ByteArray::class) return requestStream.readBytes() as T
     val contentType = requestType ?: MimeTypes.text
     val bodyParser = config.parsers.find { contentType.startsWith(it.contentType) } ?: throw UnsupportedMediaTypeException(requestType)
     return bodyParser.parse(this, type)
   }
 
-  /** Note: this can be called only once */
-  val rawBody: String get() = requestStream.reader().use { it.readText() }
+  val rawBody by lazy { body<String>() }
 
   val bodyParams: Map<String, Any?> by lazy { body() }
   /** e.g. form param, passed in body */ @Suppress("UNCHECKED_CAST")
