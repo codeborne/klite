@@ -21,6 +21,11 @@ class SmtpEmailSenderTest {
   val session = mockk<Session>(relaxed = true)
   val sender = SmtpEmailSender(session = session)
 
+  @Test fun defaultFrom() {
+    val from = sender.defaultFrom
+    expect(from.address).toEqual("klite@codeborne.com")
+  }
+
   @Test fun `send plain text`() = runTest {
     sender.send(email, subject = "Subject", body = "Body")
     val message = slot<MimeMessage>()

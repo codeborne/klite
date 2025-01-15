@@ -3,9 +3,12 @@ package klite.smtp
 import klite.Config
 import klite.Email
 import klite.MimeTypes
+import klite.i18n.Lang
+import klite.i18n.Lang.translate
 import java.util.*
 import javax.activation.DataHandler
 import javax.mail.*
+import javax.mail.Message.RecipientType.*
 import javax.mail.internet.*
 import javax.mail.util.ByteArrayDataSource
 
@@ -22,11 +25,14 @@ open class SmtpEmailSender(
   private val authenticator: Authenticator = object: Authenticator() {
     override fun getPasswordAuthentication() = PasswordAuthentication(smtpUser, Config.required("SMTP_PASS"))
   },
-  private val session: Session = Session.getInstance(props, authenticator.takeIf { smtpUser != null })
+  private val session: Session = Session.getInstance(props, authenticator.takeIf { smtpUser != null }),
 ): EmailSender {
-  override fun send(to: Email, subject: String, body: String, bodyMimeType: String, attachments: Map<String, ByteArray>, cc: List<Email>, from: InternetAddress) {
-    send(to, subject, from) {
-      cc.forEach { setRecipient(Message.RecipientType.CC, InternetAddress(it.value)) }
+  val defaultFrom = InternetAddress(Config["MAIL_FROM"], Config.optional("MAIL_FROM_NAME", translate(Lang.available.first(), "title")))
+  val bccTo = Config.optional("MAIL_BCC_TO")?.let { InternetAddress(it) }
+
+  override fun send(to: Email, subject: String, body: String, bodyMimeType: String, attachments: Map<String, ByteArray>, cc: List<Email>, from: InternetAddress?) {
+    send(to, subject, from ?: defaultFrom) {
+      cc.forEach { setRecipient(CC, InternetAddress(it.value)) }
       if (attachments.isEmpty())
         setBody(body, bodyMimeType)
       else
@@ -48,7 +54,8 @@ open class SmtpEmailSender(
 
   protected fun send(to: Email, subject: String, from: InternetAddress, block: MimeMessage.() -> Unit) = MimeMessage(session).apply {
     setFrom(from)
-    setRecipient(Message.RecipientType.TO, InternetAddress(to.value))
+    if (bccTo != null) setRecipient(BCC, bccTo)
+    setRecipient(TO, InternetAddress(to.value))
     setSubject(subject, MimeTypes.textCharset.name())
     block()
     Transport.send(this)
