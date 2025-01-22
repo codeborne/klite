@@ -91,6 +91,7 @@ class PooledDataSourceTest {
     val conn = pool.connection
     expect(pool.used.keys).toHaveSize(1)
     expect(pool.available).toHaveSize(0)
+    expect(pool.size.get()).toEqual(1)
 
     conn.close()
     conn.close()
@@ -98,9 +99,21 @@ class PooledDataSourceTest {
 
     expect(pool.used.keys).toHaveSize(0)
     expect(pool.available).toHaveSize(1)
+    expect(pool.size.get()).toEqual(1)
 
     val conn2 = pool.connection
     expect(pool.connection).notToEqual(conn2)
     expect(pool.connection).notToEqual(conn2)
+  }
+
+  @Test fun `failing connections decrease pool size`() {
+    val conn = pool.connection
+    expect(pool.size.get()).toEqual(1)
+    every { conn.unwrap(Connection::class.java)!!.rollback() } throws SQLException("already closed")
+    conn.close()
+
+    expect(pool.size.get()).toEqual(0)
+    expect(pool.used.keys).toHaveSize(0)
+    expect(pool.available).toHaveSize(0)
   }
 }

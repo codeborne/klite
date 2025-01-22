@@ -5,6 +5,7 @@
 * server: useOnly() will now add parser/renderer if it wasn't yet registered, to avoid confusion
 * server: HttpExchange.rawBody can now be accessed more than once (is a lazy property now)
 * jdbc: `distinct` and `notDistinct` operators introduced for where expressions
+* jdbc: PooledDataSource: DB connections closed by server now correctly decrease connection pool size
 
 # 1.6.10
 * server: `Server(InetSocketAddress(0))` can now be used to bind to any available port.

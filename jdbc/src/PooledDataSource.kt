@@ -68,7 +68,8 @@ class PooledDataSource(
           size.decrementAndGet(); throw e
         } else {
           size.decrementAndGet()
-          available.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?: throw SQLTimeoutException("No available connection after $timeout")
+          available.poll(timeout.inWholeMilliseconds, MILLISECONDS) ?:
+            throw SQLTimeoutException("No available connection after $timeout; used: ${used.size}/$size")
         }
       }
       try { conn.checkBySetApplicationName() } catch (e: Exception) {
@@ -107,6 +108,7 @@ class PooledDataSource(
         } else log.warn("Trying to close already returned $this")
       } catch (e: SQLException) {
         log.warn("Failed to return $this: $e")
+        size.decrementAndGet()
       }
     }
 
