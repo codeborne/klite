@@ -1,3 +1,6 @@
+# 1.6.12
+* jdbc: fixed `neq` operator, it was accidentally broken in 1.6.11
+
 # 1.6.11
 * smtp: new module introduced for sending emails over SMTP
 * server: expose Server.listen and bound Server.address as separate properties #93
