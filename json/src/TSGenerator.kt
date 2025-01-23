@@ -18,6 +18,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.jvmErasure
 
 internal const val tsDate = "\${number}-\${number}-\${number}"
 internal const val tsTime = "\${number}:\${number}:\${number}"
@@ -87,7 +88,7 @@ open class TSGenerator(
 
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
-    val ts = customTypes[type?.toString()] ?: customTypes[(type?.classifier as KClass<*>).qualifiedName] ?: when {
+    val ts = customTypes[type?.toString()] ?: customTypes[type?.jvmErasure?.qualifiedName] ?: when {
       cls == null || cls == Any::class -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)

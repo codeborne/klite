@@ -5,10 +5,7 @@ import ch.tutteli.atrium.api.fluent.en_GB.toContainExactly
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
-import klite.Converter
-import klite.TSID
-import klite.publicProperties
-import klite.uuid
+import klite.*
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
@@ -123,5 +120,6 @@ data class Hello(@JsonProperty("hellou") val hello: String, val id: UUID, val da
                  @JsonIgnore val ignore: Boolean = true, @JsonProperty(readOnly = true) val readOnly: Boolean = true, val isBoolean: Boolean = true)
 data class Nested(val x: BigDecimal = ZERO, val y: Int = 123)
 data class TypedData<T>(val list: List<T>, val map: Map<String, T> = emptyMap())
-data class FieldRule<T: Comparable<T>>(val field: KProperty1<out Hello, T>)
+data class FieldRule<T: Comparable<T>>(val field: KProperty1<out Hello, T>, val limits: Ranges<T> = emptyMap())
+typealias Ranges<T> = Map<T, Decimal>
 data class DataResponse<T>(val data: T)
