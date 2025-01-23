@@ -1,4 +1,4 @@
-# Unreleased
+# 1.6.11
 * smtp: new module introduced for sending emails over SMTP
 * server: expose Server.listen and bound Server.address as separate properties #93
 * server: Server.use() can register extensions that implement multiple supported interfaces at the same time
