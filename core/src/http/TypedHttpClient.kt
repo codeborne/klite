@@ -89,6 +89,18 @@ open class TypedHttpClient(
   suspend fun <T> delete(urlSuffix: String, type: KType, modifier: RequestModifier? = null): T = retryRequest(urlSuffix, type) { DELETE().apply(modifier) }
   suspend inline fun <reified T> delete(urlSuffix: String, noinline modifier: RequestModifier? = null): T = delete(urlSuffix, typeOf<T>(), modifier)
 
+  suspend fun <T> patch(urlSuffix: String, o: Any?, type: KType, modifier: RequestModifier? = null): T {
+    return render(o).let {
+      retryRequest(urlSuffix, type, it) {
+        method("PATCH", HttpRequest.BodyPublishers.ofString(it)).apply(modifier)
+      }
+    }
+  }
+
+  suspend inline fun <reified T> patch(urlSuffix: String, o: Any?, noinline modifier: RequestModifier? = null): T {
+    return patch(urlSuffix, o, typeOf<T>(), modifier)
+  }
+
   private fun HttpRequest.Builder.apply(modifier: RequestModifier?) = modifier?.let { it() } ?: this
 
   protected open fun render(o: Any?): String = o.toString()

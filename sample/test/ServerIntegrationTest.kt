@@ -31,6 +31,7 @@ class ServerIntegrationTest {
       expect(http.get<String>("/api/hello/params?required=123")).toEqual("\"false,123,null\"")
       expect(http.get<String>("/api/hello/params?required=xx&nullable=1&optional")).toEqual("\"true,xx,1\"")
       expect(http.post<String>("/api/hello/post", MyData("World"))).toEqual("\"Received MyData(hello=World, world=3.141592653589793) as json, optional = true\"")
+      expect(http.patch<String>("/api/hello/patch", MyData("World"))).toEqual("\"Patched MyData(hello=World, world=3.141592653589793)\"")
     }
 
     expect { runBlocking { http.get<String>("/api/hello/params") } }.toThrow<IOException>()
