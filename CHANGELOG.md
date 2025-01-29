@@ -1,4 +1,4 @@
-# 1.6.13
+# Unreleased
 * core: added PATCH method to TypedHttpClient
 
 # 1.6.12
