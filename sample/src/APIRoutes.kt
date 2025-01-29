@@ -39,6 +39,10 @@ class APIRoutes(private val userRepository: UserRepository) {
   @POST("/post")
   fun postExample(body: MyData, @QueryParam optional: Boolean = true) =
     "Received $body as json, optional = $optional"
+
+  @PATCH("/patch")
+  fun patchExample(body: MyData) =
+    "Patched $body"
 }
 
 data class MyData(val hello: String, val world: Double = Math.PI)
