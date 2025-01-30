@@ -24,6 +24,8 @@ dependencies {
 
 Fortunately, you won't get anything extra besides Klite itself, as it has no other dependencies, not even 3rd-party http server.
 
+Note that it is recommended to download Klite sources for documentation and check them for any additional parameters/options. You may configure your IDE to download dependency sources automatically (in Intellij -> Settings -> Advanced Settings).
+
 ## Source sets
 
 Gradle follows the Maven standard of having `src/main/kotlin` for production code and `src/test/kotlin` for tests by default.
