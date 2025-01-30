@@ -24,6 +24,25 @@ dependencies {
 
 Fortunately, you won't get anything extra besides Klite itself, as it has no other dependencies, not even 3rd-party http server.
 
+## Source sets
+
+Gradle follows the Maven standard of having `src/main/kotlin` for production code and `src/test/kotlin` for tests by default.
+
+However, it seems unnecessary deeply nested, so if you want to use a simpler `src`, `test`, and `db` instead, then use:
+
+```kts
+sourceSets {
+  main {
+    kotlin.srcDirs("src")
+    resources.srcDirs("src", "db").exclude("**/*.kt")
+  }
+  test {
+    kotlin.srcDirs("test")
+    resources.srcDirs("test").exclude("**/*.kt")
+  }
+}
+```
+
 ## Launcher
 
 Good frameworks allow you to write your own main function, so that you are in control of the application lifecycle.
@@ -268,7 +287,7 @@ use<DBModule>()
 use<DBMigrator>()
 ```
 
-DBMigrator will look for `db.sql` file in the root of the classpath (resources) and run it against the database, let's create it:
+DBMigrator will look for `db.sql` file in the root of the classpath (resources, use the "db" directory if you have redefined Gradle source sets) and run it against the database, let's create it:
 
 ```sql
 --changeset todos
