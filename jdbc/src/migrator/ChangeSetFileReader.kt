@@ -1,5 +1,6 @@
 package klite.jdbc
 
+import klite.Config
 import klite.createFrom
 import klite.info
 import klite.logger
@@ -13,7 +14,7 @@ import kotlin.reflect.full.primaryConstructor
  *
  * Lines starting with the following are treated specially:
  * * `--include path/file.sql` includes another sql file from classpath
- * * `--substitute a=b` can be used to substitute ${a} on subsequent lines with b
+ * * `--substitute a=b` can be used to substitute ${a} on subsequent lines with b, or use Config/env vars
  * * `--changeset some-id onChange:SKIP` - changeset declarations themselves, starting with its unique id and optional attributes
  */
 open class ChangeSetFileReader(
@@ -66,5 +67,8 @@ open class ChangeSetFileReader(
     if (changeSet != null) yield(changeSet!!.finish())
   }
 
-  private fun String.substitute() = substRegex.replace(this) { substitutions[it.groupValues[1]] ?: error("Unknown substitution ${it.value}") }
+  private fun String.substitute() = substRegex.replace(this) {
+    val key = it.groupValues[1]
+    substitutions[key] ?: Config.optional(key) ?: error("Unknown substitution ${it.value}")
+  }
 }

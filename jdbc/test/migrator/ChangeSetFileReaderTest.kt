@@ -2,6 +2,7 @@ package klite.jdbc
 
 import ch.tutteli.atrium.api.fluent.en_GB.*
 import ch.tutteli.atrium.api.verbs.expect
+import klite.Config
 import klite.jdbc.ChangeSet.On.RUN
 import klite.jdbc.ChangeSet.On.SKIP
 import org.junit.jupiter.api.Test
@@ -18,11 +19,12 @@ class ChangeSetFileReaderTest {
   }
 
   @Test fun `args and substitutions`() {
+    Config["APP_PASS"] = "some pass"
     val list = ChangeSetFileReader("migrator/test.sql").toList()
     expect(list).toHaveSize(2)
     val test = list.first()
     expect(test.copy(sql = test.sql.toString())).toEqual(
-      ChangeSet("test", "begin; exec hello($\${json}$$); end;", filePath = "migrator/test.sql", onChange = RUN, onFail = SKIP, separator = "xxx", context = "!prod", checksum = 2043940733))
+      ChangeSet("test", "begin; exec hello($\${json}$$); password='some pass'; end;", filePath = "migrator/test.sql", onChange = RUN, onFail = SKIP, separator = "xxx", context = "!prod", checksum = -1307369871))
     val test2 = list.last()
     expect(test2.copy(sql = test2.sql.toString())).toEqual(
       ChangeSet("test2", "checksum overridden;", filePath = "migrator/test.sql", checksum = 123))

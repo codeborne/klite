@@ -1,5 +1,6 @@
 # Unreleased
 * core: added PATCH method to TypedHttpClient
+* jdbc: can use Config ENV vars in migration scripts
 
 # 1.6.12
 * jdbc: fixed `neq` operator, it was accidentally broken in 1.6.11
