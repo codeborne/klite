@@ -98,11 +98,12 @@ Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), 
 
   dependencies {
     val kliteVersion = "master-SNAPSHOT" // you can put a released tag or commit hash here
-    implementation("com.github.codeborne.klite:klite-server:$kliteVersion")
+    fun klite(module: String) = "com.github.codeborne.klite:klite-$module:$kliteVersion"
+    implementation(klite("server"))
     // Plus any optional components with their own external dependencies, see above for list
-    implementation("com.github.codeborne.klite:klite-jackson:$kliteVersion")
-    implementation("com.github.codeborne.klite:klite-jdbc:$kliteVersion")
-    testImplementation("com.github.codeborne.klite:klite-jdbc-test:$kliteVersion")
+    implementation(klite("json"))
+    implementation(klite("jdbc"))
+    testImplementation(klite("jdbc-test"))
     // ...
   }
 ```
