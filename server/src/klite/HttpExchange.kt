@@ -93,7 +93,7 @@ open class HttpExchange(
 
   var responseType: String?
     get() = responseHeaders["Content-type"]?.firstOrNull()
-    set(value) { value?.let { header("Content-type", MimeTypes.withCharset(it)) } }
+    internal set(value) { value?.let { header("Content-type", MimeTypes.withCharset(it)) } }
 
   fun fileName(fileName: String, attachment: Boolean = true) {
     header("Content-disposition", (if (attachment) "attachment; " else "") + "filename=\"$fileName\"")

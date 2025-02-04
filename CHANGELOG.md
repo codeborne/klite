@@ -2,6 +2,7 @@
 * core: added PATCH method to TypedHttpClient
 * jdbc: can use Config ENV vars in migration scripts
 * jdbc-test: JUnitAssertionImprover removed, as Atrium 1.3+ improved error messages itself
+* server: disallow direct assignments to `HttpExchange.responseType` to avoid confusion, `HttpExchange.send()` or `startResponse()` must be used to bypass renderers
 
 # 1.6.12
 * jdbc: fixed `neq` operator, it was accidentally broken in 1.6.11

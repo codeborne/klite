@@ -1,7 +1,9 @@
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import klite.HttpExchange
+import klite.MimeTypes
 import klite.StatusCode
+import klite.StatusCode.Companion.OK
 import klite.annotations.*
 import klite.i18n.translate
 import kotlinx.coroutines.delay
@@ -43,6 +45,11 @@ class APIRoutes(private val userRepository: UserRepository) {
   @PATCH("/patch")
   fun patchExample(body: MyData) =
     "Patched $body"
+
+  @GET("/html")
+  fun htmlBypassingRenderer(e: HttpExchange) {
+    e.send(OK, "<h1>Hello</h1>", MimeTypes.html)
+  }
 }
 
 data class MyData(val hello: String, val world: Double = Math.PI)
