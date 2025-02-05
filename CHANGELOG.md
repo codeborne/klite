@@ -1,4 +1,4 @@
-# Unreleased
+# 1.6.13
 * core: added PATCH method to TypedHttpClient
 * jdbc: can use Config ENV vars in migration scripts
 * jdbc-test: JUnitAssertionImprover removed, as Atrium 1.3+ improved error messages itself
