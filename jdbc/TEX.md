@@ -49,35 +49,35 @@ ResultSet.getId()
 It's good to keep domain classes close to DB tables, with same column names
 
 ```kotlin
-val user = db.query("users", mapOf("email" to "hello@example.com")) { fromValues<User>() }.first()
+val user = db.select("users", "email" to "hello@example.com") { create<User>() }.first()
 ```
 
 
 ### What if I need to change how some fields are read?
 
 ```kotlin
-val user = db.query("users", mapOf("email" to "hello@example.com")) { fromValues(User::role to Role.BACKOFFICE) }
+val user = db.select("users", "email" to "hello@example.com") { create(User::role to Role.BACKOFFICE) }
 ```
 
 ### Why not type-safe where?
 
 ```kotlin
-val user = db.query("users", mapOf(User::email to Email("hello@example.com"))) { fromValues() }
+val user = db.select<User>("users", User::email to Email("hello@example.com"))
 ```
 
 ### Operators
 
 ```kotlin
-mapOf(User::birthDay to null)
-mapOf(User::birthDay to SqlOp("<", someDate))
-mapOf(User::age to listOf(1, 2, 3))
+User::birthDay to null
+User::birthDay to SqlOp("<", someDate)
 
-mapOf(User::birthDay to notNull)
+User::age to listOf(1, 2, 3)
 
-mapOf(User::birthDay lte someDate)
-mapOf(User::name like "Anton%")
+User::birthDay to notNull
+User::birthDay lte someDate
 
-mapOf(User::name to SqlExpr("(select ... where x = ?)", x))
+User::name like "Anton%"
+User::name to SqlExpr("(select ... where x = ?)", x)
 ```
 
 ### Crud operations?
