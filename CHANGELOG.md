@@ -1,5 +1,6 @@
 # Unreleased
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"
+* json: TSGenerator now accepts -o argument for simpler usage
 
 # 1.6.13
 * core: added PATCH method to TypedHttpClient

@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.ByteArrayOutputStream
 
 val mainClassName = "LauncherKt"
 
@@ -47,11 +46,7 @@ tasks.register<JavaExec>("types.ts") {
   dependsOn("classes")
   mainClass.set("klite.json.TSGenerator")
   classpath = sourceSets.main.get().runtimeClasspath
-  args("${project.buildDir}/classes/kotlin/main")
-  standardOutput = ByteArrayOutputStream()
-  doLast {
-    project.file("build/types.ts").writeText(standardOutput.toString())
-  }
+  args("${project.buildDir}/classes/kotlin/main", "-o", project.file("build/types.ts"))
 }
 
 tasks.withType<KotlinCompile> {

@@ -117,17 +117,18 @@ open class TSGenerator(
       val dir = Path.of(args[0])
       val argsLeft = args.toMutableList().apply { removeAt(0) }
       val out = argsLeft.arg("-o")?.let { PrintStream(it, UTF_8) } ?: System.out
-
-      val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
-      TSGenerator(customTypes, out = out).apply {
-        printUnmappedCustomTypes()
-        printFrom(dir)
+      out.use {
+        val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
+        TSGenerator(customTypes, out = out).apply {
+          printUnmappedCustomTypes()
+          printFrom(dir)
+        }
       }
     }
 
     @JvmStatic private fun MutableList<String>.arg(prefix: String): String? {
       val i = indexOf(prefix)
-      return if (i == -1) null else get(i).also { removeAt(i); removeAt(i) }
+      return if (i == -1) null else get(i + 1).also { removeAt(i); removeAt(i) }
     }
   }
 }
