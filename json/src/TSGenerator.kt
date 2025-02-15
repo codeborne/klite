@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.Language
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err
+import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Path
 import java.time.*
 import kotlin.io.path.ExperimentalPathApi
@@ -111,10 +112,19 @@ open class TSGenerator(
   companion object {
     @JvmStatic fun main(args: Array<String>) {
       if (args.isEmpty())
-        return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType")
+        return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType [-o <output-file>]")
+
       val dir = Path.of(args[0])
-      val customTypes = args.drop(1).associate { it.split("=").let { it[0] to it.getOrNull(1) } }
-      TSGenerator(customTypes).apply {
+      var argsLeft = args.drop(1)
+      val oIndex = argsLeft.indexOf("-o")
+      val out = if (oIndex == -1) System.out else {
+        PrintStream(argsLeft.getOrNull(oIndex + 1) ?: return err.println("No output file specified after -o"), UTF_8).also {
+          argsLeft = argsLeft.subList(0, oIndex) + argsLeft.subList(oIndex + 2, argsLeft.size)
+        }
+      }
+
+      val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
+      TSGenerator(customTypes, out = out).apply {
         printUnmappedCustomTypes()
         printFrom(dir)
       }
