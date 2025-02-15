@@ -112,12 +112,13 @@ open class TSGenerator(
   companion object {
     @JvmStatic fun main(args: Array<String>) {
       if (args.isEmpty())
-        return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType [-o <output-file>]")
+        return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType [-o <output-file>] [-p <prepend-text>]")
 
       val dir = Path.of(args[0])
       val argsLeft = args.toMutableList().apply { removeAt(0) }
       val out = argsLeft.arg("-o")?.let { PrintStream(it, UTF_8) } ?: System.out
       out.use {
+        argsLeft.arg("-p")?.let { out.println(it) }
         val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
         TSGenerator(customTypes, out = out).apply {
           printUnmappedCustomTypes()
