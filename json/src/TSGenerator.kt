@@ -1,11 +1,15 @@
 package klite.json
 
 import klite.Converter
+import klite.Email
+import klite.Phone
 import klite.publicProperties
 import org.intellij.lang.annotations.Language
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err
+import java.net.URI
+import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Path
 import java.time.*
@@ -21,21 +25,14 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
 
-internal const val tsDate = "\${number}-\${number}-\${number}"
-internal const val tsTime = "\${number}:\${number}:\${number}"
-
 /** Converts project data/enum/inline classes to TypeScript for front-end type-safety */
 open class TSGenerator(
-  private val customTypes: Map<String, String?> = mapOf(
-    LocalDate::class.qualifiedName!! to "`${tsDate}`",
-    LocalTime::class.qualifiedName!! to "`${tsTime}`",
-    LocalDateTime::class.qualifiedName!! to "`${tsDate}T${tsTime}`",
-    OffsetDateTime::class.qualifiedName!! to "`${tsDate}T${tsTime}+\${number}:\${number}`",
-    Instant::class.qualifiedName!! to "`${tsDate}T${tsTime}Z`"
-  ),
+  customTypes: Map<String, String?> = emptyMap(),
   private val typePrefix: String = "export ",
   private val out: PrintStream = System.out
 ) {
+  private val customTypes = defaultCustomTypes + customTypes
+
   @OptIn(ExperimentalPathApi::class)
   open fun printFrom(dir: Path) {
     dir.walk(INCLUDE_DIRECTORIES).filter { it.extension == "class" }.sorted().forEach {
@@ -110,6 +107,22 @@ open class TSGenerator(
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
 
   companion object {
+    const val tsDate = "\${number}-\${number}-\${number}"
+    const val tsTime = "\${number}:\${number}:\${number}"
+    const val tsUrl = "`\${string}://\${string}`"
+
+    val defaultCustomTypes = mapOf(
+      LocalDate::class to "`${tsDate}`",
+      LocalTime::class to "`${tsTime}`",
+      LocalDateTime::class to "`${tsDate}T${tsTime}`",
+      OffsetDateTime::class to "`${tsDate}T${tsTime}+\${number}:\${number}`",
+      Instant::class to "`${tsDate}T${tsTime}Z`",
+      URL::class to tsUrl,
+      URI::class to tsUrl,
+      Email::class to "`\${string}@\${string}`",
+      Phone::class to "`+\${number}`",
+    ).mapKeys { it.key.qualifiedName!! }
+
     @JvmStatic fun main(args: Array<String>) {
       if (args.isEmpty())
         return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType [-o <output-file>] [-p <prepend-text>]")
