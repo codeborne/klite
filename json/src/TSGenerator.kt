@@ -115,19 +115,19 @@ open class TSGenerator(
         return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType [-o <output-file>]")
 
       val dir = Path.of(args[0])
-      var argsLeft = args.drop(1)
-      val oIndex = argsLeft.indexOf("-o")
-      val out = if (oIndex == -1) System.out else {
-        PrintStream(argsLeft.getOrNull(oIndex + 1) ?: return err.println("No output file specified after -o"), UTF_8).also {
-          argsLeft = argsLeft.subList(0, oIndex) + argsLeft.subList(oIndex + 2, argsLeft.size)
-        }
-      }
+      val argsLeft = args.toMutableList().apply { removeAt(0) }
+      val out = argsLeft.arg("-o")?.let { PrintStream(it, UTF_8) } ?: System.out
 
       val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
       TSGenerator(customTypes, out = out).apply {
         printUnmappedCustomTypes()
         printFrom(dir)
       }
+    }
+
+    @JvmStatic private fun MutableList<String>.arg(prefix: String): String? {
+      val i = indexOf(prefix)
+      return if (i == -1) null else get(i).also { removeAt(i); removeAt(i) }
     }
   }
 }
