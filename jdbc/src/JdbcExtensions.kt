@@ -99,7 +99,9 @@ fun <R> DataSource.withStatement(@Language("SQL") sql: String, keys: Int = NO_GE
   try {
     prepareStatement(sql, keys).use { it.block() }
   } catch (e: SQLException) {
-    throw if (e.message?.contains("unique constraint") == true) AlreadyExistsException(e)
+    var message = e.message
+    if (message?.contains("hstore extension") == true) message += "\n  Probably you need to wrap some complex field into jsonb() or do other type conversion"
+    throw if (message?.contains("unique constraint") == true) AlreadyExistsException(e)
           else SQLException(e.message + "\n  SQL: $sql", e.sqlState, e.errorCode, e)
   }
 }

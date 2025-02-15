@@ -15,8 +15,6 @@ class JdbcExtensionsTest {
     "json" to jsonb("{}")
   )
 
-  fun jsonb(json: String) = SqlComputed("?::jsonb", json)
-
   @Test fun insertExpr() {
     expect(insertExpr("table", values)).toEqual("insert into \"table\" (hello, nullable, array, emptyArray, date, json)" +
       " values (?, ?, ?, '{}', current_date, ?::jsonb)")

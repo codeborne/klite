@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: add helpful details to Postgres exception "no hstore extension installed"
+
 # 1.6.13
 * core: added PATCH method to TypedHttpClient
 * jdbc: can use Config ENV vars in migration scripts
