@@ -32,6 +32,7 @@ open class TSGenerator(
   private val out: PrintStream = System.out
 ) {
   private val customTypes = defaultCustomTypes + customTypes
+  private val usedCustomTypes = mutableSetOf<String>()
 
   @OptIn(ExperimentalPathApi::class)
   open fun printFrom(dir: Path) {
@@ -43,6 +44,11 @@ open class TSGenerator(
 
   protected open fun printUnmappedCustomTypes() = customTypes.forEach {
     if (it.value == null) printClass(it.key)
+  }
+
+  protected open fun printUsedCustomTypes() = usedCustomTypes.forEach {
+    out.println("// $it")
+    out.println("${typePrefix}type ${it.substringAfterLast(".")} = ${customTypes[it]}")
   }
 
   protected open fun printClass(className: String) = try {
@@ -86,7 +92,9 @@ open class TSGenerator(
 
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
-    val ts = customTypes[type?.toString()] ?: customTypes[type?.jvmErasure?.qualifiedName] ?: when {
+    val ts = (
+      type?.toString()?.let { customTypes[it]?.apply { usedCustomTypes += it } } ?:
+      type?.jvmErasure?.qualifiedName?.let { customTypes[it]?.apply { usedCustomTypes += it } }) ?: when {
       cls == null || cls == Any::class -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
@@ -136,6 +144,7 @@ open class TSGenerator(
         TSGenerator(customTypes, out = out).apply {
           printUnmappedCustomTypes()
           printFrom(dir)
+          printUsedCustomTypes()
         }
       }
     }
