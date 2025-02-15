@@ -42,13 +42,15 @@ open class TSGenerator(
     }
   }
 
-  protected open fun printUnmappedCustomTypes() = customTypes.forEach {
-    if (it.value == null) printClass(it.key)
-  }
-
-  protected open fun printUsedCustomTypes() = usedCustomTypes.forEach {
-    out.println("// $it")
-    out.println("${typePrefix}type ${it.substringAfterLast(".")} = ${customTypes[it]}")
+  protected open fun printCustomTypes() {
+    if (customTypes.isNotEmpty()) out.println("")
+    customTypes.forEach {
+      if (it.value == null) printClass(it.key)
+      else if (it.key in usedCustomTypes) {
+        out.println("// ${it.key}")
+        out.println("${typePrefix}type ${it.key.substringAfterLast(".")} = ${it.value}")
+      }
+    }
   }
 
   protected open fun printClass(className: String) = try {
@@ -92,9 +94,8 @@ open class TSGenerator(
 
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
-    val ts = (
-      type?.toString()?.let { customTypes[it]?.apply { usedCustomTypes += it } } ?:
-      type?.jvmErasure?.qualifiedName?.let { customTypes[it]?.apply { usedCustomTypes += it } }) ?: when {
+    val customType = listOf(type?.toString(), type?.jvmErasure?.qualifiedName).find { it in customTypes }
+    val ts = customType?.also { usedCustomTypes += it }?.substringAfterLast(".") ?: when {
       cls == null || cls == Any::class -> "any"
       cls.isValue -> tsName(cls)
       cls.isSubclassOf(Enum::class) -> tsName(cls)
@@ -142,9 +143,8 @@ open class TSGenerator(
         argsLeft.arg("-p")?.let { out.println(it) }
         val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
         TSGenerator(customTypes, out = out).apply {
-          printUnmappedCustomTypes()
           printFrom(dir)
-          printUsedCustomTypes()
+          printCustomTypes()
         }
       }
     }
