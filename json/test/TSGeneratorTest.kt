@@ -28,8 +28,9 @@ class TSGeneratorTest {
       "interface Person {hello: SomeEnum; name: string}")
 
     expect(ts.render(SomeData::class)).toEqual( // language=TypeScript
-      "interface SomeData {age: number; any: any; birthDate?: LocalDate; bytes: Array<number>; field: keyof Person; id: MyId<SomeData>; " +
-        "list: Array<SomeData>; map: {[k: LocalTime]: Array<SomeData>}; name: string; other?: SomeData; status: SomeDataStatus; hello: SomeEnum}")
+      "interface SomeData {age: number; any: any; birthDate?: LocalDate; bytes: Array<number>; field: keyof Person; " +
+        "id: MyId<SomeData>; list: SomeData[]; map: {[k: LocalTime]: Array<SomeData>}; name: string; other?: SomeData; " +
+        "status: SomeDataStatus; hello: SomeEnum}")
 
     expect(ts.render(FieldRule::class)).toEqual( // language=TypeScript
       "interface FieldRule<T> {field: keyof Hello; limits: {[k: any]: number}}")
