@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
   group = "com.github.codeborne.klite"
-  version = "master-SNAPSHOT" // see tags/releases
+  version = "main-SNAPSHOT" // see tags/releases
 }
 
 subprojects {
