@@ -116,13 +116,14 @@ open class TSGenerator(
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
 
   companion object {
-    const val tsDate = "\${number}-\${number}-\${number}"
-    const val tsTime = "\${number}:\${number}:\${number}"
-    const val tsUrl = "`\${string}://\${string}`"
+    internal const val tsDate = "\${number}-\${number}-\${number}"
+    internal const val tsTimeShort = "\${number}:\${number}"
+    internal const val tsTime = "$tsTimeShort:\${number}"
+    internal const val tsUrl = "`\${string}://\${string}`"
 
     val defaultCustomTypes = mapOf(
       LocalDate::class to "`${tsDate}`",
-      LocalTime::class to "`${tsTime}`",
+      LocalTime::class to "`${tsTimeShort}`|`${tsTime}`",
       LocalDateTime::class to "`${tsDate}T${tsTime}`",
       OffsetDateTime::class to "`${tsDate}T${tsTime}+\${number}:\${number}`",
       Instant::class to "`${tsDate}T${tsTime}Z`",
