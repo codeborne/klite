@@ -119,7 +119,7 @@ open class TSGenerator(
     val values = cls.objectInstance ?: error("$cls is not an object")
     out.println("\n// ${cls.qualifiedName}")
     cls.publicProperties.forEach { p ->
-      out.println("${typePrefix}const ${p.jsonName}: ${tsName(p.returnType.jvmErasure)} = ${mapper.render(p.get(values))}")
+      out.println("${typePrefix}const ${p.jsonName} = ${mapper.render(p.get(values))} as ${tsType(p.returnType)}")
     }
   }
 
