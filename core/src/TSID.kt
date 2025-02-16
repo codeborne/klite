@@ -4,6 +4,7 @@ import java.lang.System.currentTimeMillis
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Time-Sorted unique ID, a more compact and DB index-friendly alternative to UUID.
@@ -14,11 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger
     const val RANDOM_BITS = 22
     const val RANDOM_MASK = 0x003fffff
     val EPOCH = Instant.parse(Config.optional("TSID_EPOCH", "2022-10-21T03:45:00.000Z")).toEpochMilli()
-    val random = Config.optional("TSID_SEED")?.toByteArray()?.let { SecureRandom(it) } ?: SecureRandom()
-    val counter = AtomicInteger()
-    @Volatile var lastTime = 0L
+    private var random = SecureRandom()
+    private val counter = AtomicInteger()
+    @Volatile private var lastTime = 0L
+    var deterministic: AtomicLong? = null
 
     fun generateValue(): Long {
+      deterministic?.let { return it.incrementAndGet() }
       val time = (currentTimeMillis() - EPOCH) shl RANDOM_BITS
       if (time != lastTime) {
         counter.set(random.nextInt())
