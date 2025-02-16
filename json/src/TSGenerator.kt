@@ -94,6 +94,7 @@ open class TSGenerator(
 
   protected open fun tsType(type: KType?): String {
     val cls = type?.classifier as? KClass<*>
+    val args = type?.arguments ?: emptyList()
     val customType = listOf(type?.toString(), type?.jvmErasure?.qualifiedName).find { it in customTypes }
     val ts = customType?.also { usedCustomTypes += it }?.substringAfterLast(".") ?: when {
       cls == null || cls == Any::class -> "any"
@@ -103,14 +104,14 @@ open class TSGenerator(
       cls.isSubclassOf(Number::class) -> "number"
       cls.isSubclassOf(Iterable::class) -> "Array"
       cls.java.isArray -> "Array" + (cls.java.componentType?.let { if (it.isPrimitive) "<" + tsType(it.kotlin.createType()) + ">" else "" } ?: "")
-      cls.isSubclassOf(Map::class) -> "Record"
-      cls == KProperty1::class -> "keyof " + tsType(type.arguments.first().type)
+      cls.isSubclassOf(Map::class) -> "{[k: ${tsType(args.first().type)}]: ${tsType(args.last().type)}}"
+      cls == KProperty1::class -> "keyof " + tsType(args.first().type)
       cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
       cls.isData || cls.java.isInterface -> tsName(cls)
       else -> "any"
     }
-    return if (ts[0].isLowerCase()) ts
-    else ts + (type?.arguments?.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
+    return if (ts[0].isLowerCase() || ts[0] == '{') ts
+    else ts + (args.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
   }
 
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
