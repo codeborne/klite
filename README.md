@@ -97,7 +97,7 @@ Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), 
   }
 
   dependencies {
-    val kliteVersion = "master-SNAPSHOT" // you can put a released tag or commit hash here
+    val kliteVersion = "main-SNAPSHOT" // you can put a released tag or commit hash here
     fun klite(module: String) = "com.github.codeborne.klite:klite-$module:$kliteVersion"
     implementation(klite("server"))
     // Plus any optional components with their own external dependencies, see above for list
@@ -121,7 +121,7 @@ But pull-requests are welcome if you want to improve something for everybody!
 
 Publish to `~/.m2/repository` by running `./gradlew publishToMavenLocal`
 
-Then add `mavenLocal()` repository to your project and use Klite version of `master-SNAPSHOT`.
+Then add `mavenLocal()` repository to your project and use Klite version of `main-SNAPSHOT`.
 
 ### Depending on the Git repository (source) directly
 
