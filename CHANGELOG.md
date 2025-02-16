@@ -1,8 +1,10 @@
 # Unreleased
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"
-* json: TSGenerator now accepts -o and -p arguments for simpler usage
-* json: TSGenerator now outputs provided custom types as separate types and reference them
-* json: TSGenerator can now generate test data from Kotlin object using -t
+* json: TSGenerator updates
+  * outputs records and arrays with shorter syntax, primarily to prevent records of enums from being exhaustive
+  * outputs provided custom types as separate types and references them
+  * accepts -o and -p arguments for simpler usage
+  * optionally can generate test data from Kotlin objects using -t
 
 # 1.6.13
 * core: added PATCH method to TypedHttpClient
