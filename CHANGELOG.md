@@ -1,5 +1,6 @@
 # Unreleased
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"
+* core: TSID now can use a preconfigured random seed using TSID_SEED, good for test data
 * json: TSGenerator updates
   * outputs records and arrays with shorter syntax, primarily to prevent records of enums from being exhaustive
   * outputs provided custom types as separate types and references them

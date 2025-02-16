@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
     const val RANDOM_BITS = 22
     const val RANDOM_MASK = 0x003fffff
     val EPOCH = Instant.parse(Config.optional("TSID_EPOCH", "2022-10-21T03:45:00.000Z")).toEpochMilli()
-    val random = SecureRandom()
+    val random = Config.optional("TSID_SEED")?.toByteArray()?.let { SecureRandom(it) } ?: SecureRandom()
     val counter = AtomicInteger()
     @Volatile var lastTime = 0L
 
