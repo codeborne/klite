@@ -2,7 +2,7 @@
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"
 * core: TSID now can use a preconfigured random seed using TSID_SEED, good for test data
 * json: TSGenerator updates
-  * outputs records and arrays with shorter syntax, primarily to prevent records of enums from being exhaustive
+  * wraps records with enum keys into Partial<T> to avoid TS wanting all the keys to be present
   * outputs provided custom types as separate types and references them
   * accepts -o and -p arguments for simpler usage
   * optionally can generate test data from Kotlin objects using -t

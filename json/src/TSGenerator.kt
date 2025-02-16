@@ -102,16 +102,18 @@ open class TSGenerator(
       cls.isSubclassOf(Enum::class) -> tsName(cls)
       cls.isSubclassOf(Boolean::class) -> "boolean"
       cls.isSubclassOf(Number::class) -> "number"
-      cls.isSubclassOf(Iterable::class) -> tsType(args.first().type) + "[]"
+      cls.isSubclassOf(Iterable::class) -> "Array"
       cls.java.isArray -> "Array" + (cls.java.componentType?.let { if (it.isPrimitive) "<" + tsType(it.kotlin.createType()) + ">" else "" } ?: "")
-      cls.isSubclassOf(Map::class) -> "{[k: ${tsType(args.first().type)}]: ${tsType(args.last().type)}}"
+      cls.isSubclassOf(Map::class) -> "Record"
       cls == KProperty1::class -> "keyof " + tsType(args.first().type)
       cls.isSubclassOf(CharSequence::class) || Converter.supports(cls) -> "string"
       cls.isData || cls.java.isInterface -> tsName(cls)
       else -> "any"
     }
-    return if (ts[0].isLowerCase() || ts[0] == '{' || ts.last() == ']') ts
-    else ts + (args.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
+    var fullType =  if (ts[0].isLowerCase()) ts
+      else ts + (args.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
+    if (args.firstOrNull()?.type?.jvmErasure?.isSubclassOf(Enum::class) == true) fullType = "Partial<$fullType>"
+    return fullType
   }
 
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
