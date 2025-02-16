@@ -43,12 +43,13 @@ tasks.register<JavaExec>("run") {
 }
 
 tasks.register<JavaExec>("types.ts") {
-  dependsOn("classes")
+  dependsOn("testClasses")
   mainClass.set("klite.json.TSGenerator")
-  classpath = sourceSets.main.get().runtimeClasspath
+  classpath = sourceSets.test.get().runtimeClasspath
   args("${project.buildDir}/classes/kotlin/main",
     "-o", project.file("build/types.ts"),
-    "-p", "// Generated automatically by ./gradlew types.ts\n"
+    "-p", "// Generated automatically by ./gradlew types.ts\n",
+    "-t", "users.TestData"
   )
 }
 

@@ -115,6 +115,14 @@ open class TSGenerator(
 
   protected open fun tsName(type: KClass<*>) = type.java.name.substringAfterLast(".").replace("$", "")
 
+  open fun printTestData(cls: KClass<Any>, mapper: JsonMapper = JsonMapper()) {
+    val values = cls.objectInstance ?: error("$cls is not an object")
+    out.println("\n// ${cls.qualifiedName}")
+    cls.publicProperties.forEach { p ->
+      out.println("${typePrefix}const ${p.jsonName}: ${tsName(p.returnType.jvmErasure)} = ${mapper.render(p.get(values))}")
+    }
+  }
+
   companion object {
     internal const val tsDate = "\${number}-\${number}-\${number}"
     internal const val tsTimeShort = "\${number}:\${number}"
@@ -135,17 +143,20 @@ open class TSGenerator(
 
     @JvmStatic fun main(args: Array<String>) {
       if (args.isEmpty())
-        return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType [-o <output-file>] [-p <prepend-text>]")
+        return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType " +
+          "[-o <output-file>] [-p <prepend-text>] [-t package.TestData]")
 
       val dir = Path.of(args[0])
       val argsLeft = args.toMutableList().apply { removeAt(0) }
       val out = argsLeft.arg("-o")?.let { PrintStream(it, UTF_8) } ?: System.out
+      val testDataClass = argsLeft.arg("-t")?.let { Class.forName(it).kotlin as KClass<Any> }
       out.use {
         argsLeft.arg("-p")?.let { out.println(it) }
         val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
         TSGenerator(customTypes, out = out).apply {
           printFrom(dir)
           printCustomTypes()
+          testDataClass?.let { printTestData(it) }
         }
       }
     }
