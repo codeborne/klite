@@ -112,7 +112,8 @@ open class TSGenerator(
     }
     var fullType =  if (ts[0].isLowerCase()) ts
       else ts + (args.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") { tsType(it.type) } ?: "")
-    if (args.firstOrNull()?.type?.jvmErasure?.isSubclassOf(Enum::class) == true) fullType = "Partial<$fullType>"
+    if (fullType.startsWith("Record") && args.firstOrNull()?.type?.jvmErasure?.isSubclassOf(Enum::class) == true)
+      fullType = "Partial<$fullType>"
     return fullType
   }
 
