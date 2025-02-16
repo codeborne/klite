@@ -150,15 +150,15 @@ open class TSGenerator(
         return err.println("Usage: <classes-dir> ...custom.Type=tsType ...package.IncludeThisType " +
           "[-o <output-file>] [-p <prepend-text>] [-t package.TestData]")
 
-      val dir = Path.of(args[0])
       val argsLeft = args.toMutableList().apply { removeAt(0) }
+      val dirs = (listOf(args[0]) + argsLeft.args("-i")).map { Path.of(it) }
       val out = argsLeft.args("-o").firstOrNull()?.let { PrintStream(it, UTF_8) } ?: System.out
       val testDataClass = argsLeft.args("-t")
       out.use {
         argsLeft.args("-p").forEach { out.println(it) }
         val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
         TSGenerator(customTypes, out = out).apply {
-          printFrom(dir)
+          dirs.forEach { printFrom(it) }
           printCustomTypes()
           testDataClass.forEach { printTestData(Class.forName(it).kotlin as KClass<Any>) }
         }
