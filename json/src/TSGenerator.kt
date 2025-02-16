@@ -148,22 +148,20 @@ open class TSGenerator(
 
       val dir = Path.of(args[0])
       val argsLeft = args.toMutableList().apply { removeAt(0) }
-      val out = argsLeft.arg("-o")?.let { PrintStream(it, UTF_8) } ?: System.out
-      val testDataClass = argsLeft.arg("-t")?.let { Class.forName(it).kotlin as KClass<Any> }
+      val out = argsLeft.args("-o").firstOrNull()?.let { PrintStream(it, UTF_8) } ?: System.out
+      val testDataClass = argsLeft.args("-t")
       out.use {
-        argsLeft.arg("-p")?.let { out.println(it) }
+        argsLeft.args("-p").forEach { out.println(it) }
         val customTypes = argsLeft.associate { it.split("=").let { it[0] to it.getOrNull(1) } }
         TSGenerator(customTypes, out = out).apply {
           printFrom(dir)
           printCustomTypes()
-          testDataClass?.let { printTestData(it) }
+          testDataClass.forEach { printTestData(Class.forName(it).kotlin as KClass<Any>) }
         }
       }
     }
 
-    @JvmStatic private fun MutableList<String>.arg(prefix: String): String? {
-      val i = indexOf(prefix)
-      return if (i == -1) null else get(i + 1).also { removeAt(i); removeAt(i) }
-    }
+    @JvmStatic private fun MutableList<String>.args(prefix: String): List<String> =
+      filterIndexed { i, s -> i > 0 && getOrNull(i - 1) == prefix }.also { removeAll(it + prefix) }
   }
 }
