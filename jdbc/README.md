@@ -60,8 +60,6 @@ Usage:
   // or you can write full sql manually using db.query() and db.exec()
 ```
 
-*Note: before Klite 1.5 query/select functions had the opposite meaning, but users found select("select...") not nice.*
-
 See [all available operations](src/JdbcExtensions.kt) and [comparison operators](src/SqlExpr.kt).
 
 All the above can run without a transaction: in this case, every query will obtain and release its own connection from the pool,
