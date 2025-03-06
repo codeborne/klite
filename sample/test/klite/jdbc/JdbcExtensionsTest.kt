@@ -50,6 +50,9 @@ open class JdbcExtensionsTest: TempTableDBTest() {
 
     expect(db.select(table, emptyList(), "where world is null") { getUuid() }).toContainExactly(id2)
     expect(db.select("$table a join $table b on a.id = b.id", emptyList()) { getUuid("b.id") }).toContain(id, id2)
+
+    expect { db.insert(table, mapOf("id" to id2, "hello" to "Hello2")) }
+      .toThrow<AlreadyExistsException>().messageToContain("errors.alreadyExists: id=$id2")
   }
 
   @Test fun generatedKey() {

@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: improve AlreadyExistsException message (always starts with errors.alreadyExists)
+
 # 1.6.14
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"
 * core: TSID.deterministic introduced for using in test data generation
