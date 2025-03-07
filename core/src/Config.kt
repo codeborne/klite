@@ -9,8 +9,6 @@ import java.io.File
  * which will skip already set env vars by default, giving them precedence.
  */
 object Config {
-  private val log = logger()
-
   fun optional(env: String): String? = System.getProperty(env) ?: System.getenv(env)
   fun optional(env: String, default: String) = optional(env) ?: default
   fun required(env: String) = optional(env) ?: error("$env should be provided as system property or env var")
@@ -21,7 +19,7 @@ object Config {
 
   /** List of active configurations, e.g. dev or prod, from ENV var */
   val active: Set<String> by lazy {
-    optional("ENV", "dev").split(",").map { it.trim() }.toSet().also { log.info("Running in $it") }
+    optional("ENV", "dev").split(",").map { it.trim() }.toSet().also { logger().info("Running in $it") }
   }
   fun isActive(conf: String) = conf in active
   fun isAnyActive(vararg confs: String) = confs.any { it in active }
@@ -36,7 +34,7 @@ object Config {
   /** @param force use to override already set env vars */
   fun useEnvFile(name: String = ".env", force: Boolean = false) = useEnvFile(File(name), force)
   fun useEnvFile(file: File, force: Boolean = false) {
-    if (!force && !file.exists()) return log.info("No ${file.absolutePath} found, skipping")
+    if (!force && !file.exists()) return logger().info("No ${file.absolutePath} found, skipping")
     file.forEachLine {
       val line = it.trim()
       if (line.isNotEmpty() && !line.startsWith('#'))
