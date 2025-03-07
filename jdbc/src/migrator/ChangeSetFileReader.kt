@@ -43,7 +43,7 @@ open class ChangeSetFileReader(
       if (line.startsWith("--")) {
         val parts = line.substring(2).trim().split(whitespace)
         if (parts[0] in keywords && changeSet != null) {
-          yield(changeSet!!.finish())
+          yield(changeSet.finish())
           changeSet = null
         }
         when (parts[0]) {
@@ -62,9 +62,9 @@ open class ChangeSetFileReader(
         }
       }
       else if (changeSet == null) error("No --changeset declaration preceding: $line")
-      else changeSet!!.addLine(line.replace(commentRegex, "").substitute())
+      else changeSet.addLine(line.replace(commentRegex, "").substitute())
     }
-    if (changeSet != null) yield(changeSet!!.finish())
+    if (changeSet != null) yield(changeSet.finish())
   }
 
   private fun String.substitute() = substRegex.replace(this) {
