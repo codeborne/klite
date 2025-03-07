@@ -1,4 +1,5 @@
 # Unreleased
+* core: log current active ENV when it is initialized
 * jdbc: improve AlreadyExistsException message (always starts with errors.alreadyExists)
 * jdbc: better handling of comments inside quoted strings in migration scripts
 
