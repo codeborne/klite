@@ -1,12 +1,14 @@
 package klite.csv
 
 import java.io.InputStream
+import java.nio.charset.Charset
+import kotlin.text.Charsets.UTF_8
 
-class CSVParser(separator: String = ",") {
+class CSVParser(separator: String = ",", private val charset: Charset = UTF_8) {
   private val splitter = """(?:$separator|^)("((?:(?:"")*[^"]*)*)"|([^"$separator]*))""".toRegex()
 
   fun parse(stream: InputStream): Sequence<Map<String, String>> {
-    val lines = stream.bufferedReader().lineSequence().iterator()
+    val lines = stream.bufferedReader(charset).lineSequence().iterator()
     var headerLine = lines.next()
     if (headerLine.startsWith(bomUTF8)) headerLine = headerLine.substring(bomUTF8.length)
     val header = splitLine(headerLine).toList()
