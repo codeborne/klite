@@ -1,16 +1,18 @@
 package klite.csv
 
 import java.io.OutputStream
+import java.nio.charset.Charset
 import java.sql.ResultSet
+import kotlin.text.Charsets.UTF_8
 
 const val bomUTF8 = "\uFEFF"
 private val needsQuotes = "[\\s\"';,]".toRegex()
 
-open class CSVGenerator(val out: OutputStream, val separator: String = ",", bom: String = bomUTF8) {
-  init { out.write(bom.toByteArray()) }
+open class CSVGenerator(val out: OutputStream, val separator: String = ",", val charset: Charset = UTF_8, bom: String = if (charset == UTF_8) bomUTF8 else "") {
+  init { out.write(bom.toByteArray(charset)) }
 
   fun row(vararg values: Any?) = this.apply {
-    out.write(values.joinToString(separator, postfix = "\n", transform = ::transform).toByteArray())
+    out.write(values.joinToString(separator, postfix = "\n", transform = ::transform).toByteArray(charset))
   }
 
   protected open fun transform(o: Any?): String = when(o) {
