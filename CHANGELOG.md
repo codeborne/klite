@@ -1,5 +1,6 @@
 # Unreleased
 * jdbc: improve AlreadyExistsException message (always starts with errors.alreadyExists)
+* jdbc: better handling of comments inside quoted strings in migration scripts
 
 # 1.6.14
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"

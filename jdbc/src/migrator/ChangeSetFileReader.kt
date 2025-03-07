@@ -24,7 +24,7 @@ open class ChangeSetFileReader(
   private val log = logger()
   private val keywords = setOf("include", "substitute", "changeset")
   private val changeSetParams = ChangeSet::class.primaryConstructor!!.parameters.map { it.name }.toSet()
-  private val commentRegex = "\\s*--.*".toRegex()
+  private val commentRegex = "\\s*--(?![^']*')".toRegex()
   private val substRegex = "(?<!\\\$)\\\$\\{(\\w*)}".toRegex()
   private val whitespace = "\\s+".toRegex()
 
