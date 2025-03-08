@@ -399,6 +399,8 @@ Then you can use `session` object to store and retrieve session data, e.g:
   val user = userRepository.by(credentials) ?: throw UnauthorizedException()
   session["userId"] = user.id.toString()
 }
+
+data class Credentials(val username: String, val password: Password)
 ```
 
 and then have a before handler to load current user:
