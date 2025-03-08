@@ -19,8 +19,8 @@ repositories {
 }
 
 dependencies {
-  val kliteVersion = "paste latest version here"
-  implementation("com.github.codeborne.klite:klite-server:$kliteVersion")
+  fun klite(module: String) = "com.github.codeborne.klite:klite-$module:LASTEST_VERSION_HERE"
+  implementation(klite("server"))
 }
 ```
 
@@ -116,7 +116,7 @@ Klite uses the `Accept` header to determine which content type the client wants.
 Add [klite-json](json) dependency to your `build.gradle.kts`:
 
 ```kts
-implementation("com.github.codeborne.klite:klite-json:$kliteVersion")
+implementation(klite("json"))
 ```
 
 Note: [klite-jackson](jackson) and [klite-serialization](serialization) are alternatives, if you prefer more heavy-weight and harder to configure libraries.
@@ -243,7 +243,7 @@ service:
 Then add [klite-jdbc](jdbc) dependency to your `build.gradle.kts`:
 
 ```kts
-implementation("com.github.codeborne.klite:klite-jdbc:$kliteVersion")
+implementation(klite("jdbc"))
 ```
 
 Now we can auto-start the DB and connect to it in our Launcher:
@@ -375,7 +375,7 @@ data class Todo(...) {
 }
 ```
 
-Then no extra validation code is needed in route handlers, that is easy to forget.
+Then no extra validation code is needed in route handlers, which is easy to forget.
 
 `JsonMapper.trimToNull` is enabled by default, so you get more clean data into your objects, and won't get empty strings into required (non-null) fields.
 
