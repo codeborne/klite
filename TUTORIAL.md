@@ -6,6 +6,8 @@ As you will see, Klite is very small, but still provides turn-the-key features f
 
 To get more information about any class or function, navigate freely inside to see how it works and what optional parameters does it provide.
 
+You can also use the [Klite + Svelte project template](https://github.com/codeborne/klite-starter) repo.
+
 ## Dependencies
 
 Create a Kotlin Gradle project in IntelliJ IDEA, then add the Klite dependency to the `build.gradle.kts` file:
