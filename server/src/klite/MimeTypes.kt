@@ -49,7 +49,8 @@ object MimeTypes {
     "jar" to "application/java-archive",
     "gz" to "application/gzip",
     "ics" to "text/calendar",
-    "asice" to "application/vnd.etsi.asic-e+zip"
+    "asice" to "application/vnd.etsi.asic-e+zip",
+    "webmanifest" to "application/manifest+json"
   )
 
   fun typeFor(file: Path) = byExtension[file.extension]
