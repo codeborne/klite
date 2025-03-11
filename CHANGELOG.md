@@ -3,6 +3,7 @@
 * jdbc: improve AlreadyExistsException message (always starts with errors.alreadyExists)
 * jdbc: better handling of comments inside quoted strings in migration scripts
 * csv: support for providing a different encoding than UTF-8 when parsing or generating
+* openapi: adding openApi() to context will now add /openapi.json, /openapi.html and /openapi routes, which will also serve Swagger-UI automatically
 
 # 1.6.14
 * jdbc: add helpful details to Postgres exception "no hstore extension installed"
