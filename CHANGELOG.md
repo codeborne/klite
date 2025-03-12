@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: restore exactly the same checksums of DBMigrator changesets containing comments
+
 # 1.6.15
 * core: log current active ENV when it is initialized
 * jdbc: improve AlreadyExistsException message (always starts with errors.alreadyExists)
