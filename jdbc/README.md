@@ -2,8 +2,14 @@
 
 Provides simple extension functions for JDBC standard classes for a simple way to query a DB. [Transaction](src/Transaction.kt) management is also supported.
 
+Design choices:
+* Easy to write common things, like insert an entity or select a list of entities
+* No need to write simple boilerplate SQL
+* Possible to write complex SQL queries with joins and conditions when needed
+* Full control how to create entities from the result set, but automapping when columns match entity properties
+
 A more concise alternative to [Spring's JdbcTemplate](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/jdbc/core/JdbcTemplate.html),
-and also includes SQL statement generation. Tested mostly with PostgreSQL.
+and also generates SQL statements. Tested mostly with PostgreSQL.
 
 Registration with Server instance:
 
