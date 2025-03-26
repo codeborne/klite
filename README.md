@@ -13,6 +13,19 @@ Please **star the repo** to let us know you are interested.
 
 See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
 
+## Code sample
+
+```kotlin
+fun main() {
+  Server().apply {
+    context("/api") {
+      get("/hello") { "Hello, world!" }
+    }
+    start()
+  }
+}
+```
+
 ## Goals
 
 * Minimal amount of code
