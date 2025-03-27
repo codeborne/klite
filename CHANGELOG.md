@@ -1,3 +1,6 @@
+# Unreleased
+* openapi: skip @AttrParam from OpenAPI spec
+
 # 1.6.16
 * jdbc: restore exactly the same checksums of DBMigrator changesets containing comments
 

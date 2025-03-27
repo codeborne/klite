@@ -58,7 +58,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
     "tags" to listOfNotNull(funHandler?.let { it.instance::class.annotation<Tag>()?.name ?: it.instance::class.simpleName }),
     "parameters" to funHandler?.let {
-      it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
+      it.params.map { p -> toParameter(p, op) }.filter { it["in"] != null }
     },
     "requestBody" to toRequestBody(route, route.findAnnotation<RequestBody>() ?: op?.requestBody),
     "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
