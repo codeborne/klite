@@ -1,5 +1,6 @@
 # Unreleased
 * openapi: skip @AttrParam from OpenAPI spec
+* openapi: allow to specify SwaggerUI config parameters in openApi() function
 
 # 1.6.16
 * jdbc: restore exactly the same checksums of DBMigrator changesets containing comments

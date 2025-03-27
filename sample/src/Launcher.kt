@@ -66,7 +66,7 @@ fun sampleServer(port: Int = 8080): Server {
       useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
       annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
       annotated<SSERoutes>("/sse") // Server-Side Events sample
-      openApi()
+      openApi(swaggerUIConfig = mapOf("syntaxHighlight" to true))
     }
 
     context("/auth") {

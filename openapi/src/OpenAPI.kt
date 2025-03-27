@@ -6,6 +6,7 @@ import klite.RequestMethod.GET
 import klite.Route
 import klite.Router
 import klite.StatusCode.Companion.OK
+import klite.html.escapeJs
 import org.intellij.lang.annotations.Language
 
 /**
@@ -21,17 +22,19 @@ import org.intellij.lang.annotations.Language
  * - [@Parameter][io.swagger.v3.oas.annotations.Parameter] annotation can be used on method parameters directly
  * - [@Tag][io.swagger.v3.oas.annotations.tags.Tag] annotation is supported on route classes for grouping of routes
  */
-fun Router.openApi(path: String = "/openapi", annotations: List<Annotation> = emptyList()) {
+// Generate entities separately, and reference them. To enable TS generation
+// TODO: support @Schema(description on data classes and fields)
+fun Router.openApi(path: String = "/openapi", annotations: List<Annotation> = emptyList(), swaggerUIConfig: Map<String, Comparable<*>> = emptyMap()) {
   add(Route(GET, "$path.json".toRegex(), annotations) { generateOpenAPI() })
-  add(Route(GET, "$path.html".toRegex(), annotations) { swaggerUI(path) })
+  add(Route(GET, "$path.html".toRegex(), annotations) { swaggerUI(path, swaggerUIConfig) })
   add(Route(GET, path.toRegex(), annotations) {
-    if (accept(MimeTypes.html)) swaggerUI(path)
+    if (accept(MimeTypes.html)) swaggerUI(path, swaggerUIConfig)
     else generateOpenAPI()
   })
 }
 
 @Language("html")
-private fun HttpExchange.swaggerUI(path: String) = send(OK, """
+private fun HttpExchange.swaggerUI(path: String, config: Map<String, Comparable<*>> = emptyMap()) = send(OK, """
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -48,6 +51,9 @@ private fun HttpExchange.swaggerUI(path: String) = send(OK, """
         ui = SwaggerUIBundle({
           url: '${path.substringAfter("/")}.json',
           dom_id: '#swagger-ui',
+          ${config.entries.joinToString {
+            "'${it.key.escapeJs()}': ${if (it.value !is String) "${it.value}" else "'${it.value.toString().escapeJs()}'" }"
+          }}
         })
       }
     </script>
