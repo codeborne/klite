@@ -1,4 +1,5 @@
 # Unreleased
+* jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
 * openapi:
   * skip @AttrParam from OpenAPI spec
   * allow to specify SwaggerUI config parameters in openApi() function
