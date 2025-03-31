@@ -58,7 +58,7 @@ internal fun toOperation(route: Route): Pair<String, Any> {
     "operationId" to route.handler.let { (if (it is FunHandler) it.instance::class.simpleName + "." + it.f.name else it::class.simpleName) },
     "tags" to listOfNotNull(funHandler?.let { it.instance::class.annotation<Tag>()?.name ?: it.instance::class.simpleName }),
     "parameters" to funHandler?.let {
-      it.params.filter { it.source != null }.map { p -> toParameter(p, op) }
+      it.params.map { p -> toParameter(p, op) }.filter { it["in"] != null }
     },
     "requestBody" to toRequestBody(route, route.findAnnotation<RequestBody>() ?: op?.requestBody),
     "responses" to toResponsesByCode(route, op, funHandler?.f?.returnType),
@@ -143,7 +143,7 @@ private fun List<SecurityRequirement>.toSecurity() = map { mapOf(it.name to it.s
 internal fun <T: Annotation> T.toNonEmptyValues(filter: (KProperty1<T, *>) -> Boolean = { true }): MutableMap<String, Any?> = HashMap<String, Any?>().also { map ->
   publicProperties.filter(filter).forEach { p ->
     when(val v = p.valueOf(this)) {
-      "", false, 0, Int.MAX_VALUE, Int.MIN_VALUE, 0.0, Void::class.java, AccessMode.AUTO, RequiredMode.AUTO, AdditionalPropertiesValue.USE_ADDITIONAL_PROPERTIES_ANNOTATION -> null
+      "", "default", false, 0, Int.MAX_VALUE, Int.MIN_VALUE, 0.0, Void::class.java, AccessMode.AUTO, RequiredMode.AUTO, AdditionalPropertiesValue.USE_ADDITIONAL_PROPERTIES_ANNOTATION -> null
       is Enum<*> -> v.takeIf { v.name != "DEFAULT" && v.name != "AUTO" }
       is Annotation -> v.toNonEmptyValues().takeIf { it.isNotEmpty() }
       is Array<*> -> v.map { (it as? Annotation)?.toNonEmptyValues() ?: it }.takeIf { it.isNotEmpty() }
