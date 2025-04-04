@@ -1,14 +1,22 @@
 package klite.jdbc
 
+import klite.logger
 import klite.trimToNull
+import klite.warn
 import java.sql.ResultSet
 import javax.sql.DataSource
 import kotlin.text.RegexOption.IGNORE_CASE
 import kotlin.text.RegexOption.MULTILINE
 
-fun DataSource.lock(on: String) = query("select pg_advisory_lock(${on.hashCode()})") {}.first()
-fun DataSource.tryLock(on: String): Boolean = query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first()
-fun DataSource.unlock(on: String): Boolean = query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first()
+private val DataSource.url get() = unwrap(ConfigDataSource::class.java)?.url
+val DataSource.isPostgres get() = url?.startsWith("jdbc:postgresql") == true
+
+fun DataSource.lock(on: String) = postgresOnly { query("select pg_advisory_lock(${on.hashCode()})") {}.first() }
+fun DataSource.tryLock(on: String): Boolean = postgresOnly { query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first() } == true
+fun DataSource.unlock(on: String): Boolean = postgresOnly { query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first() } == true
+
+private fun <T> DataSource.postgresOnly(block: () -> T): T? =
+  if (isPostgres) block() else null.also { logger().warn("Unsupported DB, not executing") }
 
 private val columnNameIndexMapField = runCatching {
   Class.forName("org.postgresql.jdbc.PgResultSet").getDeclaredField("columnNameIndexMap").apply { trySetAccessible() }
