@@ -60,18 +60,6 @@ class Server(
     onStopHandlers.reversed().forEach { it.run() }
   }
 
-  // add both Extension and Runnable overloads when this is resolved: https://youtrack.jetbrains.com/issue/KT-56930
-  inline fun <reified E: Any> use() = require<E>().also { use(it) }
-  fun use(extension: Any) = extension.also {
-    register(it)
-    var used = false
-    if (it is Extension) it.install(this).also { used = true }
-    if (it is Runnable) it.run().also { used = true }
-    if (it is BodyParser) parsers += it.also { used = true }
-    if (it is BodyRenderer) renderers += it.also { used = true }
-    if (!used) error("Cannot use $it, not an Extension, Runnable, BodyParser or BodyRenderer")
-  }
-
   /** Adds a new router context. When handing a request, the longest matching router context is chosen */
   fun context(prefix: String, block: Router.() -> Unit = {}) =
     Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
@@ -130,6 +118,10 @@ class Server(
   }
 }
 
-fun interface Extension {
-  fun install(server: Server)
+interface Extension {
+  fun install(server: Server) {}
+  fun install(config: RouterConfig) {
+    if (config is Server) install(config)
+    else error("${this::class} needs to be used at the Server level, move it out of context call")
+  }
 }

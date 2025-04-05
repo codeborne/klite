@@ -1,4 +1,5 @@
 # Unreleased
+* server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
 * jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
 * openapi:
   * skip @AttrParam from OpenAPI spec

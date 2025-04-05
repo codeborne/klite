@@ -1,6 +1,7 @@
 package klite
 
 import klite.RequestMethod.*
+import kotlinx.coroutines.Runnable
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -10,7 +11,7 @@ abstract class RouterConfig(
   bodyRenderers: List<BodyRenderer>,
   bodyParsers: List<BodyParser>
 ) {
-  abstract val registry: Registry
+  abstract val registry: MutableRegistry
   abstract val pathParamRegexer: PathParamRegexer
   val decorators = decorators.toMutableList()
   val renderers = bodyRenderers.toMutableList()
@@ -24,6 +25,18 @@ abstract class RouterConfig(
 
   fun after(after: After) = decorator(after.toDecorator())
   inline fun <reified T: After> after() = after(registry.require<T>())
+
+  // add both Extension and Runnable overloads when this is resolved: https://youtrack.jetbrains.com/issue/KT-56930
+  inline fun <reified E: Any> use() = registry.require<E>().also { use(it) }
+  fun use(extension: Any) = extension.also {
+    registry.register(it)
+    var used = false
+    if (it is Extension) it.install(this).also { used = true }
+    if (it is Runnable) it.run().also { used = true }
+    if (it is BodyParser) parsers += it.also { used = true }
+    if (it is BodyRenderer) renderers += it.also { used = true }
+    if (!used) error("Cannot use $it, not an Extension, Runnable, BodyParser or BodyRenderer")
+  }
 
   inline fun <reified T> useOnly() where T: BodyParser, T: BodyRenderer {
     useOnly(renderers, BodyRenderer::class, T::class)
@@ -40,7 +53,7 @@ abstract class RouterConfig(
 
 class Router(
   val prefix: String,
-  override val registry: Registry,
+  override val registry: MutableRegistry,
   override val pathParamRegexer: PathParamRegexer,
   decorators: List<Decorator>,
   renderers: List<BodyRenderer>,
