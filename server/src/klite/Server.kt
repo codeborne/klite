@@ -21,7 +21,7 @@ import kotlin.reflect.full.primaryConstructor
 class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
-  override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
+  registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBody>()
     register<FormUrlEncodedParser>()
@@ -32,9 +32,9 @@ class Server(
   decorators: List<Decorator> = registry.requireAllDecorators(),
   val sessionStore: SessionStore? = registry.optional(),
   val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
-  override val pathParamRegexer: PathParamRegexer = registry.require(),
+  pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
-): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
+): RouterConfig(registry, pathParamRegexer, decorators, registry.requireAll(), registry.requireAll()) {
   init { currentThread().name += "/" + requestIdGenerator.prefix }
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val log = logger()
