@@ -45,9 +45,11 @@ open class ConfigDataSource(
   override fun getLoginTimeout() = 0
   override fun setLoginTimeout(seconds: Int) = throw SQLFeatureNotSupportedException()
 
-  override fun <T: Any?> unwrap(iface: Class<T>?) = null
-  override fun isWrapperFor(iface: Class<*>?) = false
+  @Suppress("UNCHECKED_CAST")
+  override fun <T: Any?> unwrap(iface: Class<T>) = if (isWrapperFor(iface)) this as T else null
+  override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(javaClass)
 
   override fun getParentLogger() = throw SQLFeatureNotSupportedException()
   override fun createConnectionBuilder() = throw SQLFeatureNotSupportedException()
 }
+

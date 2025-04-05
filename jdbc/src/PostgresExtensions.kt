@@ -8,7 +8,7 @@ import javax.sql.DataSource
 import kotlin.text.RegexOption.IGNORE_CASE
 import kotlin.text.RegexOption.MULTILINE
 
-private val DataSource.url get() = unwrap(ConfigDataSource::class.java)?.url
+private val DataSource.url get() = unwrap<ConfigDataSource>()?.url
 val DataSource.isPostgres get() = url?.startsWith("jdbc:postgresql") == true
 
 fun DataSource.lock(on: String) = postgresOnly { query("select pg_advisory_lock(${on.hashCode()})") {}.first() }
