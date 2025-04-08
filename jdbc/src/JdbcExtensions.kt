@@ -1,6 +1,7 @@
 @file:Suppress("NAME_SHADOWING", "NOTHING_TO_INLINE")
 package klite.jdbc
 
+import klite.Config
 import klite.Decimal
 import org.intellij.lang.annotations.Language
 import java.io.InputStream
@@ -137,6 +138,8 @@ fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, 
 fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
   upsertBatch(table, sequenceOf(values), uniqueFields, where, skipUpdateFields).first()
 
+private val upsertAsMerge = Config.optional("DB_URL")?.startsWith("jdbc:postgres") == false || Config.optional("DB_UPSERT_AS_MERGE") == "true"
+
 fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<ValueMap>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray {
   val where = whereConvert(where.map { (k, v) -> "$table.${q(name(k))}" to v })
   val first = values.firstOrNull() ?: return intArrayOf()
@@ -144,11 +147,22 @@ fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, 
                    .joinToString { k -> q(name(k)).let { "$it=excluded.$it" } }
   val whereValues = whereValues(where)
   val valuesToSet = values.map { setValues(it) + whereValues }
-  return execBatch(insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}", valuesToSet)
+  val expr = if (upsertAsMerge) """
+    merge into ${q(table)} using (${valuesExpr(first)}) as excluded ${columnsExpr(first)}
+      on ${uniqueFields.split(",").map { it.trim() }.joinToString(" and ") { "${q(table)}.$it = excluded.$it" }}
+      when matched${whereExpr(where).replace("where", "and")} then update set $updateExpr
+      when not matched then insert ${columnsExpr(first)} values (${first.keys.joinToString { "excluded.$it" }})
+    """
+  else
+    insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}"
+  return execBatch(expr, valuesToSet)
 }
 
 internal fun insertExpr(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap) =
-  "insert into ${q(table)} (${values.keys.joinToString { q(name(it)) }}) values (${values.values.joinToString { placeholder(it) }})"
+  "insert into ${q(table)} ${columnsExpr(values)} ${valuesExpr(values)}"
+
+internal fun columnsExpr(values: ValueMap) = "(${values.keys.joinToString { q(name(it)) }})"
+internal fun valuesExpr(values: ValueMap) = "values (${values.values.joinToString { placeholder(it) }})"
 
 inline fun DataSource.update(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, vararg where: ColValue?): Int =
   update(table, values, where.filterNotNull())

@@ -1,6 +1,7 @@
 # Unreleased
 * server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
+* jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
 * jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
 * openapi:
   * skip @AttrParam from OpenAPI spec
