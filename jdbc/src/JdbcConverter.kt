@@ -49,7 +49,7 @@ object JdbcConverter {
 
   fun to(v: Any?, conn: Connection? = null): Any? = when (v) {
     null -> null
-    is Enum<*> -> v.name
+    is Enum<*> -> v.toString()
     is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass), v.map { to(it, conn) }.toTypedArray())
     is Array<*> -> conn!!.createArrayOf(arrayType(v.javaClass.componentType), v.map { to(it, conn) }.toTypedArray())
     else -> {
