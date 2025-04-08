@@ -151,7 +151,7 @@ fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, 
     merge into ${q(table)} using (${valuesExpr(first)}) as excluded ${columnsExpr(first)}
       on ${uniqueFields.split(",").map { it.trim() }.joinToString(" and ") { "${q(table)}.$it = excluded.$it" }}
       when matched${whereExpr(where).replace("where", "and")} then update set $updateExpr
-      when not matched then insert ${columnsExpr(first)} values (${first.keys.joinToString { "excluded.$it" }})
+      when not matched then insert ${columnsExpr(first)} values (${first.keys.joinToString { "excluded.$it" }});
     """
   else
     insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}"
