@@ -231,4 +231,6 @@ var Connection.applicationName get() = getClientInfo("ApplicationName")
                                set(value) { setClientInfo("ApplicationName", value) }
 
 inline fun <reified T: Wrapper> Wrapper.isWrapperFor(): Boolean = isWrapperFor(T::class.java)
-inline fun <reified T: Wrapper> Wrapper.unwrap(): T? = unwrap(T::class.java)
+inline fun <reified T: Wrapper> Wrapper.unwrap(): T = unwrap(T::class.java)
+inline fun <T: Wrapper> Wrapper.unwrapOrNull(iface: Class<T>): T? = if (isWrapperFor(iface)) unwrap(iface) else null
+inline fun <reified T: Wrapper> Wrapper.unwrapOrNull(): T? = unwrapOrNull(T::class.java)

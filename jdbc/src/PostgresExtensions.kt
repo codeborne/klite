@@ -33,7 +33,7 @@ private val columnNameIndexMapField = runCatching {
  */
 internal fun ResultSet.populatePgColumnNameIndex(select: String) {
   if (columnNameIndexMapField == null || !select.contains("join", ignoreCase = true)) return
-  val rs = unwrap(columnNameIndexMapField.declaringClass) ?: return
+  val rs = unwrapOrNull(columnNameIndexMapField.declaringClass as Class<ResultSet>) ?: return
   val md = metaData
   val map = HashMap<String, Int>()
   val joinAliases = joinAliases(select)
