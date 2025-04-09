@@ -4,12 +4,17 @@ import klite.logger
 import klite.trimToNull
 import klite.warn
 import java.sql.ResultSet
+import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 import kotlin.text.RegexOption.IGNORE_CASE
 import kotlin.text.RegexOption.MULTILINE
 
 private val DataSource.url get() = unwrap<ConfigDataSource>()?.url
-val DataSource.isPostgres get() = url?.startsWith("jdbc:postgresql") == true
+private val dbPostgresIndicators = ConcurrentHashMap<DataSource, Boolean>()
+
+val DataSource.isPostgres get() = dbPostgresIndicators.getOrPut(this) {
+  (url ?: withConnection { metaData.url }).contains("postgresql")
+}
 
 fun DataSource.lock(on: String) = postgresOnly { query("select pg_advisory_lock(${on.hashCode()})") {}.first() }
 fun DataSource.tryLock(on: String): Boolean = postgresOnly { query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first() } == true
@@ -42,5 +47,5 @@ internal fun ResultSet.populatePgColumnNameIndex(select: String) {
   columnNameIndexMapField.set(rs, map)
 }
 
-val joinRegex = "\\bjoin\\s+(\\w+?)(\\s+as)?(\\s+(\\w+?))?\\s+(on|using)\\b".toRegex(setOf(IGNORE_CASE, MULTILINE))
+private val joinRegex = "\\bjoin\\s+(\\w+?)(\\s+as)?(\\s+(\\w+?))?\\s+(on|using)\\b".toRegex(setOf(IGNORE_CASE, MULTILINE))
 internal fun joinAliases(select: String) = joinRegex.findAll(select).map { it.groupValues[4].trimToNull() ?: it.groupValues[1] }.toList()
