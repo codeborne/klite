@@ -138,7 +138,7 @@ fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, 
 fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): Int =
   upsertBatch(table, sequenceOf(values), uniqueFields, where, skipUpdateFields).first()
 
-private val upsertAsMerge = Config.optional("DB_URL")?.startsWith("jdbc:postgres") == false || Config.optional("DB_UPSERT_AS_MERGE") == "true"
+private val isPostgres = Config.optional("DB_URL")?.startsWith("jdbc:postgres") == true
 
 fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<ValueMap>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = emptySet()): IntArray {
   val where = whereConvert(where.map { (k, v) -> "$table.${q(name(k))}" to v })
@@ -147,14 +147,14 @@ fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, 
                    .joinToString { k -> q(name(k)).let { "$it=excluded.$it" } }
   val whereValues = whereValues(where)
   val valuesToSet = values.map { setValues(it) + whereValues }
-  val expr = if (upsertAsMerge) """
+  val expr = if (isPostgres)
+    insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}"
+  else """
     merge into ${q(table)} using (${valuesExpr(first)}) as excluded ${columnsExpr(first)}
       on ${uniqueFields.split(",").map { it.trim() }.joinToString(" and ") { "${q(table)}.$it = excluded.$it" }}
       when matched${whereExpr(where).replace("where", "and")} then update set $updateExpr
       when not matched then insert ${columnsExpr(first)} values (${first.keys.joinToString { "excluded.$it" }});
     """
-  else
-    insertExpr(table, first) + " on conflict ($uniqueFields) do update set ${updateExpr}${whereExpr(where)}"
   return execBatch(expr, valuesToSet)
 }
 
@@ -208,7 +208,7 @@ internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 internal fun placeholder(v: Any?) = when {
   v is SqlExpr -> v.expr
   isEmptyCollection(v) -> emptyArray.expr
-  v is Decimal -> "?::decimal"
+  v is Decimal -> if (isPostgres) "?::decimal" else "?"
   else -> "?"
 }
 
