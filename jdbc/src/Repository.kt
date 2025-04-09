@@ -55,7 +55,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open fun list(vararg where: PropValue<E>?, suffix: String = defaultOrder): List<E> =
     db.select(selectFrom, where.filterNotNull(), suffix) { mapper() }
 
-  open fun by(vararg where: PropValue<E>?, suffix: String = ""): E? = list(*where, suffix = "$suffix limit 1").firstOrNull()
+  open fun by(vararg where: PropValue<E>?, suffix: String = ""): E? = list(*where, suffix = suffix).firstOrNull()
   open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
 
   open fun save(entity: E): Int {
