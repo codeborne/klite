@@ -3,6 +3,7 @@
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
 * jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
 * jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
+* smtp: SmtpEmailSender will now log successful email sent (to address and subject)
 * openapi:
   * skip @AttrParam from OpenAPI spec
   * allow to specify SwaggerUI config parameters in openApi() function
