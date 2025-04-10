@@ -52,13 +52,18 @@ open class SmtpEmailSender(
 
   private fun MimePart.setBody(body: String, bodyMimeType: String) = setContent(body, MimeTypes.withCharset(bodyMimeType))
 
-  protected fun send(to: Email, subject: String, from: InternetAddress, block: MimeMessage.() -> Unit) = MimeMessage(session).apply {
-    setFrom(from)
-    if (bccTo != null) setRecipient(BCC, bccTo)
-    setRecipient(TO, InternetAddress(to.value))
-    setSubject(subject, MimeTypes.textCharset.name())
-    block()
-    Transport.send(this)
-    log.info("Email sent to $to, subject=$subject")
+  protected open fun send(to: Email, subject: String, from: InternetAddress, block: MimeMessage.() -> Unit) = MimeMessage(session).apply {
+    try {
+      setFrom(from)
+      if (bccTo != null) setRecipient(BCC, bccTo)
+      setRecipient(TO, InternetAddress(to.value))
+      setSubject(subject, MimeTypes.textCharset.name())
+      block()
+      Transport.send(this)
+      log.info("Email sent to $to, subject=$subject")
+    } catch (e: Exception) {
+      log.error("Failed to send to $to, subject=$subject: $e")
+      throw e
+    }
   }
 }
