@@ -29,5 +29,5 @@ fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Dur
   val ms = measureTimeMillis {
     if (dockerCompose("up -d${if (timeoutMs == 0L) " --wait" else ""} $service") != 0) throw IOException("Failed to start $service")
   }
-  if (ms > timeoutMs / 5) sleep(timeoutMs) // give the db more time to start listening
+  if (ms > 500) sleep(timeoutMs) // give the db more time to start listening
 }
