@@ -4,6 +4,7 @@ import klite.logger
 import klite.trimToNull
 import klite.warn
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 import kotlin.text.RegexOption.IGNORE_CASE
@@ -16,12 +17,12 @@ val DataSource.isPostgres get() = dbPostgresIndicators.getOrPut(this) {
   (url ?: withConnection { metaData.url }).contains("postgresql")
 }
 
-fun DataSource.lock(on: String) = postgresOnly { query("select pg_advisory_lock(${on.hashCode()})") {}.first() }
-fun DataSource.tryLock(on: String): Boolean = postgresOnly { query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first() } == true
-fun DataSource.unlock(on: String): Boolean = postgresOnly { query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first() } == true
+fun DataSource.lock(on: String) = logOnFailure { query("select pg_advisory_lock(${on.hashCode()})") {}.first() }
+fun DataSource.tryLock(on: String): Boolean = logOnFailure { query("select pg_try_advisory_lock(${on.hashCode()})") { getBoolean(1) }.first() } == true
+fun DataSource.unlock(on: String): Boolean = logOnFailure { query("select pg_advisory_unlock(${on.hashCode()})") { getBoolean(1) }.first() } == true
 
-private fun <T> DataSource.postgresOnly(block: () -> T): T? =
-  if (isPostgres) block() else null.also { logger().warn("Unsupported DB, not executing") }
+private fun <T> DataSource.logOnFailure(block: () -> T): T? =
+  try { block() } catch (e: SQLException) { logger().warn("$e, ignoring"); null }
 
 private val columnNameIndexMapField = runCatching {
   Class.forName("org.postgresql.jdbc.PgResultSet").getDeclaredField("columnNameIndexMap").apply { trySetAccessible() }
