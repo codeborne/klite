@@ -16,7 +16,7 @@ dependencyResolutionManagement {
       library("junit-api", "org.junit.jupiter", "junit-jupiter-api").versionRef(junit5)
       library("junit-engine", "org.junit.jupiter", "junit-jupiter-engine").versionRef(junit5)
       library("atrium", "ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-1")
-      library("mockk", "io.mockk:mockk:1.13.17")
+      library("mockk", "io.mockk:mockk:1.14.0")
 
       val slf4j = version("slf4j", "2.0.16")
       library("slf4j-api", "org.slf4j", "slf4j-api").versionRef(slf4j)
@@ -26,7 +26,7 @@ dependencyResolutionManagement {
       library("jackson-jsr310", "com.fasterxml.jackson.datatype", "jackson-datatype-jsr310").versionRef(jackson)
       library("jackson-kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").versionRef(jackson)
 
-      library("hikari", "com.zaxxer:HikariCP:6.2.1")
+      library("hikari", "com.zaxxer:HikariCP:6.3.0")
       library("liquibase-core", "org.liquibase:liquibase-core:4.31.1")
       library("postgresql", "org.postgresql:postgresql:42.7.5")
     }
