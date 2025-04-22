@@ -9,6 +9,7 @@ import java.sql.*
 import java.sql.Statement.NO_GENERATED_KEYS
 import java.sql.Statement.RETURN_GENERATED_KEYS
 import javax.sql.DataSource
+import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 
@@ -199,8 +200,9 @@ internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator
   if (v is SqlExpr) v.expr(n) else q(n) + "=" + placeholder(v)
 }
 
-internal fun name(key: Any) = when(key) {
+internal fun name(key: ColName) = when(key) {
   is KProperty1<*, *> -> key.findAnnotation<Column>()?.name ?: key.name
+  is KParameter -> key.findAnnotation<Column>()?.name ?: key.name!!
   is String -> key
   else -> throw UnsupportedOperationException("$key should be a KProperty1 or String")
 }
