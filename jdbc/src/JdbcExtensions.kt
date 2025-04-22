@@ -201,11 +201,14 @@ internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator
 }
 
 internal fun name(key: ColName) = when(key) {
-  is KProperty1<*, *> -> key.findAnnotation<Column>()?.name ?: key.name
-  is KParameter -> key.findAnnotation<Column>()?.name ?: key.name!!
+  is KProperty1<*, *> -> key.colName
+  is KParameter -> key.colName
   is String -> key
   else -> throw UnsupportedOperationException("$key should be a KProperty1 or String")
 }
+
+val KProperty1<*, *>.colName get() = findAnnotation<Column>()?.name ?: name
+val KParameter.colName get() = findAnnotation<Column>()?.name ?: name!!
 
 internal fun q(name: String) = if (name in namesToQuote) "\"$name\"" else name
 
