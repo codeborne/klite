@@ -13,6 +13,7 @@ class JsonRendererTest {
   val mapper = JsonMapper()
   val uuid = UUID.fromString("b8ca58ec-ab15-11ed-93cc-8fdb43988a14")
   val tsId = TSID<Any>("123456789")
+  val numCode = NumCode<Any>(123456789)
 
   @Test fun literals() {
     expect(mapper.render(null)).toEqual("null")
@@ -29,6 +30,9 @@ class JsonRendererTest {
   @Test fun converter() {
     expect(mapper.render(uuid)).toEqual("\"$uuid\"")
     expect(mapper.render(tsId)).toEqual("\"$tsId\"")
+
+    expect(mapper.render(numCode)).toEqual("$numCode")
+    expect(Converter.from<NumCode<Any>>("123456789")).toEqual(numCode)
 
     val date = Converter.from<LocalDate>("2022-10-21")
     expect(mapper.render(date)).toEqual("\"2022-10-21\"")
@@ -87,5 +91,12 @@ class JsonRendererTest {
       }
     })
     expect(mapper.render(mapOf("date" to LocalDate.of(2022, 10, 21), "custom" to Nested()))).toEqual("""{"date":2022,"custom":123}""")
+  }
+
+  @JvmInline value class NumCode<T: Any>(val value: Long) {
+    companion object {
+      init { Converter.use { NumCode<Any>(it.toLong()) } }
+    }
+    override fun toString() = value.toString()
   }
 }

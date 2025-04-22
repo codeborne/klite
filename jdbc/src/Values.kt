@@ -3,6 +3,7 @@ package klite.jdbc
 import klite.AbsentValue
 import klite.PropValue
 import klite.create
+import klite.publicProperties
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
@@ -14,7 +15,7 @@ inline fun <reified T: Any> ResultSet.create(columnPrefix: String, vararg provid
 fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T, *>, columnPrefix: String = ""): T {
   val extraArgs = provided.associate { it.first.name to it.second }
   return type.create {
-    val column = columnPrefix + name(it)
+    val column = columnPrefix + (type.publicProperties[it.name]?.colName ?: it.name)
     if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
     else if (it.isOptional) getOptional<T>(column, it.type).getOrDefault(AbsentValue)
     else get(column, it.type)

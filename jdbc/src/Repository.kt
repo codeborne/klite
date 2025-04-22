@@ -82,7 +82,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
 
   /** Recommended to override if used with [NullableId] */
   open fun generateId(): ID {
-    val idClass = entityClass.publicProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
+    val idClass = entityClass.publicProperties["id"]!!.returnType.classifier as KClass<*>
     return (idClass.constructors.find { it.parameters.isEmpty() } ?: idClass.primaryConstructor!!).callBy(emptyMap()) as ID
   }
 }

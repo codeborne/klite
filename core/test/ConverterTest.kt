@@ -108,7 +108,7 @@ data class DataWithCompanion(val s: String) {
 
 data class IndirectDataWithCompanion(val s: String) {
   companion object {
-    init { Converter.use { IndirectDataWithCompanion::class.publicProperties.first { p -> p.name == it } } }
+    init { Converter.use { IndirectDataWithCompanion::class.publicProperties[it]!! } }
   }
 }
 

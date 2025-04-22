@@ -9,13 +9,13 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
-private val publicPropsCache = ConcurrentHashMap<KClass<*>, Sequence<KProperty1<*, *>>>()
+private val publicPropsCache = ConcurrentHashMap<KClass<*>, Map<String, KProperty1<*, *>>>()
 
 val <T: Any> KClass<T>.publicProperties get() = publicPropsCache.getOrPut(this) {
-  memberProperties.filter { it.visibility == PUBLIC }.asSequence()
-} as Sequence<KProperty1<T, *>>
+  memberProperties.filter { it.visibility == PUBLIC }.associateBy { it.name }
+} as Map<String, KProperty1<T, *>>
 
-val <T: Any> T.publicProperties get() = this::class.publicProperties as Sequence<KProperty1<T, *>>
+val <T: Any> T.publicProperties get() = this::class.publicProperties.values.asSequence() as Sequence<KProperty1<T, *>>
 
 typealias PropValue<T, V> = Pair<KProperty1<T, V>, V>
 
