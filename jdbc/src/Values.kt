@@ -6,12 +6,12 @@ import klite.create
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-inline fun <reified T: Any> ResultSet.create(vararg provided: PropValue<T>) = create(T::class, *provided)
+inline fun <reified T: Any> ResultSet.create(vararg provided: PropValue<T, *>) = create(T::class, *provided)
 
 /** Take only prefixed column names, e.g. "alias.id" to get second joined table, see [populatePgColumnNameIndex] for details */
-inline fun <reified T: Any> ResultSet.create(columnPrefix: String, vararg provided: PropValue<T>) = create(T::class, *provided, columnPrefix = columnPrefix)
+inline fun <reified T: Any> ResultSet.create(columnPrefix: String, vararg provided: PropValue<T, *>) = create(T::class, *provided, columnPrefix = columnPrefix)
 
-fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T>, columnPrefix: String = ""): T {
+fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T, *>, columnPrefix: String = ""): T {
   val extraArgs = provided.associate { it.first.name to it.second }
   return type.create {
     val column = columnPrefix + name(it)

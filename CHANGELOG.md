@@ -1,11 +1,13 @@
 # Unreleased
 * core: TSIDGenerator can now be used with custom classes outside of TSID companion
-* server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
-* jdbc: introduce @Column annotation to override DB column names per entity fields
+* core/jdbc: Any.toValues()/BaseCrudRepository.persister() will now return KProperty1 keys, not Strings for added type-safety.
+  If you need to use String keys, use `toValues().mapKeys { it.name }`
+* jdbc: introduce @Column annotation to override DB column names for entity fields
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
 * jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
+* server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
 * jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
-* smtp: SmtpEmailSender will now log successful email sent (to address and subject)
+* smtp: SmtpEmailSender will now log the successful email sent (to address and subject)
 * openapi:
   * skip @AttrParam from OpenAPI spec
   * allow to specify SwaggerUI config parameters in openApi() function

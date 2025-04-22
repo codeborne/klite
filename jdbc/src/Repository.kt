@@ -52,11 +52,11 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
 
   open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table.id", if (forUpdate) "for update" else "") { mapper() }
 
-  open fun list(vararg where: PropValue<E>?, @Language("SQL", prefix = selectFromTable) suffix: String = defaultOrder): List<E> =
+  open fun list(vararg where: PropValue<E, *>?, @Language("SQL", prefix = selectFromTable) suffix: String = defaultOrder): List<E> =
     db.select(selectFrom, where.filterNotNull(), suffix) { mapper() }
 
-  open fun by(vararg where: PropValue<E>?, @Language("SQL", prefix = selectFromTable) suffix: String = ""): E? = list(*where, suffix = suffix).firstOrNull()
-  open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
+  open fun by(vararg where: PropValue<E, *>?, @Language("SQL", prefix = selectFromTable) suffix: String = ""): E? = list(*where, suffix = suffix).firstOrNull()
+  open fun count(vararg where: PropValue<E, *>?): Long = db.count(selectFrom, where.filterNotNull())
 
   open fun save(entity: E): Int {
     var useInsert = false
