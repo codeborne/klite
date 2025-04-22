@@ -14,7 +14,7 @@ inline fun <reified T: Any> ResultSet.create(columnPrefix: String, vararg provid
 fun <T: Any> ResultSet.create(type: KClass<T>, vararg provided: PropValue<T>, columnPrefix: String = ""): T {
   val extraArgs = provided.associate { it.first.name to it.second }
   return type.create {
-    val column = columnPrefix + it.name
+    val column = columnPrefix + name(it)
     if (extraArgs.containsKey(it.name)) extraArgs[it.name!!]
     else if (it.isOptional) getOptional<T>(column, it.type).getOrDefault(AbsentValue)
     else get(column, it.type)

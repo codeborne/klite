@@ -10,6 +10,7 @@ import java.sql.Statement.NO_GENERATED_KEYS
 import java.sql.Statement.RETURN_GENERATED_KEYS
 import javax.sql.DataSource
 import kotlin.reflect.KProperty1
+import kotlin.reflect.full.findAnnotation
 
 val namesToQuote = mutableSetOf("limit", "offset", "check", "table", "column", "constraint", "default", "desc", "distinct", "end", "foreign", "from", "grant", "group", "primary", "user")
 
@@ -18,11 +19,11 @@ internal const val selectFromTable = "$selectFrom table "
 internal const val selectWhere = "$selectFromTable where "
 
 typealias Mapper<R> = ResultSet.() -> R
-typealias Column = Any // String | KProperty1
-typealias ColValue = Pair<Column, Any?>
+typealias ColName = Any // String | KProperty1
+typealias ColValue = Pair<ColName, Any?>
 
 typealias Where = Collection<ColValue>
-typealias ValueMap = Map<out Column, *>
+typealias ValueMap = Map<out ColName, *>
 
 @Deprecated(replaceWith = ReplaceWith("ValueMap"), message = "Use ValueMap instead")
 typealias Values = ValueMap
@@ -135,6 +136,7 @@ fun DataSource.insertBatch(@Language("SQL", prefix = selectFrom) table: String, 
   }
 }
 
+// TODO: take uniqueFields as a Set
 fun DataSource.upsert(@Language("SQL", prefix = selectFrom) table: String, values: ValueMap, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = setOf(uniqueFields)): Int =
   upsertBatch(table, sequenceOf(values), uniqueFields, where, skipUpdateFields).first()
 
@@ -198,7 +200,7 @@ internal fun Iterable<ColValue>.join(separator: String) = joinToString(separator
 }
 
 internal fun name(key: Any) = when(key) {
-  is KProperty1<*, *> -> key.name
+  is KProperty1<*, *> -> key.findAnnotation<Column>()?.name ?: key.name
   is String -> key
   else -> throw UnsupportedOperationException("$key should be a KProperty1 or String")
 }

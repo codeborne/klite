@@ -1,6 +1,7 @@
 # Unreleased
 * core: TSIDGenerator can now be used with custom classes outside of TSID companion
 * server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
+* jdbc: introduce @Column annotation to override DB column names per entity fields
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
 * jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
 * jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
