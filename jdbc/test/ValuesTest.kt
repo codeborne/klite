@@ -14,14 +14,23 @@ class ValuesTest {
       every { getInt("world") } returns 42
       every { wasNull() } returns false
       every { getObject("list") } returns mockk<java.sql.Array> { every { array } returns arrayOf(4, 5)}
+      every { getObject("colName") } returns "colValue"
     }
-    expect(rs.create<SomeData>()).toEqual(SomeData("Hello", 42, list = listOf(4, 5)))
+    expect(rs.create<SomeData>()).toEqual(SomeData("Hello", 42, list = listOf(4, 5), propName = "colValue"))
   }
 
   @Test fun `create with some values provided`() {
     val rs = mockk<ResultSet>()
-    expect(rs.create(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null, SomeData::list to listOf(9))).toEqual(SomeData("Hello", 42, list = listOf(9)))
+    expect(rs.create(SomeData::hello to "Hello", SomeData::world to 42, SomeData::nullable to null,
+      SomeData::list to listOf(9), SomeData::propName to "propName"))
+      .toEqual(SomeData("Hello", 42, list = listOf(9), propName = "propName"))
   }
 
-  data class SomeData(val hello: String, val world: Int, val nullable: String? = null, val list: List<Int> = listOf(1, 2))
+  data class SomeData(
+    val hello: String,
+    val world: Int,
+    val nullable: String? = null,
+    val list: List<Int> = listOf(1, 2),
+    @Column("colName") val propName: String
+  )
 }
