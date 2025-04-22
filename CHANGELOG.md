@@ -1,4 +1,5 @@
 # Unreleased
+* core: TSIDGenerator can now be used with custom classes outside of TSID companion
 * server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
 * jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
