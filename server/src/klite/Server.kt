@@ -35,9 +35,13 @@ class Server(
   pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
 ): RouterConfig(registry, pathParamRegexer, decorators, registry.requireAll(), registry.requireAll()) {
-  init { currentThread().name += "/" + requestIdGenerator.prefix }
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val log = logger()
+
+  init {
+    currentThread().name += "/" + requestIdGenerator.prefix
+    log.info("Running in " + Config.active)
+  }
 
   private val http = HttpServer.create()
   private val numActiveRequests = AtomicInteger()
