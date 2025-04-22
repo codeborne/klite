@@ -76,8 +76,8 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
       }
       entity.updatedAt = now
     }
-    if (useInsert) db.insert(table, entity.persister())
-    return db.upsert(table, entity.persister())
+    return if (useInsert) db.insert(table, entity.persister())
+      else db.upsert(table, entity.persister())
   }
 
   /** Recommended to override if used with [NullableId] */
