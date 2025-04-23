@@ -103,7 +103,7 @@ private fun KType.toJsonSchema(response: Boolean = false): Map<String, Any?>? {
       else -> null
     })
     else -> mapOfNotNull("type" to "object",
-      "properties" to cls.publicProperties.map { it.key to it.value.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() },
+      "properties" to cls.publicProperties.mapValues { it.value.returnType.toJsonSchema(response) }.takeIf { it.isNotEmpty() },
       "required" to cls.publicProperties.values.filter { p ->
         !p.returnType.isMarkedNullable && (response || cls.primaryConstructor?.parameters?.find { it.name == p.name }?.isOptional != true)
       }.map { it.name }.toSet().takeIf { it.isNotEmpty() })

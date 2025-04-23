@@ -121,7 +121,7 @@ class OpenAPITest {
       "operationId" to "MyRoutes.saveUser",
       "tags" to listOf("MyRoutes"),
       "parameters" to emptyList<Any>(),
-      "requestBody" to mapOf("description" to "Application and applicant", "required" to true, "content" to userSchema(), "required" to true),
+      "requestBody" to mapOf("description" to "Application and applicant", "required" to true, "content" to userSchema()),
       "responses" to mapOf(
         OK to mapOf("description" to "OK", "content" to userSchema(response = true)),
         BadRequest to mapOf("description" to "Very bad request"),
