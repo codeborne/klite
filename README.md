@@ -31,10 +31,10 @@ fun main() {
 * Minimal amount of code
   * Simple to maintain & change
   * Performance is also important, but simplicity is preferred
-* Zero dependencies - Java built-in **jdk.httpserver** is used under the hood
+* Zero dependencies — Java built-in **jdk.httpserver** is used under the hood
   * Perfect for microservices
   * But still possible to easily add support for other servers if needed
-  * [Sample docker image](sample/Dockerfile) is about 50-70Mb thanks to jlink, depending on used modules
+  * [Sample docker image](sample/Dockerfile) is about 50–70Mb thanks to jlink, depending on used modules
   * Production applications can run with as low as 50Mb of heap memory, suitable for very cheap plans at Fly.io or Heroku
 * 12-factor apps by default
 * Most behaviour can be overridden if necessary
@@ -44,7 +44,8 @@ fun main() {
 * Proper Kotlin coroutine support with working before/after filters for e.g. transactions and logging
 * Shared [type-safe value classes](core/src/Types.kt) across http parameters, database columns and json fields
 * Most app code will not depend on the framework, easy to switch
-* Not much need for documentation - the source code is short and readable.
+* Not much need for documentation — the source code is short and readable.
+* Easy custom types instead of String, like Id, Phone, Email across web requests, json and DB
 
 ## Dependencies
 
