@@ -145,8 +145,8 @@ private val isPostgres = Config.optional("DB_URL")?.startsWith("jdbc:postgres") 
 fun DataSource.upsertBatch(@Language("SQL", prefix = selectFrom) table: String, values: Sequence<ValueMap>, uniqueFields: String = "id", where: Where = emptyList(), skipUpdateFields: Set<String> = setOf(uniqueFields)): IntArray {
   val where = whereConvert(where.map { (k, v) -> "$table.${q(name(k))}" to v })
   val first = values.firstOrNull() ?: return intArrayOf()
-  val updateExpr = first.keys.let { if (skipUpdateFields.isEmpty()) it else it - skipUpdateFields }
-                   .joinToString { k -> q(name(k)).let { "$it=excluded.$it" } }
+  val updateExpr = first.keys.asSequence().map { name(it) }.filter { it !in skipUpdateFields }
+                   .joinToString { k -> q(k).let { "$it=excluded.$it" } }
   val whereValues = whereValues(where)
   val valuesToSet = values.map { setValues(it) + whereValues }
   val expr = if (isPostgres)
