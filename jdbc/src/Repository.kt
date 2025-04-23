@@ -68,7 +68,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
       useInsert = useInsert || entity.updatedAt == null
       val now = nowSec()
       if (!useInsert) {
-        val numUpdated = db.update(table, entity.persister() + (UpdatableEntity::updatedAt.name to now),
+        val numUpdated = db.update(table, entity.persister() + (entity::class.publicProperties[UpdatableEntity::updatedAt.name]!! to now),
             where = listOf(BaseEntity<*>::id to entity.id, UpdatableEntity::updatedAt to entity.updatedAt))
         if (numUpdated == 0) throw StaleEntityException()
         entity.updatedAt = now
