@@ -23,7 +23,7 @@ fun dockerCompose(command: String): Int = try {
   } else throw e
 }
 
-fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Duration = 2.seconds) {
+fun startDevDB(service: String = Config.optional("DB_START", "db"), timeout: Duration = Config.optional("DB_START_TIMEOUT_SEC", "2").toInt().seconds) {
   if (service.isEmpty()) return
   val timeoutMs = timeout.inWholeMilliseconds
   val ms = measureTimeMillis {
