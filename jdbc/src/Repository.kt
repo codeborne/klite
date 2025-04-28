@@ -42,7 +42,10 @@ abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCru
 
 abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
-  protected val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
+  protected open val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
+  protected open val idProp = entityClass.publicProperties[BaseEntity<*>::id.name]!!
+  protected open val updatedAtProp = entityClass.publicProperties[UpdatableEntity::updatedAt.name]
+
   override val orderAsc get() = "order by $table.createdAt"
   open val defaultOrder get() = orderDesc
   open val selectFrom @Language("SQL", prefix = "select * from ") get() = table
@@ -50,7 +53,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   protected open fun ResultSet.mapper(): E = create(entityClass)
   protected open fun E.persister() = toValues()
 
-  open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table.id", if (forUpdate) "for update" else "") { mapper() }
+  open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table." + idProp.name, if (forUpdate) "for update" else "") { mapper() }
 
   open fun list(vararg where: PropValue<E, *>?, @Language("SQL", prefix = selectFromTable) suffix: String = defaultOrder): List<E> =
     db.select(selectFrom, where.filterNotNull(), suffix) { mapper() }
@@ -68,8 +71,8 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
       useInsert = useInsert || entity.updatedAt == null
       val now = nowSec()
       if (!useInsert) {
-        val numUpdated = db.update(table, entity.persister() + (entity::class.publicProperties[UpdatableEntity::updatedAt.name]!! to now),
-            where = listOf(BaseEntity<*>::id to entity.id, UpdatableEntity::updatedAt to entity.updatedAt))
+        val numUpdated = db.update(table, entity.persister() + (updatedAtProp!! to now),
+            where = listOf(idProp to entity.id, updatedAtProp!! to entity.updatedAt))
         if (numUpdated == 0) throw StaleEntityException()
         entity.updatedAt = now
         return numUpdated
@@ -77,12 +80,12 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
       entity.updatedAt = now
     }
     return if (useInsert) db.insert(table, entity.persister())
-      else db.upsert(table, entity.persister())
+      else db.upsert(table, entity.persister(), idProp.name)
   }
 
   /** Recommended to override if used with [NullableId] */
   open fun generateId(): ID {
-    val idClass = entityClass.publicProperties["id"]!!.returnType.classifier as KClass<*>
+    val idClass = idProp.returnType.classifier as KClass<*>
     return (idClass.constructors.find { it.parameters.isEmpty() } ?: idClass.primaryConstructor!!).callBy(emptyMap()) as ID
   }
 }
