@@ -53,7 +53,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   protected open fun ResultSet.mapper(): E = create(entityClass)
   protected open fun E.persister() = toValues()
 
-  open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table." + idProp.name, if (forUpdate) "for update" else "") { mapper() }
+  open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table." + idProp.colName, if (forUpdate) "for update" else "") { mapper() }
 
   open fun list(vararg where: PropValue<E, *>?, @Language("SQL", prefix = selectFromTable) suffix: String = defaultOrder): List<E> =
     db.select(selectFrom, where.filterNotNull(), suffix) { mapper() }
@@ -80,7 +80,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
       entity.updatedAt = now
     }
     return if (useInsert) db.insert(table, entity.persister())
-      else db.upsert(table, entity.persister(), idProp.name)
+      else db.upsert(table, entity.persister(), idProp.colName)
   }
 
   /** Recommended to override if used with [NullableId] */
