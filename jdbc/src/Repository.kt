@@ -42,7 +42,7 @@ abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCru
 
 abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
-  private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
+  protected val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
   override val orderAsc get() = "order by $table.createdAt"
   open val defaultOrder get() = orderDesc
   open val selectFrom @Language("SQL", prefix = "select * from ") get() = table
