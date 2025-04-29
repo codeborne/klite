@@ -51,7 +51,7 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
   open val selectFrom @Language("SQL", prefix = "select * from ") get() = table
 
   protected open fun ResultSet.mapper(): E = create(entityClass)
-  protected open fun E.persister() = toValues()
+  protected open fun E.persister(): Map<out ColName, Any?> = toValues()
 
   open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table." + idProp.colName, if (forUpdate) "for update" else "") { mapper() }
 
