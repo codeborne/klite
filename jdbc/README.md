@@ -113,8 +113,9 @@ Not supported:
 * Non-sql file formats, but can use Kotlin code
 * No undo (usually you don't undo a prod DB)
 * No preconditions, but e.g. `onFail:SKIP` can be easier to use
-* No generation of scripts for existing DB schema - this is best to be done manually, or just existing tools like pg_dump
-* Only tested with PostgreSQL, PRs for other DBs welcome
+* No generation of scripts for existing DB schema — this is best to be done manually, or just existing tools like pg_dump
+* Mostly tested with PostgreSQL, PRs for other DBs welcome
+  * For other databases you may have to redefine [migrator/init.sql](src/migrator/init.sql) in classpath to use more compatible column types for the `db_changelog` table
 
 #### Different DB user for migration and running
 
