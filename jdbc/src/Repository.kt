@@ -21,7 +21,7 @@ interface NullableId<ID>: BaseEntity<ID?> {
 
 /**
  * Implement this for optimistic locking support in [BaseCrudRepository.save],
- * `add column updatedAt timestamptz not null default now()`
+ * `add column updatedAt timestamptz not null default now()`, or use @Column annotation to give it a different name
  */
 interface UpdatableEntity {
   var updatedAt: Instant?
