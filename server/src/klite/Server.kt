@@ -40,7 +40,8 @@ class Server(
 
   init {
     currentThread().name += "/" + requestIdGenerator.prefix
-    log.info("Running in " + Config.active)
+    val kliteVersion = javaClass.`package`.implementationVersion ?: "dev"
+    log.info("klite ${kliteVersion}, config " + Config.active)
   }
 
   private val http = HttpServer.create()
