@@ -1,7 +1,7 @@
 # Unreleased
 * core: TSIDGenerator can now be used with custom classes outside of TSID companion
 * core/jdbc: Any.toValues()/BaseCrudRepository.persister() will now return KProperty1 keys, not Strings for added type-safety.
-  If you need to use String keys, use `toValues().mapKeys { it.name }`
+  If you need to use String keys, use `toValues().mapKeys { it.key.name }`
   You may get "duplicate column name" errors if you have code like `entity.toValues() + ("hello" to 123)`, replace `"hello"` with `Entity::hello` in that case
 * jdbc: introduce @Column annotation to override DB column names for entity fields
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
