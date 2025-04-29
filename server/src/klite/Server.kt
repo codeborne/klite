@@ -50,7 +50,7 @@ class Server(
 
   fun start(gracefulStopDelaySec: Int = 3) {
     http.bind(listen, 0)
-    log.info("Listening on $address")
+    log.info("Listening on http://${if (address.address.isAnyLocalAddress) "localhost" else address.hostString}:${address.port}")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
