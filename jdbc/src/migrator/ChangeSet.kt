@@ -4,6 +4,7 @@ import klite.jdbc.ChangeSet.On.FAIL
 import klite.toValuesSkipping
 import klite.trimToNull
 import org.intellij.lang.annotations.Language
+import java.sql.ResultSet
 import javax.sql.DataSource
 
 data class ChangeSet(
@@ -44,4 +45,5 @@ data class ChangeSet(
 class ChangeSetRepository(db: DataSource): BaseCrudRepository<ChangeSet, String>(db, "db_changelog") {
   override val defaultOrder = ""
   override fun ChangeSet.persister() = toValuesSkipping(ChangeSet::separator, ChangeSet::sql, ChangeSet::onChange, ChangeSet::onFail)
+  override fun ResultSet.mapper() = ChangeSet(getString("id"), "", getString("context"), filePath = getString("filepath"), checksum = getLong("checksum"))
 }
