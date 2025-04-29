@@ -34,11 +34,11 @@ Usage:
   // basic insert into a table
   db.insert("table", mapOf("col1" to value, "col2" to value2))
 
-  // insert of all fields of an entity
+  // insert all fields of an entity
   db.insert("table", entity.toValues())
   // redefine some entity field value before inserting
   db.upsert("table", entity.toValues(Entity::field to "another value"))
-  // use @Column annotation to name DB columns differently than class properties
+  // use @Column annotation to name DB columns differently than class fields
 
   // basic query from a table (mapper runs in context of ResultSet)
   db.select("table", "column" to value) { MyEntity(getId(), getString("column")) }
