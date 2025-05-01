@@ -11,7 +11,8 @@ abstract class RouterConfig(
   val pathParamRegexer: PathParamRegexer,
   decorators: List<Decorator>,
   bodyRenderers: List<BodyRenderer>,
-  bodyParsers: List<BodyParser>
+  bodyParsers: List<BodyParser>,
+  val allowBodyInNonConventionalMethods: Boolean = false
 ): MutableRegistry by registry {
   val decorators = decorators.toMutableList()
   val renderers = bodyRenderers.toMutableList()
@@ -57,8 +58,9 @@ class Router(
   pathParamRegexer: PathParamRegexer,
   decorators: List<Decorator>,
   renderers: List<BodyRenderer>,
-  parsers: List<BodyParser>
-): RouterConfig(registry, pathParamRegexer, decorators, renderers, parsers) {
+  parsers: List<BodyParser>,
+  allowBodyInNonConventionalMethods: Boolean = false
+): RouterConfig(registry, pathParamRegexer, decorators, renderers, parsers, allowBodyInNonConventionalMethods) {
   private val log = logger()
   val routes = mutableListOf<Route>() // TODO: use ExplicitBackingFields feature when it is more stable for immutable getter
 

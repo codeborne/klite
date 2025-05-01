@@ -66,8 +66,8 @@ class Server(
   }
 
   /** Adds a new router context. When handing a request, the longest matching router context is chosen */
-  fun context(prefix: String, block: Router.() -> Unit = {}) =
-    Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers).also { router ->
+  fun context(prefix: String, allowBodyInNonConventionalMethods: Boolean = false, block: Router.() -> Unit = {}) =
+    Router(prefix, registry, pathParamRegexer, decorators, renderers, parsers, allowBodyInNonConventionalMethods).also { router ->
       val notFoundRoute = NotFoundRoute(prefix, notFoundHandler)
       addContext(prefix, router) {
         val r = router.route(this)
