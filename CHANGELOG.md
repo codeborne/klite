@@ -3,7 +3,7 @@
 * core/jdbc: Any.toValues()/BaseCrudRepository.persister() will now return KProperty1 keys, not Strings for added type-safety.
   If you need to use String keys, use `toValues().mapKeys { it.key.name }`
   You may get "column specified more than once" errors if you have code like `entity.toValues() + ("hello" to 123)`, replace `"hello"` with `Entity::hello` in that case
-* jdbc: introduce @Column annotation to override DB column names for entity fields
+* jdbc: introduce @Column annotation to override DB column names for entity fields, previous internal typealias `Column` renamed to `ColName`
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
 * jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
 * server: use<>() call will fail if called inside of context {} for Extensions that need Server-level initialization
