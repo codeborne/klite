@@ -19,9 +19,9 @@ val <T: Any> T.publicProperties get() = this::class.publicProperties.values.asSe
 
 typealias PropValue<T, V> = Pair<KProperty1<T, V>, V>
 
-fun <T: Any> T.toValues(vararg provided: PropValue<T, *>): Map<KProperty1<T, *>, Any?> {
-  val values = provided.associate { it.first to it.second }
-  return toValuesSkipping(values.keys) + values
+fun <T: Any> T.toValues(vararg provided: PropValue<T, *>, skip: Set<KProperty1<T, *>> = emptySet()): Map<KProperty1<T, *>, Any?> {
+  val providedValues = provided.associate { it.first to it.second }
+  return toValuesSkipping(providedValues.keys + skip) + providedValues
 }
 
 fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.toSet())
