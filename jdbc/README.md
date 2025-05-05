@@ -40,22 +40,25 @@ Usage:
   db.upsert("table", entity.toValues(Entity::field to "another value"))
   // use @Column annotation to name DB columns differently than class fields
 
-  // basic query from a table (mapper runs in context of ResultSet)
+  // basic query from a table (mapper runs in the context of ResultSet)
   db.select("table", "column" to value) { MyEntity(getId(), getString("column")) }
   // or if all entity properties are contained in the result set
   db.select("table", "column" to value) { create<MyEntity>() }
-  // you can write more complex custom sql conditions easily
+  // or simply
+  db.select<MyEntity>("table", "column" to value)
+
+  // you can write more complex custom SQL conditions easily
   db.select("table", sql("(column is null or column >= ?)", 10))
-  // where can also be written in a type-safe way, and some common operators are available
-  db.select("table", MyEntity::column gte 123) { create<MyEntity>() }
+  // where can also be written in a type-safe way, and some common operators are available as infix functions (lt, gt, lte, gte, like, ilike, etc)
+  db.select("table", MyEntity::column gte 123)
 
   // where tokens are "and"-ed together, nulls filtered out, so convenient conditionals are possible
-  db.select("table", MyEntity::column gte 123, (MyEntity::other to something).takeIf { something != null }) { create<MyEntity>() }
+  db.select("table", MyEntity::column gte 123, (MyEntity::other to something).takeIf { something != null })
   // or another option is to use list filtering
-  db.select("table", notNullValues(MyEntity::column gte 123, MyEntity::other to something)) { create<MyEntity>() }
+  db.select("table", notNullValues(MyEntity::column gte 123, MyEntity::other to something))
 
   // "or" is also possible
-  db.select("table", MyEntity::column gte 123, or(MyEntity::other to something, "hello" to "world")) { create<MyEntity>() }
+  db.select("table", MyEntity::column gte 123, or(MyEntity::other to something, "hello" to "world"))
 
   // more advanced query with suffix and create() auto-mapper
   db.select("table", "col1" to notNull, "col2" gte  value, suffix = "order by col3 limit 10") { create<MyEntity>() }
@@ -64,7 +67,7 @@ Usage:
     create<MyEntity>(MyEntity::other to create<OtherEntity>("table2.")) // you can provide table alias to create (PostgresSQL only)
   }.first()
 
-  // or you can write full sql manually using db.query() and db.exec()
+  // or you can write full SQL manually using db.query() and db.exec()
 ```
 
 See [all available operations](src/JdbcExtensions.kt) and [comparison operators](src/SqlExpr.kt).
@@ -99,7 +102,7 @@ Advantages over Liquibase:
 * Filepath is not part of changeset unique ID, enabling moving changesets between files easily (refactoring)
 * To minimize conflicts, every team can structure their IDs in their own way, e.g. prefixing with author or using date-time notation
 * More reliable locking that will not be left due to crash (PG advisory lock)
-* Provides simpler way to treat changes and failures with onChange and onFail attributes
+* Provides a simpler way to treat changes and failures with onChange and onFail attributes
 * Allows changesets to modify the db_changelog table for refactoring (it is re-read if changes are detected)
 * Allows writing changesets in Kotlin code via [ChangeSet](src/migrator/ChangeSet.kt) constructor
 * To migrate from Liquibase, use `--include` [migrator/liquibase.sql](src/migrator/liquibase.sql), or copy the changeset with your modifications to your `db.sql`
@@ -117,7 +120,7 @@ Not supported:
 * Mostly tested with PostgreSQL, PRs for other DBs welcome
   * For other databases you may have to redefine [migrator/init.sql](src/migrator/init.sql) in classpath to use more compatible column types for the `db_changelog` table
 
-#### Different DB user for migration and running
+#### Different DB users for migration and running the app
 
 It is better for security to use a user with fewer rights for the running application.
 
