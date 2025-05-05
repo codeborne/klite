@@ -19,15 +19,16 @@ val <T: Any> T.publicProperties get() = this::class.publicProperties.values.asSe
 
 typealias PropValue<T, V> = Pair<KProperty1<T, V>, V>
 
+// TODO: optimize, do everything in one pass
 fun <T: Any> T.toValues(vararg provided: PropValue<T, *>, skip: Set<KProperty1<T, *>> = emptySet()): Map<KProperty1<T, *>, Any?> {
   val providedValues = provided.associate { it.first to it.second }
-  return toValuesSkipping(providedValues.keys + skip) + providedValues
+  return toValuesSkipping((providedValues.keys + skip).map { it.name }.toSet()) + providedValues
 }
 
-fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.toSet())
+fun <T: Any> T.toValuesSkipping(vararg skip: KProperty1<T, *>) = toValuesSkipping(skip.map { it.name }.toSet())
 
-private fun <T: Any> T.toValuesSkipping(skip: Set<KProperty1<T, *>>): Map<KProperty1<T, *>, Any?> =
-  toValues(publicProperties.filter { it.javaField != null && it !in skip })
+private fun <T: Any> T.toValuesSkipping(skip: Set<String>): Map<KProperty1<T, *>, Any?> =
+  toValues(publicProperties.filter { it.javaField != null && it.name !in skip })
 
 fun <T> KProperty1<T, *>.valueOf(o: T) = try {
   val v = get(o)
