@@ -38,9 +38,14 @@ class ServerTest {
   }
 
   @Test fun `use Extension`() {
-    val extension = mockk<Extension>(relaxUnitFun = true)
+    var installed = false
+    val extension = object: Extension {
+      override fun install(server: Server) {
+        installed = true
+      }
+    }
     server.use(extension)
-    verify { extension.install(server) }
+    expect(installed).toEqual(true)
   }
 
   @Test fun `use Runnable`() {

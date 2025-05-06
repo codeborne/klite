@@ -1,14 +1,13 @@
 package klite.smtp
 
-import klite.Config
-import klite.Email
-import klite.MimeTypes
+import klite.*
 import klite.i18n.Lang
 import klite.i18n.Lang.translate
 import java.util.*
 import javax.activation.DataHandler
 import javax.mail.*
 import javax.mail.Message.RecipientType.*
+import javax.mail.Session
 import javax.mail.internet.*
 import javax.mail.util.ByteArrayDataSource
 
@@ -29,6 +28,7 @@ open class SmtpEmailSender(
 ): EmailSender {
   val defaultFrom = InternetAddress(Config["MAIL_FROM"], Config.optional("MAIL_FROM_NAME", translate(Lang.available.first(), "title")))
   val bccTo = Config.optional("MAIL_BCC_TO")?.let { InternetAddress(it) }
+  private val log = logger()
 
   override fun send(to: Email, subject: String, body: String, bodyMimeType: String, attachments: Map<String, ByteArray>, cc: List<Email>, from: InternetAddress?) {
     send(to, subject, from ?: defaultFrom) {
@@ -52,12 +52,18 @@ open class SmtpEmailSender(
 
   private fun MimePart.setBody(body: String, bodyMimeType: String) = setContent(body, MimeTypes.withCharset(bodyMimeType))
 
-  protected fun send(to: Email, subject: String, from: InternetAddress, block: MimeMessage.() -> Unit) = MimeMessage(session).apply {
-    setFrom(from)
-    if (bccTo != null) setRecipient(BCC, bccTo)
-    setRecipient(TO, InternetAddress(to.value))
-    setSubject(subject, MimeTypes.textCharset.name())
-    block()
-    Transport.send(this)
+  protected open fun send(to: Email, subject: String, from: InternetAddress, block: MimeMessage.() -> Unit) = MimeMessage(session).apply {
+    try {
+      setFrom(from)
+      if (bccTo != null) setRecipient(BCC, bccTo)
+      setRecipient(TO, InternetAddress(to.value))
+      setSubject(subject, MimeTypes.textCharset.name())
+      block()
+      Transport.send(this)
+      log.info("Email sent to $to, subject=$subject")
+    } catch (e: Exception) {
+      log.error("Failed to send to $to, subject=$subject: $e")
+      throw e
+    }
   }
 }

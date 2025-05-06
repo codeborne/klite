@@ -19,7 +19,7 @@ object Config {
 
   /** List of active configurations, e.g. dev or prod, from ENV var */
   val active: Set<String> by lazy {
-    optional("ENV", "dev").split(",").map { it.trim() }.toSet().also { logger().info("Running in $it") }
+    optional("ENV", "dev").split(",").map { it.trim() }.toSet()
   }
   fun isActive(conf: String) = conf in active
   fun isAnyActive(vararg confs: String) = confs.any { it in active }

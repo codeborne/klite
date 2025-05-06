@@ -21,7 +21,7 @@ import kotlin.reflect.full.primaryConstructor
 class Server(
   val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
   val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
-  override val registry: MutableRegistry = DependencyInjectingRegistry().apply {
+  registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBody>()
     register<FormUrlEncodedParser>()
@@ -32,12 +32,17 @@ class Server(
   decorators: List<Decorator> = registry.requireAllDecorators(),
   val sessionStore: SessionStore? = registry.optional(),
   val notFoundHandler: Handler = { ErrorResponse(NotFound, path) },
-  override val pathParamRegexer: PathParamRegexer = registry.require(),
+  pathParamRegexer: PathParamRegexer = registry.require(),
   private val httpExchangeCreator: KFunction<HttpExchange> = HttpExchange::class.primaryConstructor!!,
-): RouterConfig(decorators, registry.requireAll(), registry.requireAll()), MutableRegistry by registry {
-  init { currentThread().name += "/" + requestIdGenerator.prefix }
+): RouterConfig(registry, pathParamRegexer, decorators, registry.requireAll(), registry.requireAll()) {
   private val requestScope = CoroutineScope(SupervisorJob() + workerPool.asCoroutineDispatcher())
   private val log = logger()
+
+  init {
+    currentThread().name += "/" + requestIdGenerator.prefix
+    val kliteVersion = javaClass.`package`.implementationVersion ?: "dev"
+    log.info("klite ${kliteVersion}, config " + Config.active)
+  }
 
   private val http = HttpServer.create()
   private val numActiveRequests = AtomicInteger()
@@ -46,7 +51,7 @@ class Server(
 
   fun start(gracefulStopDelaySec: Int = 3) {
     http.bind(listen, 0)
-    log.info("Listening on $address")
+    log.info("Listening on http://${if (address.address.isAnyLocalAddress) "localhost" else address.hostString}:${address.port}")
     http.start()
     if (gracefulStopDelaySec >= 0) getRuntime().addShutdownHook(thread(start = false) { stop(gracefulStopDelaySec) })
   }
@@ -58,18 +63,6 @@ class Server(
     log.info("Stopping gracefully")
     http.stop(if (numActiveRequests.get() == 0) 0 else delaySec)
     onStopHandlers.reversed().forEach { it.run() }
-  }
-
-  // add both Extension and Runnable overloads when this is resolved: https://youtrack.jetbrains.com/issue/KT-56930
-  inline fun <reified E: Any> use() = require<E>().also { use(it) }
-  fun use(extension: Any) = extension.also {
-    register(it)
-    var used = false
-    if (it is Extension) it.install(this).also { used = true }
-    if (it is Runnable) it.run().also { used = true }
-    if (it is BodyParser) parsers += it.also { used = true }
-    if (it is BodyRenderer) renderers += it.also { used = true }
-    if (!used) error("Cannot use $it, not an Extension, Runnable, BodyParser or BodyRenderer")
   }
 
   /** Adds a new router context. When handing a request, the longest matching router context is chosen */
@@ -130,6 +123,10 @@ class Server(
   }
 }
 
-fun interface Extension {
-  fun install(server: Server)
+interface Extension {
+  fun install(server: Server) {}
+  fun install(config: RouterConfig) {
+    if (config is Server) install(config)
+    else error("${this::class} needs to be used at the Server level, move it out of context call")
+  }
 }

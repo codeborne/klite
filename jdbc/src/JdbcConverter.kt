@@ -47,20 +47,18 @@ object JdbcConverter {
   operator fun <T: Any> set(type: KClass<T>, converter: ToJdbcConverter<T>) { converters[type] = converter }
   inline fun <reified T: Any> use(noinline converter: ToJdbcConverter<T>) = set(T::class, converter)
 
-  fun to(v: Any?, conn: Connection? = null): Any? = when (v) {
-    null -> null
-    is Enum<*> -> v.name
-    is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass), v.map { to(it, conn) }.toTypedArray())
-    is Array<*> -> conn!!.createArrayOf(arrayType(v.javaClass.componentType), v.map { to(it, conn) }.toTypedArray())
-    else -> {
-      val cls = v::class
-      @Suppress("UNCHECKED_CAST") when {
-        cls.javaPrimitiveType != null || nativeTypes.contains(cls) -> v
-        converters.contains(cls) -> (converters[cls] as ToJdbcConverter<Any>).invoke(v, conn)
-        cls.isValue && cls.hasAnnotation<JvmInline>() -> v.unboxInline()
-        Converter.supports(v::class) -> v.toString()
-        else -> v
-      }
+  @Suppress("UNCHECKED_CAST")
+  fun to(v: Any?, conn: Connection? = null): Any? {
+    if (v == null) return null
+    val cls = v::class
+    return when {
+      converters.contains(cls) -> (converters[cls] as ToJdbcConverter<Any>).invoke(v, conn)
+      cls.javaPrimitiveType != null || nativeTypes.contains(cls) -> v
+      cls.isValue && cls.hasAnnotation<JvmInline>() -> v.unboxInline()
+      Converter.supports(cls) -> v.toString()
+      v is Collection<*> -> conn!!.createArrayOf(arrayType(v.firstOrNull()?.javaClass), v.map { to(it, conn) }.toTypedArray())
+      v is Array<*> -> conn!!.createArrayOf(arrayType(v.javaClass.componentType), v.map { to(it, conn) }.toTypedArray())
+      else -> v
     }
   }
 

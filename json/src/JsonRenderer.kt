@@ -4,6 +4,8 @@ import klite.*
 import java.io.Writer
 import java.util.*
 import java.util.AbstractMap.SimpleImmutableEntry
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.hasAnnotation
@@ -20,10 +22,16 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
       is Map<*, *> -> writeObject(o.asSequence())
       null, is Number, is Boolean -> write(o.toString())
       else ->
-        if (Converter.supports(o::class)) writeString(o.toString())
-        else if (o::class.isValue && o::class.hasAnnotation<JvmInline>()) writeValue(o.unboxInline())
+        if (o::class.isValue && o::class.hasAnnotation<JvmInline>() && !inlineAsString(o)) writeValue(o.unboxInline())
+        else if (Converter.supports(o::class)) writeString(o.toString())
         else writeObject(o)
     }
+  }
+
+  private val inlineClassesAsString = ConcurrentHashMap<KClass<*>, Boolean>()
+  private fun inlineAsString(o: Any): Boolean = inlineClassesAsString.getOrPut(o::class) {
+    val s = o.toString()
+    o.unboxInline().toString() != s && !(s.startsWith(o::class.simpleName!!) && s.endsWith(')'))
   }
 
   private fun writeString(s: String) {

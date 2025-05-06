@@ -11,7 +11,7 @@ import klite.html.escapeJs
 import org.intellij.lang.annotations.Language
 
 /**
- * Adds an /openapi endpoints to the context, listing all the preceding routes.
+ * Adds /openapi endpoints to the context, listing all the preceding routes.
  * This handler will try to gather all the information about request/parameters/response automatically, but you can use Swagger annotations to specify more details.
  * - Pass [@OpenAPIDefinition][io.swagger.v3.oas.annotations.OpenAPIDefinition] or only [@Info][io.swagger.v3.oas.annotations.info.Info] annotation to this function to specify general info
  * - Pass [@SecurityScheme][io.swagger.v3.oas.annotations.security.SecurityScheme] to define authorization

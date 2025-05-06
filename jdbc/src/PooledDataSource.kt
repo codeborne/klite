@@ -121,10 +121,10 @@ class PooledDataSource(
 
     override fun toString() = "Pooled#${count}:$conn"
 
-    override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(conn::class.java)
-    override fun <T> unwrap(iface: Class<T>): T? = if (isWrapperFor(iface)) conn as T else null
+    override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(conn.javaClass)
+    override fun <T> unwrap(iface: Class<T>): T = iface.cast(conn)
   }
 
-  override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(db::class.java)
-  override fun <T> unwrap(iface: Class<T>): T? = if (isWrapperFor(iface)) db as T else null
+  override fun isWrapperFor(iface: Class<*>) = iface.isAssignableFrom(db.javaClass)
+  override fun <T> unwrap(iface: Class<T>): T = iface.cast(db)
 }

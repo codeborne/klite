@@ -4,8 +4,8 @@ import klite.Decimal
 import klite.d
 import klite.uuid
 import java.sql.ResultSet
+import java.time.Instant
 import java.time.Period
-import java.util.*
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -13,6 +13,7 @@ import kotlin.reflect.typeOf
 fun <T> ResultSet.get(column: String, type: KType): T = JdbcConverter.from(when (type.classifier) {
   Int::class -> getIntOrNull(column)
   Decimal::class -> getDecimalOrNull(column)
+  Instant::class -> getTimestamp(column)
   else -> getObject(column)
 }, type) as T
 

@@ -81,7 +81,7 @@ class JsonParserTest {
   }
 
   @Test fun `custom converter with type params`() {
-    Converter.use { s -> Hello::class.publicProperties.find { it.name == s }!! }
+    Converter.use { s -> Hello::class.publicProperties[s]!! }
     expect(mapper.parse<FieldRule<UUID>>("""{"field": "id"}""")).toEqual(FieldRule(Hello::id))
     expect(mapper.parse<FieldRule<*>>("""{"field": "hello"}""")).toEqual(FieldRule(Hello::hello))
   }

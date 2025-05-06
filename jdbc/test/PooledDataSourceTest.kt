@@ -20,13 +20,13 @@ class PooledDataSourceTest {
   val pool = PooledDataSource(db, maxSize = 3, timeout = 100.milliseconds)
 
   @Test fun unwrap() {
-    expect(pool.unwrap(DataSource::class.java)).toBeTheInstance(db)
+    expect(pool.unwrap<DataSource>()).toBeTheInstance(db)
   }
 
   @Test fun `retrieved connections are checked`() {
     val pooled = pool.connection
     expect(pooled).toBeAnInstanceOf<PooledDataSource.PooledConnection>()
-    val conn = pooled.unwrap(Connection::class.java)!!
+    val conn = pooled.unwrap<Connection>()
     expect(conn).notToEqual(pooled)
     verify {
       conn.setNetworkTimeout(null, 100)
@@ -109,7 +109,7 @@ class PooledDataSourceTest {
   @Test fun `failing connections decrease pool size`() {
     val conn = pool.connection
     expect(pool.size.get()).toEqual(1)
-    every { conn.unwrap(Connection::class.java)!!.rollback() } throws SQLException("already closed")
+    every { conn.unwrap<Connection>().rollback() } throws SQLException("already closed")
     conn.close()
 
     expect(pool.size.get()).toEqual(0)

@@ -10,8 +10,8 @@ import kotlin.reflect.full.hasAnnotation
  * Normal finish or StatusCodeException will commit, any other Exception will rollback.
  */
 class RequestTransactionHandler: Extension {
-  override fun install(server: Server) = server.run {
-    val db = require<DataSource>()
+  override fun install(config: RouterConfig) = config.run {
+    val db = registry.require<DataSource>()
     decorator { exchange, handler -> decorate(db, exchange, handler) }
   }
 

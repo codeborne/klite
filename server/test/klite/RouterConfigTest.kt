@@ -6,10 +6,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 
 class RouterConfigTest {
-  val config = object: RouterConfig(emptyList(), emptyList(), emptyList()) {
-    override val registry = DependencyInjectingRegistry()
-    override val pathParamRegexer = PathParamRegexer()
-  }
+  val config = object: RouterConfig(DependencyInjectingRegistry(), PathParamRegexer(), emptyList(), emptyList(), emptyList()) {}
 
   @Test fun `useOnly retains`() {
     config.renderers += TextBody()

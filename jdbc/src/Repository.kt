@@ -21,7 +21,7 @@ interface NullableId<ID>: BaseEntity<ID?> {
 
 /**
  * Implement this for optimistic locking support in [BaseCrudRepository.save],
- * `add column updatedAt timestamptz not null default now()`
+ * `add column updatedAt timestamptz not null default now()`, or use @Column annotation to give it a different name
  */
 interface UpdatableEntity {
   var updatedAt: Instant?
@@ -42,21 +42,24 @@ abstract class CrudRepository<E: Entity>(db: DataSource, table: String): BaseCru
 
 abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: String): BaseRepository(db, table) {
   @Suppress("UNCHECKED_CAST")
-  private val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
+  protected open val entityClass = this::class.supertypes.first().arguments.first().type!!.classifier as KClass<E>
+  protected open val idProp = entityClass.publicProperties[BaseEntity<*>::id.name]!!
+  protected open val updatedAtProp = entityClass.publicProperties[UpdatableEntity::updatedAt.name]
+
   override val orderAsc get() = "order by $table.createdAt"
   open val defaultOrder get() = orderDesc
   open val selectFrom @Language("SQL", prefix = "select * from ") get() = table
 
   protected open fun ResultSet.mapper(): E = create(entityClass)
-  protected open fun E.persister() = toValues()
+  protected open fun E.persister(): Map<out ColName, Any?> = toValues()
 
-  open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table.id", if (forUpdate) "for update" else "") { mapper() }
+  open fun get(id: ID, forUpdate: Boolean = false): E = db.select(selectFrom, id, "$table." + idProp.colName, if (forUpdate) "for update" else "") { mapper() }
 
-  open fun list(vararg where: PropValue<E>?, suffix: String = defaultOrder): List<E> =
+  open fun list(vararg where: PropValue<E, *>?, @Language("SQL", prefix = selectFromTable) suffix: String = defaultOrder): List<E> =
     db.select(selectFrom, where.filterNotNull(), suffix) { mapper() }
 
-  open fun by(vararg where: PropValue<E>?, suffix: String = ""): E? = list(*where, suffix = "$suffix limit 1").firstOrNull()
-  open fun count(vararg where: PropValue<E>?): Long = db.count(selectFrom, where.filterNotNull())
+  open fun by(vararg where: PropValue<E, *>?, @Language("SQL", prefix = selectFromTable) suffix: String = ""): E? = list(*where, suffix = suffix).firstOrNull()
+  open fun count(vararg where: PropValue<E, *>?): Long = db.count(selectFrom, where.filterNotNull())
 
   open fun save(entity: E): Int {
     var useInsert = false
@@ -68,21 +71,21 @@ abstract class BaseCrudRepository<E: BaseEntity<ID>, ID>(db: DataSource, table: 
       useInsert = useInsert || entity.updatedAt == null
       val now = nowSec()
       if (!useInsert) {
-        val numUpdated = db.update(table, entity.persister() + (UpdatableEntity::updatedAt.name to now),
-            where = listOf(BaseEntity<*>::id to entity.id, UpdatableEntity::updatedAt to entity.updatedAt))
+        val numUpdated = db.update(table, entity.persister() + (updatedAtProp!! to now),
+            where = listOf(idProp to entity.id, updatedAtProp!! to entity.updatedAt))
         if (numUpdated == 0) throw StaleEntityException()
         entity.updatedAt = now
         return numUpdated
       }
       entity.updatedAt = now
     }
-    if (useInsert) db.insert(table, entity.persister())
-    return db.upsert(table, entity.persister())
+    return if (useInsert) db.insert(table, entity.persister())
+      else db.upsert(table, entity.persister(), idProp.colName)
   }
 
   /** Recommended to override if used with [NullableId] */
   open fun generateId(): ID {
-    val idClass = entityClass.publicProperties.first { it.name == "id" }.returnType.classifier as KClass<*>
+    val idClass = idProp.returnType.classifier as KClass<*>
     return (idClass.constructors.find { it.parameters.isEmpty() } ?: idClass.primaryConstructor!!).callBy(emptyMap()) as ID
   }
 }

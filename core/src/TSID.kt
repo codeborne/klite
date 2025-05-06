@@ -11,26 +11,7 @@ import java.util.concurrent.atomic.AtomicLong
  * Add a `typealias Id<T> = TSID<T>` or `Id = TSID<Any>` in your own project.
  */
 @JvmInline value class TSID<T>(val value: Long) {
-  companion object {
-    const val RANDOM_BITS = 22
-    const val RANDOM_MASK = 0x003fffff
-    val EPOCH = Instant.parse(Config.optional("TSID_EPOCH", "2022-10-21T03:45:00.000Z")).toEpochMilli()
-    private var random = SecureRandom()
-    private val counter = AtomicInteger()
-    @Volatile private var lastTime = 0L
-    var deterministic: AtomicLong? = null
-
-    fun generateValue(): Long {
-      deterministic?.let { return it.incrementAndGet() }
-      val time = (currentTimeMillis() - EPOCH) shl RANDOM_BITS
-      if (time != lastTime) {
-        counter.set(random.nextInt())
-        lastTime = time
-      }
-      val tail = counter.incrementAndGet() and RANDOM_MASK
-      return time or tail.toLong()
-    }
-
+  companion object: TSIDGenerator() {
     init {
       Converter.use { TSID<Any>(it) }
     }
@@ -40,5 +21,29 @@ import java.util.concurrent.atomic.AtomicLong
   constructor(tsid: String): this(tsid.toLong(36))
   override fun toString() = value.toString(36)
 
-  val createdAt: Instant get() = Instant.ofEpochMilli((value shr RANDOM_BITS) + EPOCH)
+  val createdAt: Instant get() = createdAt(value)
+}
+
+open class TSIDGenerator(
+  val epoch: Long = Instant.parse(Config.optional("TSID_EPOCH", "2022-10-21T03:45:00.000Z")).toEpochMilli(),
+  val randomBits: Int = 22
+) {
+  val randomMask = (1 shl randomBits) - 1
+  private var random = SecureRandom()
+  private val counter = AtomicInteger()
+  @Volatile private var lastTime = 0L
+  var deterministic: AtomicLong? = null
+
+  open fun generateValue(): Long {
+    deterministic?.let { return it.incrementAndGet() }
+    val time = (currentTimeMillis() - epoch) shl randomBits
+    if (time != lastTime) {
+      counter.set(random.nextInt())
+      lastTime = time
+    }
+    val tail = counter.incrementAndGet() and randomMask
+    return time or tail.toLong()
+  }
+
+  open fun createdAt(value: Long): Instant = Instant.ofEpochMilli((value shr randomBits) + epoch)
 }

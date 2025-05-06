@@ -80,7 +80,7 @@ open class TSGenerator(
 
   @Suppress("UNCHECKED_CAST")
   protected open fun renderInterface(cls: KClass<*>): String? = StringBuilder().apply {
-    val props = (cls.publicProperties as Sequence<KProperty1<Any, *>>).notIgnored.iterator()
+    val props = (cls.publicProperties.values.asSequence() as Sequence<KProperty1<Any, *>>).notIgnored.iterator()
     if (!props.hasNext()) return null
     append("interface ").append(tsName(cls)).append(typeParams(cls)).append(" {")
     props.iterator().forEach { p ->
@@ -122,7 +122,7 @@ open class TSGenerator(
   open fun printTestData(cls: KClass<Any>, mapper: JsonMapper = JsonMapper()) {
     val values = cls.objectInstance ?: error("$cls is not an object")
     out.println("\n// ${cls.qualifiedName}")
-    cls.publicProperties.forEach { p ->
+    cls.publicProperties.values.forEach { p ->
       out.println("${typePrefix}const ${p.jsonName} = ${mapper.render(p.get(values))} as ${tsType(p.returnType)}")
     }
   }
