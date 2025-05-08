@@ -7,6 +7,7 @@
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
 * jdbc: db.upsert() will now work as SQL MERGE for non-Postgres databases
 * server: use<>() call will fail if called inside context {} for Extensions that need Server-level initialization
+* server: allow body in DELETE requests, as sometimes people do that #117
 * json: improved detection if inline classes should be rendered as their value type or a string
 * jackson: DeserializationFeature.FAIL_ON_TRAILING_TOKENS is now enabled by default
 * smtp: SmtpEmailSender will now log the successful email sent (to address and subject)

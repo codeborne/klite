@@ -103,7 +103,7 @@ class Router(
 }
 
 enum class RequestMethod(val hasBody: Boolean = true) {
-  GET(false), POST, PUT, PATCH, DELETE(false), OPTIONS, HEAD(false)
+  GET(false), POST, PUT, PATCH, DELETE, OPTIONS, HEAD(false)
 }
 
 open class Route(val method: RequestMethod, val path: Regex, annotations: List<Annotation> = emptyList(), val handler: Handler): KAnnotatedElement {
