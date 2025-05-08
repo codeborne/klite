@@ -19,8 +19,11 @@ val <T: Any> T.publicProperties get() = this::class.publicProperties.values.asSe
 
 typealias PropValue<T, V> = Pair<KProperty1<T, V>, V>
 
-private fun <T: Any> T.toValues(provided: Map<KProperty1<T, *>, Any?> = emptyMap(), skip: Set<String> = emptySet()) =
-  publicProperties.filter { it.javaField != null }.filter { it.name !in skip }.associateWith { provided[it] ?: it.valueOf(this) }
+fun <T: Any> T.toValues(provided: Map<KProperty1<T, *>, Any?> = emptyMap(), skip: Set<String> = emptySet(), fieldsOnly: Boolean = true) =
+  toValues(publicProperties.filter { !fieldsOnly || it.javaField != null }.filter { it.name !in skip }, provided)
+
+fun <T: Any> T.toValues(props: Sequence<KProperty1<T, *>>, provided: Map<KProperty1<T, *>, Any?> = emptyMap()) =
+  props.associateWith { provided[it] ?: it.valueOf(this) }
 
 fun <T: Any> T.toValues(vararg provided: PropValue<T, *>, skip: Collection<KProperty1<T, *>> = emptySet()) =
   toValues(provided.toMap(), if (skip.isEmpty()) emptySet() else skip.map { it.name }.toSet())
