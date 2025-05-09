@@ -19,7 +19,7 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
       is CharSequence -> writeString(o.toString())
       is Iterable<*> -> writeArray(o)
       is Array<*> -> writeArray(Arrays.asList(*o))
-      is Map<*, *> -> writeObject(o.asSequence())
+      is Map<*, *> -> writeObjectEntries(o.asSequence())
       null, is Number, is Boolean -> write(o.toString())
       else ->
         if (o::class.isValue && o::class.hasAnnotation<JvmInline>() && !inlineAsString(o)) writeValue(o.unboxInline())
@@ -52,19 +52,20 @@ class JsonRenderer(private val out: Writer, private val opts: JsonMapper): AutoC
     write(']')
   }
 
-  private fun writeObject(o: Sequence<Map.Entry<Any?, Any?>>) {
-    val i = (if (opts.renderNulls) o else o.filter { it.value != null }).iterator()
+  private fun writeObjectEntries(entries: Sequence<Map.Entry<Any?, Any?>>) {
+    val i = (if (opts.renderNulls) entries else entries.filter { it.value != null }).iterator()
     write('{')
     if (i.hasNext()) writeEntry(i.next())
     i.forEachRemaining { write(','); writeEntry(it) }
     write('}')
   }
 
-  private fun writeObject(o: Any) = writeObject(o.publicProperties.notIgnored
+  private fun writeObject(o: Any) = writeObjectEntries(o.publicProperties.notIgnored
     .map { SimpleImmutableEntry(it.jsonName, it.valueOf(o)) })
 
   private fun writeEntry(it: Map.Entry<Any?, Any?>) {
-    writeString(opts.keys.to(it.key.toString()))
+    val key = (it.key as? KProperty1<Any, *>)?.jsonName ?: it.key.toString()
+    writeString(opts.keys.to(key))
     write(':')
     writeValue(it.value)
   }
