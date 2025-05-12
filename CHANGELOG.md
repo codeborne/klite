@@ -1,4 +1,4 @@
-# Unreleased
+# 1.7.0
 * core: TSIDGenerator can now be used with custom classes outside TSID companion
 * core/jdbc: Any.toValues()/BaseCrudRepository.persister() will now return KProperty1 keys, not Strings for added type-safety.
   - If you need to use String keys, use `toValues().mapKeys { it.key.name }`
