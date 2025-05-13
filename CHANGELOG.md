@@ -4,6 +4,7 @@
   - If you need to use String keys, use `toValues().mapKeys { it.key.name }`
   - You may get "column specified more than once" errors if you have code like `entity.toValues() + ("hello" to 123)`, replace `"hello"` with `Entity::hello` in that case
   - It is now recommended to use `toValues()` for both providing values and skipping them, e.g. `entity.toValues(Entity::field1 = "other value, skip = setOf(Entity::field2))` - this avoids creation of intermediate maps and is faster
+  - PropValue type alias now accepts 2 type arguments, so replace usages of `PropValue<T>` with `PropValue<T, *>`
 * json: `toJsonValues()` introduced for the cases when you want to modify how an entity is serialized into json (e.g. remove some keys)
 * jdbc: introduce @Column annotation to override DB column names for entity fields, previous internal typealias `Column` renamed to `ColName`
 * jdbc: make it possible to override how Enum/Array is stored using JdbcConverter, default to toString() for enums
