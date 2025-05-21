@@ -64,6 +64,8 @@ This will start a server on the default port 8080.
 You can change the listening IP and port by passing it as an argument to the `Server` constructor.
 Passing `InetSocketAddress(0)` will bind to any available port.
 
+You can also pass `Server(workerPool = Executors.newVirtualThreadPerTaskExecutor())` if you want to run request handlers in JVM virtual threads.
+
 ## Config
 
 Most applications need some configuration. 12-factor applications use environment variables for configuration.
