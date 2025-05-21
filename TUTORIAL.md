@@ -1,10 +1,10 @@
 # Klite Tutorial
 
-This tutorial will guide you through the process of creating a TODO REST API backend application using Kotlin & Klite, including Postgres database.
+This tutorial will guide you through the process of creating a TODO REST API backend application using Kotlin & Klite, including a Postgres database.
 
 As you will see, Klite is very small, but still provides turn-the-key features for modern web applications, more so than many other frameworks.
 
-To get more information about any class or function, navigate freely inside to see how it works and what optional parameters does it provide.
+To get more information about any class or function, navigate freely inside to see how it works and what optional parameters it takes.
 
 You can also use the [Klite + Svelte project template](https://github.com/codeborne/klite-starter) repo.
 
