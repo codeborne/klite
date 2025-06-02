@@ -28,7 +28,7 @@ dependencyResolutionManagement {
 
       library("hikari", "com.zaxxer:HikariCP:6.3.0")
       library("liquibase-core", "org.liquibase:liquibase-core:4.31.1")
-      library("postgresql", "org.postgresql:postgresql:42.7.5")
+      library("postgresql", "org.postgresql:postgresql:42.7.6")
     }
   }
 }
