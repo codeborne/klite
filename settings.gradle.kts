@@ -11,12 +11,13 @@ dependencyResolutionManagement {
       library("kotlinx-serialization-json", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
       library("kotlinx-datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
 
-      val junit5 = version("junit", "5.13.2")
+      val junit5 = version("junit", "5.13.4")
       library("junit", "org.junit.jupiter", "junit-jupiter").versionRef(junit5)
       library("junit-api", "org.junit.jupiter", "junit-jupiter-api").versionRef(junit5)
       library("junit-engine", "org.junit.jupiter", "junit-jupiter-engine").versionRef(junit5)
+      library("junit-launcher", "org.junit.platform:junit-platform-launcher:1.13.4")
       library("atrium", "ch.tutteli.atrium:atrium-fluent:1.3.0-alpha-1")
-      library("mockk", "io.mockk:mockk:1.14.4")
+      library("mockk", "io.mockk:mockk:1.14.5")
 
       val slf4j = version("slf4j", "2.0.17")
       library("slf4j-api", "org.slf4j", "slf4j-api").versionRef(slf4j)

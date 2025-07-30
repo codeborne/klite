@@ -22,6 +22,7 @@ subprojects {
     val libs = rootProject.libs
     testImplementation(libs.junit)
     testRuntimeOnly(libs.junit.engine)
+    testRuntimeOnly(libs.junit.launcher)
     testImplementation(libs.atrium) {
       exclude("org.jetbrains.kotlin")
     }
