@@ -31,6 +31,14 @@ My favorite stack: Svelte + Kotlin + Klite + PostgreSQL
 
 
 
+## State of the game
+
+- On the JVM (also .NET), there is a common tendency to overcomplicate things
+- That got worse when frontend/backend split became mainstream
+- Koltin emerged as a new language people “love”
+
+
+
 ## Kotlin & Klite
 
 https://github.com/codeborne/klite
