@@ -18,6 +18,7 @@ See the [Tutorial](TUTORIAL.md) to grasp the basics quickly.
 ```kotlin
 fun main() {
   Server().apply {
+    assets("/", AssetsHandler(Path.of("public"), useIndexForUnknownPaths = true))
     context("/api") {
       get("/hello") { "Hello, world!" }
     }
