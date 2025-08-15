@@ -24,7 +24,7 @@ interface NullableId<ID>: BaseEntity<ID?> {
  * `add column updatedAt timestamptz not null default now()`, or use @Column annotation to give it a different name
  */
 interface UpdatableEntity {
-  var updatedAt: Instant?
+  var updatedAt: Instant? // initialize to null by default for new entities
 }
 
 @Deprecated("Declare your own Entity interface using BaseEntity and other interfaces", replaceWith = ReplaceWith("BaseEntity<UUID>"))
