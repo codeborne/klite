@@ -48,6 +48,8 @@ fun main() {
 * Not much need for documentation — the source code is short and readable.
 * Easy custom types instead of String, like Id, Phone, Email across web requests, json and DB
 
+(llms.txt)[llms.txt] version
+
 ## Dependencies
 
 * Java 6+ built-in non-blocking jdk.httpserver
