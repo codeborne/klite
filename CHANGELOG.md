@@ -1,5 +1,6 @@
 # Unreleased
 * jdbc: PooledDataSource.queryTimeout can be configured separately from pool connection timeout
+* server: FormDataParser now is able to parse binary files
 
 # 1.7.0
 * core: TSIDGenerator can now be used with custom classes outside TSID companion

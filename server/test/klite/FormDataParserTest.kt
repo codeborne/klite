@@ -45,7 +45,7 @@ class FormDataParserTest {
   }
 
   @Test fun `parse binary`() {
-    val boundary = "---------------------------9051914041544843365972754266"
+    val boundary = "---XXX"
     val data = (-128..127).map { it.toByte() }.toByteArray()
     val body = (
       "$boundary\r\n"
