@@ -1,3 +1,6 @@
+# Unreleased
+* jdbc: PooledDataSource.queryTimeout can be configured separately from pool connection timeout
+
 # 1.7.0
 * core: TSIDGenerator can now be used with custom classes outside TSID companion
 * core/jdbc: Any.toValues()/BaseCrudRepository.persister() will now return KProperty1 keys, not Strings for added type-safety.

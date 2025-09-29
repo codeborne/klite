@@ -26,6 +26,7 @@ class PooledDataSource(
   val db: DataSource = ConfigDataSource(),
   val maxSize: Int = Config.dbPoolMaxSize,
   val timeout: Duration = 5.seconds,
+  val queryTimeout: Duration = timeout * 2,
   val leakCheckThreshold: Duration? = null
 ): DataSource by db, AutoCloseable {
   private val log = logger()
@@ -92,7 +93,7 @@ class PooledDataSource(
     val count = counter.incrementAndGet()
     val since = currentTimeMillis()
     init {
-      try { setNetworkTimeout(null, timeout.inWholeMilliseconds.toInt()) }
+      try { setNetworkTimeout(null, queryTimeout.inWholeMilliseconds.toInt()) }
       catch (e: Exception) { log.warn("Failed to set network timeout for $this: $e") }
     }
 
