@@ -2,6 +2,7 @@ package klite
 
 import java.io.InputStream
 import kotlin.reflect.KType
+import kotlin.text.Charsets.ISO_8859_1
 
 @Deprecated("Use FormDataParser")
 typealias MultipartFormDataParser = FormDataParser
@@ -11,7 +12,7 @@ class FormDataParser: BodyParser {
 
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KType): T {
-    val reader = input.bufferedReader()
+    val reader = input.bufferedReader(ISO_8859_1)
     val boundary = reader.readLine()
     val result = mutableMapOf<String, Any?>()
     var state = State()
@@ -32,8 +33,7 @@ class FormDataParser: BodyParser {
       } else {
         if (line.startsWith(boundary)) {
           if (state.name != null) result[state.name!!] = state.fileName?.let {
-            // TODO: this is experimental and supports text files only
-            FileUpload(it, state.contentType, state.content.removeSuffix("\n").toString().byteInputStream())
+            FileUpload(it, state.contentType, state.content.removeSuffix("\n").toString().byteInputStream(ISO_8859_1))
           } ?: state.content.toString().trim()
           state = State()
         }
