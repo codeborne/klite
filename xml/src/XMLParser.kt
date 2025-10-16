@@ -14,13 +14,15 @@ import kotlin.reflect.full.findAnnotation
 
 @Target(PROPERTY) @Retention(RUNTIME)
 annotation class XmlPath(
-  /** start with /, attributes with /@ */
+  /** root element starts with /, path suffix without /, attributes with /@ */
   val path: String
 )
 
 class XMLParser(
   private val factory: SAXParserFactory = SAXParserFactory.newInstance().apply { isNamespaceAware = true }
 ) {
+  inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
+
   fun <T : Any> parse(xml: InputStream, type: KClass<T>, pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type)): T {
     val values = mutableMapOf<String, String>()
     var currentPath = ""
@@ -33,7 +35,7 @@ class XMLParser(
 
         for (i in 0 ..< attributes.length) {
           val path = currentPath + "/@" + (attributes.getLocalName(i) ?: attributes.getQName(i))
-          pathToProperty[path]?.let { prop ->
+          pathToProperty.find(path)?.let { prop ->
             values[prop.name] = attributes.getValue(i)
           }
         }
@@ -44,7 +46,7 @@ class XMLParser(
       }
 
       override fun endElement(uri: String?, localName: String?, qName: String) {
-        pathToProperty[currentPath]?.let { prop ->
+        pathToProperty.find(currentPath)?.let { prop ->
           values[prop.name] = currentText.toString().trim()
         }
 
@@ -60,5 +62,7 @@ class XMLParser(
   private fun <T: Any> readAnnotations(type: KClass<T>) = type.publicProperties.values
     .mapNotNull { it.findAnnotation<XmlPath>()?.let { ann -> ann.path to it } }.toMap()
 
-  inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
+  // TODO: separate non-root path map may be pre-created for better performance
+  private fun <T> Map<String, KProperty1<T, *>>.find(path: String) =
+    this[path] ?: this.entries.firstOrNull { !it.key.startsWith("/") && path.endsWith(it.key) }?.value
 }

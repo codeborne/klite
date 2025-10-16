@@ -37,16 +37,16 @@ class XMLParserTest {
   }
 
   data class Identifier(
-    @XmlPath("/transportMovement/id")
+    @XmlPath("/transportMovement/id") // from root
     val id: String,
 
-    @XmlPath("/transportMovement/id/@schemeAgencyId")
+    @XmlPath("id/@schemeAgencyId") // relative
     val type: String,
 
-    @XmlPath("/transportMovement/modeCode")
+    @XmlPath("modeCode")
     val mode: String,
 
-    @XmlPath("/transportMovement/dangerousGoodsIndicator")
+    @XmlPath("dangerousGoodsIndicator")
     val dangerousGoods: Boolean = false
   )
 }
