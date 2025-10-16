@@ -23,7 +23,10 @@ class XMLParser(
 ) {
   inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
 
-  fun <T : Any> parse(xml: InputStream, type: KClass<T>, pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type)): T {
+  fun <T : Any> parse(xml: InputStream, type: KClass<T>,
+                      pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type),
+                      creator: (Map<String, String>) -> T = { type.createFrom(it) }
+  ): T {
     val values = mutableMapOf<String, String>()
     var currentPath = ""
     val currentText = StringBuilder()
@@ -56,7 +59,7 @@ class XMLParser(
     }
 
     factory.newSAXParser().parse(xml, handler)
-    return type.createFrom(values)
+    return creator(values)
   }
 
   private fun <T: Any> readAnnotations(type: KClass<T>) = type.publicProperties.values
