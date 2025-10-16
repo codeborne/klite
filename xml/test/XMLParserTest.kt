@@ -8,9 +8,8 @@ import org.junit.jupiter.api.Test
 class XMLParserTest {
   val parser = XMLParser()
 
-  @Test fun parse() {
-    @Language("XML")
-    val xml = """
+  @Language("XML")
+  val xml = """
       <transportMovement>
         <id schemeAgencyId="AGENCY1">123</id>
         <modeCode>SEA</modeCode>
@@ -18,13 +17,8 @@ class XMLParserTest {
       </transportMovement>
     """.trimIndent().byteInputStream()
 
-    expect(parser.parse<Identifier>(xml)).toEqual(
-      Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
-  }
-
-  @Test fun namespaces() {
-    @Language("XML")
-    val xml = """
+  @Language("XML")
+  val xmlWithNamespaces = """
       <x:transportMovement xmlns:x="http://example.com/x" xmlns:z="http://example.com/z">
         <z:id z:schemeAgencyId="AGENCY1">123</z:id>
         <z:modeCode>SEA</z:modeCode>
@@ -32,8 +26,25 @@ class XMLParserTest {
       </x:transportMovement>
     """.trimIndent().byteInputStream()
 
+  @Test fun parse() {
     expect(parser.parse<Identifier>(xml)).toEqual(
       Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
+  }
+
+  @Test fun namespaces() {
+    expect(parser.parse<Identifier>(xmlWithNamespaces)).toEqual(
+      Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
+  }
+
+  @Test fun map() {
+    expect(parser.parseMap(xmlWithNamespaces)).toEqual(
+      mapOf(
+        "/transportMovement/id" to "123",
+        "/transportMovement/id/@schemeAgencyId" to "AGENCY1",
+        "/transportMovement/modeCode" to "SEA",
+        "/transportMovement/dangerousGoodsIndicator" to "true",
+        "/transportMovement" to ""
+      ))
   }
 
   data class Identifier(

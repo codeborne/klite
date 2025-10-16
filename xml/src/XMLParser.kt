@@ -23,6 +23,9 @@ class XMLParser(
 ) {
   inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
 
+  fun parseMap(xml: InputStream): Map<String, String> =
+    parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
+
   fun <T : Any> parse(xml: InputStream, type: KClass<T>,
                       pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type),
                       creator: (Map<String, String>) -> T = { type.createFrom(it) }
@@ -38,9 +41,7 @@ class XMLParser(
 
         for (i in 0 ..< attributes.length) {
           val path = currentPath + "/@" + (attributes.getLocalName(i) ?: attributes.getQName(i))
-          pathToProperty.find(path)?.let { prop ->
-            values[prop.name] = attributes.getValue(i)
-          }
+          values[pathToProperty.find(path)] = attributes.getValue(i)
         }
       }
 
@@ -49,9 +50,7 @@ class XMLParser(
       }
 
       override fun endElement(uri: String?, localName: String?, qName: String) {
-        pathToProperty.find(currentPath)?.let { prop ->
-          values[prop.name] = currentText.toString().trim()
-        }
+        values[pathToProperty.find(currentPath)] = currentText.toString().trim()
 
         currentPath = currentPath.substringBeforeLast("/")
         currentText.setLength(0)
@@ -67,5 +66,5 @@ class XMLParser(
 
   // TODO: separate non-root path map may be pre-created for better performance
   private fun <T> Map<String, KProperty1<T, *>>.find(path: String) =
-    this[path] ?: this.entries.firstOrNull { !it.key.startsWith("/") && path.endsWith(it.key) }?.value
+    (this[path] ?: entries.firstOrNull { !it.key.startsWith("/") && path.endsWith(it.key) }?.value)?.name ?: path
 }
