@@ -9,6 +9,7 @@ import javax.xml.parsers.SAXParserFactory
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.PROPERTY
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 
 @Target(PROPERTY) @Retention(RUNTIME)
@@ -20,13 +21,10 @@ annotation class XmlPath(
 class XMLParser(
   private val factory: SAXParserFactory = SAXParserFactory.newInstance().apply { isNamespaceAware = true }
 ) {
-  fun <T : Any> parse(xml: InputStream, clazz: KClass<T>): T {
+  fun <T : Any> parse(xml: InputStream, type: KClass<T>, pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type)): T {
     val values = mutableMapOf<String, String>()
     var currentPath = ""
     val currentText = StringBuilder()
-
-    val pathToProperty = clazz.publicProperties.values
-      .mapNotNull { it.findAnnotation<XmlPath>()?.let { ann -> ann.path to it } }.toMap()
 
     val handler = object : DefaultHandler() {
       override fun startElement(uri: String?, localName: String?, qName: String, attributes: Attributes) {
@@ -56,8 +54,11 @@ class XMLParser(
     }
 
     factory.newSAXParser().parse(xml, handler)
-    return clazz.createFrom(values)
+    return type.createFrom(values)
   }
+
+  private fun <T: Any> readAnnotations(type: KClass<T>) = type.publicProperties.values
+    .mapNotNull { it.findAnnotation<XmlPath>()?.let { ann -> ann.path to it } }.toMap()
 
   inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
 }
