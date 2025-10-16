@@ -23,25 +23,23 @@ class XMLParser(
 ) {
   inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
 
-  fun parseMap(xml: InputStream): Map<String, String> =
+  fun parsePathMap(xml: InputStream): Map<String, String> =
     parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
 
-  fun <T : Any> parse(xml: InputStream, type: KClass<T>,
-                      pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type),
-                      creator: (Map<String, String>) -> T = { type.createFrom(it) }
-  ): T {
-    val values = mutableMapOf<String, String>()
+  fun parse(xml: InputStream, callback: (path: String, name: String, text: String) -> Unit) {
     var currentPath = ""
     val currentText = StringBuilder()
 
     val handler = object : DefaultHandler() {
       override fun startElement(uri: String?, localName: String?, qName: String, attributes: Attributes) {
-        currentPath += "/" + (localName ?: qName)
+        val elementName = localName ?: qName
+        currentPath += "/$elementName"
         currentText.setLength(0)
 
         for (i in 0 ..< attributes.length) {
-          val path = currentPath + "/@" + (attributes.getLocalName(i) ?: attributes.getQName(i))
-          values[pathToProperty.find(path)] = attributes.getValue(i)
+          val attrName = attributes.getLocalName(i) ?: attributes.getQName(i)
+          val attrPath = "$currentPath/@$attrName"
+          callback(attrPath, attrName, attributes.getValue(i))
         }
       }
 
@@ -50,14 +48,29 @@ class XMLParser(
       }
 
       override fun endElement(uri: String?, localName: String?, qName: String) {
-        values[pathToProperty.find(currentPath)] = currentText.toString().trim()
+        val text = currentText.toString().trim()
+        if (text.isNotEmpty()) {
+          val elementName = localName ?: qName
+          callback(currentPath, elementName, text)
+        }
 
-        currentPath = currentPath.substringBeforeLast("/")
+        currentPath = currentPath.substringBeforeLast("/", "")
         currentText.setLength(0)
       }
     }
 
     factory.newSAXParser().parse(xml, handler)
+  }
+
+  fun <T : Any> parse(xml: InputStream, type: KClass<T>,
+                      pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type),
+                      creator: (Map<String, String>) -> T = { type.createFrom(it) }
+  ): T {
+    val values = mutableMapOf<String, String>()
+    parse(xml) { path, name, text ->
+      val prop = pathToProperty.find(path, name)
+      values[prop] = text
+    }
     return creator(values)
   }
 
@@ -65,6 +78,6 @@ class XMLParser(
     .mapNotNull { it.findAnnotation<XmlPath>()?.let { ann -> ann.path to it } }.toMap()
 
   // TODO: separate non-root path map may be pre-created for better performance
-  private fun <T> Map<String, KProperty1<T, *>>.find(path: String) =
-    (this[path] ?: entries.firstOrNull { !it.key.startsWith("/") && path.endsWith(it.key) }?.value)?.name ?: path
+  private fun <T> Map<String, KProperty1<T, *>>.find(path: String, name: String) =
+    (this[path] ?: this[name] ?: entries.firstOrNull { !it.key.startsWith("/") && path.endsWith(it.key) }?.value)?.name ?: path
 }

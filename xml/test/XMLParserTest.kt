@@ -36,14 +36,13 @@ class XMLParserTest {
       Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
   }
 
-  @Test fun map() {
-    expect(parser.parseMap(xmlWithNamespaces)).toEqual(
+  @Test fun parsePathMap() {
+    expect(parser.parsePathMap(xmlWithNamespaces)).toEqual(
       mapOf(
         "/transportMovement/id" to "123",
         "/transportMovement/id/@schemeAgencyId" to "AGENCY1",
         "/transportMovement/modeCode" to "SEA",
         "/transportMovement/dangerousGoodsIndicator" to "true",
-        "/transportMovement" to ""
       ))
   }
 
