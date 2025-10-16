@@ -22,6 +22,20 @@ class XMLParserTest {
       Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
   }
 
+  @Test fun namespaces() {
+    @Language("XML")
+    val xml = """
+      <x:transportMovement xmlns:x="http://example.com/x" xmlns:z="http://example.com/z">
+        <z:id schemeAgencyId="AGENCY1">123</z:id>
+        <z:modeCode>SEA</z:modeCode>
+        <x:dangerousGoodsIndicator>true</x:dangerousGoodsIndicator>
+      </x:transportMovement>
+    """.trimIndent().byteInputStream()
+
+    expect(parser.parse<Identifier>(xml)).toEqual(
+      Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
+  }
+
   data class Identifier(
     @XmlPath("transportMovement/id")
     val id: String,
