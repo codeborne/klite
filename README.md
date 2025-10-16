@@ -60,6 +60,7 @@ fun main() {
 * [core](core) - some reusable classes, e.g. Config. Don't depend on it directly.
 * [server](server) - the main server module. See [it's documentation](server). Zero external dependencies.
 * [json](json) - lightweight and easily configurable json parsing/rendering (usable *standalone*)
+* [xml](xml) - fast and lightweight xml parsing into data classes (usable *standalone*)
 * [csv](csv) - simple CSV parsing/generation (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
 * [jdbc](jdbc) - provides JDBC extensions for DB access, transaction handling and migrations (usable *standalone*)

@@ -39,6 +39,7 @@ include(
   "server",
   "json",
   "csv",
+  "xml",
   "jackson",
   "i18n",
   "serialization",

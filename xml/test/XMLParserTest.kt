@@ -1,0 +1,38 @@
+package klite.xml
+
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
+import ch.tutteli.atrium.api.verbs.expect
+import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Test
+
+class XMLParserTest {
+  val parser = XMLParser()
+
+  @Test fun parse() {
+    @Language("XML")
+    val xml = """
+      <transportMovement>
+        <id schemeAgencyId="AGENCY1">123</id>
+        <modeCode>SEA</modeCode>
+        <dangerousGoodsIndicator>true</dangerousGoodsIndicator>
+      </transportMovement>
+    """.trimIndent().byteInputStream()
+
+    expect(parser.parse<Identifier>(xml)).toEqual(
+      Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
+  }
+
+  data class Identifier(
+    @XmlPath("transportMovement/id")
+    val id: String,
+
+    @XmlPath("transportMovement/id/@schemeAgencyId")
+    val type: String,
+
+    @XmlPath("transportMovement/modeCode")
+    val mode: String,
+
+    @XmlPath("transportMovement/dangerousGoodsIndicator")
+    val dangerousGoods: Boolean = false
+  )
+}
