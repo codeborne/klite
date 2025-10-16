@@ -26,20 +26,20 @@ class XMLParser(
   fun parsePathMap(xml: InputStream): Map<String, String> =
     parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
 
-  fun parse(xml: InputStream, callback: (path: String, name: String, text: String) -> Unit) {
+  fun parse(xml: InputStream, callback: (parentPath: String, name: String, text: String) -> Unit) {
     var currentPath = ""
     val currentText = StringBuilder()
 
     val handler = object : DefaultHandler() {
       override fun startElement(uri: String?, localName: String?, qName: String, attributes: Attributes) {
         val elementName = localName ?: qName
+        val parentPath = currentPath
         currentPath += "/$elementName"
         currentText.setLength(0)
 
-        for (i in 0 ..< attributes.length) {
+        for (i in 0 until attributes.length) {
           val attrName = attributes.getLocalName(i) ?: attributes.getQName(i)
-          val attrPath = "$currentPath/@$attrName"
-          callback(attrPath, attrName, attributes.getValue(i))
+          callback(currentPath, "@$attrName", attributes.getValue(i))
         }
       }
 
@@ -48,13 +48,14 @@ class XMLParser(
       }
 
       override fun endElement(uri: String?, localName: String?, qName: String) {
+        val parentPath = currentPath.substringBeforeLast("/", "")
         val text = currentText.toString().trim()
         if (text.isNotEmpty()) {
           val elementName = localName ?: qName
-          callback(currentPath, elementName, text)
+          callback(parentPath, elementName, text)
         }
 
-        currentPath = currentPath.substringBeforeLast("/", "")
+        currentPath = parentPath
         currentText.setLength(0)
       }
     }
@@ -67,8 +68,8 @@ class XMLParser(
                       creator: (Map<String, String>) -> T = { type.createFrom(it) }
   ): T {
     val values = mutableMapOf<String, String>()
-    parse(xml) { path, name, text ->
-      val prop = pathToProperty.find(path, name)
+    parse(xml) { parentPath, name, text ->
+      val prop = pathToProperty.find(parentPath, name)
       values[prop] = text
     }
     return creator(values)
@@ -78,6 +79,8 @@ class XMLParser(
     .mapNotNull { it.findAnnotation<XmlPath>()?.let { ann -> ann.path to it } }.toMap()
 
   // TODO: separate non-root path map may be pre-created for better performance
-  private fun <T> Map<String, KProperty1<T, *>>.find(path: String, name: String) =
-    (this[path] ?: this[name] ?: entries.firstOrNull { !it.key.startsWith("/") && path.endsWith(it.key) }?.value)?.name ?: path
+  private fun <T> Map<String, KProperty1<T, *>>.find(parentPath: String, name: String): String {
+    val fullPath = "$parentPath/$name"
+    return (this[fullPath] ?: this[name] ?: entries.firstOrNull { !it.key.startsWith("/") && fullPath.endsWith(it.key) }?.value)?.name ?: fullPath
+  }
 }
