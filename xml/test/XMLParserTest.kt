@@ -26,7 +26,7 @@ class XMLParserTest {
     @Language("XML")
     val xml = """
       <x:transportMovement xmlns:x="http://example.com/x" xmlns:z="http://example.com/z">
-        <z:id schemeAgencyId="AGENCY1">123</z:id>
+        <z:id z:schemeAgencyId="AGENCY1">123</z:id>
         <z:modeCode>SEA</z:modeCode>
         <x:dangerousGoodsIndicator>true</x:dangerousGoodsIndicator>
       </x:transportMovement>
@@ -37,16 +37,16 @@ class XMLParserTest {
   }
 
   data class Identifier(
-    @XmlPath("transportMovement/id")
+    @XmlPath("/transportMovement/id")
     val id: String,
 
-    @XmlPath("transportMovement/id/@schemeAgencyId")
+    @XmlPath("/transportMovement/id/@schemeAgencyId")
     val type: String,
 
-    @XmlPath("transportMovement/modeCode")
+    @XmlPath("/transportMovement/modeCode")
     val mode: String,
 
-    @XmlPath("transportMovement/dangerousGoodsIndicator")
+    @XmlPath("/transportMovement/dangerousGoodsIndicator")
     val dangerousGoods: Boolean = false
   )
 }

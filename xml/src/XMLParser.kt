@@ -12,14 +12,17 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
 @Target(PROPERTY) @Retention(RUNTIME)
-annotation class XmlPath(val path: String)
+annotation class XmlPath(
+  /** start with /, attributes with /@ */
+  val path: String
+)
 
 class XMLParser(
   private val factory: SAXParserFactory = SAXParserFactory.newInstance().apply { isNamespaceAware = true }
 ) {
   fun <T : Any> parse(xml: InputStream, clazz: KClass<T>): T {
     val values = mutableMapOf<String, String>()
-    val currentPath = mutableListOf<String>()
+    var currentPath = ""
     val currentText = StringBuilder()
 
     val pathToProperty = clazz.publicProperties.values
@@ -27,12 +30,13 @@ class XMLParser(
 
     val handler = object : DefaultHandler() {
       override fun startElement(uri: String?, localName: String?, qName: String, attributes: Attributes) {
-        currentPath.add(localName ?: qName)
+        currentPath += "/" + (localName ?: qName)
         currentText.setLength(0)
 
-        for ((xmlPath, prop) in pathToProperty) {
-          if (xmlPath.endsWith("/@${attributes.getQName(0)}") && xmlPath.startsWith(currentPath.joinToString("/"))) {
-            values[prop.name] = attributes.getValue(attributes.getQName(0))
+        for (i in 0 ..< attributes.length) {
+          val path = currentPath + "/@" + (attributes.getLocalName(i) ?: attributes.getQName(i))
+          pathToProperty[path]?.let { prop ->
+            values[prop.name] = attributes.getValue(i)
           }
         }
       }
@@ -42,13 +46,11 @@ class XMLParser(
       }
 
       override fun endElement(uri: String?, localName: String?, qName: String) {
-        val path = currentPath.joinToString("/")
-
-        pathToProperty.forEach { (xmlPath, prop) ->
-          if (xmlPath == path) values[prop.name] = currentText.toString().trim()
+        pathToProperty[currentPath]?.let { prop ->
+          values[prop.name] = currentText.toString().trim()
         }
 
-        currentPath.removeAt(currentPath.size - 1)
+        currentPath = currentPath.substringBeforeLast("/")
         currentText.setLength(0)
       }
     }
