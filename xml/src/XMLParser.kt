@@ -94,7 +94,6 @@ class XMLParser(
 
     fun parseNode(reader: XMLEventReader, start: StartElement): Any {
       val children = mutableMapOf<String, Any>()
-      val childLists = mutableMapOf<String, MutableList<Any>>()
       var textContent = ""
 
       while (reader.hasNext()) {
@@ -110,9 +109,7 @@ class XMLParser(
               children[name] = textNode
               child.forEach { if (it.key != "") children[name + "@" + it.key] = it.value }
             } else if (children.containsKey(name)) {
-              val list = childLists.getOrPut(name) { mutableListOf(children.remove(name)!!) }
-              list.add(child)
-              children[name] = list
+              children[name] = children.children<Any>(name).also { it as MutableList += child }
             } else children[name] = child
           }
           e.isCharacters -> {
