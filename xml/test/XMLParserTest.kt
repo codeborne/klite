@@ -60,8 +60,9 @@ class XMLParserTest {
       ))
   }
 
-  @Test fun parseNestedMap() {
-    expect(parser.parseNestedMap(xmlWithNamespaces)).toEqual(
+  @Test fun parseNodes() {
+    val result = parser.parseNodes(xmlWithNamespaces)
+    expect(result).toEqual(
       mapOf("transportMovement" to mapOf(
         "id" to mapOf(
           "text" to "123",
@@ -70,10 +71,11 @@ class XMLParserTest {
         "modeCode" to "SEA",
         "dangerousGoodsIndicator" to "true",
       )))
+    expect(result.at("transportMovement").value<Boolean>("dangerousGoodsIndicator")).toEqual(true)
   }
 
-  @Test fun parseNestedMapWithRepeating() {
-    val library = parser.parseNestedMap(xmlWithRepeating).at("library")
+  @Test fun parseNodesWithRepeating() {
+    val library = parser.parseNodes(xmlWithRepeating).at("library")
     expect(library).toEqual(mapOf(
       "book" to listOf(
         mapOf("id" to "1", "title" to "The Hobbit", "author" to "Tolkien"),

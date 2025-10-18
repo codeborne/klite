@@ -1,5 +1,6 @@
 package klite.xml
 
+import klite.Converter
 import klite.createFrom
 import klite.publicProperties
 import org.xml.sax.Attributes
@@ -89,7 +90,7 @@ class XMLParser(
   fun parsePathMap(xml: InputStream): Map<String, String> =
     parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
 
-  fun parseNestedMap(xml: InputStream): XmlNode {
+  fun parseNodes(xml: InputStream): XmlNode {
     val reader = XMLInputFactory.newInstance().createXMLEventReader(xml)
 
     fun parseElement(reader: XMLEventReader, start: StartElement): Any {
@@ -162,3 +163,6 @@ fun <T> XmlNode.children(key: String): List<T> = child<Any>(key).let { it as? Li
 fun XmlNode.at(key: String) = child<XmlNode>(key)
 fun XmlNode.nodes(key: String): List<XmlNode> = children(key)
 fun XmlNode.text(key: String) = child<String>(key)
+fun XmlNode.textOrNull(key: String) = childOrNull<String>(key)
+inline fun <reified T: Any> XmlNode.value(key: String) = Converter.from<T>(text(key))
+inline fun <reified T: Any> XmlNode.valueOrNull(key: String) = textOrNull(key)?.let { Converter.from<T>(it) }
