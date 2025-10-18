@@ -146,7 +146,9 @@ typealias XmlNode = Map<String, Any>
 fun <T: Any> XmlNode.childOrNull(key: String) = get(key) as T?
 fun <T: Any> XmlNode.child(key: String) = (childOrNull<T>(key) ?: throw NullPointerException("$key is absent"))
 
-fun <T> XmlNode.children(key: String): List<T> = child<Any>(key).let { it as? List<T> ?: listOf(it as T) }
+fun <T> XmlNode.children(key: String): List<T> = childOrNull<Any>(key).let {
+  if (it == null) emptyList() else it as? List<T> ?: listOf(it as T)
+}
 
 fun XmlNode.at(key: String) = child<XmlNode>(key)
 fun XmlNode.nodes(key: String): List<XmlNode> = children(key)
