@@ -64,10 +64,8 @@ class XMLParserTest {
     val result = parser.parseNodes(xmlWithNamespaces)
     expect(result).toEqual(
       mapOf("transportMovement" to mapOf(
-        "id" to mapOf(
-          "text" to "123",
-          "schemeAgencyId" to "AGENCY1"
-        ),
+        "id" to "123",
+        "id@schemeAgencyId" to "AGENCY1",
         "modeCode" to "SEA",
         "dangerousGoodsIndicator" to "true",
       )))

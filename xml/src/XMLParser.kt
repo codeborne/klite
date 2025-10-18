@@ -102,14 +102,18 @@ class XMLParser(
         when {
           e.isStartElement -> {
             val childStart = e.asStartElement()
-            val childName = childStart.name.localPart
-            val childValue = parseNode(reader, childStart)
+            val name = childStart.name.localPart
+            val child = parseNode(reader, childStart)
 
-            if (children.containsKey(childName)) {
-              val list = childLists.getOrPut(childName) { mutableListOf(children.remove(childName)!!) }
-              list.add(childValue)
-              children[childName] = list
-            } else children[childName] = childValue
+            val textNode = (child as? XmlNode)?.get("")
+            if (textNode != null) {
+              children[name] = textNode
+              child.forEach { if (it.key != "") children[name + "@" + it.key] = it.value }
+            } else if (children.containsKey(name)) {
+              val list = childLists.getOrPut(name) { mutableListOf(children.remove(name)!!) }
+              list.add(child)
+              children[name] = list
+            } else children[name] = child
           }
           e.isCharacters -> {
             textContent = e.asCharacters().data.trim()
