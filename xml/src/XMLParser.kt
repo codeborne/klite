@@ -89,7 +89,7 @@ class XMLParser(
   fun parsePathMap(xml: InputStream): Map<String, String> =
     parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
 
-  fun parseNestedMap(xml: InputStream): Map<String, Any> {
+  fun parseNestedMap(xml: InputStream): XmlNode {
     val reader = XMLInputFactory.newInstance().createXMLEventReader(xml)
 
     fun parseElement(reader: XMLEventReader, start: StartElement): Any {
@@ -114,15 +114,10 @@ class XMLParser(
             val childValue = parseElement(reader, childStart)
 
             if (children.containsKey(childName)) {
-              val list = childLists.getOrPut(childName) {
-                val existing = children.remove(childName)!!
-                mutableListOf(existing)
-              }
+              val list = childLists.getOrPut(childName) { mutableListOf(children.remove(childName)!!) }
               list.add(childValue)
               children[childName] = list
-            } else {
-              children[childName] = childValue
-            }
+            } else children[childName] = childValue
           }
           event.isCharacters -> {
             val text = event.asCharacters().data.trim()
@@ -130,14 +125,10 @@ class XMLParser(
           }
           event.isEndElement -> {
             if (event.asEndElement().name == start.name) {
-              // Decide return type
               if (map.isEmpty() && children.isEmpty()) {
-                // Text-only element → return text
                 return textContent ?: ""
               } else {
-                // Merge children into map
                 map.putAll(children)
-                // If there is also text along with attributes/children, optionally store under key
                 if (textContent != null) map["text"] = textContent
                 return map
               }
@@ -149,14 +140,25 @@ class XMLParser(
       return map
     }
 
-    // Skip any events until the root element
     while (reader.hasNext()) {
       val event = reader.nextEvent()
       if (event.isStartElement) {
-        return mapOf(event.asStartElement().name.localPart to parseElement(reader, event.asStartElement()))
+        val element = event.asStartElement()
+        return mapOf(element.name.localPart to parseElement(reader, element))
       }
     }
 
     return emptyMap()
   }
 }
+
+typealias XmlNode = Map<String, Any>
+
+fun <T: Any> XmlNode.childOrNull(key: String) = get(key) as T?
+fun <T: Any> XmlNode.child(key: String) = (childOrNull<T>(key) ?: throw NullPointerException("$key is absent"))
+
+fun <T> XmlNode.children(key: String): List<T> = child<Any>(key).let { it as? List<T> ?: listOf(it as T) }
+
+fun XmlNode.at(key: String) = child<XmlNode>(key)
+fun XmlNode.nodes(key: String): List<XmlNode> = children(key)
+fun XmlNode.text(key: String) = child<String>(key)

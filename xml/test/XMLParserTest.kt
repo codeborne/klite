@@ -73,13 +73,16 @@ class XMLParserTest {
   }
 
   @Test fun parseNestedMapWithRepeating() {
-    val library = parser.parseNestedMap(xmlWithRepeating)["library"]!!
+    val library = parser.parseNestedMap(xmlWithRepeating).at("library")
     expect(library).toEqual(mapOf(
       "book" to listOf(
         mapOf("id" to "1", "title" to "The Hobbit", "author" to "Tolkien"),
         mapOf("id" to "2", "title" to "Dune", "author" to "Herbert")
       )
     ))
+
+    expect(library.nodes("book").first().text("title")).toEqual("The Hobbit")
+    expect(library.nodes("book").last().text("id")).toEqual("2")
   }
 
   data class Identifier(
