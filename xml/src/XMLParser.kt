@@ -9,7 +9,6 @@ import java.io.InputStream
 import javax.xml.parsers.SAXParserFactory
 import javax.xml.stream.XMLEventReader
 import javax.xml.stream.XMLInputFactory
-import javax.xml.stream.events.Attribute
 import javax.xml.stream.events.StartElement
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.PROPERTY
@@ -93,26 +92,18 @@ class XMLParser(
   fun parseNodes(xml: InputStream): XmlNode {
     val reader = XMLInputFactory.newInstance().createXMLEventReader(xml)
 
-    fun parseElement(reader: XMLEventReader, start: StartElement): Any {
-      val map = mutableMapOf<String, Any>()
-
-      val attrs = start.attributes
-      while (attrs.hasNext()) {
-        val attr = attrs.next() as Attribute
-        map[attr.name.localPart] = attr.value
-      }
-
+    fun parseNode(reader: XMLEventReader, start: StartElement): Any {
       val children = mutableMapOf<String, Any>()
       val childLists = mutableMapOf<String, MutableList<Any>>()
-      var textContent: String? = null
+      var textContent = ""
 
       while (reader.hasNext()) {
-        val event = reader.nextEvent()
+        val e = reader.nextEvent()
         when {
-          event.isStartElement -> {
-            val childStart = event.asStartElement()
+          e.isStartElement -> {
+            val childStart = e.asStartElement()
             val childName = childStart.name.localPart
-            val childValue = parseElement(reader, childStart)
+            val childValue = parseNode(reader, childStart)
 
             if (children.containsKey(childName)) {
               val list = childLists.getOrPut(childName) { mutableListOf(children.remove(childName)!!) }
@@ -120,32 +111,25 @@ class XMLParser(
               children[childName] = list
             } else children[childName] = childValue
           }
-          event.isCharacters -> {
-            val text = event.asCharacters().data.trim()
-            if (text.isNotEmpty()) textContent = text
+          e.isCharacters -> {
+            textContent = e.asCharacters().data.trim()
           }
-          event.isEndElement -> {
-            if (event.asEndElement().name == start.name) {
-              if (map.isEmpty() && children.isEmpty()) {
-                return textContent ?: ""
-              } else {
-                map.putAll(children)
-                if (textContent != null) map["text"] = textContent
-                return map
-              }
-            }
+          e.isEndElement -> {
+            val attrs = start.attributes.asSequence().associate { it.name.localPart to it.value }
+            if (textContent.isEmpty()) return children + attrs
+            if (children.isEmpty() && attrs.isEmpty()) return textContent
+            return mapOf("" to textContent) + children + attrs
           }
         }
       }
-
-      return map
+      throw IllegalStateException()
     }
 
     while (reader.hasNext()) {
       val event = reader.nextEvent()
       if (event.isStartElement) {
         val element = event.asStartElement()
-        return mapOf(element.name.localPart to parseElement(reader, element))
+        return mapOf(element.name.localPart to parseNode(reader, element))
       }
     }
 
