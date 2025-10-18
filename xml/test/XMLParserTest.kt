@@ -26,6 +26,20 @@ class XMLParserTest {
       </x:transportMovement>
     """.trimIndent().byteInputStream()
 
+  @Language("XML")
+  val xmlWithRepeating = """
+    <library>
+      <book id="1">
+        <title>The Hobbit</title>
+        <author>Tolkien</author>
+      </book>
+      <book id="2">
+        <title>Dune</title>
+        <author>Herbert</author>
+      </book>
+    </library>
+  """.trimIndent().byteInputStream()
+
   @Test fun parse() {
     expect(parser.parse<Identifier>(xml)).toEqual(
       Identifier("123", "AGENCY1", "SEA", dangerousGoods = true))
@@ -44,6 +58,28 @@ class XMLParserTest {
         "/transportMovement/modeCode" to "SEA",
         "/transportMovement/dangerousGoodsIndicator" to "true",
       ))
+  }
+
+  @Test fun parseNestedMap() {
+    expect(parser.parseNestedMap(xmlWithNamespaces)).toEqual(
+      mapOf("transportMovement" to mapOf(
+        "id" to mapOf(
+          "text" to "123",
+          "schemeAgencyId" to "AGENCY1"
+        ),
+        "modeCode" to "SEA",
+        "dangerousGoodsIndicator" to "true",
+      )))
+  }
+
+  @Test fun parseNestedMapWithRepeating() {
+    val library = parser.parseNestedMap(xmlWithRepeating)["library"]!!
+    expect(library).toEqual(mapOf(
+      "book" to listOf(
+        mapOf("id" to "1", "title" to "The Hobbit", "author" to "Tolkien"),
+        mapOf("id" to "2", "title" to "Dune", "author" to "Herbert")
+      )
+    ))
   }
 
   data class Identifier(

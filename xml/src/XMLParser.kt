@@ -6,6 +6,10 @@ import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
 import java.io.InputStream
 import javax.xml.parsers.SAXParserFactory
+import javax.xml.stream.XMLEventReader
+import javax.xml.stream.XMLInputFactory
+import javax.xml.stream.events.Attribute
+import javax.xml.stream.events.StartElement
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.PROPERTY
 import kotlin.reflect.KClass
@@ -22,9 +26,6 @@ class XMLParser(
   private val factory: SAXParserFactory = SAXParserFactory.newInstance().apply { isNamespaceAware = true }
 ) {
   inline fun <reified T: Any> parse(xml: InputStream): T = parse(xml, T::class)
-
-  fun parsePathMap(xml: InputStream): Map<String, String> =
-    parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
 
   fun parse(xml: InputStream, callback: (parentPath: String, name: String, text: String) -> Unit) {
     var currentPath = ""
@@ -63,6 +64,7 @@ class XMLParser(
     factory.newSAXParser().parse(xml, handler)
   }
 
+  // TODO: handle repeating and nested elements
   fun <T : Any> parse(xml: InputStream, type: KClass<T>,
                       pathToProperty: Map<String, KProperty1<T, *>> = readAnnotations(type),
                       creator: (Map<String, String>) -> T = { type.createFrom(it) }
@@ -82,5 +84,79 @@ class XMLParser(
   private fun <T> Map<String, KProperty1<T, *>>.find(parentPath: String, name: String): String {
     val fullPath = "$parentPath/$name"
     return (this[fullPath] ?: this[name] ?: entries.firstOrNull { !it.key.startsWith("/") && fullPath.endsWith(it.key) }?.value)?.name ?: fullPath
+  }
+
+  fun parsePathMap(xml: InputStream): Map<String, String> =
+    parse(xml, Map::class as KClass<Map<String, String>>, pathToProperty = emptyMap(), creator = { it })
+
+  fun parseNestedMap(xml: InputStream): Map<String, Any> {
+    val reader = XMLInputFactory.newInstance().createXMLEventReader(xml)
+
+    fun parseElement(reader: XMLEventReader, start: StartElement): Any {
+      val map = mutableMapOf<String, Any>()
+
+      val attrs = start.attributes
+      while (attrs.hasNext()) {
+        val attr = attrs.next() as Attribute
+        map[attr.name.localPart] = attr.value
+      }
+
+      val children = mutableMapOf<String, Any>()
+      val childLists = mutableMapOf<String, MutableList<Any>>()
+      var textContent: String? = null
+
+      while (reader.hasNext()) {
+        val event = reader.nextEvent()
+        when {
+          event.isStartElement -> {
+            val childStart = event.asStartElement()
+            val childName = childStart.name.localPart
+            val childValue = parseElement(reader, childStart)
+
+            if (children.containsKey(childName)) {
+              val list = childLists.getOrPut(childName) {
+                val existing = children.remove(childName)!!
+                mutableListOf(existing)
+              }
+              list.add(childValue)
+              children[childName] = list
+            } else {
+              children[childName] = childValue
+            }
+          }
+          event.isCharacters -> {
+            val text = event.asCharacters().data.trim()
+            if (text.isNotEmpty()) textContent = text
+          }
+          event.isEndElement -> {
+            if (event.asEndElement().name == start.name) {
+              // Decide return type
+              if (map.isEmpty() && children.isEmpty()) {
+                // Text-only element → return text
+                return textContent ?: ""
+              } else {
+                // Merge children into map
+                map.putAll(children)
+                // If there is also text along with attributes/children, optionally store under key
+                if (textContent != null) map["text"] = textContent
+                return map
+              }
+            }
+          }
+        }
+      }
+
+      return map
+    }
+
+    // Skip any events until the root element
+    while (reader.hasNext()) {
+      val event = reader.nextEvent()
+      if (event.isStartElement) {
+        return mapOf(event.asStartElement().name.localPart to parseElement(reader, event.asStartElement()))
+      }
+    }
+
+    return emptyMap()
   }
 }
