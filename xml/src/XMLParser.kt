@@ -22,6 +22,7 @@ annotation class XmlPath(
   val path: String
 )
 
+@Suppress("UNCHECKED_CAST")
 class XMLParser(
   private val factory: SAXParserFactory = SAXParserFactory.newInstance().apply { isNamespaceAware = true }
 ) {
@@ -108,9 +109,11 @@ class XMLParser(
             if (textNode != null) {
               children[name] = textNode
               child.forEach { if (it.key != "") children[name + "@" + it.key] = it.value }
-            } else if (children.containsKey(name)) {
-              children[name] = children.children<Any>(name).also { it as MutableList += child }
-            } else children[name] = child
+            } else when (val v = children[name]) {
+              null -> children[name] = child
+              is MutableList<*> -> v as MutableList<Any> += child
+              else -> children[name] = mutableListOf(v, child)
+            }
           }
           e.isCharacters -> {
             textContent = e.asCharacters().data.trim()
