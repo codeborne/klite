@@ -40,9 +40,11 @@ class MultipartParser(
         }
       } else if (line.startsWith(boundary)) {
         state.content.trimEnd()
-        result[state.name ?: state.fileName ?: ""] = state.fileName?.let {
-          FileUpload(it, state.contentType, state.content.inputStream())
-        } ?: if (state.isText) state.content.toString(MimeTypes.textCharset) else state.content.toByteArray()
+        result[state.name ?: state.fileName ?: ""] = when {
+          state.fileName != null -> FileUpload(state.fileName!!, state.contentType, state.content.inputStream())
+          state.isText -> state.content.toString(MimeTypes.textCharset)
+          else -> state.content.toByteArray()
+        }
         state = State()
       }
       else state.content.append(line)
