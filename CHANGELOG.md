@@ -1,6 +1,6 @@
 # Unreleased
 * jdbc: PooledDataSource.queryTimeout can be configured separately from pool connection timeout
-* server: FormDataParser now is able to parse binary files
+* server: MultipartParser and MultipartRenderer now support binary data/files
 * xml: new module for fast and lightweight XML parsing
 
 # 1.7.0

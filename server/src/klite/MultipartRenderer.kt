@@ -1,7 +1,6 @@
 package klite
 
 import java.io.OutputStream
-import java.io.OutputStreamWriter
 
 typealias FormDataRenderer = MultipartRenderer
 
@@ -13,31 +12,29 @@ class MultipartRenderer(
 
   override fun render(output: OutputStream, value: Any?) = render(output, value as Map<String, Any?>)
 
-  fun render(output: OutputStream, value: Map<String, Any?>) {
-    val w = OutputStreamWriter(output)
+  fun render(out: OutputStream, value: Map<String, Any?>) {
+    val boundary = "--$boundary".toByteArray()
     value.forEach { (k, v) ->
-      w.write("--")
-      w.write(boundary)
-      w.write("\r\n")
-      w.write("Content-Disposition: form-data; name=\"$k\"")
+      if (v == null) return@forEach
+      out.write(boundary)
+      out.writeln()
+      out.write("Content-Disposition: form-data; name=\"$k\"")
       when (v) {
         is FileUpload -> {
-          w.write("; filename=\"${v.fileName}\"\r\n")
-          w.write("Content-Type: ${MimeTypes.withCharset(v.contentType ?: MimeTypes.unknown)}\r\n\r\n")
-          w.flush()
-          v.stream.use { it.copyTo(output) }
+          out.write("; filename=\"${v.fileName}\"\r\n")
+          out.write("Content-Type: ${MimeTypes.withCharset(v.contentType ?: MimeTypes.unknown)}\r\n\r\n")
+          out.flush()
+          v.stream.use { it.copyTo(out) }
         }
         else -> {
-          w.write("\r\n\r\n")
-          w.write(v.toString())
+          out.writeln(); out.writeln()
+          if (v is ByteArray) out.write(v) else out.write(v.toString())
         }
       }
-      w.write("\r\n")
+      out.writeln()
     }
-    w.write("--")
-    w.write(boundary)
-    w.write("--\r\n")
-    w.flush()
+    out.write(boundary); out.write("--"); out.writeln()
+    out.flush()
   }
 
   override fun render(e: HttpExchange, code: StatusCode, value: Any?) {
