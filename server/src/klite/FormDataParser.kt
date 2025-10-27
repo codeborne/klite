@@ -4,16 +4,17 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
 import kotlin.reflect.KType
+import kotlin.text.Charsets.UTF_8
 
-@Deprecated("Use FormDataParser")
-typealias MultipartFormDataParser = FormDataParser
+@Deprecated("Use MultipartParser")
+typealias MultipartFormDataParser = MultipartParser
+typealias FormDataParser = MultipartParser
 
-class FormDataParser: BodyParser {
-  override val contentType: String = MimeTypes.formData
-
+class MultipartParser(override val contentType: String = MimeTypes.formData): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KType): T {
-    val boundary = input.readLine()!!.trimEnd()
+    var boundary = byteArrayOf()
+    while (boundary.isEmpty()) boundary = input.readLine()!!.trimEnd()
     val result = mutableMapOf<String, Any?>()
     var state = State()
     while (true) {
@@ -22,7 +23,9 @@ class FormDataParser: BodyParser {
         val lineStr = line.toString(MimeTypes.textCharset).trimEnd()
         val lowerLine = lineStr.lowercase()
         if (lowerLine.isEmpty()) state.readingHeaders = false
-        else if (lowerLine.startsWith("content-disposition:")) {
+        else if (lowerLine.startsWith("content-id:")) {
+          state.name = lowerLine.substringAfter("content-id:").trim()
+        } else if (lowerLine.startsWith("content-disposition:")) {
           val disposition = lineStr.substring("content-disposition:".length).trim()
           val params = disposition.split(';').associate(::keyValue)
           state.name = params["name"]
@@ -33,10 +36,10 @@ class FormDataParser: BodyParser {
         }
       } else {
         if (line.startsWith(boundary)) {
+          val bytes = state.content.toByteArray().trimEnd()
           if (state.name != null) result[state.name!!] = state.fileName?.let {
-            // TODO: remove last newline from content
-            FileUpload(it, state.contentType, state.content.toByteArray().trimEnd().inputStream())
-          } ?: state.content.toString(MimeTypes.textCharset).trim()
+            FileUpload(it, state.contentType, bytes.inputStream())
+          } ?: if (state.isText) bytes.toString(UTF_8) else bytes
           state = State()
         }
         else state.append(line)
@@ -72,6 +75,7 @@ class FormDataParser: BodyParser {
 
   private class State(var readingHeaders: Boolean = true, var name: String? = null, var fileName: String? = null, var contentType: String? = null) {
     val content = ByteArrayOutputStream(4096)
+    val isText get() = contentType?.let { MimeTypes.isText(it) } ?: false
     fun append(line: ByteArray) = content.write(line)
   }
 }

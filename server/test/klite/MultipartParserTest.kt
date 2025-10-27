@@ -5,13 +5,14 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import kotlin.reflect.typeOf
 
-class FormDataParserTest {
-  val parser = FormDataParser()
+class MultipartParserTest {
+  val parser = MultipartParser()
 
   @Test fun parse() {
     val body = """
       -----------------------------9051914041544843365972754266
       Content-Disposition: form-data; name="text"
+      Content-Type: text/plain
 
       text default
       -----------------------------9051914041544843365972754266
