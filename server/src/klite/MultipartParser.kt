@@ -10,7 +10,10 @@ import kotlin.reflect.KType
 typealias MultipartFormDataParser = MultipartParser
 typealias FormDataParser = MultipartParser
 
-class MultipartParser(override val contentType: String = MimeTypes.formData): BodyParser {
+class MultipartParser(
+  override val contentType: String = MimeTypes.formData,
+  private val nameHeader: String = "content-id" // e.g. SOAP/eDelivery support
+): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KType) = parse(input) as T
 
@@ -22,29 +25,27 @@ class MultipartParser(override val contentType: String = MimeTypes.formData): Bo
     while (true) {
       val line = input.readLine() ?: break
       if (state.readingHeaders) {
-        val lineStr = line.trimEnd().toString(MimeTypes.textCharset)
-        val lowerLine = lineStr.lowercase()
-        if (lowerLine.isEmpty()) state.readingHeaders = false
-        else if (lowerLine.startsWith("content-id:")) {
-          state.name = lowerLine.substring("content-id:".length).trim()
-        } else if (lowerLine.startsWith("content-disposition:")) {
-          val disposition = lineStr.substring("content-disposition:".length).trim()
+        line.trimEnd()
+        if (line.isEmpty()) { state.readingHeaders = false; continue }
+        val (header, value) = line.toString(MimeTypes.textCharset).split(':', limit = 2)
+        if (header.equals("content-type", ignoreCase = true)) {
+          state.contentType = value.trim()
+        } else if (header.equals("content-disposition", ignoreCase = true)) {
+          val disposition = value.trim()
           val params = disposition.split(';').associate(::keyValue)
           state.name = params["name"]
           state.fileName = params["filename"]
-        } else if (lowerLine.startsWith("content-type:")) {
-          state.contentType = lineStr.substring("content-type:".length).trim()
+        } else if (header.equals(nameHeader, ignoreCase = true)) {
+          state.name = value.trim()
         }
-      } else {
-        if (line.startsWith(boundary)) {
-          state.content.trimEnd()
-          result[state.name ?: state.fileName ?: ""] = state.fileName?.let {
-            FileUpload(it, state.contentType, state.content.inputStream())
-          } ?: if (state.isText) state.content.toString(MimeTypes.textCharset) else state.content.toByteArray()
-          state = State()
-        }
-        else state.content.append(line)
+      } else if (line.startsWith(boundary)) {
+        state.content.trimEnd()
+        result[state.name ?: state.fileName ?: ""] = state.fileName?.let {
+          FileUpload(it, state.contentType, state.content.inputStream())
+        } ?: if (state.isText) state.content.toString(MimeTypes.textCharset) else state.content.toByteArray()
+        state = State()
       }
+      else state.content.append(line)
     }
     return result
   }
