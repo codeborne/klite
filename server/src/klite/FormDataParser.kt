@@ -13,10 +13,12 @@ typealias FormDataParser = MultipartParser
 
 class MultipartParser(override val contentType: String = MimeTypes.formData): BodyParser {
   @Suppress("UNCHECKED_CAST")
-  override fun <T: Any> parse(input: InputStream, type: KType): T {
+  override fun <T: Any> parse(input: InputStream, type: KType) = parse(input) as T
+
+  fun parse(input: InputStream): Map<String, Any> {
     var boundary: TrimmableOutputStream? = null
     while (boundary?.isEmpty() != false) boundary = input.readLine()!!.trimEnd()
-    val result = mutableMapOf<String, Any?>()
+    val result = mutableMapOf<String, Any>()
     var state = State()
     while (true) {
       val line = input.readLine() ?: break
@@ -45,7 +47,7 @@ class MultipartParser(override val contentType: String = MimeTypes.formData): Bo
         else state.content.append(line)
       }
     }
-    return result as T
+    return result
   }
 
   private fun InputStream.readLine(): TrimmableOutputStream? {

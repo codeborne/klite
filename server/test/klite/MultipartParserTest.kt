@@ -3,7 +3,6 @@ package klite
 import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
-import kotlin.reflect.typeOf
 
 class MultipartParserTest {
   val parser = MultipartParser()
@@ -31,7 +30,7 @@ class MultipartParserTest {
       -----------------------------9051914041544843365972754266--
     """.trimIndent()
 
-    val result = parser.parse<Any>(body.byteInputStream(), typeOf<Map<String, Any>>()) as Map<String, Any>
+    val result = parser.parse(body.byteInputStream())
     expect(result["text"]).toEqual("text default")
 
     val file1 = result["file1"] as FileUpload
@@ -54,7 +53,7 @@ class MultipartParserTest {
       + "Content-Type: application/octet-stream\r\n\r\n"
     ).toByteArray() + data + "\r\n$boundary--\r\n".toByteArray()
 
-    val result = parser.parse<Any>(body.inputStream(), typeOf<Map<String, Any>>()) as Map<String, Any>
+    val result = parser.parse(body.inputStream())
     val file = result["file"] as FileUpload
     expect(file.fileName).toEqual("a.bin")
     expect(file.contentType).toEqual(MimeTypes.binary)
