@@ -30,7 +30,7 @@ POST/PUT requests with body will be parsed using one of registered [BodyParsers]
 The following body parsers are enabled by default:
 * `text/plain` - [TextBodyParser](src/klite/Body.kt)
 * `application/x-www-form-urlencoded` - [FormUrlEncodedParser](src/klite/Body.kt)
-* `multipart/form-data` - [FormDataParser](src/klite/FormDataParser.kt)
+* `multipart/form-data` - [MultipartParser](src/klite/MultipartParser.kt)
 
 use<[JsonBody](../json/src/JsonBody.kt)>() for `application/json` support.
 
