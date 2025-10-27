@@ -2,6 +2,7 @@
 * jdbc: PooledDataSource.queryTimeout can be configured separately from pool connection timeout
 * server: MultipartParser and MultipartRenderer now support binary data/files
 * xml: new module for fast and lightweight XML parsing
+* Java 25 support
 
 # 1.7.0
 * core: TSIDGenerator can now be used with custom classes outside TSID companion
