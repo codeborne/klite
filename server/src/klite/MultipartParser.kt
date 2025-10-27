@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
 import kotlin.reflect.KType
-import kotlin.text.Charsets.UTF_8
 
 @Deprecated("Use MultipartParser")
 typealias MultipartFormDataParser = MultipartParser
@@ -39,9 +38,9 @@ class MultipartParser(override val contentType: String = MimeTypes.formData): Bo
       } else {
         if (line.startsWith(boundary)) {
           state.content.trimEnd()
-          if (state.name != null) result[state.name!!] = state.fileName?.let {
+          result[state.name ?: state.fileName ?: ""] = state.fileName?.let {
             FileUpload(it, state.contentType, state.content.inputStream())
-          } ?: if (state.isText) state.content.toString(UTF_8) else state.content.toByteArray()
+          } ?: if (state.isText) state.content.toString(MimeTypes.textCharset) else state.content.toByteArray()
           state = State()
         }
         else state.content.append(line)

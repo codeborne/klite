@@ -15,7 +15,7 @@ class MultipartRendererTest {
     renderer.render(output, mapOf(
       "name1" to "value1",
       "name2" to "Hello".toByteArray(),
-      "my-file" to FileUpload("a.txt", "text/plain", "Content of a.txt.".byteInputStream()),
+      "my-file" to FileUpload("a.txt", stream = "Content of a.txt.".byteInputStream()),
       "null" to null
     ))
     expect(output.toString()).toEqual("""

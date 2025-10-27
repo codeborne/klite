@@ -48,7 +48,7 @@ class MultipartParserTest {
     val boundary = "---XXX"
     val data = (-128..127).map { it.toByte() }.toByteArray()
     val body = (
-      "$boundary\r\n"
+      "\r\n$boundary\r\n"
       + "Content-Disposition: form-data; name=\"file\"; filename=\"a.bin\"\r\n"
       + "Content-Type: application/octet-stream\r\n\r\n"
     ).toByteArray() + data + "\r\n$boundary--\r\n".toByteArray()
