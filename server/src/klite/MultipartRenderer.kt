@@ -3,8 +3,12 @@ package klite
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 
-class FormDataRenderer(val boundary: String = "---------------------------" + System.currentTimeMillis()): BodyRenderer {
-  override val contentType = MimeTypes.formData
+typealias FormDataRenderer = MultipartRenderer
+
+class MultipartRenderer(
+  override val contentType: String = MimeTypes.formData,
+  val boundary: String = "----" + System.currentTimeMillis()
+): BodyRenderer {
   val fullContentType = "$contentType; boundary=$boundary"
 
   override fun render(output: OutputStream, value: Any?) = render(output, value as Map<String, Any?>)

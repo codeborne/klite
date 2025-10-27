@@ -5,9 +5,9 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 
-class FormDataRendererTest {
+class MultipartRendererTest {
   @Test fun render() {
-    val renderer = FormDataRenderer("MyBoundary")
+    val renderer = MultipartRenderer(boundary = "MyBoundary")
     expect(renderer.contentType).toEqual(MimeTypes.formData)
     expect(renderer.fullContentType).toEqual(MimeTypes.formData + "; boundary=MyBoundary")
 
