@@ -1,5 +1,6 @@
 package klite
 
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.*
@@ -13,43 +14,42 @@ typealias FormDataParser = MultipartParser
 class MultipartParser(override val contentType: String = MimeTypes.formData): BodyParser {
   @Suppress("UNCHECKED_CAST")
   override fun <T: Any> parse(input: InputStream, type: KType): T {
-    var boundary = byteArrayOf()
-    while (boundary.isEmpty()) boundary = input.readLine()!!.trimEnd()
+    var boundary: TrimmableOutputStream? = null
+    while (boundary?.isEmpty() != false) boundary = input.readLine()!!.trimEnd()
     val result = mutableMapOf<String, Any?>()
     var state = State()
     while (true) {
       val line = input.readLine() ?: break
       if (state.readingHeaders) {
-        val lineStr = line.toString(MimeTypes.textCharset).trimEnd()
+        val lineStr = line.trimEnd().toString(MimeTypes.textCharset)
         val lowerLine = lineStr.lowercase()
         if (lowerLine.isEmpty()) state.readingHeaders = false
         else if (lowerLine.startsWith("content-id:")) {
-          state.name = lowerLine.substringAfter("content-id:").trim()
+          state.name = lowerLine.substring("content-id:".length).trim()
         } else if (lowerLine.startsWith("content-disposition:")) {
           val disposition = lineStr.substring("content-disposition:".length).trim()
           val params = disposition.split(';').associate(::keyValue)
           state.name = params["name"]
           state.fileName = params["filename"]
-        }
-        else if (lowerLine.startsWith("content-type:")) {
+        } else if (lowerLine.startsWith("content-type:")) {
           state.contentType = lineStr.substring("content-type:".length).trim()
         }
       } else {
         if (line.startsWith(boundary)) {
-          val bytes = state.content.toByteArray().trimEnd()
+          state.content.trimEnd()
           if (state.name != null) result[state.name!!] = state.fileName?.let {
-            FileUpload(it, state.contentType, bytes.inputStream())
-          } ?: if (state.isText) bytes.toString(UTF_8) else bytes
+            FileUpload(it, state.contentType, state.content.inputStream())
+          } ?: if (state.isText) state.content.toString(UTF_8) else state.content.toByteArray()
           state = State()
         }
-        else state.append(line)
+        else state.content.append(line)
       }
     }
     return result as T
   }
 
-  private fun InputStream.readLine(): ByteArray? {
-    val buf = ByteArrayOutputStream(128)
+  private fun InputStream.readLine(): TrimmableOutputStream? {
+    val buf = TrimmableOutputStream(128)
     var b = read()
     while (b >= 0) {
       buf.write(b)
@@ -57,27 +57,38 @@ class MultipartParser(override val contentType: String = MimeTypes.formData): Bo
       b = read()
     }
     if (b == -1 && buf.size() == 0) return null
-    return buf.toByteArray()
-  }
-
-  private fun ByteArray.trimEnd(): ByteArray {
-    var newLen = size
-    if (this[newLen - 1] == 10.toByte()) newLen--
-    if (this[newLen - 1] == 13.toByte()) newLen--
-    return copyOf(newLen)
-  }
-
-  private fun ByteArray.startsWith(prefix: ByteArray): Boolean {
-    return prefix.size <= size && Arrays.equals(this, 0, prefix.size, prefix, 0, prefix.size)
+    return buf
   }
 
   private fun keyValue(s: String) = s.split('=', limit = 2).let { it[0].trim() to it.getOrNull(1)?.trim('"') }
 
-  private class State(var readingHeaders: Boolean = true, var name: String? = null, var fileName: String? = null, var contentType: String? = null) {
-    val content = ByteArrayOutputStream(4096)
+  private class State() {
+    var readingHeaders: Boolean = true
+    var name: String? = null
+    var fileName: String? = null
+    var contentType: String? = null
+    val content = TrimmableOutputStream(4096)
     val isText get() = contentType?.let { MimeTypes.isText(it) } ?: false
-    fun append(line: ByteArray) = content.write(line)
   }
+}
+
+private class TrimmableOutputStream(size: Int): ByteArrayOutputStream(size) {
+  fun append(content: TrimmableOutputStream) = write(content.buf, 0, content.count)
+
+  fun isEmpty() = count == 0
+
+  fun startsWith(prefix: TrimmableOutputStream) =
+    prefix.count <= count && Arrays.equals(buf, 0, prefix.count, prefix.buf, 0, prefix.count)
+
+  fun trimEnd() = this.also {
+    trimEnd(10); trimEnd(13)
+  }
+
+  fun trimEnd(byte: Byte) {
+    if (count > 0 && buf[count - 1] == byte) count--
+  }
+
+  fun inputStream() = ByteArrayInputStream(buf, 0, count)
 }
 
 class FileUpload(val fileName: String, val contentType: String? = MimeTypes.typeFor(fileName), val stream: InputStream)
