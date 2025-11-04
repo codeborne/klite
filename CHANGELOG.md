@@ -1,6 +1,7 @@
 # Unreleased
 * jdbc: PooledDataSource.queryTimeout can be configured separately from pool connection timeout
 * server: MultipartParser and MultipartRenderer now support binary data/files
+* server: nullable List of @QueryParam will now get null value if parameter is missing, not empty list
 * xml: new module for fast and lightweight XML parsing
 * Java 25 support
 
