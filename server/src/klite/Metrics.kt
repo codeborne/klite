@@ -25,6 +25,13 @@ fun Router.metrics(path: String = "/metrics") {
     }
   }
 
+  Runtime.getRuntime().let {
+    val mb = 1024f * 1024f
+    Metrics.register("heapMb") {
+      mapOf("free" to it.freeMemory() / mb, "total" to it.totalMemory() / mb, "max" to it.maxMemory() / mb)
+    }
+  }
+
   get(path) {
     Metrics.data
   }
