@@ -1,6 +1,10 @@
 package klite.http
 
+import klite.error
+import klite.info
+import klite.logger
 import kotlinx.coroutines.future.await
+import java.lang.System.currentTimeMillis
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -23,8 +27,20 @@ fun HttpRequest.Builder.accept(mimeType: String) = setHeader("Accept", mimeType)
 
 typealias RequestModifier = HttpRequest.Builder.() -> HttpRequest.Builder
 
-suspend fun <R> HttpClient.request(url: URI, bodyHandler: HttpResponse.BodyHandler<R>, modifier: RequestModifier = { this }) =
-  sendAsync(HttpRequest.newBuilder().uri(url).timeout(10.seconds).modifier().build(), bodyHandler).await()
+private val log = logger<HttpClient>()
+
+suspend fun <R> HttpClient.request(url: URI, bodyHandler: HttpResponse.BodyHandler<R>, modifier: RequestModifier = { this }): HttpResponse<R> {
+  val start = currentTimeMillis()
+  val req = HttpRequest.newBuilder().uri(url).timeout(10.seconds).modifier().build()
+  try {
+    val res = sendAsync(req, bodyHandler).await()
+    log.info("${req.method()} $url in ${currentTimeMillis() - start}ms - ${res.statusCode()}")
+    return res
+  } catch (e: Exception) {
+    log.error("${req.method()} $url in ${currentTimeMillis() - start}ms - failed: ${e.message}")
+    throw e
+  }
+}
 
 suspend fun HttpClient.get(url: URI, modifier: RequestModifier) = request(url, ofString()) { GET().modifier() }
 suspend fun HttpClient.post(url: URI, data: Any?, modifier: RequestModifier) = request(url, ofString()) { POST(toBodyPublisher(data)).modifier() }
