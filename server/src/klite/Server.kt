@@ -18,9 +18,12 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
+val Config.port: Int get() = optional("PORT", "8080").toInt()
+val Config.numWorkers: Int get() = optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()
+
 class Server(
-  val listen: InetSocketAddress = InetSocketAddress(Config.optional("PORT")?.toInt() ?: 8080),
-  val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.optional("NUM_WORKERS")?.toInt() ?: getRuntime().availableProcessors()),
+  val listen: InetSocketAddress = InetSocketAddress(Config.port),
+  val workerPool: ExecutorService = Executors.newWorkStealingPool(Config.numWorkers),
   registry: MutableRegistry = DependencyInjectingRegistry().apply {
     register<RequestLogger>()
     register<TextBody>()
