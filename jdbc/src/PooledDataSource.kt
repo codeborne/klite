@@ -35,6 +35,12 @@ class PooledDataSource(
   internal val available = ArrayBlockingQueue<PooledConnection>(maxSize)
   internal val used = ConcurrentHashMap<PooledConnection, Used>(maxSize)
 
+  init {
+    Metrics.register("dbPool") {
+      mapOf("max" to maxSize, "size" to size.get(), "available" to available.size, "used" to used.size)
+    }
+  }
+
   data class Used(val since: Long = currentTimeMillis(), val threadName: String = currentThread().name)
 
   private val leakChecker = leakCheckThreshold?.let {
