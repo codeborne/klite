@@ -16,7 +16,7 @@ fun main() {
   sampleServer().start()
 }
 
-fun sampleServer(port: Int = 8080): Server {
+fun sampleServer(port: Int = Config.port): Server {
   Config.useEnvFile()
   return Server(listen = InetSocketAddress(port)).apply {
     use<JsonBody>() // enables parsing/sending of application/json requests/responses, depending on the Accept header
@@ -66,6 +66,7 @@ fun sampleServer(port: Int = 8080): Server {
       useHashCodeAsETag() // automatically send 304 NotModified if request generates the same response as before
       annotated<APIRoutes>() // read routes from an annotated class - such classes are easier to unit-test
       annotated<SSERoutes>("/sse") // Server-Side Events sample
+      metrics()
       openApi(swaggerUIConfig = mapOf("syntaxHighlight" to true))
     }
 
