@@ -1,22 +1,31 @@
 package klite
 
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ForkJoinPool
+
+object Metrics {
+  private val resolvers = ConcurrentHashMap<String, () -> Any?>().apply {
+    val startedAt = Instant.now()
+    put("startedAt") { startedAt }
+  }
+
+  fun register(name: String, value: () -> Any?) {
+    resolvers[name] = value
+  }
+
+  val data: Map<String, Any?> get() = resolvers.mapValues { it.value() }
+}
 
 context(Server)
 fun Router.metrics(path: String = "/metrics") {
-  val base = mapOf(
-    "instanceId" to requestIdGenerator.prefix,
-    "startedAt" to Instant.now(),
-  )
-
-  val workerPool = workerPool as? ForkJoinPool
+  (workerPool as? ForkJoinPool)?.let {
+    Metrics.register("workerPool") {
+      mapOf("active" to it.activeThreadCount, "size" to it.poolSize, "max" to it.parallelism)
+    }
+  }
 
   get(path) {
-    base + mapOf(
-      "workerPool" to workerPool?.let {
-        mapOf("active" to it.activeThreadCount, "size" to it.poolSize, "max" to it.parallelism)
-      }
-    )
+    Metrics.data
   }
 }
