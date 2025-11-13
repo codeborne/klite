@@ -8,6 +8,7 @@ import java.lang.System.currentTimeMillis
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
+import java.net.http.HttpRequest.BodyPublisher
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandlers.ofString
@@ -48,8 +49,9 @@ suspend fun HttpClient.put(url: URI, data: Any?, modifier: RequestModifier) = re
 suspend fun HttpClient.patch(url: URI, data: Any?, modifier: RequestModifier) = request(url, ofString()) { method("PATCH", toBodyPublisher(data)).modifier() }
 suspend fun HttpClient.delete(url: URI, modifier: RequestModifier) = request(url, ofString()) { DELETE().modifier() }
 
-fun toBodyPublisher(data: Any?): HttpRequest.BodyPublisher = when (data) {
+fun toBodyPublisher(data: Any?): BodyPublisher = when (data) {
   null, Unit -> BodyPublishers.noBody()
+  is BodyPublisher -> data
   is ByteArray -> BodyPublishers.ofByteArray(data)
   else -> BodyPublishers.ofString(data.toString())
 }
