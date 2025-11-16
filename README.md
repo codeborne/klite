@@ -2,7 +2,7 @@
 
 [![Release](https://jitpack.io/v/keksworks/klite.svg)](https://jitpack.io/#keksworks/klite) [![Build & Test](https://github.com/keksworks/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/keksworks/klite/actions/workflows/ci.yml)
 
-Klite: a very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
+Klite: a very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM, batteries included.
 Probably the most sustainable JVM web framework (low resource usage and CO₂ emissions).
 
 Inspired by SparkJava, Jooby, etc, but [smaller, simpler and better](docs/Comparisons.md).
@@ -63,7 +63,7 @@ fun main() {
 * [xml](xml) - fast and lightweight xml parsing into data classes (usable *standalone*)
 * [csv](csv) - simple CSV parsing/generation (usable *standalone*)
 * [i18n](i18n) - simple server-side translations (for emails, etc)
-* [jdbc](jdbc) - provides JDBC extensions for DB access, transaction handling and migrations (usable *standalone*)
+* [jdbc](jdbc) - provides JDBC extensions for database access, transaction handling and migrations (usable *standalone*)
 * [jdbc-test](jdbc-test) - provides a way of testing your DB code using a real DB
 * [jobs](jobs) - provides a simple scheduled JobRunner
 * [oauth](oauth) - implements OAuth 2.0 login with several providers
