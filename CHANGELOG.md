@@ -6,6 +6,7 @@
 * core: new extensions for easier working with Java HttpClient, like get()/post()/put()
 * xml: new module for fast and lightweight XML parsing
 * Java 25 support
+* GitHub organization changed to keksworks
 
 # 1.7.0
 * core: TSIDGenerator can now be used with custom classes outside TSID companion

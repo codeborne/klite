@@ -6,7 +6,7 @@ plugins {
 }
 
 allprojects {
-  group = "com.github.codeborne.klite"
+  group = "com.github.keksworks.klite"
   version = "main-SNAPSHOT" // see tags/releases
 }
 

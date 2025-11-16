@@ -1,6 +1,6 @@
 # <img src="logo.png" alt="Klite" width=128 height=128>
 
-[![Release](https://jitpack.io/v/codeborne/klite.svg)](https://jitpack.io/#codeborne/klite) [![Build & Test](https://github.com/codeborne/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/codeborne/klite/actions/workflows/ci.yml)
+[![Release](https://jitpack.io/v/keksworks/klite.svg)](https://jitpack.io/#keksworks/klite) [![Build & Test](https://github.com/keksworks/klite/actions/workflows/ci.yml/badge.svg)](https://github.com/keksworks/klite/actions/workflows/ci.yml)
 
 Klite: a very light-weight (lite) non-blocking http framework for Kotlin coroutines on JVM.
 Probably the most sustainable JVM web framework (low resource usage and CO₂ emissions).
@@ -106,7 +106,7 @@ Tests ran on Ubuntu, Java 20, i9-9900T CPU from 2019.
 
 See [the sample project](sample) on how to build apps with Klite and run them in Docker.
 
-Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), see also [changelog](CHANGELOG.md)
+Klite builds are available from [jitpack](https://jitpack.io/#keksworks/klite), see also [changelog](CHANGELOG.md)
 
 ```kotlin
   repositories {
@@ -116,7 +116,7 @@ Klite builds are available from [jitpack](https://jitpack.io/#codeborne/klite), 
 
   dependencies {
     val kliteVersion = "main-SNAPSHOT" // you can put a released tag or commit hash here
-    fun klite(module: String) = "com.github.codeborne.klite:klite-$module:$kliteVersion"
+    fun klite(module: String) = "com.github.keksworks.klite:klite-$module:$kliteVersion"
     implementation(klite("server"))
     // Plus any optional components with their own external dependencies, see above for list
     implementation(klite("json"))
@@ -147,9 +147,9 @@ If there is a problem with Jitpack, then it's possible to add the following to y
 
 ```kotlin
 sourceControl {
-  gitRepository(java.net.URI("https://github.com/codeborne/klite.git")) {
-    producesModule("com.github.codeborne.klite:server")
-    producesModule("com.github.codeborne.klite:jdbc")
+  gitRepository(java.net.URI("https://github.com/keksworks/klite.git")) {
+    producesModule("com.github.keksworks.klite:server")
+    producesModule("com.github.keksworks.klite:jdbc")
     // list all subprojects you depend on in build.gradle.kts, use their un-prefixed names, e.g. server, not klite-server
   }
 }

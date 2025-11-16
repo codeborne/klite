@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
   val kliteVersion = "main-SNAPSHOT" // Or a specific version
-  fun klite(module: String) = "com.github.codeborne.klite:klite-$module:$kliteVersion"
+  fun klite(module: String) = "com.github.keksworks.klite:klite-$module:$kliteVersion"
   implementation(klite("server"))
   implementation(klite("json")) // For JSON support
   implementation(klite("jdbc")) // For database support

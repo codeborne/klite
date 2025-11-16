@@ -6,7 +6,7 @@ As you will see, Klite is very small, but still provides turn-the-key features f
 
 To get more information about any class or function, navigate freely inside to see how it works and what optional parameters it takes.
 
-You can also use the [Klite + Svelte project template](https://github.com/codeborne/klite-starter) repo.
+You can also use the [Klite + Svelte project template](https://github.com/keksworks/klite-starter) repo.
 
 ## Dependencies
 
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-  fun klite(module: String) = "com.github.codeborne.klite:klite-$module:LASTEST_VERSION_HERE"
+  fun klite(module: String) = "com.github.keksworks.klite:klite-$module:LASTEST_VERSION_HERE"
   implementation(klite("server"))
 }
 ```
