@@ -3,6 +3,7 @@
 * server: MultipartParser and MultipartRenderer now support binary data/files
 * server: nullable List of @QueryParam will now get null value if parameter is missing, not empty list
 * server: introduced Metrics for publishing of app metrics, and a metrics() handler
+* server: RequestTransactionHandler now supports exclude methods, to skip transactions for e.g. GET/HEAD requests
 * core: new extensions for easier working with Java HttpClient, like get()/post()/put()
 * xml: new module for fast and lightweight XML parsing
 * Java 25 support
