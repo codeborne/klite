@@ -83,7 +83,7 @@ These integrate with external libraries. All of this functionality is available 
 
 The main server module is only ~1000 lines of code.
 
-Klite powers a number of known production apps already.
+Klite powers a number of known production apps.
 Publicly announced at [KKON 2022](https://rheinwerk-kkon.de/programm/keks-klite/), see [the slides](https://docs.google.com/presentation/d/1m5UORE88nVRdZXyDEoj74c0alk1Ff_tX8mfB8oLMbk0).
 
 ## Performance
@@ -105,6 +105,10 @@ Tests ran on Ubuntu, Java 20, i9-9900T CPU from 2019.
 ## Usage
 
 See [the sample project](sample) on how to build apps with Klite and run them in Docker.
+
+There are open-source fully-fledged applications built with Klite (using Klite for backend):
+* [StoryTracker](https://github.com/keksworks/storytracker) - an agile project management tool
+* [AitaValida](https://github.com/keksworks/aitavalida) - voting compass application for Estonian elections
 
 Klite builds are available from [jitpack](https://jitpack.io/#keksworks/klite), see also [changelog](CHANGELOG.md)
 
