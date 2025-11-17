@@ -1,4 +1,5 @@
-# Unreleased
+# 1.7.1
+* GitHub organization changed to keksworks - update your dependency organization
 * jdbc: PooledDataSource.queryTimeout can be configured separately from pool connection timeout
 * server: MultipartParser and MultipartRenderer now support binary data/files
 * server: nullable List of @QueryParam will now get null value if parameter is missing, not empty list
@@ -7,7 +8,6 @@
 * core: new extensions for easier working with Java HttpClient, like get()/post()/put()
 * xml: new module for fast and lightweight XML parsing
 * Java 25 support
-* GitHub organization changed to keksworks
 
 # 1.7.0
 * core: TSIDGenerator can now be used with custom classes outside TSID companion
